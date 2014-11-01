@@ -44,6 +44,9 @@ class EaseF;
 class AngAxisF;
 class TransformF;
 
+//-JR
+class RotationF;
+//-JR
 
 DECLARE_SCOPE( MathTypes );
 
@@ -61,6 +64,9 @@ DECLARE_STRUCT( TransformF );
 DECLARE_STRUCT( Box3F );
 DECLARE_STRUCT( EaseF );
 
+//-JR
+DECLARE_STRUCT(RotationF);
+//-JR
 
 // Legacy console types.
 DefineConsoleType( TypePoint2I, Point2I )
@@ -78,5 +84,8 @@ DefineConsoleType( TypeTransformF, TransformF )
 DefineConsoleType( TypeBox3F, Box3F )
 DefineConsoleType( TypeEaseF, EaseF )
 
+//-JR
+DefineConsoleType(TypeRotationF, RotationF)
+//-JR
 
 #endif

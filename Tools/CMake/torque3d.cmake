@@ -1,3 +1,25 @@
+# -----------------------------------------------------------------------------
+# Copyright (c) 2014 GarageGames, LLC
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to
+# deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+# sell copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+# IN THE SOFTWARE.
+# -----------------------------------------------------------------------------
+
 project(${TORQUE_APP_NAME})
 
 if(UNIX)
@@ -38,6 +60,8 @@ option(TORQUE_EXTENDED_MOVE "Extended move support" OFF)
 mark_as_advanced(TORQUE_EXTENDED_MOVE)
 option(TORQUE_NAVIGATION "Enable Navigation module" OFF)
 #mark_as_advanced(TORQUE_NAVIGATION)
+option(TORQUE_TESTING "Enable unit test module" OFF)
+mark_as_advanced(TORQUE_TESTING)
 if(WIN32)
 	option(TORQUE_OPENGL "Allow OpenGL render" OFF)
 	#mark_as_advanced(TORQUE_OPENGL)
@@ -122,7 +146,11 @@ if(WIN32)
     # warning C4244: 'initializing' : conversion from 'XXX' to 'XXX', possible loss of data
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4244")
 
-    link_directories($ENV{DXSDK_DIR}/Lib/x86)
+    if( TORQUE_CPU_X64 )
+        link_directories($ENV{DXSDK_DIR}/Lib/x64)
+    else()
+        link_directories($ENV{DXSDK_DIR}/Lib/x86)
+    endif()
 endif()
 
 ###############################################################################
@@ -134,7 +162,6 @@ addPath("${srcDir}/sfx/media")
 addPath("${srcDir}/sfx/null")
 addPath("${srcDir}/sfx")
 addPath("${srcDir}/component")
-addPath("${srcDir}/component/interfaces")
 addPath("${srcDir}/component/components")
 addPath("${srcDir}/component/components/animation")
 addPath("${srcDir}/component/components/collision")
@@ -142,6 +169,7 @@ addPath("${srcDir}/component/components/game")
 addPath("${srcDir}/component/components/light")
 addPath("${srcDir}/component/components/physics")
 addPath("${srcDir}/component/components/render")
+addPath("${srcDir}/component/interfaces")
 addPath("${srcDir}/console")
 addPath("${srcDir}/core")
 addPath("${srcDir}/core/stream")
@@ -151,12 +179,10 @@ addPath("${srcDir}/core/util/test")
 addPath("${srcDir}/core/util/journal")
 addPath("${srcDir}/core/util/journal/test")
 addPath("${srcDir}/core/util/zip")
-addPath("${srcDir}/core/util/zip/unitTests")
+addPath("${srcDir}/core/util/zip/test")
 addPath("${srcDir}/core/util/zip/compressors")
 addPath("${srcDir}/i18n")
 addPath("${srcDir}/sim")
-#addPath("${srcDir}/unit/tests")
-addPath("${srcDir}/unit")
 addPath("${srcDir}/util")
 addPath("${srcDir}/windowManager")
 addPath("${srcDir}/windowManager/torque")
@@ -173,6 +199,7 @@ endif()
 addPath("${srcDir}/platform/test")
 addPath("${srcDir}/platform/threads")
 addPath("${srcDir}/platform/async")
+addPath("${srcDir}/platform/async/test")
 addPath("${srcDir}/platform/input")
 addPath("${srcDir}/platform/output")
 addPath("${srcDir}/app")
@@ -312,6 +339,10 @@ else()
     addPath("${srcDir}/T3D/gameBase/std")
 endif()
 
+if(TORQUE_TESTING)
+   include( "modules/module_testing.cmake" )
+endif()
+
 if(TORQUE_NAVIGATION)
    include( "modules/module_navigation.cmake" )
 endif()
@@ -322,10 +353,6 @@ endif()
 
 if(TORQUE_HYDRA)
     include( "modules/module_hydra.cmake" )
-endif()
-
-if(TORQUE_DISABLE_MEMORY_MANAGER)
-    addDef(TORQUE_DISABLE_MEMORY_MANAGER)
 endif()
 
 if(TORQUE_DEDICATED)
@@ -441,11 +468,10 @@ finishExecutable()
 ###############################################################################
 ###############################################################################
 
+message(STATUS "writing ${projectSrcDir}/torqueConfig.h")
+CONFIGURE_FILE("${cmakeDir}/torqueConfig.h.in" "${projectSrcDir}/torqueConfig.h")
+
 # configure the relevant files only once
-if(NOT EXISTS "${projectSrcDir}/torqueConfig.h")
-    message(STATUS "writing ${projectSrcDir}/torqueConfig.h")
-    CONFIGURE_FILE("${cmakeDir}/torqueConfig.h.in" "${projectSrcDir}/torqueConfig.h")
-endif()
 if(NOT EXISTS "${projectSrcDir}/torque.ico")
     CONFIGURE_FILE("${cmakeDir}/torque.ico" "${projectSrcDir}/torque.ico" COPYONLY)
 endif()
@@ -491,7 +517,7 @@ endif()
 
 if(UNIX)
     # copy pasted from T3D build system, some might not be needed
-	set(TORQUE_EXTERNAL_LIBS "dl Xxf86vm Xext X11 Xft stdc++ pthread GL" CACHE STRING "external libs to link against")
+	set(TORQUE_EXTERNAL_LIBS "rt dl Xxf86vm Xext X11 Xft stdc++ pthread GL" CACHE STRING "external libs to link against")
 	mark_as_advanced(TORQUE_EXTERNAL_LIBS)
     
     string(REPLACE " " ";" TORQUE_EXTERNAL_LIBS_LIST ${TORQUE_EXTERNAL_LIBS})
@@ -560,11 +586,11 @@ endif()
 
 if(TORQUE_TEMPLATE)
     message("Prepare Template(${TORQUE_TEMPLATE}) install...")
-    INSTALL(DIRECTORY "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/game"                 DESTINATION "${projectDir}")
+    INSTALL(DIRECTORY "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/game"                 DESTINATION "${TORQUE_APP_DIR}")
     if(WIN32)
-        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/cleanShaders.bat"     DESTINATION "${projectDir}")
-        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/DeleteCachedDTSs.bat" DESTINATION "${projectDir}")
-        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/DeleteDSOs.bat"       DESTINATION "${projectDir}")
-        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/DeletePrefs.bat"      DESTINATION "${projectDir}")
+        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/cleanShaders.bat"     DESTINATION "${TORQUE_APP_DIR}")
+        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/DeleteCachedDTSs.bat" DESTINATION "${TORQUE_APP_DIR}")
+        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/DeleteDSOs.bat"       DESTINATION "${TORQUE_APP_DIR}")
+        INSTALL(FILES "${CMAKE_SOURCE_DIR}/Templates/${TORQUE_TEMPLATE}/DeletePrefs.bat"      DESTINATION "${TORQUE_APP_DIR}")
     endif()
 endif()

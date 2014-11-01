@@ -187,11 +187,23 @@ function EWCreatorWindow::createStatic( %this, %file )
    if( !isObject(%this.objectGroup) )
       %this.setNewObjectGroup( MissionGroup );
 
-   %objId = new TSStatic()
+   /*%objId = new TSStatic()
    {
       shapeName = %file;
       position = %this.getCreateObjectPosition();
       parentGroup = %this.objectGroup;
+   };*/
+
+   %objId = new Entity()
+   {
+	  position = %this.getCreateObjectPosition();
+      parentGroup = %this.objectGroup;
+	
+	  new RenderShapeBehaviorInstance()
+	  {
+		template = "RenderShape";
+		shapeName = %file;
+	  };
    };
    
    %this.onObjectCreated( %objId );

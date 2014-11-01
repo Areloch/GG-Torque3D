@@ -1,5 +1,6 @@
 #include "component/components/collision/collisionInterfaces.h"
 #include "scene/sceneObject.h"
+#include "T3D/Entity.h"
 
 void CollisionInterface::handleCollisionList( CollisionList &collisionList, VectorF velocity )
 {
@@ -13,8 +14,7 @@ void CollisionInterface::handleCollisionList( CollisionList &collisionList, Vect
       Collision& colCheck = collisionList[i];
       if (colCheck.object)
       {
-         SceneObject* obj = static_cast<SceneObject*>(col.object);
-         if (obj->getTypeMask() & PlayerObjectType)
+         if (col.object->getTypeMask() & PlayerObjectType)
          {
             handleCollision( colCheck, velocity );
          }
@@ -22,6 +22,23 @@ void CollisionInterface::handleCollisionList( CollisionList &collisionList, Vect
          {
             col = colCheck;
          }
+
+         Entity* ent = dynamic_cast<Entity*>(col.object);
+         if(ent)
+         {
+            CollisionInterface *cI = ent->getComponent<CollisionInterface>();
+            if(cI)
+            {
+               //convert us to our component
+               ComponentInstance *component = dynamic_cast<ComponentInstance*>(this);
+               if(component)
+               {
+                  cI->onCollisionSignal.trigger(component->getOwner());
+               }
+            }
+         }
+         //if we ended up colliding, trigger our signal to notify any components that may be waiting on it
+         //onCollisionSignal.trigger(col.object);
       }
    }
 

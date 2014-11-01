@@ -338,10 +338,8 @@ namespace Platform
    // display Splash Window
    bool displaySplashWindow( String path );
 
-	//-JR
-	// close Splash Window
+   // close Splash Window
    bool closeSplashWindow();
-	//-JR
 
    void openFolder( const char* path );
 

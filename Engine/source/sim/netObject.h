@@ -223,8 +223,8 @@ struct GhostInfo;
 /// @nosubgrouping
 //-JR
 //class NetObject: public SimObject
-class NetObject: public SimGroup
-//-JR
+class NetObject : public SimGroup
+   //-JR
 {
    // The Ghost Manager needs read/write access
    friend class  NetConnection;
@@ -236,9 +236,9 @@ class NetObject: public SimGroup
 
 private:
    //-JR
-	//typedef SimObject Parent;
-	typedef SimGroup Parent;
-	//-JR
+   //typedef SimObject Parent;
+   typedef SimGroup Parent;
+   //-JR
 
    /// Mask indicating which states are dirty and need to be retransmitted on this
    /// object.

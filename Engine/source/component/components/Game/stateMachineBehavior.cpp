@@ -39,6 +39,8 @@ StateMachineBehavior::StateMachineBehavior()
    mComponentType = "Game";
 
    mDescription = getDescriptionText("A generic state machine.");
+
+   addComponentField("startingState", "The initial state for the machine", "", "");
 }
 
 StateMachineBehavior::~StateMachineBehavior()
@@ -107,6 +109,10 @@ StateMachineBehaviorInstance::StateMachineBehaviorInstance( Component *btemplate
    mStateStartTime = 0;
    mStateTime = 0;
 
+   mStartingState = "";
+
+   mCurCreateState = NULL;
+
    mNetFlags.set(Ghostable);
 }
 
@@ -145,6 +151,7 @@ void StateMachineBehaviorInstance::initPersistFields()
 
    addField("stateStartTime", TypeF32, Offset(mStateStartTime, StateMachineBehaviorInstance), "The sim time of when we started this state");
    addField("stateTime", TypeF32, Offset(mStateStartTime, StateMachineBehaviorInstance), "The current amount of time we've spent in this state");
+   addField("startingState", TypeString, Offset(mStartingState, StateMachineBehaviorInstance), "The current amount of time we've spent in this state");
 }
 
 U32 StateMachineBehaviorInstance::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
@@ -161,6 +168,22 @@ void StateMachineBehaviorInstance::unpackUpdate(NetConnection *con, BitStream *s
 
 void StateMachineBehaviorInstance::processTick(const Move* move)
 {
+   if (!isServerObject())
+      return;
+
+   if (mCurrentState == NULL)
+   {
+      //if we don't have a state, pick our default state
+      if (!dStrcmp(mStartingState,""))
+         mCurrentState = getStateByName(getStateByIndex(0)); 
+      else
+         mCurrentState = getStateByName(mStartingState);
+
+      if (mCurrentState == NULL)
+         return;
+      else
+         mStateStartTime = Sim::getCurrentTime();
+   }
    //we always check if there's a timout transition, as that's the most generic transition possible.
    F32 curTime = Sim::getCurrentTime();
 
@@ -421,6 +444,11 @@ void StateMachineBehaviorInstance::setState(const char* stateName, bool clearFie
          }
 
          onStateChange_callback();
+
+         //if we have a callback function for this state, call it now
+         if (mCurrentState->callbackName != "")
+            Con::executef(this, mCurrentState->callbackName);
+
          return;
       }
    }
@@ -455,6 +483,102 @@ void StateMachineBehaviorInstance::setStateName(const char* stateName, const cha
       {
          mStates[i]->stateName = StringTable->insert(newName);
          return;
+      }
+   }
+}
+
+void StateMachineBehaviorInstance::startSuperState(const char* stateName)
+{
+   /*if (dStrcmp(mCurCreateSuperState, ""))
+   {
+      Con::errorf("Component: attempting to begin new field group with a group already begun!");
+      return;
+   }
+
+   mCurCreateSuperState = StringTable->insert(stateName);*/
+}
+
+void StateMachineBehaviorInstance::endSuperState()
+{
+   //mCurCreateSuperState = StringTable->insert("");
+}
+
+void StateMachineBehaviorInstance::startState(const char* stateName)
+{
+   if (mCurCreateState != NULL)
+   {
+      Con::errorf("Component: attempting to begin new field group with a group already begun!");
+      return;
+   }
+
+   State *newState = new State();
+   newState->stateName = StringTable->insert(stateName);
+
+   mStates.push_back(newState);
+
+   mCurCreateState = newState;
+}
+
+void StateMachineBehaviorInstance::endState()
+{
+   mCurCreateState = NULL;
+}
+
+void StateMachineBehaviorInstance::setCallback(const char* functionName)
+{
+   State* state = mCurCreateState;
+   if (!state)
+      return;
+
+   state->callbackName = StringTable->insert(functionName);
+}
+
+bool StateMachineBehaviorInstance::addObjVarReference(SimObject *target, const char* targetVarName, const char* uniqueName)
+{
+   if (target == NULL || !dStrcmp(targetVarName, "") || !dStrcmp(uniqueName, ""))
+      return false;
+
+   Entity *entTarget = dynamic_cast<Entity*>(target);
+
+   if (entTarget != NULL)
+   {
+      entTarget->onDataSet.notify(this, &StateMachineBehaviorInstance::onObjVarRefChanged);
+
+      UniqueReference newRef;
+      newRef.referenceObj = target;
+      newRef.referenceVar = targetVarName;
+      newRef.uniqueName = uniqueName;
+
+      mUniqueReferences.push_back(newRef);
+      return true;
+   }
+   
+   ComponentInstance* compInst = dynamic_cast<ComponentInstance*>(target);
+
+   if (compInst != NULL)
+   {
+      compInst->onDataSet.notify(this, &StateMachineBehaviorInstance::onObjVarRefChanged);
+
+      UniqueReference newRef;
+      newRef.referenceObj = target;
+      newRef.referenceVar = targetVarName;
+      newRef.uniqueName = uniqueName;
+
+      mUniqueReferences.push_back(newRef);
+      return true;
+   }
+
+   return false;
+}
+
+void StateMachineBehaviorInstance::onObjVarRefChanged(SimObject *referenceObj, String targetVarName, String newValue)
+{
+   for (U32 i = 0; i < mUniqueReferences.size(); i++)
+   {
+      if (mUniqueReferences[i].referenceObj == referenceObj && !dStrcmp(mUniqueReferences[i].referenceVar, targetVarName))
+      {
+         //we have a hit, so do a transition check
+         checkTransitions(mUniqueReferences[i].uniqueName, newValue);
       }
    }
 }
@@ -497,9 +621,9 @@ void StateMachineBehaviorInstance::addTransition(const char* stateName, const ch
 }
 
 //////////////
-void StateMachineBehaviorInstance::addStringTransition(const char* stateName, const char* fieldName, const char* targetStateName, const char* valueTrigger, S32 valueComparitor)
+void StateMachineBehaviorInstance::addStringTransition(const char* fieldName, const char* targetStateName, const char* valueTrigger, S32 valueComparitor)
 {
-   State* state = getStateByName(stateName);
+   State* state = mCurCreateState;
    if(!state)
       return;
 
@@ -539,9 +663,9 @@ void StateMachineBehaviorInstance::addStringTransition(const char* stateName, co
    state->mTransitions.push_back(newTransition);
 }
 
-void StateMachineBehaviorInstance::addNumericTransition(const char* stateName, const char* fieldName, const char* targetStateName, F32 valueTrigger, S32 valueComparitor)
+void StateMachineBehaviorInstance::addNumericTransition(const char* fieldName, const char* targetStateName, F32 valueTrigger, S32 valueComparitor)
 {
-   State* state = getStateByName(stateName);
+   State* state = mCurCreateState;
    if(!state)
       return;
 
@@ -581,9 +705,9 @@ void StateMachineBehaviorInstance::addNumericTransition(const char* stateName, c
    state->mTransitions.push_back(newTransition);
 }
 
-void StateMachineBehaviorInstance::addBooleanTransition(const char* stateName, const char* fieldName, const char* targetStateName, bool valueTrigger, S32 valueComparitor)
+void StateMachineBehaviorInstance::addBooleanTransition(const char* fieldName, const char* targetStateName, bool valueTrigger, S32 valueComparitor)
 {
-   State* state = getStateByName(stateName);
+   State* state = mCurCreateState;
    if(!state)
       return;
 
@@ -623,9 +747,9 @@ void StateMachineBehaviorInstance::addBooleanTransition(const char* stateName, c
    state->mTransitions.push_back(newTransition);
 }
 
-void StateMachineBehaviorInstance::addVectorTransition(const char* stateName, const char* fieldName, const char* targetStateName, Point3F valueTrigger, S32 valueComparitor)
+void StateMachineBehaviorInstance::addVectorTransition(const char* fieldName, const char* targetStateName, Point3F valueTrigger, S32 valueComparitor)
 {
-   State* state = getStateByName(stateName);
+   State* state = mCurCreateState;
    if(!state)
       return;
 
@@ -726,7 +850,19 @@ DefineEngineMethod( StateMachineBehaviorInstance, getStateByIndex, const char*,
    return object->getStateByIndex( index );
 }
 
-DefineEngineMethod( StateMachineBehaviorInstance, addState, void,
+DefineEngineMethod(StateMachineBehaviorInstance, addObjectVarReference, bool,
+   (SimObject* target, const char* targetVarName, const char* uniqueName), (NULL, "", ""),
+   "@brief Mount objB to this object at the desired slot with optional transform.\n\n"
+
+   "@param objB  Object to mount onto us\n"
+   "@param slot  Mount slot ID\n"
+   "@param txfm (optional) mount offset transform\n"
+   "@return true if successful, false if failed (objB is not valid)")
+{
+   return object->addObjVarReference(target, targetVarName, uniqueName);
+}
+
+DefineEngineMethod(StateMachineBehaviorInstance, StartState, void,
                    ( const char* stateName ), ( "" ),
                    "@brief Mount objB to this object at the desired slot with optional transform.\n\n"
 
@@ -735,7 +871,19 @@ DefineEngineMethod( StateMachineBehaviorInstance, addState, void,
                    "@param txfm (optional) mount offset transform\n"
                    "@return true if successful, false if failed (objB is not valid)" )
 {
-   object->addState( stateName );
+   object->startState(stateName);
+}
+
+DefineEngineMethod(StateMachineBehaviorInstance, EndState, void,
+   (),,
+   "@brief Mount objB to this object at the desired slot with optional transform.\n\n"
+
+   "@param objB  Object to mount onto us\n"
+   "@param slot  Mount slot ID\n"
+   "@param txfm (optional) mount offset transform\n"
+   "@return true if successful, false if failed (objB is not valid)")
+{
+   object->endState();
 }
 
 DefineEngineMethod( StateMachineBehaviorInstance, removeState, void,
@@ -775,6 +923,21 @@ DefineEngineMethod( StateMachineBehaviorInstance, addStateField, void,
    object->addStateField( stateName, fieldName, type, value );
 }
 
+DefineEngineMethod(StateMachineBehaviorInstance, setCallback, void,
+   (const char* functionName), (""),
+   "@brief Mount objB to this object at the desired slot with optional transform.\n\n"
+
+   "@param objB  Object to mount onto us\n"
+   "@param slot  Mount slot ID\n"
+   "@param txfm (optional) mount offset transform\n"
+   "@return true if successful, false if failed (objB is not valid)")
+{
+   if (!dStrcmp(functionName, ""))
+      return;
+
+   object->setCallback(functionName);
+}
+
 DefineEngineMethod( StateMachineBehaviorInstance, removeStateField, void,
                    ( const char* stateName, const char* fieldName, const char* type, const char* value ), 
                    ( "", "", "", "" ),
@@ -790,8 +953,8 @@ DefineEngineMethod( StateMachineBehaviorInstance, removeStateField, void,
 
 ///////////////
 DefineEngineMethod( StateMachineBehaviorInstance, addTransition, void,
-                   ( const char* stateName, const char* targetStateName, const char* fieldName, const char* valueComparitor, const char* valueTarget ), 
-                   ( "", "", "", "String", "" ),
+                   ( const char* targetStateName, const char* fieldName, const char* valueComparitor, const char* valueTarget ), 
+                   ( "", "", "String", "" ),
                    "@brief Mount objB to this object at the desired slot with optional transform.\n\n"
 
                    "@param objB  Object to mount onto us\n"
@@ -850,15 +1013,15 @@ DefineEngineMethod( StateMachineBehaviorInstance, addTransition, void,
    }
 
    if(type == StateMachineBehaviorInstance::StateTransition::Rule::StringType){
-      object->addStringTransition( stateName, fieldName, targetStateName, valueTarget, targetType );
+      object->addStringTransition( fieldName, targetStateName, valueTarget, targetType );
    }
    else if(type == StateMachineBehaviorInstance::StateTransition::Rule::BooleanType){
-      object->addBooleanTransition( stateName, fieldName, targetStateName, dAtob(valueTarget), targetType );
+      object->addBooleanTransition( fieldName, targetStateName, dAtob(valueTarget), targetType );
    }
    else if(type == StateMachineBehaviorInstance::StateTransition::Rule::NumberType){
-      object->addNumericTransition( stateName, fieldName, targetStateName, number, targetType );
+      object->addNumericTransition( fieldName, targetStateName, number, targetType );
    }
    else if(type == StateMachineBehaviorInstance::StateTransition::Rule::VectorType){
-      object->addVectorTransition( stateName, fieldName, targetStateName, vector, targetType );
+      object->addVectorTransition( fieldName, targetStateName, vector, targetType );
    }
 }

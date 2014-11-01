@@ -22,6 +22,11 @@
 #include "scene/sceneManager.h"
 
 #include "gfx/sim/debugDraw.h"  
+
+#include "materials/materialManager.h"
+#include "materials/matInstance.h"
+
+#include "core/strings/findMatch.h"
 //
 #include "gui/controls/guiTreeViewCtrl.h"
 
@@ -31,8 +36,6 @@
 
 RenderShapeBehavior::RenderShapeBehavior()
 {
-   addComponentField("shapeName", "Shape file to be rendered by this object.", "modelFile", "", "");
-   addComponentField("shapeOffset", "Shape file to be rendered by this object.", "text", "", "text");
    mNetFlags.set(Ghostable | ScopeAlways);
 
    mFriendlyName = "Render Shape";
@@ -110,7 +113,7 @@ void RenderShapeBehaviorInstance::boneObject::addObject(SimObject* object)
          MatrixF mat = mOwner->getShapeInstance()->mNodeTransforms[nodeID];
          //mat.setPosition(mat.getPosition() + mOwner->getShape()->getShape()->center);
 
-         mOwner->getBehaviorOwner()->mountObject(sc, nodeID, mat);
+         mOwner->getOwner()->mountObject(sc, nodeID, mat);
       }
    }
 }
@@ -122,6 +125,11 @@ RenderShapeBehaviorInstance::RenderShapeBehaviorInstance( Component *btemplate )
    mOwner = NULL;
    mShapeName = StringTable->insert("");
    mShapeInstance = NULL;
+
+   mChangingMaterials.clear();
+
+   mMaterials.clear();
+
    mNetFlags.set(Ghostable | ScopeAlways);
 }
 
@@ -140,7 +148,7 @@ bool RenderShapeBehaviorInstance::onAdd()
    ResourceManager::get().getChangedSignal().notify( this, &RenderShapeBehaviorInstance::_onResourceChanged );
 
    //get the default shape, if any
-   updateShape();
+   //updateShape();
 
    return true;
 }
@@ -211,8 +219,11 @@ void RenderShapeBehaviorInstance::inspectPostApply()
 {
    Parent::inspectPostApply();
 
-   updateShape();
-   setMaskBits(ShapeMask);
+   //updateShape();
+   //setMaskBits(ShapeMask);
+
+   //updateMaterials();
+  // setMaskBits(MaterialsMask);
 }
 
 U32 RenderShapeBehaviorInstance::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
@@ -237,6 +248,47 @@ U32 RenderShapeBehaviorInstance::packUpdate(NetConnection *con, U32 mask, BitStr
       }
    }
 
+   if( mask & (MaterialMask | InitialUpdateMask))
+   {
+      if(!mOwner)
+      {
+         stream->writeFlag( false );
+      }
+      else if( con->getGhostIndex(mOwner) != -1 )
+      {
+         stream->writeFlag( true );
+
+         stream->writeInt(mChangingMaterials.size(), 16);
+
+         for(U32 i=0; i < mChangingMaterials.size(); i++)
+         {
+            stream->writeInt(mChangingMaterials[i].slot, 16);
+            con->packNetStringHandleU(stream, NetStringHandle(mChangingMaterials[i].matName));
+         }
+         //stream->writeInt(mMaterialChangeSlot, 16);
+         //con->packNetStringHandleU(stream, mMaterialChangeHandle);
+
+         mChangingMaterials.clear();
+         /*U32 materialCount = mMaterialHandles.size();
+
+         int id = getId();
+         bool serv = isServerObject();
+
+         stream->writeInt(materialCount, 16);
+
+         for(U32 i=0; i < materialCount; i++)
+         {
+            String test = String(mMaterialHandles[i].getString());
+            con->packNetStringHandleU(stream, mMaterialHandles[i]);
+         }*/
+      }
+      else
+      {
+         retMask |= MaterialMask; //try it again untill our dependency is ghosted
+         stream->writeFlag( false );
+      }
+   }
+
    return retMask;
 }
 
@@ -249,6 +301,31 @@ void RenderShapeBehaviorInstance::unpackUpdate(NetConnection *con, BitStream *st
       mShapeName = stream->readSTString();
       updateShape();
    }
+
+   if(stream->readFlag())
+   {
+      mChangingMaterials.clear();
+      U32 materialCount = stream->readInt(16);
+
+      for(U32 i=0; i < materialCount; i++)
+      {
+         matMap newMatMap;
+         newMatMap.slot = stream->readInt(16);
+         newMatMap.matName = String(con->unpackNetStringHandleU(stream).getString());
+
+         mChangingMaterials.push_back(newMatMap);
+      }
+
+      //U32 mMaterialChangeSlot = stream->readInt(16);
+      //mMaterialChangeHandle = con->unpackNetStringHandleU(stream);
+      /*for(U32 i=0; i < materialCount; i++)
+      {
+         NetStringHandle matHandle = con->unpackNetStringHandleU(stream);
+         mMaterialHandles.push_back(matHandle);
+      }*/
+
+      updateMaterials();
+   }
 }
 
 void RenderShapeBehaviorInstance::prepRenderImage( SceneRenderState *state )
@@ -257,14 +334,14 @@ void RenderShapeBehaviorInstance::prepRenderImage( SceneRenderState *state )
       return;
 
    // get shape detail...we might not even need to be drawn
-   Entity *o = dynamic_cast<Entity*>(getBehaviorOwner());
-   Box3F box = getBehaviorOwner()->getWorldBox();
-   Point3F cameraOffset = getBehaviorOwner()->getWorldBox().getClosestPoint( state->getDiffuseCameraPosition() ) - state->getDiffuseCameraPosition();
+   Entity *o = dynamic_cast<Entity*>(getOwner());
+   Box3F box = getOwner()->getWorldBox();
+   Point3F cameraOffset = getOwner()->getWorldBox().getClosestPoint( state->getDiffuseCameraPosition() ) - state->getDiffuseCameraPosition();
    F32 dist = cameraOffset.len();
    if (dist < 0.01f)
       dist = 0.01f;
 
-   Point3F objScale = getBehaviorOwner()->getScale();
+   Point3F objScale = getOwner()->getScale();
    F32 invScale = (1.0f/getMax(getMax(objScale.x,objScale.y),objScale.z));
 
    if(mShapeInstance)
@@ -273,11 +350,11 @@ void RenderShapeBehaviorInstance::prepRenderImage( SceneRenderState *state )
       if (mShapeInstance->getCurrentDetail() < 0 )
          return;
    }
-   else if(!getBehaviorOwner()->gShowBoundingBox)
+   else if(!getOwner()->gShowBoundingBox)
       return;
 
    // Debug rendering of the shape bounding box.
-   /*if ( getBehaviorOwner()->gShowBoundingBox )
+   /*if ( getOwner()->gShowBoundingBox )
    {
    ObjectRenderInst *ri = state->getRenderPass()->allocInst<ObjectRenderInst>();
    ri->renderDelegate.bind( this, &ShapeBase::_renderBoundingBox );
@@ -297,14 +374,14 @@ void RenderShapeBehaviorInstance::prepRenderImage( SceneRenderState *state )
       // We might have some forward lit materials
       // so pass down a query to gather lights.
       LightQuery query;
-      query.init( getBehaviorOwner()->getWorldSphere() );
+      query.init( getOwner()->getWorldSphere() );
       rdata.setLightQuery( &query );
 
-      MatrixF mat = getBehaviorOwner()->getRenderTransform();
+      MatrixF mat = getOwner()->getRenderTransform();
       Point3F center = mShapeInstance->getShape()->center;
       Point3F position = mat.getPosition();
 
-      getBehaviorOwner()->getObjToWorld().mulP(center);
+      getOwner()->getObjToWorld().mulP(center);
 
       Point3F posOffset = position - center;
 
@@ -335,7 +412,60 @@ void RenderShapeBehaviorInstance::updateShape()
       if(mShapeInstance)
          delete mShapeInstance;
 
-      mShapeInstance = new TSShapeInstance( mShape, isClientObject() );
+      //mShapeInstance = new TSShapeInstance( mShape, isClientObject() );
+      mShapeInstance = new TSShapeInstance( mShape, true );
+
+      //Do this on both the server and client
+      S32 materialCount = mShape->materialList->getMaterialNameList().size();
+
+      //mMaterials.clear();
+
+      /*for(U32 i=0; i < materialCount; i++)
+      {
+         String materialname = mShape->materialList->getMaterialName(i);
+         if(materialname == String("ShapeBounds"))
+            continue;
+
+         matMap newMatMap;
+         newMatMap.slot = i;
+         newMatMap.matName = materialname;
+
+         mMaterials.push_back(newMatMap);
+      }*/
+
+      if(isServerObject())
+      {
+         //we need to update the editor
+         for(U32 i=0; i < mComponentFields.size(); i++)
+         {
+            //find any with the materialslot title and clear them out
+            if(FindMatch::isMatch( "materialslot*", mComponentFields[i].mFieldName, false ))
+            {
+               mComponentFields.erase(i);
+               continue;
+            }
+         }
+
+         //next, get a listing of our materials in the shape, and build our field list for them
+         char matFieldName[128];
+
+         if(materialCount > 0)
+            mComponentGroup = StringTable->insert("Materials");
+
+         for(U32 i=0; i < materialCount; i++)
+         {
+            String materialname = mShape->materialList->getMaterialName(i);
+            if(materialname == String("ShapeBounds"))
+               continue;
+
+            dSprintf(matFieldName, 128, "MaterialSlot%d", i);
+            
+            addComponentField(matFieldName, "A material used in the shape file", "material", materialname, "");
+         }
+
+         if(materialCount > 0)
+            mComponentGroup = "";
+      }
 
       if(mOwner != NULL)
       {
@@ -365,6 +495,46 @@ void RenderShapeBehaviorInstance::updateShape()
             mOwner->getSceneManager()->notifyObjectDirty( mOwner );
       }
    }
+}
+
+void RenderShapeBehaviorInstance::updateMaterials()
+{
+   if(mChangingMaterials.empty())
+      return;
+
+   if (getShapeInstance()->ownMaterialList() == false)
+      getShapeInstance()->cloneMaterialList();
+
+   TSMaterialList* pMatList = getShapeInstance()->getMaterialList();
+   pMatList->setTextureLookupPath( getShapeInstance()->getShapeResource().getPath().getPath() );
+
+   const Vector<String> &materialNames = pMatList->getMaterialNameList();
+   for ( S32 i = 0; i < materialNames.size(); i++ )
+   {
+      const String &pName = materialNames[i];
+
+      for(U32 m=0; m < mChangingMaterials.size(); m++)
+      {
+         if(mChangingMaterials[m].slot == i)
+         {
+            pMatList->renameMaterial( i, mChangingMaterials[m].matName );
+         }
+      }
+      
+      /*for(U32 i=0; i < mMaterials.size(); i++)
+      {
+         for(U32 m = 0; m < mChangingMaterials.size(); m++)
+         {
+            if(mMaterials[i].slot == mChangingMaterials[m].slot)
+               mMaterials[i].matName = mChangingMaterials[m].matName;
+         }
+      }*/
+
+      mChangingMaterials.clear();
+   }
+
+   // Initialize the material instances
+   getShapeInstance()->initMaterialList();
 }
 
 MatrixF RenderShapeBehaviorInstance::getNodeTransform(S32 nodeIdx)
@@ -424,14 +594,14 @@ void RenderShapeBehaviorInstance::mountObjectToNode(SceneObject* objB, String no
    test = node.c_str();
    if(dIsdigit(test[0]))
    {
-      getBehaviorOwner()->mountObject(objB, dAtoi(node), txfm);
+      getOwner()->mountObject(objB, dAtoi(node), txfm);
    }
    else
    {
       if(TSShape* shape = getShape())
       {
          S32 idx = shape->findNode(node);
-         getBehaviorOwner()->mountObject(objB, idx, txfm);
+         getOwner()->mountObject(objB, idx, txfm);
       }
    }
 }
@@ -440,6 +610,95 @@ void RenderShapeBehaviorInstance::mountObjectToNode(SceneObject* objB, String no
 {
 return NULL;
 }*/
+
+void RenderShapeBehaviorInstance::onDynamicModified(const char* slotName, const char* newValue)
+{
+   if(FindMatch::isMatch( "materialslot*", slotName, false ))
+   {
+      if(!getShape())
+         return;
+
+      S32 slot = -1;
+      String outStr( String::GetTrailingNumber( slotName, slot ) );
+
+      if(slot == -1)
+         return;
+
+      bool found = false;
+      for(U32 i=0; i < mChangingMaterials.size(); i++)
+      {
+         if(mChangingMaterials[i].slot == slot)
+         {
+            mChangingMaterials[i].matName = String(newValue);
+            found = true;
+         }
+      }
+
+      if(!found)
+      {
+         matMap newMatMap;
+         newMatMap.slot = slot;
+         newMatMap.matName = String(newValue);
+
+         mChangingMaterials.push_back(newMatMap);
+      }
+
+      setMaskBits(MaterialMask);
+   }
+
+   Parent::onDynamicModified(slotName, newValue);
+}
+
+void RenderShapeBehaviorInstance::changeMaterial(U32 slot, const char* newMat)
+{
+   /*bool server = isServerObject();
+   int id = getId();
+
+   if(!getShape())
+      return;
+
+   bool found = false;
+   for(U32 i=0; i < mChangingMaterials.size(); i++)
+   {
+      if(mChangingMaterials[i].slot == slot)
+      {
+         mChangingMaterials[i].matName = String(newMat);
+         found = true;
+      }
+   }
+
+   if(!found)
+   {
+      matMap newMatMap;
+      newMatMap.slot = slot;
+      newMatMap.matName = String(newMat);
+
+      mChangingMaterials.push_back(newMatMap);
+   }
+
+   //update our server-side list as well.
+   /*for(U32 i=0; i < mMaterials.size(); i++)
+   {
+      if(mMaterials[i].slot == slot)
+         mMaterials[i].matName = String(newMat);
+   }*/
+
+   char fieldName[512];
+
+   //update our respective field
+   dSprintf(fieldName, 512, "materialSlot%d", slot);
+   setDataField(fieldName, NULL, newMat);
+
+   /*if(slot < mMaterialHandles.size())
+   {
+      mMaterialHandles.erase(slot);
+
+      NetStringHandle matHandle = NetStringHandle(newMat);
+      mMaterialHandles.push_back(matHandle);
+   }*/
+
+   //setMaskBits(MaterialMask);
+}
 
 void RenderShapeBehaviorInstance::onInspect()
 {
@@ -689,3 +948,62 @@ DefineEngineMethod( RenderShapeBehaviorInstance, getNodeByName, S32,
 
    return -1;
 }
+
+DefineEngineMethod( RenderShapeBehaviorInstance, changeMaterial, void, ( U32 slot, const char* newMat ),(0, ""),
+   "@brief Change one of the materials on the shape.\n\n")
+{
+   object->changeMaterial(slot, newMat);
+}
+/*DefineEngineMethod( RenderShapeBehaviorInstance, changeMaterial, void, ( const char* mapTo, Material* oldMat, Material* newMat ),("",NULL,NULL),
+   "@brief Change one of the materials on the shape.\n\n"
+
+   "This method changes materials per mapTo with others. The material that "
+   "is being replaced is mapped to unmapped_mat as a part of this transition.\n"
+
+   "@note Warning, right now this only sort of works. It doesn't do a live "
+   "update like it should.\n"
+
+   "@param mapTo the name of the material target to remap (from getTargetName)\n"
+   "@param oldMat the old Material that was mapped \n"
+   "@param newMat the new Material to map\n\n"
+
+   "@tsexample\n"
+      "// remap the first material in the shape\n"
+      "%mapTo = %obj.getTargetName( 0 );\n"
+      "%obj.changeMaterial( %mapTo, 0, MyMaterial );\n"
+   "@endtsexample\n" )
+{
+   // if no valid new material, theres no reason for doing this
+   if( !newMat )
+   {
+      Con::errorf("TSShape::changeMaterial failed: New material does not exist!");
+      return;
+   }
+
+   // Check the mapTo name exists for this shape
+   S32 matIndex = object->getShape()->materialList->getMaterialNameList().find_next(String(mapTo));
+   if (matIndex < 0)
+   {
+      Con::errorf("TSShape::changeMaterial failed: Invalid mapTo name '%s'", mapTo);
+      return;
+   }
+
+   // Lets remap the old material off, so as to let room for our current material room to claim its spot
+   if( oldMat )
+      oldMat->mMapTo = String("unmapped_mat");
+
+   newMat->mMapTo = mapTo;
+
+   // Map the material by name in the matmgr
+   MATMGR->mapMaterial( mapTo, newMat->getName() );
+
+   // Replace instances with the new material being traded in. Lets make sure that we only
+   // target the specific targets per inst, this is actually doing more than we thought
+   delete object->getShape()->materialList->mMatInstList[matIndex];
+   object->getShape()->materialList->mMatInstList[matIndex] = newMat->createMatInstance();
+
+   // Finish up preparing the material instances for rendering
+   const GFXVertexFormat *flags = getGFXVertexFormat<GFXVertexPNTTB>();
+   FeatureSet features = MATMGR->getDefaultFeatures();
+   object->getShape()->materialList->getMaterialInst(matIndex)->init( features, flags );
+}*/

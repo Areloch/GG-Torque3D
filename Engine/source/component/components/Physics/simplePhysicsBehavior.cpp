@@ -33,6 +33,11 @@ IMPLEMENT_CALLBACK( SimplePhysicsBehaviorInstance, updateMove, void, ( SimplePhy
 //////////////////////////////////////////////////////////////////////////
 SimplePhysicsBehavior::SimplePhysicsBehavior()
 {
+   addComponentField("isStatic", "If enabled, object will not simulate physics", "bool", "0", "");
+   addComponentField("gravity", "The direction of gravity affecting this object, as a vector", "vector", "0 0 -9", "");
+   addComponentField("drag", "The drag coefficient that constantly affects the object", "float", "0.7", "");
+   addComponentField("mass", "The mass of the object", "float", "1", "");
+
    mNetFlags.set(Ghostable | ScopeAlways);
 
    mFriendlyName = "Simple Physics";
@@ -283,9 +288,9 @@ Point3F SimplePhysicsBehaviorInstance::_move( const F32 travelTime )
    U32 count = 0;
    S32 sMoveRetryCount = 5;
 
-   CollisionInterface* bI = mOwner->getComponent<CollisionInterface>();
+   CollisionInterface* colInterface = mOwner->getComponent<CollisionInterface>();
 
-   if(!bI)
+   if(!colInterface)
       return start + mVelocity * time;
 
    for (; count < sMoveRetryCount; count++) {
@@ -296,14 +301,14 @@ Point3F SimplePhysicsBehaviorInstance::_move( const F32 travelTime )
       Point3F end = start + mVelocity * time;
       Point3F distance = end - start;
 
-      bool collided = bI->checkCollisions(time, &mVelocity, start);
+      bool collided = colInterface->checkCollisions(time, &mVelocity, start);
 
-      if (bI->getCollisionList()->getCount() != 0 && bI->getCollisionList()->getTime() < 1.0f) 
+      if (colInterface->getCollisionList()->getCount() != 0 && colInterface->getCollisionList()->getTime() < 1.0f) 
       {
          // Set to collision point
          F32 velLen = mVelocity.len();
 
-         F32 dt = time * getMin(bI->getCollisionList()->getTime(), 1.0f);
+         F32 dt = time * getMin(colInterface->getCollisionList()->getTime(), 1.0f);
          start += mVelocity * dt;
          time -= dt;
 
@@ -317,13 +322,38 @@ Point3F SimplePhysicsBehaviorInstance::_move( const F32 travelTime )
          }
 
          // Pick the surface most parallel to the face that was hit.
-         const Collision *collision = bI->getCollision(0);
+         const Collision *collision = colInterface->getCollision(0);
          const Collision *cp = collision + 1;
-         const Collision *ep = collision + bI->getCollisionList()->getCount();
+         const Collision *ep = collision + colInterface->getCollisionList()->getCount();
          for (; cp != ep; cp++)
          {
+            //TODO: Move this somewhere else
+            if(Entity* colEnt = dynamic_cast<Entity*>(collision->object))
+            {
+               if(CollisionInterface *colInt = colEnt->getComponent<CollisionInterface>())
+               {
+                  if(!colInt->doesBlockColliding())
+                  {
+                     continue;
+                  }
+               }
+            }
+
             if (cp->faceDot > collision->faceDot)
                collision = cp;
+         }
+
+         //check the last/first one just incase
+         if(Entity* colEnt = dynamic_cast<Entity*>(collision->object))
+         {
+            if(CollisionInterface *colInt = colEnt->getComponent<CollisionInterface>())
+            {
+               if(!colInt->doesBlockColliding())
+               {
+                  //if our ideal surface doesn't stop us, just move along
+                  return start + mVelocity * time;
+               }
+            }
          }
 
          //F32 bd = _doCollisionImpact( collision, wasFalling );

@@ -594,38 +594,38 @@ void GuiInspector::refresh()
       addObject( general );
    }
 
-	//-JR
+   //-JR
    //Behavior inspector group
-   if(mTargets.first()->getClassRep()->isSubclassOf("Entity"))
+   if (mTargets.first()->getClassRep()->isSubclassOf("Entity"))
    {
-	   GuiInspectorGroup *behaviors = new GuiInspectorBehaviorGroup( "Behaviors", this );
-	   if( behaviors != NULL )
-	   {
-		  behaviors->registerObject();
-		  mGroups.push_back( behaviors );
-		  addObject( behaviors );
-	   }
+      GuiInspectorGroup *behaviors = new GuiInspectorBehaviorGroup("Behaviors", this);
+      if (behaviors != NULL)
+      {
+         behaviors->registerObject();
+         mGroups.push_back(behaviors);
+         addObject(behaviors);
+      }
 
-		//Mounting group override
-	   GuiInspectorGroup *mounting = new GuiInspectorMountingGroup( "Mounting", this );
-	   if( mounting != NULL )
-	   {
-		  mounting->registerObject();
-		  mGroups.push_back( mounting );
-		  addObject( mounting );
-	   }
+      //Mounting group override
+      GuiInspectorGroup *mounting = new GuiInspectorMountingGroup("Mounting", this);
+      if (mounting != NULL)
+      {
+         mounting->registerObject();
+         mGroups.push_back(mounting);
+         addObject(mounting);
+      }
    }
 
-	//Prefab
-	if(mTargets.first()->getClassRep()->isSubclassOf("Prefab"))
+   //Prefab
+   if (mTargets.first()->getClassRep()->isSubclassOf("Prefab"))
    {
-	   GuiInspectorGroup *prefabs = new GuiInspectorPrefabGroup( "Prefab", this );
-	   if( prefabs != NULL )
-	   {
-		  prefabs->registerObject();
-		  mGroups.push_back( prefabs );
-		  addObject( prefabs );
-	   }
+      GuiInspectorGroup *prefabs = new GuiInspectorPrefabGroup("Prefab", this);
+      if (prefabs != NULL)
+      {
+         prefabs->registerObject();
+         mGroups.push_back(prefabs);
+         addObject(prefabs);
+      }
    }
    //-JR
 
@@ -817,7 +817,7 @@ ConsoleMethod( GuiInspector, inspect, void, 3, 3, "Inspect(Object)")
    if(!target)
    {
       if(dAtoi(argv[2]) > 0)
-         Con::warnf("%s::inspect(): invalid object: %s", argv[0], argv[2]);
+         Con::warnf("%s::inspect(): invalid object: %s", (const char*)argv[0], (const char*)argv[2]);
 
       object->clearInspectObjects();
       return;
@@ -833,7 +833,7 @@ ConsoleMethod( GuiInspector, addInspect, void, 3, 4, "( id object, (bool autoSyn
    SimObject* obj;
    if( !Sim::findObject( argv[ 2 ], obj ) )
    {
-      Con::errorf( "%s::addInspect(): invalid object: %s", argv[ 0 ], argv[ 2 ] );
+      Con::errorf( "%s::addInspect(): invalid object: %s", (const char*)argv[ 0 ], (const char*)argv[ 2 ] );
       return;
    }
 
@@ -850,7 +850,7 @@ ConsoleMethod( GuiInspector, removeInspect, void, 3, 3, "( id object ) - Remove 
    SimObject* obj;
    if( !Sim::findObject( argv[ 2 ], obj ) )
    {
-      Con::errorf( "%s::removeInspect(): invalid object: %s", argv[ 0 ], argv[ 2 ] );
+      Con::errorf( "%s::removeInspect(): invalid object: %s", (const char*)argv[ 0 ], (const char*)argv[ 2 ] );
       return;
    }
    

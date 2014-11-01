@@ -62,6 +62,8 @@ function initializeWorldEditor()
    exec("./scripts/AddFMODProjectDlg.ed.cs");
    exec("./scripts/SelectObjectsWindow.ed.cs");
 
+   exec("./scripts/dragDropEvents.ed.cs");
+
    // Load Custom Editors
    loadDirectory(expandFilename("./scripts/editors"));
    loadDirectory(expandFilename("./scripts/interfaces"));

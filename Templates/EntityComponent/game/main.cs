@@ -22,7 +22,7 @@ createCanvas("The Factory");
 
 // Start rendering and stuff.
 initRenderManager();
-initLightingSystems("Basic Lighting"); 
+initLightingSystems("Advanced Lighting"); 
 
 // Start PostFX. If you use "Advanced Lighting" above, uncomment this.
 initPostEffects();
@@ -88,10 +88,16 @@ function onExit()
       ServerConnection.delete();
       ServerGroup.delete();
    }
+
+   echo("Exporting client prefs");
+   export("$pref::*", "./prefs.cs", False);
+
+   Parent::onExit();
 }
 
 // Called when we connect to the local game.
-StartLevel("game/levels/testLevel.mis", "SinglePlayer");
+//StartLevel("game/levels/testLevel.mis", "SinglePlayer");
+Canvas.pushDialog(MainMenuGui);
 
 closeSplashWindow();
 Canvas.showWindow();

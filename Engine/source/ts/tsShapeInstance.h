@@ -318,6 +318,10 @@ protected:
    TSShape* getShape() const { return mShape; }
 
    TSMaterialList* getMaterialList() const { return mMaterialList; }
+
+   //-JR
+   Resource<TSShape> getShapeResource() { return mShapeResource; }
+   //-JR
    
    /// Set the material list without taking ownership.
    /// @see cloneMaterialList

@@ -147,26 +147,31 @@ enum SceneObjectTypes
    /// @see PhysicalZone
    PhysicalZoneObjectType = BIT( 22 ),
 
-   EntityObjectType = BIT( 23 ),
+   //-JR
+   EntityObjectType = BIT(23),
+   //-JR
 
    /// @}
 };
 
 enum SceneObjectTypeMasks
 {
-   STATIC_COLLISION_TYPEMASK = ( StaticShapeObjectType |
-                                 EntityObjectType ),
+   //-JR
+   //STATIC_COLLISION_TYPEMASK = StaticShapeObjectType,
+   STATIC_COLLISION_TYPEMASK = (StaticShapeObjectType |
+   EntityObjectType),
+   //-JR
 
    DAMAGEABLE_TYPEMASK = (   PlayerObjectType        |
-                             EntityObjectType | 
+                              EntityObjectType |   //-JR
                              VehicleObjectType ),
 
    /// Typemask for objects that should be rendered into shadow passes.
    /// These should be all objects that are either meant to receive or cast
    /// shadows or both.
    SHADOW_TYPEMASK = (  StaticShapeObjectType |
-                        DynamicShapeObjectType |
-                        EntityObjectType),
+   DynamicShapeObjectType | 
+   EntityObjectType ), //-JR
 
    /// Typemask for objects that should be subjected to more fine-grained
    /// culling tests.  Anything that is trivial rendering stuff or doesn't
@@ -177,7 +182,7 @@ enum SceneObjectTypeMasks
    CULLING_INCLUDE_TYPEMASK = (  GameBaseObjectType | // Includes most other renderable types; but broader than we ideally want.
                                  StaticShapeObjectType |
                                  DynamicShapeObjectType |
-                                 EntityObjectType |
+                                 EntityObjectType | //-JR
                                  ZoneObjectType ), // This improves the result of zone traversals.
 
    /// Mask for objects that should be specifically excluded from zone culling.
@@ -192,7 +197,7 @@ enum SceneObjectTypeMasks
                                  DynamicShapeObjectType |
                                  LightObjectType | // Flares.
                                  GameBaseObjectType |
-                                 EntityObjectType),
+                                 EntityObjectType), //-JR
 
    /// Typemask to use for rendering when inside the editor.
    EDITOR_RENDER_TYPEMASK = U32( -1 ),

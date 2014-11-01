@@ -19,35 +19,17 @@ ItemRotateBehavior.addBehaviorField(horizontal, "Rotate horizontal or verticle, 
 
 function ItemRotateBehavior::Update(%this)
 {
-   if(%this.counter == "")
-       %this.counter = 0;
-	
-   //if(%this.counter > 16)
-   //{
-	  %this.counter = 0;
-	  //Rotations per second is calculated based on a standard update tick being 32ms. So we scale by the tick speed, then add that to our rotation to 
-	  //get a nice rotation speed.
-	  if(%this.horizontal)
-	  {
-	     if(%this.forward)
-		   %this.owner.eulerRotation.z += ( ( 360 * %this.rotationsPerMinute ) / 60 ) * 0.032;
-	     else
-		   %this.owner.eulerRotation.z -= ( ( 360 * %this.rotationsPerMinute ) / 60 ) * 0.032;
-		
-		 if(%this.owner.eulerRotation.z > 360 || %this.owner.eulerRotation.z < -360)
-		    %this.owner.eulerRotation.z = 0;
-	  }
-	  else
-	  {
-		 %this.owner.eulerRotation.x += ( ( 360 * %this.rotationsPerMinute ) / 60 ) * 0.032;
-		
-		 if(%this.owner.eulerRotation.x > 360 || %this.owner.eulerRotation.x < -360)
-		    %this.owner.eulerRotation.x = 0;
-	  }
-   //}
-   //else
-      %this.counter++;
-	
-   %test = PlayGUI.getID();
-   %test2 = 1;
+	//Rotations per second is calculated based on a standard update tick being 32ms. So we scale by the tick speed, then add that to our rotation to 
+	//get a nice rotation speed.
+	if(%this.horizontal)
+	{
+		if(%this.forward)
+			%this.owner.rotation.z += ( ( 360 * %this.rotationsPerMinute ) / 60 ) * 0.032;
+		else
+			%this.owner.rotation.z -= ( ( 360 * %this.rotationsPerMinute ) / 60 ) * 0.032;
+	}
+	else
+	{
+		%this.owner.rotation.x += ( ( 360 * %this.rotationsPerMinute ) / 60 ) * 0.032;
+	}
 }

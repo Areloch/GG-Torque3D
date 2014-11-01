@@ -12,6 +12,23 @@
 
 #include "component/components/componentInstance.h"
 
+struct ComponentField
+{
+   StringTableEntry mFieldName;
+   StringTableEntry mFieldDescription;
+
+   StringTableEntry mFieldType;
+   StringTableEntry mUserData;
+
+   StringTableEntry mDefaultValue;
+
+   StringTableEntry mGroup;
+
+   StringTableEntry mDependency;
+
+   bool mHidden;
+};
+
 //////////////////////////////////////////////////////////////////////////
 /// 
 /// 
@@ -20,24 +37,6 @@ class Component : public NetObject
 {
    typedef NetObject Parent;
    friend class ComponentInstance; //TODO: Remove this
-
-public:
-   struct ComponentField
-   {
-      StringTableEntry mFieldName;
-      StringTableEntry mFieldDescription;
-
-      StringTableEntry mFieldType;
-      StringTableEntry mUserData;
-
-      StringTableEntry mDefaultValue;
-
-      StringTableEntry mGroup;
-
-      StringTableEntry mDependency;
-
-      bool mHidden;
-   };
 
 protected:
    StringTableEntry mFriendlyName;

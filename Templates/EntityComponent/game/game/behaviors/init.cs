@@ -43,7 +43,10 @@ exec("./input/EditorControls.cs");
 //Collisions
 exec("./collision/boxCollider.cs");
 
-
+//triggers
+exec("./trigger/triggerComponent.cs");
+exec("./trigger/visibilityTrigger.cs");
+exec("./trigger/slenderTrigger.cs");
 
 //Physics
 //exec("./physics/simplePhysics.cs");

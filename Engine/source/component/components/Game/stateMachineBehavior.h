@@ -55,6 +55,13 @@ public:
       StringTableEntry type;
    };
 
+   struct UniqueReference
+   {
+      SimObject* referenceObj;
+      const char* referenceVar;
+      const char* uniqueName;
+   };
+
    struct StateTransition
    {
       struct Rule
@@ -88,6 +95,8 @@ public:
          float 		 triggerNumVal;
          Point3F 		 triggerVectorVal;
          String 		 triggerStringVal;
+         
+         UniqueReference *valUniqueRef;
       };
 
       StringTableEntry	mName;
@@ -101,15 +110,24 @@ public:
       Vector<StateField> mProperties;
 
       StringTableEntry stateName;
+
+      StringTableEntry callbackName;
    };
 
 protected:
    Vector<State*> mStates;
 
+   Vector<UniqueReference> mUniqueReferences;
+
    State* mCurrentState;
 
    F32 mStateStartTime;
    F32 mStateTime;
+
+   StringTableEntry mStartingState;
+
+   State *mCurCreateSuperState;
+   State *mCurCreateState;
 
 public:
    StateMachineBehaviorInstance(Component *btemplate = NULL);
@@ -145,14 +163,24 @@ public:
    State* getStateByName(const char* name);
    void setStateName(const char* stateName, const char* newStateName);
 
+   void startSuperState(const char* stateName);
+   void endSuperState();
+
+   void startState(const char* stateName);
+   void endState();
+
+   bool addObjVarReference(SimObject *target, const char* targetVarName, const char* uniqueName);
+   void onObjVarRefChanged(SimObject *referenceObj, String targetVarName, String newValue);
+
+   void setCallback(const char* functionName);
 
    void addStateField(const char* stateName, const char* fieldName, const char* type, const char* value);
    void addTransition(const char* stateName, const char* fieldName, const char* targetStateName, const char* eventTrigger);
 
-   void addStringTransition(const char* stateName, const char* fieldName, const char* targetStateName, const char* valueTrigger, S32 valueComparitor);
-   void addNumericTransition(const char* stateName, const char* fieldName, const char* targetStateName, F32 valueTrigger, S32 valueComparitor);
-   void addBooleanTransition(const char* stateName, const char* fieldName, const char* targetStateName, bool valueTrigger, S32 valueComparitor);
-   void addVectorTransition(const char* stateName, const char* fieldName, const char* targetStateName, Point3F valueTrigger, S32 valueComparitor);
+   void addStringTransition(const char* fieldName, const char* targetStateName, const char* valueTrigger, S32 valueComparitor);
+   void addNumericTransition(const char* fieldName, const char* targetStateName, F32 valueTrigger, S32 valueComparitor);
+   void addBooleanTransition(const char* fieldName, const char* targetStateName, bool valueTrigger, S32 valueComparitor);
+   void addVectorTransition(const char* fieldName, const char* targetStateName, Point3F valueTrigger, S32 valueComparitor);
 
    void checkTransitions( const char* slotName, const char* newValue );
 

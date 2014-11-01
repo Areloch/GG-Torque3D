@@ -122,12 +122,20 @@ function EditorControls::Update(%this, %moveVector, %moveRotation)
    
    //eulerRotation is managed in degrees for human-readability. 
    if(%moveRotation.x != 0)
-      %this.owner.eulerRotation.x += mRadToDeg(%moveRotation.x);
+   {
+	  %rot = %this.owner.rotation;
+	  %rot.x += mRadToDeg(%moveRotation.x);
+	  %this.owner.rotation = %rot;
+   }
       
    //this setup doesn't use roll, so we ignore the y axis!
    
    if(%moveRotation.z != 0)
-      %this.owner.eulerRotation.z += mRadToDeg(%moveRotation.z);
+   {
+	  %rot = %this.owner.rotation;
+	  %rot.z += mRadToDeg(%moveRotation.z);
+	  %this.owner.rotation = %rot;
+   }
    
 }
 

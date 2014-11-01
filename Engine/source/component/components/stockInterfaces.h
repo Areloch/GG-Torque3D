@@ -37,6 +37,10 @@ public:
    virtual bool getCameraTransform(F32* pos,MatrixF* mat)=0;
    virtual void onCameraScopeQuery(NetConnection *cr, CameraScopeQuery * query)=0;
    virtual Frustum getFrustum()=0;
+   virtual F32 getCameraFov()=0;
+   virtual void setCameraFov(F32 fov)=0;
+
+   virtual bool isValidCameraFov(F32 fov)=0;
 };
 
 class CastRayInterface

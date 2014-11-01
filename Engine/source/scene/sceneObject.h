@@ -109,9 +109,9 @@ class SceneObject : public NetObject, private SceneContainer::Link, public Proce
 
          NumMountPoints = 32,
          //-JR
-			//NumMountPointBits = 5,
-			NumMountPointBits = 16,
-			//-JR
+         //NumMountPointBits = 5,
+         NumMountPointBits = 16,
+         //-JR
       };
       
       /// Networking dirty mask.

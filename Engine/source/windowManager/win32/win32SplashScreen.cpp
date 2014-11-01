@@ -121,14 +121,12 @@ void CloseSplashWindow(HINSTANCE hinst)
 	
 }
 
-//-JR
 bool Platform::closeSplashWindow()
 {
-	CloseSplashWindow(GetModuleHandle(NULL));
+   CloseSplashWindow(GetModuleHandle(NULL));
 
-	return true;
+   return true;
 }
-//-JR
 
 bool Platform::displaySplashWindow( String path )
 {

@@ -22,6 +22,7 @@
 // Forward refs
 class Component;
 class ComponentObject;
+struct ComponentField;
 
 //////////////////////////////////////////////////////////////////////////
 /// An Instance of a given Object Behavior
@@ -49,8 +50,9 @@ protected:
       StringTableEntry mDefaultValue;
    };
 
-   Vector<behaviorFields> mComponentFields;
+   Vector<ComponentField> mComponentFields;
 
+   StringTableEntry mComponentGroup;
 
 public:
    ComponentInstance(Component *btemplate = NULL);
@@ -71,8 +73,8 @@ public:
       mSuperClassName = superClass;
    }
 
-   void setBehaviorOwner( ComponentObject* pOwner ) { mOwner = pOwner; };
-   inline ComponentObject *getBehaviorOwner() { return mOwner ? mOwner : NULL; };
+   void setOwner( ComponentObject* pOwner ) { mOwner = pOwner; };
+   inline ComponentObject *getOwner() { return mOwner ? mOwner : NULL; };
 
    // Read-Only field accessor (never allows write)
    static bool setOwner( void *object, const char *index, const char *data ) { return true; };
@@ -90,6 +92,23 @@ public:
 
    void addComponentField(const char* fieldName, const char* value);
    void removeBehaviorField(const char* fieldName);
+
+   void addComponentField(const char *fieldName, const char *desc, const char *type, const char *defaultValue = NULL, const char *userData = NULL, bool hidden = false);
+   void addComponentField(ComponentField newField);
+
+   inline S32 getComponentFieldCount() { return mComponentFields.size(); };
+
+   /// Gets a ComponentField by its index in the mFields vector 
+   /// @param idx  The index of the field in the mField vector
+   inline ComponentField *getComponentField(S32 idx)
+   {
+      if(idx < 0 || idx >= mComponentFields.size())
+         return NULL;
+
+      return &mComponentFields[idx];
+   }
+
+   ComponentField *getComponentField(const char* fieldName);
 
    virtual void onStaticModified( const char* slotName, const char* newValue ); ///< Called when a static field is modified.
    virtual void onDynamicModified(const char* slotName, const char*newValue = NULL); ///< Called when a dynamic field is modified.
@@ -132,10 +151,13 @@ public:
    void sendCommand(NetConnection *conn, S32 argc, const char **argv);
 
    virtual bool handlesConsoleMethod(const char * fname, S32 * routingId);
-   const char* callMethodArgList( U32 argc, const char *argv[], bool callThis  = true   );
+   const char* callMethodArgList(U32 argc, ConsoleValueRef argv[], bool callThis = true);
    const char* callMethod( S32 argc, const char* methodName, ... );
 
    virtual void handleEvent(const char* eventName, Vector<const char*> eventParams){ }
+
+   Signal< void(SimObject*, String, String) > onDataSet;
+   virtual void setDataField(StringTableEntry slotName, const char *array, const char *value);
 
    //Callbacks
    DECLARE_CALLBACK( void, Update, ( const char* move, const char* rot/*const Point3F& move, const Point3F& rot*/ ) );

@@ -127,9 +127,9 @@ static GameBase * getControlObj()
    //-JR
    if(connection)
       //-JR
-	  //control = dynamic_cast<ShapeBase*>(connection->getControlObject());
-	  control = dynamic_cast<GameBase*>(connection->getControlObject());
-     //-JR
+      //control = dynamic_cast<ShapeBase*>(connection->getControlObject());
+      control = dynamic_cast<GameBase*>(connection->getControlObject());
+      //-JR
    return(control);
 }
 

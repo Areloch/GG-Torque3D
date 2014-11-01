@@ -39,6 +39,11 @@
 #include "console/engineAPI.h"
 #include "math/mTransform.h"
 
+//-JR
+#include "T3D/Entity.h"
+#include "component/components/stockInterfaces.h"
+//-JR
+
 #ifdef TORQUE_HIFI_NET
    #include "T3D/gameBase/hifi/hifiMoveList.h"
 #elif defined TORQUE_EXTENDED_MOVE
@@ -284,7 +289,8 @@ ConsoleMethod(GameConnection, setConnectArgs, void, 3, 17,
    
    "@see GameConnection::onConnect()\n\n")
 {
-   object->setConnectArgs(argc - 2, argv + 2);
+   StringStackWrapper args(argc - 2, argv + 2);
+   object->setConnectArgs(args.count(), args);
 }
 
 void GameConnection::onTimedOut()
@@ -326,6 +332,7 @@ void GameConnection::onConnectionEstablished(bool isInitiator)
 
       const char *argv[MaxConnectArgs + 2];
       argv[0] = "onConnect";
+      argv[1] = NULL; // Filled in later
       for(U32 i = 0; i < mConnectArgc; i++)
          argv[i + 2] = mConnectArgv[i];
       // NOTE: Need to fallback to Con::execute() as IMPLEMENT_CALLBACK does not 
@@ -445,7 +452,7 @@ bool GameConnection::readConnectRequest(BitStream *stream, const char **errorStr
       *errorString = "CR_INVALID_ARGS";
       return false;
    }
-   const char *connectArgv[MaxConnectArgs + 3];
+   ConsoleValueRef connectArgv[MaxConnectArgs + 3];
    for(U32 i = 0; i < mConnectArgc; i++)
    {
       char argString[256];
@@ -454,6 +461,7 @@ bool GameConnection::readConnectRequest(BitStream *stream, const char **errorStr
       connectArgv[i + 3] = mConnectArgv[i];
    }
    connectArgv[0] = "onConnectRequest";
+   connectArgv[1] = NULL;
    char buffer[256];
    Net::addressToString(getNetAddress(), buffer);
    connectArgv[2] = buffer;
@@ -529,10 +537,10 @@ void GameConnection::setControlObject(GameBase *obj)
 
       // Update the camera's FOV to match the new control object
       //-JR
-	   //but only if we don't have a specific camera object
-	   if(!mCameraObject)
-		  setControlCameraFov( obj->getCameraFov() );
-	   //-JR
+      //but only if we don't have a specific camera object
+      if (!mCameraObject)
+         setControlCameraFov(obj->getCameraFov());
+      //-JR
    }
 
    // Okay, set our control object.
@@ -686,7 +694,21 @@ bool GameConnection::getControlCameraFov(F32 * fov)
    }
    if (cObj)
    {
-      *fov = cObj->getCameraFov();
+      //-JR
+      if (Entity* ent = dynamic_cast<Entity*>(cObj))
+      {
+         if (CameraInterface* camInterface = ent->getComponent<CameraInterface>())
+         {
+            *fov = camInterface->getCameraFov();
+         }
+      }
+      else
+      {
+         //-JR
+         *fov = cObj->getCameraFov();
+         //-JR
+      }
+      //-JR
       return(true);
    }
 
@@ -704,7 +726,26 @@ bool GameConnection::isValidControlCameraFov(F32 fov)
       obj = obj->getControlObject();
    }
 
-   return cObj ? cObj->isValidCameraFov(fov) : NULL;
+   //-JR
+   if (cObj)
+   {
+      if (Entity* ent = dynamic_cast<Entity*>(cObj))
+      {
+         if (CameraInterface* camInterface = ent->getComponent<CameraInterface>())
+         {
+            return camInterface->isValidCameraFov(fov);
+         }
+      }
+      else
+      {
+         //-JR
+         return cObj->isValidCameraFov(fov);
+         //-JR
+      }
+   }
+   //-JR
+
+   return NULL;
 }
 
 bool GameConnection::setControlCameraFov(F32 fov)
@@ -719,9 +760,29 @@ bool GameConnection::setControlCameraFov(F32 fov)
    }
    if (cObj)
    {
-      // allow shapebase to clamp fov to its datablock values
-      cObj->setCameraFov(mClampF(fov, MinCameraFov, MaxCameraFov));
-      F32 newFov = cObj->getCameraFov();
+      //-JR
+      F32 newFov = 90.f;
+      if (Entity* ent = dynamic_cast<Entity*>(cObj))
+      {
+         if (CameraInterface* camInterface = ent->getComponent<CameraInterface>())
+         {
+            camInterface->setCameraFov(mClampF(fov, MinCameraFov, MaxCameraFov));
+            newFov = camInterface->getCameraFov();
+         }
+         else
+         {
+            Con::errorf("Attempted to setControlCameraFov, but we don't have a camera!");
+         }
+      }
+      else
+      {
+         //-JR
+         // allow shapebase to clamp fov to its datablock values
+         cObj->setCameraFov(mClampF(fov, MinCameraFov, MaxCameraFov));
+         F32 newFov = cObj->getCameraFov();
+         //-JR
+      }
+      //-JR
 
       // server fov of client has 1degree resolution
       if( S32(newFov) != S32(mCameraFov) || newFov != fov )
@@ -981,7 +1042,7 @@ bool GameConnection::readDemoStartBlock(BitStream *stream)
 
 void GameConnection::demoPlaybackComplete()
 {
-   static const char *demoPlaybackArgv[1] = { "demoPlaybackComplete" };
+   static ConsoleValueRef demoPlaybackArgv[1] = { "demoPlaybackComplete" };
    Sim::postCurrentEvent(Sim::getRootGroup(), new SimConsoleEvent(1, demoPlaybackArgv, false));
    Parent::demoPlaybackComplete();
 }
@@ -1102,22 +1163,22 @@ void GameConnection::readPacket(BitStream *bstream)
 
       if (bstream->readFlag())
       {
-			//-JR
-			bool callScript = false;
-			if(mCameraObject.isNull())
-				callScript = true;
-			//-JR
+         //-JR
+         bool callScript = false;
+         if (mCameraObject.isNull())
+            callScript = true;
+         //-JR
 
          S32 gIndex = bstream->readInt(NetConnection::GhostIdBitSize);
          GameBase* obj = dynamic_cast<GameBase*>(resolveGhost(gIndex));
          setCameraObject(obj);
          obj->readPacketData(this, bstream);
 
-			//-JR
-			//do this better.
-			if(callScript)
-				initialControlSet_callback();
-			//-JR
+         //-JR
+         //do this better.
+         if (callScript)
+            initialControlSet_callback();
+         //-JR
       }
       else
          setCameraObject(0);
@@ -1694,14 +1755,15 @@ DefineEngineMethod( GameConnection, transmitDataBlocks, void, (S32 sequence),,
             // Ensure that the client knows that the datablock send is done...
             object->sendConnectionMessage(GameConnection::DataBlocksDone, object->getDataBlockSequence());
         }
-		  //-JR
-		  if(iCount == 0)
-		  {
-			  //if we have no datablocks to send, we still need to be able to complete the level load process
-			  //so fire off our callback anyways
-            object->sendConnectionMessage(GameConnection::DataBlocksDone, object->getDataBlockSequence());
-		  }
-		  //-JR
+
+        //-JR
+        if (iCount == 0)
+        {
+           //if we have no datablocks to send, we still need to be able to complete the level load process
+           //so fire off our callback anyways
+           object->sendConnectionMessage(GameConnection::DataBlocksDone, object->getDataBlockSequence());
+        }
+        //-JR
     } 
     else
     {

@@ -2,94 +2,188 @@
 new SimGroup(MissionGroup) {
    canSave = "1";
    canSaveDynamicFields = "1";
-      cdTrack = "2";
-      CTF_scoreLimit = "5";
-      enabled = "1";
-      musicTrack = "lush";
 
-   new LevelInfo(theLevelInfo) {
+   new LevelInfo(TheLevelInfo) {
       nearClip = "0.1";
       visibleDistance = "1000";
       decalBias = "0.0015";
-      fogColor = "0.6 0.6 0.7 1";
+      fogColor = "0.5 0.5 0.5 1";
       fogDensity = "0";
-      fogDensityOffset = "700";
+      fogDensityOffset = "0";
       fogAtmosphereHeight = "0";
       canvasClearColor = "0 0 0 255";
       ambientLightBlendPhase = "1";
       ambientLightBlendCurve = "0 0 -1 -1";
       advancedLightmapSupport = "0";
-      soundAmbience = "AudioAmbienceDefault";
       soundDistanceModel = "Linear";
       canSave = "1";
       canSaveDynamicFields = "1";
-         desc0 = "A blank room ready to be populated with Torque objects.\n\nGuns, anyone?";
-         enabled = "1";
-         levelName = "Blank Room";
+         desc0 = "An empty room ready to be populated with Torque objects.";
+         levelName = "Empty Room";
+         preview = "game/levels/testLevel_preview";
    };
-   new Sun(theSun) {
-      azimuth = "230.396";
-      elevation = "45";
-      color = "0.968628 0.901961 0.901961 1";
-      ambient = "0.078431 0.113725 0.156863 1";
-      brightness = "1";
+   new GroundPlane(TheGround) {
+      squareSize = "128";
+      scaleU = "1";
+      scaleV = "1";
+      Material = "BlankWhite";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+         position = "0 0 0";
+   };
+   new Entity(PlayerCam) {
+      position = "-22.9978 -16.7263 11.9509";
+      rotation = "0.977645 -0.0159546 0.209658 8.90165";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+      persistentId = "ecd1ea52-e861-11e3-9c86-9deffc8b199a";
+      eulerRotation = "8.70344 0 -1438.13";
+
+      new cameraComponentInstance() {
+         template = "CameraBehav";
+         FOV = "90";
+      };
+      new ComponentInstance() {
+         template = "ControlObjectBehavior";
+      };
+      new ComponentInstance() {
+         template = "SpectatorControls";
+      };
+
+   };
+   new Entity(sgj) {
+      position = "-22.4535 -0.00953211 7.26523";
+      rotation = "1 0 0 0";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+      persistentId = "73ca7284-064b-11e4-bf7d-8e126f854883";
+      eulerRotation = "0 0 -0";
+
+      new RenderShapeBehaviorInstance() {
+         template = "RenderShape";
+         shapeName = "game/art/actors/Soldier/soldier_rigged.DAE";
+      };
+      new ComponentInstance() {
+         template = "PlayerController";
+         rootAnim = "Root";
+         runFAnim = "Run";
+         runBAnim = "Back";
+         runLAnim = "Side";
+         runRAnim = "Side";
+         lookAnim = "Look";
+         lookAngle = "-4.08149";
+      };
+      new ComponentInstance() {
+         template = "ControlObjectBehavior";
+      };
+      new AnimationBehaviorInstance() {
+         template = "AnimationController";
+      };
+      new SimplePhysicsBehaviorInstance() {
+         template = "SimplePhysics";
+         isStatic = "-4.29916e+008 0 0";
+         gravity = "0 0 -4";
+      };
+      new BoxColliderBehaviorInstance() {
+         template = "BoxCollider";
+         colliderSize = "1 1 2";
+      };
+      new StateMachineBehaviorInstance() {
+         template = "StateMachine";
+      };
+
+   };
+   new ScatterSky(Sky) {
+      skyBrightness = "25";
+      sunSize = "1";
+      colorizeAmount = "0";
+      colorize = "0 0 0 1";
+      rayleighScattering = "0.0035";
+      sunScale = "1 1 1 1";
+      ambientScale = "0.368627 0.368627 0.368627 0.815686";
+      fogScale = "1 1 1 1";
+      exposure = "1";
+      azimuth = "0";
+      elevation = "35";
+      moonAzimuth = "0";
+      moonElevation = "45";
       castShadows = "1";
-      coronaEnabled = "1";
-      coronaScale = "0.5";
-      coronaTint = "1 1 1 1";
-      coronaUseLightColor = "1";
+      brightness = "1";
       flareScale = "1";
+      nightColor = "0.0196078 0.0117647 0.109804 1";
+      nightFogColor = "0.0196078 0.0117647 0.109804 1";
+      moonEnabled = "1";
+      moonMat = "Moon_Glow_Mat";
+      moonScale = "0.2";
+      moonLightColor = "0.192157 0.192157 0.192157 1";
+      useNightCubemap = "1";
+      nightCubemap = "NightCubemap";
       attenuationRatio = "0 1 1";
       shadowType = "PSSM";
-      texSize = "1024";
-      overDarkFactor = "3000 1500 750 250";
-      shadowDistance = "200";
-      shadowSoftness = "0.25";
+      texSize = "512";
+      overDarkFactor = "2000 1000 500 100";
+      shadowDistance = "400";
+      shadowSoftness = "0.15";
       numSplits = "4";
-      logWeight = "0.9";
+      logWeight = "0.91";
       fadeStartDistance = "0";
       lastSplitTerrainOnly = "0";
       representedInLightmap = "0";
       shadowDarkenColor = "0 0 0 -1";
       includeLightmappedGeometryInShadow = "0";
+      position = "18.5679 2.41734 -12.5811";
+      rotation = "1 0 0 0";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+         mieScattering = "0.0045";
+   };
+   new Entity(level) {
+      position = "-22.457 -3.11236 10.5791";
+      rotation = "1 0 0 0";
+      scale = "0.4 0.4 0.4";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+      eulerRotation = "0 -0 -0";
+
+      new RenderShapeBehaviorInstance() {
+         template = "RenderShape";
+         shapeName = "game/art/Levels/Radar.dae";
+      };
+      new MeshColliderBehaviorInstance() {
+         template = "MeshCollider";
+      };
+
+   };
+   new Forest(theForest) {
       position = "0 0 0";
       rotation = "1 0 0 0";
       scale = "1 1 1";
       canSave = "1";
       canSaveDynamicFields = "1";
-         bias = "0.1";
-         Blur = "1";
-         enabled = "1";
-         height = "1024";
-         lightBleedFactor = "0.8";
-         minVariance = "0";
-         pointShadowType = "PointShadowType_Paraboloid";
-         shadowBox = "-100 -100 -100 100 100 100";
-         splitFadeDistances = "1 1 1 1";
-         width = "3072";
+      dataFile = "game/levels/testLevel31.forest";
+      lodReflectScalar = "2";
    };
-   new GroundPlane() {
-      squareSize = "128";
-      scaleU = "12";
-      scaleV = "12";
-      Material = "BlankWhite";
-      canSave = "1";
-      canSaveDynamicFields = "1";
-         enabled = "1";
-         position = "0 0 0";
-         rotation = "1 0 0 0";
-         scale = "1 1 1";
-   };
-   new Entity(Test) {
-      position = "2.53413 -0.556935 2.022";
-      rotation = "0 0 1 6.01595";
+   new ForestWindEmitter() {
+      position = "-8.30062 -131.793 18.2425";
+      rotation = "1 0 0 0";
       scale = "1 1 1";
       canSave = "1";
       canSaveDynamicFields = "1";
-      eulerRotation = "0 -0 6.016";
-      _behavior0 = "ControlObjectBehavior";
-      _behavior1 = "CameraBehav";
-      _behavior2 = "SpectatorControls";
+      windEnabled = "1";
+      radialEmitter = "0";
+      strength = "1";
+      radius = "0";
+      gustStrength = "0.25";
+      gustFrequency = "3";
+      gustYawAngle = "10";
+      gustYawFrequency = "4";
+      gustWobbleStrength = "2";
+      turbulenceStrength = "0.25";
+      turbulenceFrequency = "2";
+      hasMount = "0";
    };
 };
 //--- OBJECT WRITE END ---

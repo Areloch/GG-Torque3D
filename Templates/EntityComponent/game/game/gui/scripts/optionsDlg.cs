@@ -20,6 +20,288 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+//Set up our quality groups for the gui
+if ( isObject( MeshQualityGroup ) )
+   MeshQualityGroup.delete();
+if ( isObject( TextureQualityGroup ) )
+   TextureQualityGroup.delete();
+if ( isObject( LightingQualityGroup ) )
+   LightingQualityGroup.delete();
+if ( isObject( ShaderQualityGroup ) )
+   ShaderQualityGroup.delete();
+ 
+new SimGroup( MeshQualityGroup )
+{ 
+   new ArrayObject( [Lowest] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+      
+      key["$pref::TS::detailAdjust"] = 0.5;
+      key["$pref::TS::skipRenderDLs"] = 1;      
+      key["$pref::Terrain::lodScale"] = 2.0;
+      key["$pref::decalMgr::enabled"] = false;
+      key["$pref::GroundCover::densityScale"] = 0.5;
+   };
+   
+   new ArrayObject( [Low] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+            
+      key["$pref::TS::detailAdjust"] = 0.75;
+      key["$pref::TS::skipRenderDLs"] = 0;      
+      key["$pref::Terrain::lodScale"] = 1.5;
+      key["$pref::decalMgr::enabled"] = true;
+      key["$pref::GroundCover::densityScale"] = 0.75;
+   };
+   
+   new ArrayObject( [Normal] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+
+      key["$pref::TS::detailAdjust"] = 1.0;
+      key["$pref::TS::skipRenderDLs"] = 0;      
+      key["$pref::Terrain::lodScale"] = 1.0;
+      key["$pref::decalMgr::enabled"] = true;
+      key["$pref::GroundCover::densityScale"] = 1.0;
+   };
+
+   new ArrayObject( [High] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+
+      key["$pref::TS::detailAdjust"] = 1.5;
+      key["$pref::TS::skipRenderDLs"] = 0;      
+      key["$pref::Terrain::lodScale"] = 0.75;
+      key["$pref::decalMgr::enabled"] = true;
+      key["$pref::GroundCover::densityScale"] = 1.0;
+   };   
+};
+
+
+new SimGroup( TextureQualityGroup )
+{
+   new ArrayObject( [Lowest] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+      
+      key["$pref::Video::textureReductionLevel"] = 2;
+      key["$pref::Reflect::refractTexScale"] = 0.5;
+      key["$pref::Terrain::detailScale"] = 0.5;      
+   };
+   
+   new ArrayObject( [Low] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+            
+      key["$pref::Video::textureReductionLevel"] = 1;
+      key["$pref::Reflect::refractTexScale"] = 0.75;
+      key["$pref::Terrain::detailScale"] = 0.75;      
+   };
+   
+   new ArrayObject( [Normal] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+
+      key["$pref::Video::textureReductionLevel"] = 0;
+      key["$pref::Reflect::refractTexScale"] = 1;
+      key["$pref::Terrain::detailScale"] = 1;      
+   };
+
+   new ArrayObject( [High] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+
+      key["$pref::Video::textureReductionLevel"] = 0;
+      key["$pref::Reflect::refractTexScale"] = 1.25;
+      key["$pref::Terrain::detailScale"] = 1.5;      
+   };   
+};
+
+function TextureQualityGroup::onApply( %this, %level )
+{
+   // Note that this can be a slow operation.  
+   reloadTextures();
+}
+
+
+new SimGroup( LightingQualityGroup )
+{ 
+   new ArrayObject( [Lowest] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+      
+      key["$pref::lightManager"] = "Basic Lighting";
+      key["$pref::Shadows::disable"] = false;
+      key["$pref::Shadows::textureScalar"] = 0.5;
+      key["$pref::Shadows::filterMode"] = "None";     
+   };
+   
+   new ArrayObject( [Low] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+                  
+      key["$pref::lightManager"] = "Advanced Lighting";
+      key["$pref::Shadows::disable"] = false;
+      key["$pref::Shadows::textureScalar"] = 0.5;
+      key["$pref::Shadows::filterMode"] = "SoftShadow";     
+   };
+   
+   new ArrayObject( [Normal] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+
+      key["$pref::lightManager"] = "Advanced Lighting";
+      key["$pref::Shadows::disable"] = false;
+      key["$pref::Shadows::textureScalar"] = 1.0;
+      key["$pref::Shadows::filterMode"] = "SoftShadowHighQuality";     
+   };
+
+   new ArrayObject( [High] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+      
+      key["$pref::lightManager"] = "Advanced Lighting";
+      key["$pref::Shadows::disable"] = false;
+      key["$pref::Shadows::textureScalar"] = 2.0;
+      key["$pref::Shadows::filterMode"] = "SoftShadowHighQuality";          
+   };   
+};
+
+function LightingQualityGroup::onApply( %this, %level )
+{
+   // Set the light manager.  This should do nothing 
+   // if its already set or if its not compatible.   
+   setLightManager( $pref::lightManager );
+}
+
+
+// TODO: Reduce shader complexity of water and the scatter sky here!
+new SimGroup( ShaderQualityGroup )
+{
+   new ArrayObject( [Lowest] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+      
+      key["$pref::Video::disablePixSpecular"] = true;
+      key["$pref::Video::disableNormalmapping"] = true;
+      key["$pref::Video::disableParallaxMapping"] = true;
+      key["$pref::Water::disableTrueReflections"] = true;
+   };
+   
+   new ArrayObject( [Low] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+      
+      key["$pref::Video::disablePixSpecular"] = false;
+      key["$pref::Video::disableNormalmapping"] = false;
+      key["$pref::Video::disableParallaxMapping"] = true;
+      key["$pref::Water::disableTrueReflections"] = true;
+   };
+   
+   new ArrayObject( [Normal] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+      
+      key["$pref::Video::disablePixSpecular"] = false;
+      key["$pref::Video::disableNormalmapping"] = false;
+      key["$pref::Video::disableParallaxMapping"] = false;   
+      key["$pref::Water::disableTrueReflections"] = false;   
+   };
+   
+   new ArrayObject( [High] )
+   {
+      class = "GraphicsQualityLevel";
+      caseSensitive = true;
+      
+      key["$pref::Video::disablePixSpecular"] = false;
+      key["$pref::Video::disableNormalmapping"] = false;
+      key["$pref::Video::disableParallaxMapping"] = false;     
+      key["$pref::Water::disableTrueReflections"] = false;          
+   };   
+};
+
+
+function GraphicsQualityAutodetect()
+{
+   $pref::Video::autoDetect = false;
+   
+   %shaderVer = getPixelShaderVersion();
+   %intel = ( strstr( strupr( getDisplayDeviceInformation() ), "INTEL" ) != -1 ) ? true : false;
+   %videoMem = GFXCardProfilerAPI::getVideoMemoryMB();
+   
+   return GraphicsQualityAutodetect_Apply( %shaderVer, %intel, %videoMem );
+}
+
+function GraphicsQualityAutodetect_Apply( %shaderVer, %intel, %videoMem )
+{
+   if ( %shaderVer < 2.0 )
+   {      
+      return "Your video card does not meet the minimum requirment of shader model 2.0.";
+   }
+   
+   if ( %shaderVer < 3.0 || %intel )
+   {
+      // Allow specular and normals for 2.0a and 2.0b
+      if ( %shaderVer > 2.0 )
+      {
+         MeshQualityGroup-->Lowest.apply();
+         TextureQualityGroup-->Lowest.apply();
+         LightingQualityGroup-->Lowest.apply();
+         ShaderQualityGroup-->Low.apply();   
+      }
+      else
+      {
+         MeshQualityGroup-->Lowest.apply();
+         TextureQualityGroup-->Lowest.apply();
+         LightingQualityGroup-->Lowest.apply();
+         ShaderQualityGroup-->Lowest.apply();   
+      }
+   }   
+   else
+   {
+      if ( %videoMem > 1000 )
+      {
+         MeshQualityGroup-->High.apply();
+         TextureQualityGroup-->High.apply();
+         LightingQualityGroup-->High.apply();
+         ShaderQualityGroup-->High.apply();
+      }
+      else if ( %videoMem > 400 || %videoMem == 0 )
+      {
+         MeshQualityGroup-->Normal.apply();
+         TextureQualityGroup-->Normal.apply();
+         LightingQualityGroup-->Normal.apply();
+         ShaderQualityGroup-->Normal.apply();
+         
+         if ( %videoMem == 0 )
+            return "Torque was unable to detect available video memory. Applying 'Normal' quality.";
+      }
+      else
+      {
+         MeshQualityGroup-->Low.apply();
+         TextureQualityGroup-->Low.apply();
+         LightingQualityGroup-->Low.apply();
+         ShaderQualityGroup-->Low.apply();
+      }
+   }
+   
+   return "Graphics quality settings have been auto detected.";
+}
 
 /// Returns true if the current quality settings equal
 /// this graphics quality level.

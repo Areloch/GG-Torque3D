@@ -133,11 +133,23 @@ function BehaviorEditor::createBehaviorRollout(%this, %behavior)
       //command = "gotoWebPage( GuiEditor.documentationURL )";
    };
    
-   %count = %template.getBehaviorFieldCount();
+   /*%count = %template.getBehaviorFieldCount();
    for( %i = 0; %i < %count; %i++ )
    {
       //we skip the enabled field because we integrate that into the rollout
       %name = getField(%template.getBehaviorField(%i), 0);
+      if(%name $= "enabled")
+         continue;
+         
+      BehaviorEditor::createFieldGui(%fieldContainer, %behavior, %i);
+   }*/
+
+   //then we check our instance if it has any ones unique to it
+   %count = %behavior.getComponentFieldCount();
+   for( %i = 0; %i < %count; %i++ )
+   {
+      //we skip the enabled field because we integrate that into the rollout
+      %name = getField(%behavior.getComponentField(%i), 0);
       if(%name $= "enabled")
          continue;
          

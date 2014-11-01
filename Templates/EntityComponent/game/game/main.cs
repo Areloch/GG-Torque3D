@@ -22,12 +22,14 @@
 
 //-----------------------------------------------------------------------------
 // Load up our main GUI which lets us see the game.
+exec("./gui/scripts/profiles.cs");
 exec("./gui/playGui.gui");
 exec("./gui/chooseLevelDlg.gui");
 exec("./gui/loadingGUI.gui");
 exec("./gui/joinServerDlg.gui");
 exec("./gui/optionsDlg.gui");
 exec("./gui/messageBoxOK.ed.gui");
+exec("./gui/messageBoxYesNo.ed.gui");
 
 exec("./behaviors/init.cs");
 
@@ -36,7 +38,16 @@ exec("./server.cs");
 exec("./connection.cs");
 exec("./levelLoad.cs");
 
-//-----------------------------------------------------------------------------
+if ( isFile( "../prefs.cs" ) )
+    exec( "../prefs.cs" );
+	
+// Initialize the post effect manager.
+exec("sys/postFx/postFXManager.gui");
+exec("sys/postFx/postFXManager.gui.cs");
+exec("sys/postFx/postFXManager.gui.settings.cs");
+exec("sys/postFx/postFXManager.persistance.cs");
+
+//-------------------------'aight ----------------------------------------------------
 // Specify where the mission files are.
 $Server::MissionFileSpec = "game/levels/*.mis";
 
@@ -241,6 +252,10 @@ function onEnd() {
 //--------------------------------------------------------------
 function loadMaterials()
 {
+	//load any sys materials
+	if( isFile( "sys/images/materials.cs" ) )
+         exec( "sys/images/materials.cs" );
+		
    // Load any materials files for which we only have DSOs.
 
    for( %file = findFirstFile( "game/materials.cs.dso" );

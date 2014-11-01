@@ -22,19 +22,31 @@ new SimGroup(MissionGroup) {
          levelName = "Empty Room";
          preview = "game/levels/testLevel_preview";
    };
-   new Sun(TheSun) {
+   new ScatterSky(Sky) {
+      skyBrightness = "25";
+      sunSize = "1";
+      colorizeAmount = "0";
+      colorize = "0 0 0 1";
+      rayleighScattering = "0.0035";
+      sunScale = "1 1 1 1";
+      ambientScale = "0.278431 0.278431 0.278431 1";
+      fogScale = "1 1 1 1";
+      exposure = "1";
       azimuth = "0";
-      elevation = "35";
-      color = "0.8 0.8 0.8 1";
-      ambient = "0.2 0.2 0.2 1";
-      brightness = "1";
+      elevation = "60";
+      moonAzimuth = "0";
+      moonElevation = "45";
       castShadows = "1";
-      coronaEnabled = "1";
-      coronaMaterial = "Corona_Mat";
-      coronaScale = "0.5";
-      coronaTint = "1 1 1 1";
-      coronaUseLightColor = "1";
+      brightness = "1";
       flareScale = "1";
+      nightColor = "0.0196078 0.0117647 0.109804 1";
+      nightFogColor = "0.0196078 0.0117647 0.109804 1";
+      moonEnabled = "1";
+      moonMat = "Moon_Glow_Mat";
+      moonScale = "0.2";
+      moonLightColor = "0.192157 0.192157 0.192157 1";
+      useNightCubemap = "1";
+      nightCubemap = "NightCubemap";
       attenuationRatio = "0 1 1";
       shadowType = "PSSM";
       texSize = "512";
@@ -48,94 +60,31 @@ new SimGroup(MissionGroup) {
       representedInLightmap = "0";
       shadowDarkenColor = "0 0 0 -1";
       includeLightmappedGeometryInShadow = "0";
-      position = "-79.6394 -40.8167 -28.375";
+      position = "18.5679 2.41734 -12.5811";
       rotation = "1 0 0 0";
       scale = "1 1 1";
       canSave = "1";
       canSaveDynamicFields = "1";
-         Direction = "1 1 -1";
-   };
-   new GroundPlane(TheGround) {
-      squareSize = "128";
-      scaleU = "1";
-      scaleV = "1";
-      Material = "BlankWhite";
-      canSave = "1";
-      canSaveDynamicFields = "1";
-         position = "0 0 0";
+         mieScattering = "0.0045";
    };
    new Entity(PlayerCam) {
-      position = "3.18671 1.12282 3.06521";
-      rotation = "0.167731 0.215394 -0.962015 106.324";
+      position = "33.075 68.2783 12.651";
       scale = "1 1 1";
       canSave = "1";
       canSaveDynamicFields = "1";
       persistentId = "ecd1ea52-e861-11e3-9c86-9deffc8b199a";
-      eulerRotation = "25.2406 0 -104.183";
+      rotation = "29.4492 0 -77.7294";
+         eulerRotation = " 0";
 
-      new CameraComponentInstance() {
+      new cameraComponentInstance() {
          template = "CameraBehav";
+         FOV = "90";
       };
       new ComponentInstance() {
          template = "ControlObjectBehavior";
       };
       new ComponentInstance() {
          template = "SpectatorControls";
-      };
-
-   };
-   new Entity(sgj) {
-      position = "0 0 1";
-      rotation = "1 0 0 0";
-      scale = "1 1 1";
-      canSave = "1";
-      canSaveDynamicFields = "1";
-      persistentId = "73ca7284-064b-11e4-bf7d-8e126f854883";
-      eulerRotation = "0 0 -0";
-
-      new RenderShapeBehaviorInstance() {
-         template = "RenderShape";
-         shapeName = "game/art/actors/Soldier/soldier_rigged.DAE";
-      };
-      new ComponentInstance() {
-         template = "PlayerController";
-         rootAnim = "Root";
-         runFAnim = "Run";
-         runBAnim = "Back";
-         runLAnim = "Side";
-         runRAnim = "Side";
-         lookAnim = "Look";
-         lookAngle = "-4.08149";
-      };
-      new ComponentInstance() {
-         template = "ControlObjectBehavior";
-      };
-      new AnimationBehaviorInstance() {
-         template = "AnimationController";
-      };
-      new SimplePhysicsBehaviorInstance() {
-         template = "SimplePhysics";
-         isStatic = "-4.29916e+008 0 0";
-         gravity = "0 0 0";
-      };
-
-   };
-   new Entity(Gun) {
-      position = "0 0 1.00967";
-      rotation = "1 0 0 0";
-      scale = "1 1 1";
-      mountPID = "5ff82418-0691-11e4-a816-ca7e49241462";
-      mountNode = "-1";
-      mountPos = "0 0 1";
-      mountRot = "1 0 0 0";
-      canSave = "1";
-      canSaveDynamicFields = "1";
-      persistentId = "5ff82417-0691-11e4-a816-ca7e49241462";
-      eulerRotation = "0 -0 -0";
-
-      new RenderShapeBehaviorInstance() {
-         template = "RenderShape";
-         shapeName = "game/art/weapons/TP_Lurker.DAE";
       };
 
    };

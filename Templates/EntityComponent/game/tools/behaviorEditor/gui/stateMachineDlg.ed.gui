@@ -27,13 +27,14 @@ new GuiControl(StateMachineEditor) {
       //command = "PlayerStateEditor.delete();";
       accelerator = "escape";
 	
-	  new guiVisualNodeWebCtrl(stateMachineNodeTree)
+	  /*new guiVisualNodeWebCtrl(stateMachineNodeTree)
 	  {
 		 position = "1 18";
 		 extent = "299 450";
-	  }; 
+		 nodeProfile = visualNodeProfile;
+	  }; */
 
-      /*new GuiScrollCtrl() {
+      new GuiScrollCtrl() {
          willFirstRespond = "0";
          vScrollBar = "dynamic";
          hScrollBar = "alwaysOff";
@@ -62,7 +63,7 @@ new GuiControl(StateMachineEditor) {
             padding = 4;
             internalName = "Stack";
          };
-      };*/
+      };
       new GuiButtonCtrl() {
          buttonMargin = "4 4";
          text = "Add New State";

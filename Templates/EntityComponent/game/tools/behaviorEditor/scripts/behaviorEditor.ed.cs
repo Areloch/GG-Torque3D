@@ -79,7 +79,8 @@ function BehaviorEditor::registerFieldType(%type, %create)
 
 function BehaviorEditor::createFieldGui(%parent, %behavior, %fieldIndex)
 {
-   %fieldInfo = %behavior.template.getBehaviorField(%fieldIndex);
+   %templatefieldInfo = %behavior.getComponentField(%fieldIndex);
+   %fieldInfo = %behavior.getComponentField(%fieldIndex);
    %name = getField(%fieldInfo, 0);
    %type = getField(%fieldInfo, 1);
    %defaultVal = getField(%fieldInfo, 2);

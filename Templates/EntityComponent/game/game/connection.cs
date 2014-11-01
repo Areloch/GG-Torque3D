@@ -107,6 +107,11 @@ function GameConnection::initialControlSet(%this)
          Canvas.setContent(PlayGui);
       }
    //}
+
+   //-JR
+   %canvasExt = Canvas.getExtent();
+   commandToServer('setClientAspectRatio', %canvasExt.x, %canvasExt.y);
+   //-JR
 }
 
 function GameConnection::onControlObjectChange(%this)

@@ -42,6 +42,10 @@
 #include "component/components/stockInterfaces.h"
 #endif
 
+#ifndef _MROTATION_H_
+#include "math/mRotation.h"
+#endif
+
 class PhysicsBody;
 class SimGroup;
 
@@ -54,7 +58,8 @@ class Entity : public ComponentObject
    friend class ComponentInstance;
 
 private:
-   Point3F				mRot;
+   //Point3F				mRot;
+   RotationF           mRot;
 
 protected:
 
@@ -104,13 +109,20 @@ public:
    virtual void setTransform(const MatrixF &mat);
    void setTransform(Point3F position, EulerF rotation);
 
+   //void setTransform(Point3F position, RotationF rot);
+
+   void setRotation(RotationF rotation);
+
    void setRotation(EulerF rotation);
-   EulerF getRotation() { return mRot; }
+   RotationF getRotation() { return mRot; }
 
    void setMountOffset(Point3F posOffset);
    void setMountRotation(EulerF rotOffset);
 
-   static bool _setEulerRotation( void *object, const char *index, const char *data );
+   //static bool _setEulerRotation( void *object, const char *index, const char *data );
+
+   static bool _setRotation( void *object, const char *index, const char *data );
+   static const char * _getRotation(void* obj, const char* data);
 
    virtual void getMountTransform( S32 index, const MatrixF &xfm, MatrixF *outMat );
    virtual void getRenderMountTransform( F32 delta, S32 index, const MatrixF &xfm, MatrixF *outMat );
@@ -139,6 +151,10 @@ public:
    bool castRayRendered(const Point3F &start, const Point3F &end, RayInfo* info);
    bool buildPolyList(PolyListContext context, AbstractPolyList* polyList, const Box3F &box, const SphereF &sphere);
    virtual void buildConvex(const Box3F& box, Convex* convex);
+
+   Signal< void(SimObject*, String, String) > onDataSet;
+   virtual void setDataField(StringTableEntry slotName, const char *array, const char *value);
+   virtual void onStaticModified(const char* slotName, const char* newValue);
 
    void pushEvent(const char* eventName, Vector<const char*> eventParams);
 

@@ -233,7 +233,8 @@ BoxColliderBehavior::BoxColliderBehavior()
 {
    mNetFlags.set(Ghostable | ScopeAlways);
 
-   addComponentField("colliderSize", "If enabled, will stop colliding objects from passing through.", "Vector", "0.5 0.5 0.5", "");
+   addComponentField("colliderSize", "If enabled, will stop colliding objects from passing through.", "Vector", "1 1 1", "");
+   addComponentField("blockCollisions", "If enabled, will stop colliding objects from passing through.", "bool", "1", "");
 }
 
 BoxColliderBehavior::~BoxColliderBehavior()
@@ -270,6 +271,10 @@ BoxColliderBehaviorInstance::BoxColliderBehaviorInstance( Component *btemplate )
    mConvexList = NULL;
 
    mTimeoutList = NULL;
+
+   mBlockColliding = true;
+
+   mColliderScale = Point3F(1,1,1);
 
    mWorkingQueryBox.minExtents.set(-1e9f, -1e9f, -1e9f);
    mWorkingQueryBox.maxExtents.set(-1e9f, -1e9f, -1e9f);
@@ -322,7 +327,17 @@ void BoxColliderBehaviorInstance::onComponentAdd()
 void BoxColliderBehaviorInstance::initPersistFields()
 {
    Parent::initPersistFields();
-   addField( "colliderSize", TypePoint3F, Offset(colliderScale, BoxColliderBehaviorInstance), "");
+   //addField( "colliderSize", TypePoint3F, Offset(mColliderScale, BoxColliderBehaviorInstance), "");
+   addProtectedField("colliderSize", TypePoint3F, Offset(mColliderScale, BoxColliderBehaviorInstance), &_setColliderSize, defaultProtectedGetFn);
+   addField("blockCollisions", TypeBool, Offset(mBlockColliding, BoxColliderBehaviorInstance), "");
+}
+
+bool BoxColliderBehaviorInstance::_setColliderSize( void *object, const char *index, const char *data )
+{
+   BoxColliderBehaviorInstance *boxCollider = static_cast<BoxColliderBehaviorInstance*>(object);
+   boxCollider->prepCollision();
+   boxCollider->setMaskBits(ColliderMask);
+   return true;
 }
 
 void BoxColliderBehaviorInstance::consoleInit()
@@ -337,13 +352,13 @@ U32 BoxColliderBehaviorInstance::packUpdate(NetConnection *con, U32 mask, BitStr
 {
    U32 retMask = Parent::packUpdate(con, mask, stream);
 
-   if ( mask & InitialUpdateMask )
+   if ( mask & (ColliderMask | InitialUpdateMask))
    {
       if(mOwner){
          if(con->getGhostIndex(mOwner) != -1)
          {
             stream->writeFlag( true );
-            mathWrite( *stream, colliderScale );
+            mathWrite( *stream, mColliderScale );
          }
          else
          {
@@ -364,7 +379,7 @@ void BoxColliderBehaviorInstance::unpackUpdate(NetConnection *con, BitStream *st
 
    if ( stream->readFlag() ) // UpdateMask
    {
-      mathRead(*stream, &colliderScale);
+      mathRead(*stream, &mColliderScale);
       prepCollision();
    }
 }
@@ -375,7 +390,7 @@ void BoxColliderBehaviorInstance::prepCollision()
       return;
 
    // Allow the ShapeInstance to prep its collision if it hasn't already
-   if(colliderScale.isZero()){
+   if(mColliderScale.isZero()){
       mOwner->disableCollision();
       return;
    }
@@ -385,9 +400,23 @@ void BoxColliderBehaviorInstance::prepCollision()
 
    BoxConvex* bC = new BoxConvex();
    bC->init(mOwner);
-   bC->mSize = colliderScale;
+   bC->mSize = mColliderScale;
    mOwner->getObjBox().getCenter(&bC->mCenter);
    mConvexList = bC;
+
+   Box3F colliderBounds = bC->getBoundingBox(mOwner->getTransform(), mOwner->getScale());
+
+   Box3F ownerBounds = mOwner->getWorldBox();
+
+   if(!ownerBounds.isContained(colliderBounds))
+   {
+      Box3F newBounds = ownerBounds;
+
+      newBounds.extend(colliderBounds.minExtents);
+      newBounds.extend(colliderBounds.maxExtents);
+
+      mOwner->setObjectBox(newBounds);
+   }
 
    mOwner->enableCollision();
    _updatePhysics();
@@ -456,11 +485,7 @@ bool BoxColliderBehaviorInstance::checkCollisions( const F32 travelTime, Point3F
    //This is only partially implemented.
    //The idea will be that you can define on a collider if it actually blocks when a collision occurs.
    //This would let colliders act as normal collision objects, or act as triggers.
-   bool mBlockColliding = true;
-   if(mBlockColliding)
-      return collided;
-   else
-      return false;
+   return collided;
 }
 
 void BoxColliderBehaviorInstance::_updatePhysics()
@@ -475,7 +500,7 @@ void BoxColliderBehaviorInstance::_updatePhysics()
    offset.setPosition( mOwner->getPosition() );
    colShape = PHYSICSMGR->createCollision();
    //colShape->addBox( mOwner->getObjBox().getExtents() * 0.5f * mOwner->getScale(), offset ); 
-   colShape->addBox( colliderScale, offset );
+   colShape->addBox( mColliderScale, offset );
 
    if ( colShape )
    {
@@ -528,15 +553,25 @@ bool BoxColliderBehaviorInstance::buildConvex(const Box3F& box, Convex* convex)
    cp->init(mOwner);
 
    mOwner->getObjBox().getCenter(&cp->mCenter);
-   cp->mSize = colliderScale;
+   cp->mSize = mColliderScale;
 
+   return true;
+}
+
+bool BoxColliderBehaviorInstance::buildPolyList(PolyListContext context, AbstractPolyList* polyList, const Box3F &, const SphereF &)
+{
+   Point3F pos;
+   MatrixF ownerTransform = mOwner->getTransform();
+   polyList->setTransform(&ownerTransform, mOwner->getScale());
+   polyList->setObject(mOwner);
+   polyList->addBox(Box3F(-mColliderScale/2, mColliderScale/2));
    return true;
 }
 
 bool BoxColliderBehaviorInstance::castRay(const Point3F &start, const Point3F &end, RayInfo* info)
 {
    F32 st, et, fst = 0.0f, fet = 1.0f;
-   Box3F objectBox = Box3F(-colliderScale,colliderScale);
+   Box3F objectBox = Box3F(-mColliderScale,mColliderScale);
    F32 *bmin = &objectBox.minExtents.x;
    F32 *bmax = &objectBox.maxExtents.x;
    F32 const *si = &start.x;
@@ -611,11 +646,7 @@ bool BoxColliderBehaviorInstance::updateCollisions(F32 time, VectorF vector, Vec
          Box3F convexBox = pConvex->getBoundingBox();
          if (plistBox.isOverlapped(convexBox))
          {
-            //if(!dStrcmp(pConvex->getObject()->getClassName(), "Entity"))
-            //	becauseShutUp = pConvex;
-
             pConvex->getPolyList(&extrudePoly);
-            //andTheOtherOne = pConvex;
          }
       }
       pList = pList->wLink.mNext;
@@ -623,13 +654,10 @@ bool BoxColliderBehaviorInstance::updateCollisions(F32 time, VectorF vector, Vec
 
    if(mCollisionList.getCount() > 0)
    {
-      //becauseShutUp->getPolyList(&extrudePoly);
-      //andTheOtherOne->getPolyList(&extrudePoly);
-
       return true;
    }
-   else
-      return false;
+
+   return false;
 }
 
 void BoxColliderBehaviorInstance::updateWorkingCollisionSet(const U32 mask)
@@ -706,34 +734,6 @@ void BoxColliderBehaviorInstance::prepRenderImage( SceneRenderState *state )
       if(mConvexList == NULL)
          return;
 
-      /*DebugDrawer * debugDraw = DebugDrawer::get();  
-      if (debugDraw)  
-      {  
-         Point3F min = mWorkingQueryBox.minExtents;
-         Point3F max = mWorkingQueryBox.maxExtents;
-
-         debugDraw->drawBox(mWorkingQueryBox.minExtents, mWorkingQueryBox.maxExtents, ColorI(255, 0, 255, 128)); 
-
-         mOwner->disableCollision();
-         mConvexList->updateWorkingList(mWorkingQueryBox, U32(-1));
-         //isGhost() ? sClientCollisionContactMask : sServerCollisionContactMask);
-         mOwner->enableCollision();
-
-         CollisionWorkingList& rList = mConvexList->getWorkingList();
-         CollisionWorkingList* pList = rList.wLink.mNext;
-         while (pList != &rList) 
-         {
-            Convex* pConvex = pList->mConvex;
-
-            pConvex->getPolyList(&extrudePoly);
-
-            pConvex->render(
-
-            pList = pList->wLink.mNext;
-         }
-         
-      } */
-
       ObjectRenderInst *ri = state->getRenderPass()->allocInst<ObjectRenderInst>();
       ri->renderDelegate.bind( this, &BoxColliderBehaviorInstance::renderConvex );
       ri->objectIndex = -1;
@@ -755,35 +755,13 @@ void BoxColliderBehaviorInstance::renderConvex( ObjectRenderInst *ri, SceneRende
    GFXStateBlockRef sb = GFX->createStateBlock( desc );
    GFX->setStateBlock( sb );
 
-   /*PrimBuild::color3i( 255, 0, 255 );
-
-   Point3F *pnt;
-
-   PrimBuild::begin( GFXTriangleList, mDebugRender.triCount * 3 );      
-
-   for(U32 i=0; i < mDebugRender.triCount; i++)
-   {
-      pnt = &mDebugRender.vertA[i];
-      PrimBuild::vertex3fv( pnt );
-
-      pnt = &mDebugRender.vertB[i];
-      PrimBuild::vertex3fv( pnt );
-
-      pnt = &mDebugRender.vertC[i];
-      PrimBuild::vertex3fv( pnt );
-   }
-
-   PrimBuild::end();*/
-
-   /*BoxConvex* bC = new BoxConvex();
-   bC->init(mOwner);
-   bC->mSize = colliderScale;
-   mOwner->getObjBox().getCenter(&bC->mCenter);*/
-
    ConcretePolyList polyList;
-   //bC->getPolyList( &polyList );
+
+   MatrixF ownerTransform = mOwner->getTransform();
 
    Box3F convexBox = mConvexList->getBoundingBox(mOwner->getTransform(), mOwner->getScale());
+   //Box3F convexBox = Box3F(-mColliderScale/2, mColliderScale/2);
+   //ownerTransform.mul(convexBox);
 
    polyList.addBox(convexBox);
 

@@ -111,7 +111,7 @@ void PhysicsBehaviorInstance::initPersistFields()
 
    addField("gravity", TypePoint3F, Offset(mGravity, PhysicsBehaviorInstance));
    addField("velocity", TypePoint3F, Offset(mVelocity, PhysicsBehaviorInstance));
-   addField("isStatic", TypePoint3F, Offset(mStatic, PhysicsBehaviorInstance));
+   addField("isStatic", TypeBool, Offset(mStatic, PhysicsBehaviorInstance));
 }
 
 U32 PhysicsBehaviorInstance::packUpdate(NetConnection *con, U32 mask, BitStream *stream)

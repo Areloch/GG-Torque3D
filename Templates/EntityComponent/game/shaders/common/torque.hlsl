@@ -262,5 +262,11 @@ void fizzle(float2 vpos, float visibility)
    clip( visibility - frac( determinant( m ) ) );
 }
 
+// Sample in linear space. Decodes gamma.
+float4 tex2DLinear(sampler2D tex, float2 texCoord)
+{
+   float4 sample = tex2D(tex, texCoord);
+   return float4(pow(abs(sample.rgb), 2.2), sample.a);
+}
 
 #endif // _TORQUE_HLSL_

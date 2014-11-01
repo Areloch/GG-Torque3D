@@ -61,6 +61,8 @@ float4 main( FarFrustumQuadConnectP IN,
              uniform float4 zNearFarInvNearFar,
              uniform float4 lightMapParams,
 
+             uniform float4x4 eyeMat,
+
              uniform float2 fadeStartLength,
              uniform float4 farPlaneScalePSSM,
              uniform float4 overDarkPSSM,
@@ -202,7 +204,15 @@ float4 main( FarFrustumQuadConnectP IN,
                                     
    float Sat_NL_Att = saturate( dotNL * shadowed ) * lightBrightness;
    float3 lightColorOut = lightMapParams.rgb * lightColor.rgb;
-   float4 addToResult = lightAmbient;
+   //float4 addToResult = lightAmbient;
+ 
+   // Pseudo-cubemap ambient term  
+   float ambientBrightness = (float)lightAmbient;  
+   float3 worldNormal = normalize(mul(eyeMat, normal)).xyz; // World space normals  
+   float ambientContrast = 0.5;  
+   float4 upAmbient = lerp( 1 - lightAmbient * 0.65, lightAmbient, 1-ambientBrightness*ambientContrast ); // Sky ambience  
+   float4 lightAmbientTwoTone = lerp( lightAmbient * 0.8 , upAmbient , worldNormal.b ); // Use world normal up channel to lerp between the two  
+   float4 addToResult = lightAmbientTwoTone + dotNL * lightColor * ambientBrightness * 0.25; // We softly add the sun lighting even in shadowed areas for some directional ambience
 
    // TODO: This needs to be removed when lightmapping is disabled
    // as its extra work per-pixel on dynamic lit scenes.

@@ -3,13 +3,9 @@
 
 singleton RenderShapeBehavior(RenderShape);
 
-RenderShape.beginGroup("Materials");
-RenderShape.addBehaviorField(MaterialSlot0, "Material for the given material slot", material, "");
-RenderShape.endGroup();
-/*function RenderShapeBehavior::onAdd(%this)
-{
-   %this.shapeName = %this.shapeName;
-}*/
+singleton ConvexShapeComponent(ConvexShapeComp);
+
+singleton LevelTileComponent(LevelTileComp);
 
 singleton StateMachineBehavior(StateMachine);
 StateMachine.addBehaviorField(playerStates, "States of the player controller", "stateMachine", "");

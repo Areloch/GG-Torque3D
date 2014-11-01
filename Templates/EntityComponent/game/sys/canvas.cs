@@ -121,7 +121,11 @@ function configureCanvas()
 
    // Actually set the new video mode
    Canvas.setVideoMode(%resX, %resY, %fs, %bpp, %rate, %fsaa);
-   
+
+   //-JR
+   commandToServer('setClientAspectRatio', %resX, %resY);
+   //-JR
+
    // FXAA piggybacks on the FSAA setting in $pref::Video::mode.
    if ( isObject( FXAA_PostEffect ) )
       FXAA_PostEffect.isEnabled = ( %fsaa > 0 ) ? true : false;

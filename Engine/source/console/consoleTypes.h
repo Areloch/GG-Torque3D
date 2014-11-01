@@ -124,11 +124,13 @@ DefineConsoleType( TypeParticleParameterString, const char * )
 DefineConsoleType( TypeFlag, S32 )
 DefineConsoleType( TypeColorI, ColorI )
 DefineConsoleType( TypeColorF, ColorF )
-//-JR
-DefineConsoleType( TypeSimObjectPtr, SimObject* ) 
-//-JR
 DefineConsoleType( TypeSimObjectName, SimObject* )
 DefineConsoleType( TypeShader, GFXShader * )
+
+//-JR
+DefineConsoleType(TypeSimObjectPtr, SimObject*)
+DefineConsoleType(TypeRotationF, RotationF)
+//-JR
 
 /// A persistent reference to an object.  This reference indirectly goes
 /// through the referenced object's persistent ID.

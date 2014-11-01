@@ -13,7 +13,7 @@ if (!isObject(CameraBehav))
 
    %template.addBehaviorField(clientOwner, "The client that views this camera", "int", "1", "");
    
-   %template.addBehaviorField(FOV, "The shape to use for rendering", "float", "70", "");
+   //%template.addBehaviorField(FOV, "The shape to use for rendering", "float", "70", "");
    
    %template.category = "Behaviors";
 }
@@ -181,4 +181,14 @@ function toggleEditorCam(%val)
 	   %client.lastController = EditorCamera;
    }
 
+}
+
+function serverCmdSetClientAspectRatio(%client, %width, %height)
+{
+   echo("Client: " @ %client SPC "changing screen res to: " @ %width SPC %height);
+   %client.screenExtent = %width SPC %height;
+   %cam = %client.getCameraObject();
+   %cameraComp = %cam.getBehavior(CameraBehav);
+
+   %cameraComp.ScreenAspect = %width SPC %height;
 }

@@ -351,9 +351,9 @@ bool GameProcessCameraQuery(CameraQuery *query)
    if (connection && connection->getControlCameraTransform(0.032f, &query->cameraMatrix))
    {
       //-JR
-		//query->object = dynamic_cast<ShapeBase*>(connection->getControlObject());
-		query->object = dynamic_cast<GameBase*>(connection->getControlObject());
-		//-JR
+      //query->object = dynamic_cast<ShapeBase*>(connection->getControlObject());
+      query->object = dynamic_cast<GameBase*>(connection->getControlObject());
+      //-JR
       query->nearPlane = gClientSceneGraph->getNearClip();
 
       // Scale the normal visible distance by the performance 
@@ -464,7 +464,9 @@ static void RegisterGameFunctions()
    Con::setIntVariable("$TypeMasks::DebrisObjectType",         DebrisObjectType);
    Con::setIntVariable("$TypeMasks::PhysicalZoneObjectType",   PhysicalZoneObjectType);
    Con::setIntVariable("$TypeMasks::LightObjectType",          LightObjectType);
-   Con::setIntVariable("$TypeMasks::EntityObjectType",         EntityObjectType);
+   //-JR
+   Con::setIntVariable("$TypeMasks::EntityObjectType", EntityObjectType);
+   //-JR
 
    Con::addVariable("Ease::InOut", TypeS32, &gEaseInOut, 
       "InOut ease for curve movement.\n"

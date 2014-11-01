@@ -167,6 +167,8 @@ bool Component::setupFields( ComponentInstance *bi, bool forceSetup )
    {
       ComponentField &field = mFields[i];
 
+      bi->addComponentField(field);
+
       //check if this field already has data or not
       //if it's blank, we're good to continue setting it.
       //bi->getClassRep()->findField(
@@ -207,7 +209,7 @@ void Component::addComponentField(const char *fieldName, const char *desc, const
    mFields.push_back(field);
 }
 
-Component::ComponentField* Component::getComponentField(const char *fieldName)
+ComponentField* Component::getComponentField(const char *fieldName)
 {
    StringTableEntry stFieldName = StringTable->insert(fieldName);
 
@@ -366,7 +368,7 @@ ConsoleMethod(Component, getBehaviorField, const char *, 3, 3, "(int index) - Ge
               "@param index The index of the behavior\n"
               "@return FieldName, FieldType and FieldDefaultValue, each separated by a TAB character.\n")
 {
-   Component::ComponentField *field = object->getComponentField(dAtoi(argv[2]));
+   ComponentField *field = object->getComponentField(dAtoi(argv[2]));
    if(field == NULL)
       return "";
 
@@ -380,7 +382,7 @@ ConsoleMethod(Component, setBehaviorField, const char *, 3, 3, "(int index) - Ge
               "@param index The index of the behavior\n"
               "@return FieldName, FieldType and FieldDefaultValue, each separated by a TAB character.\n")
 {
-   Component::ComponentField *field = object->getComponentField(dAtoi(argv[2]));
+   ComponentField *field = object->getComponentField(dAtoi(argv[2]));
    if(field == NULL)
       return "";
 
@@ -394,7 +396,7 @@ ConsoleMethod(Component, getBehaviorFieldUserData, const char *, 3, 3, "(int ind
               "@param index The index of the behavior\n"
               "@return Returns a string representing the user data of this field\n")
 {
-   Component::ComponentField *field = object->getComponentField(dAtoi(argv[2]));
+   ComponentField *field = object->getComponentField(dAtoi(argv[2]));
    if(field == NULL)
       return "";
 
@@ -405,7 +407,7 @@ ConsoleMethod(Component, getBehaviorFieldDescription, const char *, 3, 3, "(int 
               "@param index The index of the behavior\n"
               "@return Returns a string representing the description of this field\n")
 {
-   Component::ComponentField *field = object->getComponentField(dAtoi(argv[2]));
+   ComponentField *field = object->getComponentField(dAtoi(argv[2]));
    if(field == NULL)
       return "";
 

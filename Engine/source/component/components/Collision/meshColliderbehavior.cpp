@@ -64,6 +64,8 @@ MeshColliderBehavior::MeshColliderBehavior()
 
    addComponentField("collisionCheckMasks", "A mask list of all the collision masks that this collider checks against when testing collisions.", "collisionMask", "", "");
 
+   addComponentField("blockCollisions", "If enabled, will stop colliding objects from passing through.", "bool", "1", "");
+
    mFriendlyName = "Mesh Collider";
    mComponentType = "Collision";
 
@@ -113,6 +115,8 @@ MeshColliderBehaviorInstance::MeshColliderBehaviorInstance( Component *btemplate
 
    mConvexList = NULL;
    mTimeoutList = NULL;
+
+   mBlockColliding = true;
 
    mWorkingQueryBox.minExtents.set(-1e9f, -1e9f, -1e9f);
    mWorkingQueryBox.maxExtents.set(-1e9f, -1e9f, -1e9f);
@@ -167,6 +171,8 @@ void MeshColliderBehaviorInstance::onComponentAdd()
 void MeshColliderBehaviorInstance::initPersistFields()
 {
    Parent::initPersistFields();
+
+   addField("blockCollisions", TypeBool, Offset(mBlockColliding, MeshColliderBehaviorInstance), "");
 }
 
 void MeshColliderBehaviorInstance::consoleInit()
@@ -296,6 +302,14 @@ bool MeshColliderBehaviorInstance::checkCollisions( const F32 travelTime, Point3
       return false;
 }
 
+bool MeshColliderBehaviorInstance::buildPolyList(PolyListContext context, AbstractPolyList* polyList, const Box3F &, const SphereF &)
+{
+   if ( !getShapeInstance() )
+      return false;
+
+   return getShapeInstance()->buildPolyList(polyList, getShapeInstance()->getCurrentDetail());
+}
+
 void MeshColliderBehaviorInstance::_updatePhysics()
 {
    SAFE_DELETE( (dynamic_cast<Entity*>(mOwner))->mPhysicsRep );
@@ -331,13 +345,10 @@ bool MeshColliderBehaviorInstance::castRay(const Point3F &start, const Point3F &
 
    if ( res )
    {
-      Con::printf("Raycast successful on MeshCollider!");
       *info = localInfo;
-      info->object = this->getBehaviorOwner();
+      info->object = this->getOwner();
       return true;
    }
-   else
-      Con::printf("Raycast NOT successful on MeshCollider!");
 
    //do our callback
    //onRaycastCollision_callback( this, enter );

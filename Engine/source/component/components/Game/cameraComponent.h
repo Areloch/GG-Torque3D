@@ -63,9 +63,17 @@ class cameraComponentInstance : public ComponentInstance,
 protected:
    F32  mCameraFov;           ///< The camera vertical FOV in degrees.
 
-   F32 cameraDefaultFov;            ///< Default vertical FOV in degrees.
-   F32 cameraMinFov;                ///< Min vertical FOV allowed in degrees.
-   F32 cameraMaxFov;                ///< Max vertical FOV allowed in degrees.
+   Point2F mClientScreen;     ///< The dimensions of the client's screen. Used to calculate the aspect ratio.
+
+   F32 mCameraDefaultFov;            ///< Default vertical FOV in degrees.
+   F32 mCameraMinFov;                ///< Min vertical FOV allowed in degrees.
+   F32 mCameraMaxFov;                ///< Max vertical FOV allowed in degrees.
+
+   enum
+   {
+      FOVMask = Parent::NextFreeMask,
+      NextFreeMask = Parent::NextFreeMask << 1,
+   };
 
 public:
    cameraComponentInstance(Component *btemplate = NULL);
@@ -81,6 +89,8 @@ public:
 
    virtual U32 packUpdate(NetConnection *con, U32 mask, BitStream *stream);
    virtual void unpackUpdate(NetConnection *con, BitStream *stream);
+
+   static bool _setCameraFov( void *object, const char *index, const char *data );
 
    /// Gets the minimum viewing distance, maximum viewing distance, camera offsetand rotation
    /// for this object, if the world were to be viewed through its eyes
@@ -102,7 +112,7 @@ public:
 
    /// Returns the default vertical field of view in degrees
    /// if this object is used as a camera.
-   virtual F32 getDefaultCameraFov() { return cameraDefaultFov; }
+   virtual F32 getDefaultCameraFov() { return mCameraDefaultFov; }
 
    /// Sets the vertical field of view in degrees for this 
    /// object if used as a camera.
@@ -120,7 +130,7 @@ public:
    /// Control object scoping
    void onCameraScopeQuery(NetConnection *cr, CameraScopeQuery *camInfo);
 
-   virtual Frustum getFrustum() { Frustum f; return f;};
+   virtual Frustum getFrustum();
 
 protected:
    DECLARE_CALLBACK( F32, validateCameraFov, (F32 fov) );

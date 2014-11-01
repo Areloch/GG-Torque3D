@@ -16,6 +16,11 @@
 
 #include "T3D/prefab.h"
 
+#include "console/stringStack.h"
+
+extern StringStack STR;
+extern ConsoleValueStack CSTK;
+
 extern ExprEvalState gEvalState;
 
 //////////////////////////////////////////////////////////////////////////
@@ -254,6 +259,8 @@ void ComponentInstance::onStaticModified( const char* slotName, const char* newV
    if(!mOwner)
       return;
 
+   onDataSet.trigger(this, slotName, newValue);
+
    checkBehaviorFieldModified(slotName, newValue);
 }
 
@@ -270,11 +277,12 @@ void ComponentInstance::onDynamicModified( const char* slotName, const char* new
 
 void ComponentInstance::checkBehaviorFieldModified( const char* slotName, const char* newValue )
 {
+   StringTableEntry slotNameEntry = StringTable->insert(slotName);
    //find if it's a behavior field
-   for( int i = 0; i < mTemplate->getComponentFieldCount(); i++ )
+   for( int i = 0; i < getComponentFieldCount(); i++ )
    {
-      Component::ComponentField *field = mTemplate->getComponentField( i );
-      if(!dStrcmp(field->mFieldName, slotName))
+      ComponentField *field = getComponentField( i );
+      if(field->mFieldName == slotNameEntry)
       {
          //we have a match, do the script callback that we updated a field
          if(isMethod("onInspectorUpdate"))
@@ -287,29 +295,6 @@ void ComponentInstance::checkBehaviorFieldModified( const char* slotName, const 
          if(bInterface)
          {
          BehaviorFieldInterface *bInterface = dynamic_cast<BehaviorFieldInterface*>(bInterface)
-         bInterface->onFieldChange(slotName, newValue);
-         }*/
-         //Lastly, notify up to our owner's parent(s). If one is a prefab, we inform it it's now dirty
-         Prefab* p = Prefab::getPrefabByChild(mOwner);
-         if(p)
-            p->setDirty();
-         return;
-      }
-   }
-
-   //if it's not in the template, it may still be a instance field, so check them too
-   for( int i = 0; i < mComponentFields.size(); i++ )
-   {
-      if(!dStrcmp(mComponentFields[i].mFieldName, slotName))
-      {
-         //we have a match, do the script callback that we updated a field
-         if(isMethod("onInspectorUpdate"))
-            Con::executef(this, "onInspectorUpdate", slotName);
-
-         /*BehaviorFieldInterface *bInterface = dynamic_cast<BehaviorFieldInterface*>(mOwner->getInterface(NULL, "behaviorFieldUpdate", NULL));
-
-         if(bInterface)
-         {
          bInterface->onFieldChange(slotName, newValue);
          }*/
          //Lastly, notify up to our owner's parent(s). If one is a prefab, we inform it it's now dirty
@@ -370,7 +355,7 @@ bool ComponentInstance::isMethod( const char* methodName )
 
 const char *ComponentInstance::callMethod( S32 argc, const char* methodName, ... )
 {
-   const char *argv[128];
+   ConsoleValueRef argv[128];
    methodName = StringTable->insert( methodName );
 
    argc++;
@@ -428,9 +413,9 @@ void ComponentInstance::packToStream( Stream &stream, U32 tabStop, S32 behaviorI
    stream.write( dStrlen( buffer ), buffer );
 
    // Write out the fields which the behavior template knows about
-   for( int i = 0; i < mTemplate->getComponentFieldCount(); i++ )
+   for( int i = 0; i < getComponentFieldCount(); i++ )
    {
-      Component::ComponentField *field = mTemplate->getComponentField( i );
+      ComponentField *field = getComponentField( i );
       const char *objFieldValue = getDataField( field->mFieldName, NULL );
 
       // If the field holds the same value as the template's default value than it
@@ -445,24 +430,13 @@ void ComponentInstance::packToStream( Stream &stream, U32 tabStop, S32 behaviorI
       }
    }
 
-   //Catch any dynamic behavior fields we'd want to keep for later
-   for( int i = 0; i < mComponentFields.size(); i++ )
-   {
-      const char* fieldName = mComponentFields[i].mFieldName;
-      const char* fieldValue = getDataField(mComponentFields[i].mFieldName, NULL);
-      dSprintf( buffer, sizeof( buffer ), "%s = %s;\n", fieldName, ( dStrlen( fieldValue ) > 0 ? fieldValue : "0" ) );
-
-      stream.writeTabs( tabStop );
-      stream.write( dStrlen( buffer ), buffer );
-   }
-
    //stream.write(4, "\";\r\n" );
 }
 
 void ComponentInstance::addComponentField(const char* fieldName, const char* value)
 {
    //if this field already exists, just update it.
-   for(U32 i=0; i < mComponentFields.size(); i++)
+   /*for(U32 i=0; i < mComponentFields.size(); i++)
    {
       if(!dStrcmp(mComponentFields[i].mFieldName, fieldName)){
          mComponentFields[i].mDefaultValue = StringTable->insert(value);
@@ -478,7 +452,45 @@ void ComponentInstance::addComponentField(const char* fieldName, const char* val
 
    mComponentFields.push_back(field);
 
-   setDataField( field.mFieldName, NULL, field.mDefaultValue );
+   setDataField( field.mFieldName, NULL, field.mDefaultValue );*/
+}
+
+void ComponentInstance::addComponentField(const char *fieldName, const char *desc, const char *type, const char *defaultValue /* = NULL */, const char *userData /* = NULL */, /*const char* dependency /* = NULL *//*,*/ bool hidden /* = false */)
+{
+   StringTableEntry stFieldName = StringTable->insert(fieldName);
+
+   for(S32 i = 0;i < mComponentFields.size();++i)
+   {
+      if(mComponentFields[i].mFieldName == stFieldName)
+         return;
+   }
+
+   ComponentField field;
+   field.mFieldName = stFieldName;
+   field.mFieldType = StringTable->insert(type ? type : "");
+   field.mUserData = StringTable->insert(userData ? userData : "");
+   field.mDefaultValue = StringTable->insert(defaultValue ? defaultValue : "");
+   //field.mFieldDescription = getDescriptionText(desc);
+
+   //field.mDependency = StringTable->insert(dependency ? dependency : "");
+
+   field.mGroup = mComponentGroup;
+
+   field.mHidden = hidden;
+
+   mComponentFields.push_back(field);
+}
+
+void ComponentInstance::addComponentField(ComponentField newField)
+{
+   for(U32 i=0; i < mComponentFields.size(); i++)
+   {
+      //if we have a match on an existing component field, we don't need to add another one.
+      if(newField.mFieldName == mComponentFields[i].mFieldName)
+         return;
+   }
+
+   mComponentFields.push_back(newField);
 }
 
 void ComponentInstance::removeBehaviorField(const char* fieldName)
@@ -518,20 +530,13 @@ const char * ComponentInstance::checkDependencies()
    return buffer;
 }
 
-/*void ComponentInstance::setDataField(StringTableEntry slotName, const char *array, const char *value)
+void ComponentInstance::setDataField(StringTableEntry slotName, const char *array, const char *value)
 {
-Parent::setDataField(slotName, array, value);
+   Parent::setDataField(slotName, array, value);
 
-pushUpdate();
+   onDataSet.trigger(this, slotName, value);
 }
-
-void ComponentInstance::onStaticModified(const char* slotName, const char* newValue)
-{
-Parent::onStaticModified(slotName, newValue);
-
-pushUpdate();
-}
-
+/*
 void ComponentInstance::inspectPostApply()
 {
 // Apply any transformations set in the editor
@@ -570,14 +575,14 @@ void ComponentInstance::processTick(const Move* move)
       //Point3F moveRot = Point3F(move->pitch, move->roll, move->yaw);
       //Update_callback( moveVec, moveRot );
 
-      if(this->isMethod("Update"))
+      if(isMethod("Update"))
          Con::executef(this, "Update", moveVec.c_str(), moveRot.c_str());
 
       if(move)
       {
          for(U32 i=0; i < MaxTriggerKeys; i++)
          {
-            if(move->trigger[i] && this->isMethod("onMoveTrigger"))
+            if(move->trigger[i] && isMethod("onMoveTrigger"))
                Con::executef(this, "onMoveTrigger", Con::getIntArg(i));
             //onTrigger_callback(i);
          }
@@ -586,7 +591,7 @@ void ComponentInstance::processTick(const Move* move)
 }
 
 //
-const char* ComponentInstance::callMethodArgList( U32 argc, const char *argv[], bool callThis /* = true  */ )
+const char* ComponentInstance::callMethodArgList(U32 argc, ConsoleValueRef argv[], bool callThis /* = true  */)
 {
    // Set Owner
    SimObject *pThis = dynamic_cast<SimObject *>( this );
@@ -603,13 +608,13 @@ const char* ComponentInstance::callMethodArgList( U32 argc, const char *argv[], 
    const char *cbName = StringTable->insert(argv[0]);
    const char* fnRet = "";
 
-   FrameTemp<char *> argPtrs (argc);
+   FrameTemp<ConsoleValueRef> argPtrs(argc);
 
    U32 strdupWatermark = FrameAllocator::getWaterMark();
    for( S32 i = 0; i < argc; i++ )
    {
       argPtrs[i] = reinterpret_cast<char *>( FrameAllocator::alloc( dStrlen( argv[i] ) + 1 ) );
-      dStrcpy( argPtrs[i], argv[i] );
+      argPtrs[i] = argv[i];
    }
 
    // Use the ComponentInstance's namespace
@@ -623,13 +628,24 @@ const char* ComponentInstance::callMethodArgList( U32 argc, const char *argv[], 
    if( pNSEntry )
    {
       // Set %this to our ComponentInstance's Object ID
-      argPtrs[1] = const_cast<char *>( getIdString() );
+      argPtrs[1] = getIdString();
+
+      // Prevent stack corruption
+      STR.pushFrame();
+      CSTK.pushFrame();
+      // --
 
       // Change the Current Console object, execute, restore Object
       SimObject *save = gEvalState.thisObject;
       gEvalState.thisObject = this;
-      fnRet = pNSEntry->execute(argc, const_cast<const char **>( ~argPtrs ), &gEvalState);
+      fnRet = pNSEntry->execute(argc, argPtrs, &gEvalState);
       gEvalState.thisObject = save;
+
+      // Prevent stack corruption
+      STR.popFrame();
+      CSTK.popFrame();
+      // --
+
       return fnRet;
    }
 
@@ -637,14 +653,25 @@ const char* ComponentInstance::callMethodArgList( U32 argc, const char *argv[], 
    if(pNSEntry && (!fnRet || !fnRet[0]))
    {
       // Set %this to our ComponentInstance's Object ID
-      argPtrs[1] = const_cast<char *>( getIdString() );
+      argPtrs[1] = getIdString();
+
+      // Prevent stack corruption
+      STR.pushFrame();
+      CSTK.pushFrame();
+      // --
 
       // Change the Current Console object, execute, restore Object
       SimObject *save = gEvalState.thisObject;
       gEvalState.thisObject = this;
       //const char *ret = pNSEntry->execute(argc, const_cast<const char **>( ~argPtrs ), &gEvalState);
-      fnRet = pNSEntry->execute(argc, const_cast<const char **>( ~argPtrs ), &gEvalState);
+      fnRet = pNSEntry->execute(argc, argPtrs, &gEvalState);
       gEvalState.thisObject = save;
+
+      // Prevent stack corruption
+      STR.popFrame();
+      CSTK.popFrame();
+      // --
+
       return fnRet;
    }
 
@@ -654,7 +681,7 @@ const char* ComponentInstance::callMethodArgList( U32 argc, const char *argv[], 
 //////////////////////////////////////////////////////////////////////////
 // Console Methods
 //////////////////////////////////////////////////////////////////////////
-ConsoleMethod(ComponentInstance, addBehaviorField, void, 4, 4, "(fieldName, value)\n"
+/*ConsoleMethod(ComponentInstance, addBehaviorField, void, 4, 4, "(fieldName, value)\n"
               "Adds a named ComponentField to a Behavior Template\n"
               "@param fieldName The name of this field\n"
               "@param desc The Description of this field\n"
@@ -666,6 +693,24 @@ ConsoleMethod(ComponentInstance, addBehaviorField, void, 4, 4, "(fieldName, valu
               "@return Nothing\n")
 {
    object->addComponentField(argv[2], argv[3]);
+}*/
+
+ConsoleMethod(ComponentInstance, addBehaviorField, void, 5, 8, "(fieldName, desc, type, [defaultValue, userData, hidden])\n"
+              "Adds a named ComponentField to a Behavior Template\n"
+              "@param fieldName The name of this field\n"
+              "@param desc The Description of this field\n"
+              "@param type The DataType for this field (default, int, float, Point2F, bool, enum, Object, keybind, color)\n"
+              "@param defaultValue The Default value for this field\n"
+              "@param userData An extra data field that can be used for custom data on a per-field basis<br>Usage for default types<br>"
+              "-enum: a TAB separated list of possible values<br>"
+              "-object: the T2D object type that are valid choices for the field.  The object types observe inheritance, so if you have a t2dSceneObject field you will be able to choose t2dStaticSrpites, t2dAnimatedSprites, etc.\n"
+              "@return Nothing\n")
+{
+   const char *defValue = argc > 5 ? argv[5] : NULL;
+   const char *typeInfo = argc > 6 ? argv[6] : NULL;
+   bool hidden = argc > 7 ? dAtob(argv[7]) : false;
+
+   object->addComponentField(argv[2], argv[3], argv[4], defValue, typeInfo, hidden);
 }
 
 ConsoleMethod(ComponentInstance, removeBehaviorField, void, 3, 3, "(fieldName)\n"
@@ -712,4 +757,27 @@ DefineConsoleMethod( ComponentInstance, inspectorApply, void, (),,
                     "@return The number of static fields defined on the object." )
 {
    object->inspectPostApply();
+}
+
+ConsoleMethod(ComponentInstance, getComponentFieldCount, S32, 2, 2, "() - Get the number of ComponentField's on this object\n"
+              "@return Returns the number of BehaviorFields as a nonnegative integer\n")
+{
+   return object->getComponentFieldCount();
+}
+
+// [tom, 1/12/2007] Field accessors split into multiple methods to allow space
+// for long descriptions and type data.
+
+ConsoleMethod(ComponentInstance, getComponentField, const char *, 3, 3, "(int index) - Gets a Tab-Delimited list of information about a ComponentField specified by Index\n"
+              "@param index The index of the behavior\n"
+              "@return FieldName, FieldType and FieldDefaultValue, each separated by a TAB character.\n")
+{
+   ComponentField *field = object->getComponentField(dAtoi(argv[2]));
+   if(field == NULL)
+      return "";
+
+   char *buf = Con::getReturnBuffer(1024);
+   dSprintf(buf, 1024, "%s\t%s\t%s\t%s", field->mFieldName, field->mFieldType, field->mDefaultValue, field->mGroup);
+
+   return buf;
 }

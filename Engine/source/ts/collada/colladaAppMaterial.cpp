@@ -28,6 +28,10 @@
 #include "ts/tsMaterialList.h"
 #include "materials/materialManager.h"
 
+//-JR
+#include "core/stream/fileStream.h"
+//-JR
+
 using namespace ColladaUtils;
 
 String cleanString(const String& str)
@@ -184,6 +188,320 @@ void ColladaAppMaterial::resolveColor(const domCommon_color_or_texture_type* val
    }
 }
 
+//-JR
+bool isFile(const char* fileName)
+{
+   char sgScriptFilenameBuffer[1024];
+   String cleanfilename(Torque::Path::CleanSeparators(fileName));
+   Con::expandScriptFilename(sgScriptFilenameBuffer, sizeof(sgScriptFilenameBuffer), cleanfilename.c_str());
+
+   Torque::Path givenPath(Torque::Path::CompressPath(sgScriptFilenameBuffer));
+   return Torque::FS::IsFile(givenPath);
+}
+
+S32 strpos(const char* string, const char* delim, S32 offset)
+{
+   S32 start = offset;
+   U32 sublen = dStrlen(delim);
+   U32 strlen = dStrlen(string);
+   if (start < 0)
+      return -1;
+   if (sublen + start > strlen)
+      return -1;
+   for (; start + sublen <= strlen; start++)
+      if (!dStrncmp(string + start, delim, sublen))
+         return start;
+   return -1;
+}
+
+const char* strreplace(const char* source, const char* from, const char* to)
+{
+   S32 fromLen = dStrlen(from);
+   if (!fromLen)
+      return source;
+
+   S32 toLen = dStrlen(to);
+   S32 count = 0;
+   const char *scan = source;
+   while (scan)
+   {
+      scan = dStrstr(scan, from);
+      if (scan)
+      {
+         scan += fromLen;
+         count++;
+      }
+   }
+   char *ret = Con::getReturnBuffer(dStrlen(source) + 1 + (toLen - fromLen) * count);
+   U32 scanp = 0;
+   U32 dstp = 0;
+   for (;;)
+   {
+      const char *scan = dStrstr(source + scanp, from);
+      if (!scan)
+      {
+         dStrcpy(ret + dstp, source + scanp);
+         break;
+      }
+      U32 len = scan - (source + scanp);
+      dStrncpy(ret + dstp, source + scanp, len);
+      dstp += len;
+      dStrcpy(ret + dstp, to);
+      dstp += toLen;
+      scanp += len + fromLen;
+   }
+   return ret;
+}
+
+const char* getSubStr(const char* str, S32 start, S32 numChars)
+{
+   S32 baseLen = dStrlen(str);
+
+   if (numChars == -1)
+      numChars = baseLen - start;
+
+   if (start < 0 || numChars < 0) {
+      Con::errorf(ConsoleLogEntry::Script, "getSubStr(...): error, starting position and desired length must be >= 0: (%d, %d)", start, numChars);
+
+      return "";
+   }
+
+   if (baseLen < start)
+      return "";
+
+   U32 actualLen = numChars;
+   if (start + numChars > baseLen)
+      actualLen = baseLen - start;
+
+   char *ret = Con::getReturnBuffer(actualLen + 1);
+   dStrncpy(ret, str + start, actualLen);
+   ret[actualLen] = '\0';
+
+   return ret;
+}
+
+static Vector<String>   sgFindFilesResults;
+static U32              sgFindFilesPos = 0;
+static char sgScriptFilenameBuffer[1024];
+
+static S32 buildFileList(const char* pattern, bool recurse, bool multiMatch)
+{
+   static const String sSlash("/");
+
+   sgFindFilesResults.clear();
+
+   String sPattern(Torque::Path::CleanSeparators(pattern));
+   if (sPattern.isEmpty())
+   {
+      Con::errorf("findFirstFile() requires a search pattern");
+      return -1;
+   }
+
+   if (!Con::expandScriptFilename(sgScriptFilenameBuffer, sizeof(sgScriptFilenameBuffer), sPattern.c_str()))
+   {
+      Con::errorf("findFirstFile() given initial directory cannot be expanded: '%s'", pattern);
+      return -1;
+   }
+   sPattern = String::ToString(sgScriptFilenameBuffer);
+
+   String::SizeType slashPos = sPattern.find('/', 0, String::Right);
+   //    if(slashPos == String::NPos)
+   //    {
+   //       Con::errorf("findFirstFile() missing search directory or expression: '%s'", sPattern.c_str());
+   //       return -1;
+   //    }
+
+   // Build the initial search path
+   Torque::Path givenPath(Torque::Path::CompressPath(sPattern));
+   givenPath.setFileName("*");
+   givenPath.setExtension("*");
+
+   if (givenPath.getPath().length() > 0 && givenPath.getPath().find('*', 0, String::Right) == givenPath.getPath().length() - 1)
+   {
+      // Deal with legacy searches of the form '*/*.*'
+      String suspectPath = givenPath.getPath();
+      String::SizeType newLen = suspectPath.length() - 1;
+      if (newLen > 0 && suspectPath.find('/', 0, String::Right) == suspectPath.length() - 2)
+      {
+         --newLen;
+      }
+      givenPath.setPath(suspectPath.substr(0, newLen));
+   }
+
+   Torque::FS::FileSystemRef fs = Torque::FS::GetFileSystem(givenPath);
+   //Torque::Path path = fs->mapTo(givenPath);
+   Torque::Path path = givenPath;
+
+   // Make sure that we have a root so the correct file system can be determined when using zips
+   if (givenPath.isRelative())
+      path = Torque::Path::Join(Torque::FS::GetCwd(), '/', givenPath);
+
+   path.setFileName(String::EmptyString);
+   path.setExtension(String::EmptyString);
+   if (!Torque::FS::IsDirectory(path))
+   {
+      Con::errorf("findFirstFile() invalid initial search directory: '%s'", path.getFullPath().c_str());
+      return -1;
+   }
+
+   // Build the search expression
+   const String expression(slashPos != String::NPos ? sPattern.substr(slashPos + 1) : sPattern);
+   if (expression.isEmpty())
+   {
+      Con::errorf("findFirstFile() requires a search expression: '%s'", sPattern.c_str());
+      return -1;
+   }
+
+   S32 results = Torque::FS::FindByPattern(path, expression, recurse, sgFindFilesResults, multiMatch);
+   if (givenPath.isRelative() && results > 0)
+   {
+      // Strip the CWD out of the returned paths
+      // MakeRelativePath() returns incorrect results (it adds a leading ..) so doing this the dirty way
+      const String cwd = Torque::FS::GetCwd().getFullPath();
+      for (S32 i = 0; i < sgFindFilesResults.size(); ++i)
+      {
+         String str = sgFindFilesResults[i];
+         if (str.compare(cwd, cwd.length(), String::NoCase) == 0)
+            str = str.substr(cwd.length());
+         sgFindFilesResults[i] = str;
+      }
+   }
+   return results;
+}
+
+String findFirstFile(const char* pattern, bool recurse)
+{
+   S32 numResults = buildFileList(pattern, recurse, false);
+
+   // For Debugging
+   //for ( S32 i = 0; i < sgFindFilesResults.size(); i++ )
+   //   Con::printf( " [%i] [%s]", i, sgFindFilesResults[i].c_str() );
+
+   sgFindFilesPos = 1;
+
+   if (numResults < 0)
+   {
+      Con::errorf("findFirstFile() search directory not found: '%s'", pattern);
+      return String();
+   }
+
+   return numResults ? sgFindFilesResults[0] : String();
+}
+
+String findMaterialMap(Material *mat, const char* filename)
+{
+   String fileName = filename;
+
+   if (fileName.isEmpty())
+      return String("");
+
+   Vector<String> ext;
+   ext.push_back(".png");
+   ext.push_back(".tga");
+   ext.push_back(".jpg");
+   ext.push_back(".dds");
+   ext.push_back(".bmp");
+   ext.push_back(".gif");
+   ext.push_back(".jng");
+
+   //-JR
+   bool isfile = false;
+   if (isFile(filename))
+   {
+      isfile = true;
+   }
+   else
+   {
+      for (U32 i = 0; i < ext.size(); i++)
+      {
+         String testFileName = fileName + ext[i];
+         //%testFileName = fileName @ getWord( %formats, i );
+         if (isFile(testFileName))
+         {
+            isfile = true;
+            break;
+         }
+      }
+   }
+
+   // if we didn't grab a proper name, lets use a string logarithm
+   if (!isfile)
+   {
+      String materialDiffuse = fileName;
+      String materialDiffuse2 = fileName;
+
+      String materialPath = mat->getFilename();
+
+      if (dStrchr(materialDiffuse, '/') == "")
+      {
+         S32 k = 0;
+         while (strpos(materialPath, "/", k) != -1)
+         {
+            S32 count = strpos(materialPath, "/", k);
+            k = count + 1;
+         }
+
+         String materialsCs = getSubStr(materialPath, k, 99);
+         fileName = strreplace(materialPath, materialsCs, fileName);
+      }
+      else
+         fileName = strreplace(materialPath, materialPath, fileName);
+
+
+      // lets test the pathing we came up with
+      if (isFile(fileName))
+      {
+         isfile = true;
+      }
+      else
+      {
+         for (U32 i = 0; i < ext.size(); i++)
+         {
+            String testFileName = fileName + ext[i];
+            if (isFile(testFileName))
+            {
+               isfile = true;
+               break;
+            }
+         }
+      }
+
+      // as a last resort to find the proper name
+      // we have to resolve using find first file functions very very slow
+      if (!isfile)
+      {
+         S32 k = 0;
+         while (strpos(materialDiffuse2, "/", k) != -1)
+         {
+            S32 count = strpos(materialDiffuse2, "/", k);
+            k = count + 1;
+         }
+
+         fileName = getSubStr(materialDiffuse2, k, 99);
+         for (U32 i = 0; i < ext.size(); i++)
+         {
+            String searchString = "*" + fileName + ext[i];
+            String testFileName = findFirstFile(searchString, true);
+            if (isFile(testFileName))
+            {
+               fileName = testFileName;
+               isfile = true;
+               break;
+            }
+         }
+      }
+
+      //final test to see if we found anything
+      if (fileName == String(filename))
+         return mat->getPath() + String(filename);
+      else
+         return fileName;
+   }
+   else
+      return mat->getPath() + fileName;
+}
+//-JR
+
 // Generate a new Material object
 Material *ColladaAppMaterial::createMaterial(const Torque::Path& path) const
 {
@@ -193,8 +511,10 @@ Material *ColladaAppMaterial::createMaterial(const Torque::Path& path) const
    String cleanName = cleanString(getName());
 
    // Prefix the material name with the filename (if not done already by TSShapeConstructor prefix)
-   if (!cleanName.startsWith(cleanFile))
-      cleanName = cleanFile + "_" + cleanName;
+   //-JR
+   //if (!cleanName.startsWith(cleanFile))
+   //   cleanName = cleanFile + "_" + cleanName;
+   //-JR
 
    // Determine the blend operation for this material
    Material::BlendOp blendOp = (flags & TSMaterialList::Translucent) ? Material::LerpAlpha : Material::None;
@@ -209,9 +529,14 @@ Material *ColladaAppMaterial::createMaterial(const Torque::Path& path) const
    Material *newMat = MATMGR->allocateAndRegister( cleanName, getName() );
    Con::setVariable("$Con::File", oldScriptFile);        // restore script path
 
-   newMat->mDiffuseMapFilename[0] = diffuseMap;
-   newMat->mNormalMapFilename[0] = normalMap;
-   newMat->mSpecularMapFilename[0] = specularMap;
+   //-JR
+   //newMat->mDiffuseMapFilename[0] = diffuseMap;
+   //newMat->mNormalMapFilename[0] = normalMap;
+   //newMat->mSpecularMapFilename[0] = specularMap;
+   newMat->mDiffuseMapFilename[0] = findMaterialMap(newMat, diffuseMap);
+   newMat->mNormalMapFilename[0] = findMaterialMap(newMat, normalMap);
+   newMat->mSpecularMapFilename[0] = findMaterialMap(newMat, specularMap);
+   //-JR
 
    newMat->mDiffuse[0] = diffuseColor;
    newMat->mSpecular[0] = specularColor;

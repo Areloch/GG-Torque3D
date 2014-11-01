@@ -87,6 +87,12 @@ ConsoleDocClass( Entity,
                 "@ingroup FX\n"
                 );
 
+EulerF R2DEuler(EulerF eul)
+{
+   EulerF ret = EulerF(mRadToDeg(eul.x), mRadToDeg(eul.y), mRadToDeg(eul.z));
+   return ret;
+}
+
 Entity::Entity()
 {
    //mTypeMask |= DynamicShapeObjectType | StaticObjectType | ;
@@ -110,52 +116,41 @@ void Entity::initPersistFields()
    removeField("DataBlock");
 
    addGroup( "Transform" );
-   addProtectedField( "eulerRotation", TypePoint3F, Offset( mRot, Entity ),
-      &_setEulerRotation, &defaultProtectedGetFn,
-      "Object world orientation." );
+      removeField("Rotation");
+      addProtectedField( "Rotation", TypeRotationF, Offset(mRot, Entity), &_setRotation, &_getRotation, "Object world orientation.");
    endGroup( "Transform" );
 }
 
 //
-bool Entity::_setEulerRotation( void *object, const char *index, const char *data )
+bool Entity::_setRotation( void *object, const char *index, const char *data )
 {
    Entity* so = static_cast<Entity*>( object );
    if ( so )
    {
-      EulerF rot;
-      Con::setData( TypePoint3F, &rot, 0, 1, &data );
+      RotationF rot;
+      Con::setData( TypeRotationF, &rot, 0, 1, &data );
 
-      so->setRotation( rot );
+      so->mRot = rot;
+      MatrixF mat = rot.asMatrixF();
+      mat.setPosition(so->getPosition());
+      so->setTransform(mat);
    }
    return false;
 }
 
-/*const char *Entity::_getEulerRotation( void *object, const char *data )
-//bool Entity::_getEulerRotation( void *object, const char *index, const char *data )
+const char * Entity::_getRotation(void* obj, const char* data)
 {
-Entity* so = static_cast<Entity*>( object );
-if ( so )
-{
-EulerF rot;
-//Con::setData( TypePoint3F, &rot, 0, 1, &data );
+   Entity* so = static_cast<Entity*>( obj );
+   if ( so )
+   {
+      EulerF eulRot = so->mRot.asEulerF();
 
-//so->setRotation( rot );
-
-
-
-AngAxisF aa(*(MatrixF *) dptr);
-aa.axis.normalize();
-char* returnBuffer = Con::getReturnBuffer(256);
-dSprintf(returnBuffer,256,"%g %g %g %g",aa.axis.x,aa.axis.y,aa.axis.z,mRadToDeg(aa.angle));
-return returnBuffer;
-}
-return false;
-}*/
-
-EulerF R2DEuler(EulerF eul)
-{
-   EulerF ret = EulerF(mRadToDeg(eul.x), mRadToDeg(eul.y), mRadToDeg(eul.z));
-   return ret;
+      static const U32 bufSize = 256;
+      char* returnBuffer = Con::getReturnBuffer(bufSize);
+      dSprintf(returnBuffer,bufSize,"%g %g %g",mRadToDeg(eulRot.x), mRadToDeg(eulRot.y), mRadToDeg(eulRot.z));
+      return returnBuffer;
+   }
+   return "0 0 0";
 }
 
 EulerF D2REuler(EulerF eul)
@@ -176,7 +171,8 @@ bool Entity::onAdd()
 
    //setRenderTransform(mObjBox);
 
-   mRot = R2DEuler(getTransform().toEuler());
+   EulerF rot = mRot.asEulerF(RotationF::Degrees);
+   //mRot = R2DEuler(getTransform().toEuler());
    //mRot = EulerF(mRadToDeg(rot.x), mRadToDeg(rot.y), mRadToDeg(rot.z));
 
    addToScene();
@@ -210,6 +206,20 @@ void Entity::pushEvent(const char* eventName, Vector<const char*> eventParams)
       if(getComponent(b)->isEnabled())
          getComponent(b)->handleEvent(eventName, eventParams);
    }
+}
+
+void Entity::setDataField(StringTableEntry slotName, const char *array, const char *value)
+{
+   Parent::setDataField(slotName, array, value);
+
+   onDataSet.trigger(this, slotName, value);
+}
+
+void Entity::onStaticModified(const char* slotName, const char* newValue)
+{
+   Parent::onStaticModified(slotName, newValue);
+
+   onDataSet.trigger(this, slotName, newValue);
 }
 
 //Updating
@@ -346,6 +356,7 @@ void Entity::unpackUpdate(NetConnection *con, BitStream *stream)
       stream->readAffineTransform( &objToWorld );  
 
       mathRead( *stream, &mRot );
+
       setTransform(objToWorld);
       //setTransform( objToWorld.getPosition(), mRot );
    }
@@ -412,6 +423,7 @@ void Entity::setTransform(const MatrixF &mat)
       }
       else
       {
+         //mRot.set(mat);
          Parent::setTransform(mat);
       }
    }
@@ -434,6 +446,44 @@ void Entity::setTransform(const MatrixF &mat)
 
    pushEvent("setTransform", args);
    }*/
+}
+
+void Entity::setRotation(RotationF rotation)
+{
+   MatrixF temp, imat, xmat, ymat, zmat;
+
+   /*if(isMounted())
+   {
+      Point3F mountEul = mMount.object->getTransform().toEuler();
+
+      mountEul = Point3F(mRadToDeg(mountEul.x), mRadToDeg(mountEul.y), mRadToDeg(mountEul.z));
+
+      EulerF mountTransEul = mMount.xfm.toEuler();
+      mountTransEul = Point3F(mRadToDeg(mountTransEul.x), mRadToDeg(mountTransEul.y), mRadToDeg(mountTransEul.z));
+
+      Point3F diff = rotation - mountEul;
+
+      Point3F radRot = Point3F(mDegToRad(diff.x), mDegToRad(diff.y), mDegToRad(diff.z));
+      xmat.set(EulerF(radRot.x,0,0));
+      ymat.set(EulerF(0.0f, radRot.y, 0.0f));
+      zmat.set(EulerF(0,0,radRot.z));
+
+      imat.mul(zmat, xmat);
+      temp.mul(imat, ymat);
+
+      temp.setColumn(3, mMount.xfm.getPosition());
+
+      mMount.xfm = temp;
+      setMaskBits(MountedMask);
+   }		
+   else
+   {*/
+      mRot = rotation;
+      temp = mRot.asMatrixF();
+      temp.setPosition(getPosition());
+
+      setTransform(temp);
+   //}
 }
 
 void Entity::setRotation(EulerF rotation)
@@ -630,13 +680,12 @@ bool Entity::castRayRendered(const Point3F &start, const Point3F &end, RayInfo *
 
 bool Entity::buildPolyList(PolyListContext context, AbstractPolyList* polyList, const Box3F &box, const SphereF &sphere)
 {
-   /*for(U32 b=0; b < getComponentCount(); b++){
-   CollisionBehaviorInstance *cB = dynamic_cast<CollisionBehaviorInstance*>(getComponent(b));
-   if(cB && (cB->getComponentType() == String("Collision")))
+   Vector<BuildPolyListInterface*> updaters = getComponents<BuildPolyListInterface>();
+   for(Vector<BuildPolyListInterface*>::iterator it = updaters.begin(); it != updaters.end(); it++) 
    {
-   return cB->buildPolyList(context,polyList,box,sphere);
+      return (*it)->buildPolyList(context, polyList, box, sphere);
    }
-   }*/
+
    return false;
 }
 
@@ -897,7 +946,7 @@ DefineEngineMethod( Entity, setBox, void,
    object->setObjectBox( Box3F(-box, box) );
 }
 
-DefineEngineMethod( Entity, getEulerRotation, Point3F,
+/*DefineEngineMethod( Entity, getEulerRotation, Point3F,
                    (),,
                    "@brief Mount objB to this object at the desired slot with optional transform.\n\n"
 
@@ -907,4 +956,4 @@ DefineEngineMethod( Entity, getEulerRotation, Point3F,
                    "@return true if successful, false if failed (objB is not valid)" )
 {
    return object->getRotation();
-}
+}*/

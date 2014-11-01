@@ -1063,3 +1063,64 @@ singleton GuiControlProfile( GuiCreatorIconButtonProfile )
    //bevelColorLL = "0 0 0";
    category = "Editor";
 };
+
+if( !isObject( GuiModelessDialogProfile ) )
+new GuiControlProfile( GuiModelessDialogProfile )
+{
+   modal = false;
+   category = "Core";
+};
+
+if( !isObject( GuiTabBorderProfile ) )
+new GuiControlProfile( GuiTabBorderProfile )
+{
+   border = false;
+   opaque = false;
+   hasBitmapArray = true;
+   bitmap = "./images/tab-border";
+   category = "Core";
+};
+
+if( !isObject( GuiTabBookProfile ) )
+new GuiControlProfile( GuiTabBookProfile )
+{
+   fillColorHL = "100 100 100";
+   fillColorNA = "150 150 150";
+   fontColor = "30 30 30";
+   fontColorHL = "0 0 0";
+   fontColorNA = "50 50 50";
+   fontType = "Arial";
+   fontSize = 14;
+   justify = "center";
+   bitmap = "./images/tab";
+   tabWidth = 64;
+   tabHeight = 24;
+   tabPosition = "Top";
+   tabRotation = "Horizontal";
+   textOffset = "0 -3";
+   tab = true;
+   cankeyfocus = true;
+   category = "Core";
+};
+
+if( !isObject( GuiTabPageProfile ) )
+new GuiControlProfile( GuiTabPageProfile : GuiDefaultProfile )
+{
+   fontType = "Arial";
+   fontSize = 10;
+   justify = "center";
+   bitmap = "./images/tab";
+   opaque = false;
+   fillColor = "240 239 238";
+   category = "Core";
+};
+
+if( !isObject( GuiTabBorderProfile ) )
+new GuiControlProfile( GuiTabBorderProfile )
+{
+   border = false;
+   opaque = false;
+   hasBitmapArray = true;
+   bitmap = "./images/tab-border";
+   category = "Core";
+};

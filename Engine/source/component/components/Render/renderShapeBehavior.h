@@ -28,6 +28,10 @@
 #ifndef _ACTOR_H_
 #include "T3D/Entity.h"
 #endif
+
+#ifndef _NETSTRINGTABLE_H_
+   #include "sim/netStringTable.h"
+#endif
 /*#ifndef _PATH_H_
 #include "core/util/path.h"
 #endif*/
@@ -78,7 +82,8 @@ class RenderShapeBehaviorInstance : public ComponentInstance,
    enum
    {
       ShapeMask = Parent::NextFreeMask,
-      NextFreeMask = Parent::NextFreeMask << 1,
+      MaterialMask = Parent::NextFreeMask << 1, 
+      NextFreeMask = Parent::NextFreeMask << 2,
    };
 
 protected:
@@ -87,6 +92,15 @@ protected:
    TSShapeInstance *		mShapeInstance;
    Box3F						mShapeBounds;
    Point3F					mCenterOffset;
+
+   struct matMap
+   {
+      String matName;
+      U32 slot;
+   };
+
+   Vector<matMap>  mChangingMaterials;
+   Vector<matMap>  mMaterials;
 
    class boneObject : public SimGroup
    {
@@ -124,6 +138,8 @@ public:
    S32 getNodeByName(String nodeName);
 
    void updateShape();
+   void updateMaterials();
+
    virtual void onComponentRemove();
    virtual void onComponentAdd();
 
@@ -138,6 +154,10 @@ public:
    virtual bool castRayRendered(const Point3F &start, const Point3F &end, RayInfo *info);
 
    void mountObjectToNode(SceneObject* objB, String node, MatrixF txfm);
+
+   virtual void onDynamicModified(const char* slotName, const char* newValue);
+
+   void changeMaterial(U32 slot, const char* newMat);
 
    //virtual Geometry* getGeometry();
 

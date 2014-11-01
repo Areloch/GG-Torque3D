@@ -227,10 +227,10 @@ function ETransformSelection::getAbsRotation( %this )
       return;
    }
       
-   %rot = %obj.getEulerRotation();
+   /*%rot = %obj.getEulerRotation();
    ETransformSelection-->Pitch.setText(getWord(%rot, 0));
    ETransformSelection-->Bank.setText(getWord(%rot, 1));
-   ETransformSelection-->Heading.setText(getWord(%rot, 2));
+   ETransformSelection-->Heading.setText(getWord(%rot, 2));*/
    
    // Turn off relative as we're populating absolute values.
    // Of course this means that we need to set local on.

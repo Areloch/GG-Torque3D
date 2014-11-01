@@ -18,6 +18,8 @@
 #include "console/engineAPI.h"
 #include "lighting/lightQuery.h"
 #include "T3D/gameBase/gameConnection.h"
+#include "T3D/gameFunctions.h"
+#include "math/mathUtils.h"
 
 IMPLEMENT_CALLBACK( cameraComponentInstance, validateCameraFov, F32, (F32 fov), (fov),
                    "@brief Called on the server when the client has requested a FOV change.\n\n"
@@ -30,7 +32,7 @@ IMPLEMENT_CALLBACK( cameraComponentInstance, validateCameraFov, F32, (F32 fov), 
                    "capabilities of the current weapon.\n\n"
 
                    "Following this method, ShapeBase ensures that the given FOV still falls within "
-                   "the datablock's cameraMinFov and cameraMaxFov.  If that is good enough for your "
+                   "the datablock's mCameraMinFov and mCameraMaxFov.  If that is good enough for your "
                    "purposes, then you do not need to define the validateCameraFov() callback for "
                    "your ShapeBase.\n\n"
 
@@ -46,6 +48,10 @@ IMPLEMENT_CALLBACK( cameraComponentInstance, validateCameraFov, F32, (F32 fov), 
 cameraComponent::cameraComponent()
 {
    mNetFlags.set(Ghostable | ScopeAlways);
+
+   addComponentField("FOV", "Shape file to be rendered by this object.", "float", "80");
+   addComponentField("MinFOV", "Shape file to be rendered by this object.", "float", "5");
+   addComponentField("MaxFOV", "Shape file to be rendered by this object.", "float", "175");
 }
 
 cameraComponent::~cameraComponent()
@@ -110,6 +116,12 @@ cameraComponentInstance::cameraComponentInstance( Component *btemplate )
    mTemplate = btemplate;
    mOwner = NULL;
 
+   mClientScreen = Point2F(1, 1);
+
+   mCameraFov = mCameraDefaultFov = 80;
+   mCameraMinFov = 5;
+   mCameraMaxFov = 175;
+
    mNetFlags.set(Ghostable);
 }
 
@@ -142,27 +154,46 @@ void cameraComponentInstance::onComponentRemove()
    Parent::onComponentRemove();
 }
 
-
 void cameraComponentInstance::initPersistFields()
 {
    Parent::initPersistFields();
 
+   addProtectedField("FOV", TypeF32, Offset(mCameraFov, cameraComponentInstance), &_setCameraFov, defaultProtectedGetFn);
+
+   addField("MinFOV",   TypeF32,  Offset( mCameraMinFov, cameraComponentInstance ), "" );
+
+   addField("MaxFOV",   TypeF32,  Offset( mCameraMaxFov, cameraComponentInstance ), "" );
+
+   addField("ScreenAspect",   TypePoint2I,  Offset( mClientScreen, cameraComponentInstance ), "" );
 }
 
 bool cameraComponentInstance::isValidCameraFov(F32 fov)
 {
-   return((fov >= cameraMinFov) && (fov <= cameraMaxFov));
+   return((fov >= mCameraMinFov) && (fov <= mCameraMaxFov));
+}
+
+bool cameraComponentInstance::_setCameraFov( void *object, const char *index, const char *data )
+{
+   cameraComponentInstance *cCI = static_cast<cameraComponentInstance*>(object);
+   cCI->setCameraFov(dAtof(data));
+   return true;
 }
 
 void cameraComponentInstance::setCameraFov(F32 fov)
 {
    // On server allow for script side checking
-   if ( !isGhost() && isMethod( "validateCameraFov" ) )
+   /*if ( !isGhost() && isMethod( "validateCameraFov" ) )
    {
       fov = validateCameraFov_callback( fov );
-   }
+   }*/
 
-   mCameraFov = mClampF(fov, cameraMinFov, cameraMaxFov);
+   mCameraFov = mClampF(fov, mCameraMinFov, mCameraMaxFov);
+
+   if(isClientObject())
+      GameSetCameraTargetFov(mCameraFov);
+
+   if(isServerObject())
+      setMaskBits(FOVMask);
 }
 
 void cameraComponentInstance::onCameraScopeQuery(NetConnection *cr, CameraScopeQuery * query)
@@ -299,12 +330,52 @@ void cameraComponentInstance::getCameraParameters(F32 *min,F32* max,Point3F* off
 U32 cameraComponentInstance::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
 {
    U32 retmask = Parent::packUpdate(con, mask, stream);
+
+   if( mask & (FOVMask | InitialUpdateMask))
+   {
+      if(!mOwner)
+      {
+         stream->writeFlag( false );
+      }
+      else if( con->getGhostIndex(mOwner) != -1 )
+      {
+         stream->writeFlag( true );
+         stream->write(mCameraFov);
+         //stream->writeFloat( 14, 8 );
+      }
+      else
+      {
+         retmask |= FOVMask; //try it again untill our dependency is ghosted
+         stream->writeFlag( false );
+      }
+   }
+
    return retmask;
 }
 
 void cameraComponentInstance::unpackUpdate(NetConnection *con, BitStream *stream)
 {
    Parent::unpackUpdate(con, stream);
+
+   if(stream->readFlag())
+   {
+      F32 fov;
+      stream->read(&fov);
+      setCameraFov(fov);
+   }
+}
+
+Frustum cameraComponentInstance::getFrustum() 
+{ 
+   Frustum visFrustum; 
+   F32 left, right, top, bottom;
+   F32 aspectRatio = mClientScreen.x / mClientScreen.y;
+   //MathUtils::makeFrustum( &left, &right, &top, &bottom, mCameraFov, aspectRatio, 0.1f );
+
+   //visFrustum.set(false, left, right, top, bottom, 0.1f, 1000, mOwner->getRenderTransform());
+   visFrustum.set(false, mDegToRad(mCameraFov), aspectRatio, 0.1f, 1000, mOwner->getTransform());
+   
+   return visFrustum;
 }
 
 ConsoleMethod(cameraComponentInstance, getMode, const char*, 2, 2, "() - We get the first behavior of the requested type on our owner object.\n"

@@ -15,6 +15,10 @@
 #include "console/sim.h"
 #endif
 
+#ifndef _COMPONENTINSTANCE_H_
+#include "component/components/componentInstance.h"
+#endif
+
 struct ContactInfo 
 {
    bool contacted, move;
@@ -51,6 +55,9 @@ public:
       VectorF vector;
    };
 
+   Signal< void( SceneObject* ) > CollisionInterface::onCollisionSignal;
+   Signal< void( SceneObject* ) > CollisionInterface::onContactSignal;
+
 protected:
    CollisionTimeout* mTimeoutList;
    static CollisionTimeout* sFreeTimeoutList;
@@ -62,6 +69,8 @@ protected:
    U32 CollisionMoveMask;
 
    Convex *mConvexList;
+
+   bool mBlockColliding;
 
    /// handleCollisionList
    /// This basically takes in a CollisionList and calls handleCollision for each.
@@ -92,15 +101,25 @@ public:
 
 	Convex *getConvexList() { return mConvexList; }
 
+   virtual bool buildPolyList(PolyListContext context, AbstractPolyList* polyList, const Box3F &box, const SphereF &sphere)=0;
+
 	enum PublicConstants { 
       CollisionTimeoutValue = 250
    };
+
+   bool doesBlockColliding() { return mBlockColliding; }
 };
 
 class BuildConvexInterface
 {
 public:
    virtual bool buildConvex(const Box3F& box, Convex* convex)=0;
+};
+
+class BuildPolyListInterface
+{
+public:
+   virtual bool buildPolyList(PolyListContext context, AbstractPolyList* polyList, const Box3F &box, const SphereF &sphere)=0;
 };
 
 #endif

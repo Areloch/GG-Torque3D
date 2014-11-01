@@ -714,11 +714,11 @@ ConsoleSetType( TypeColorI )
 //////////////////////////////////////////////////////////////////////////
 // TypeSimObjectPtr
 //////////////////////////////////////////////////////////////////////////
-ConsoleType( SimObject, TypeSimObjectPtr, SimObject* )
+ConsoleType(SimObject, TypeSimObjectPtr, SimObject*)
 
-ConsoleSetType( TypeSimObjectPtr )
+ConsoleSetType(TypeSimObjectPtr)
 {
-   if(argc == 1)
+   if (argc == 1)
    {
       SimObject **obj = (SimObject **)dptr;
       *obj = Sim::findObject(argv[0]);
@@ -727,7 +727,7 @@ ConsoleSetType( TypeSimObjectPtr )
       Con::printf("(TypeSimObjectPtr) Cannot set multiple args to a single S32.");
 }
 
-ConsoleGetType( TypeSimObjectPtr )
+ConsoleGetType(TypeSimObjectPtr)
 {
    SimObject **obj = (SimObject**)dptr;
    char* returnBuffer = Con::getReturnBuffer(256);

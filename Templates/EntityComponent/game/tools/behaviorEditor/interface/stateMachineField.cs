@@ -17,30 +17,6 @@ function BehaviorFieldStack::createStateMachineEditor(%this, %behavior, %fieldIn
    %this.add(%button);
 }
 
-/*function BehaviorFieldStack::createSMStates(%this, %behavior, %fieldIndex)
-{
-   %fieldInfo = %behavior.template.getBehaviorField(%fieldIndex);
-   %name = getField(%fieldInfo, 0);
-   
-   new GuiTextCtrl() {
-      position = "0 0";
-      extent = "100 15";
-      text = "Starting State:";
-   };
-      
-   %fieldList = new GuiPopUpMenuCtrlEx() 
-   {
-      class = "stateMachineStatesList";
-      Profile = "GuiPopupMenuProfile";
-      HorizSizing = "width";
-      VertSizing = "bottom";
-      position = "0 1";
-      Extent = "120 18";
-      behavior = %this.behavior;
-   };
-   %this.add(%fieldList);
-}*/
-
 function EditStateMachineBtn::onClick(%this)
 {
    Canvas.pushDialog(StateMachineEditor);
@@ -53,249 +29,187 @@ function StateMachineEditor::open(%this)
 {
    //check our behavior and see if we have any existing state/field info to work with
    //if we do, load those up first
-   for(%i = 0; %i < %this.behavior.getStateCount(); %i++)
+   for(%i = 0; %i < %this.behavior.stateMachine.count(); %i++)
    {
-      %stateName = %this.behavior.getStateByIndex(%i);
+      %stateName = %this.behavior.stateMachine.getKey(%i);
       
-      %ddhdhhd = 0;
-      //%this.addState(%stateName);
-   }   
+      %this.addState(%stateName);
+   }    
 }
 
-function StateMachineEditor::addNewNode(%this, %stateName)
+function StateMachineEditor::addState(%this, %stateName)
 {
    if(%stateName $= "")
       %stateName = "New State";
       
-    %node = new visualWebNode();
-	//{
-	//	profile = "GuiMenuButtonProfile";
-	//};
-	stateMachineNodeTree.add(%node);
-	
-	%node.nodeName = %stateName;
-	
-	//%node.addInputSocket("In");
-   
-    %this.behavior.addState(%stateName);
-}
-
-function stateMachineNodeTree::onSocketClicked(%this, %nodeID, %socketID)
-{
-	echo("clicked on a socket!");
-	%this.socketRClicked = true;	
-	%this.selectedSocket = %socketID;
-	%this.selectedNode = %nodeID;
-}
-
-function stateMachineNodeTree::onRightMouseUp(%this, %modifier, %mousePos, %mouseClickCount)
-{
-	if(%this.socketRClicked)
-	{
-		%popup = SocketContextPopup;
-		if( !isObject( %popup ) )
-			%popup = new PopupMenu( SocketContextPopup )
-			{
-				superClass = "MenuBuilder";
-				isPopup = "1";
-	
-				item[ 0 ] = "Edit transition" TAB "" TAB "StateMachineEditor.editTransition("@%this@".selectedSocket);";
-				
-				object = -1;
-			};
-	}
-	else
-	{
-		%node = %this.getNodeAtPosition(%mousePos);
-		if(isObject(%node))
-		{
-			echo("Context-clicked on node: "@%node.getId());
-			%popup = NodeContextPopup;
-			if( !isObject( %popup ) )
-				%popup = new PopupMenu( NodeContextPopup )
-				{
-					superClass = "MenuBuilder";
-					isPopup = "1";
-					
-					item[ 0 ] = "Add transition" TAB "" TAB "%this.node.addOutputSocket(\"Transition\");";
-					item[ 1 ] = "Rename State" TAB "" TAB "StateMachineEditor.renameNode("@%node@");";
-					
-					node = -1;
-				};
-
-			NodeContextPopup.node = %node;
-
-		}
-		else
-		{
-			%popup = StateMachineEditorContextPopup;
-			if( !isObject( %popup ) )
-				%popup = new PopupMenu( StateMachineEditorContextPopup )
-				{
-					superClass = "MenuBuilder";
-					isPopup = "1";
-					
-					item[ 0 ] = "Add new state" TAB "" TAB "StateMachineEditor.addState();";
-					item[ 1 ] = "Recenter view" TAB "" TAB "stateMachineNodeTree.recenter();";
-				};	
-		}
-	}
-		
-	/*if( %haveObjectEntries )
-   {         
-      %popup.enableItem( 0, %obj.isNameChangeAllowed() && %obj.getName() !$= "MissionGroup" );
-      %popup.enableItem( 1, %obj.getName() !$= "MissionGroup" );
-      if( %haveLockAndHideEntries )
+   %state = new GuiControl() {
+      position = "0 0";
+      extent = "285 50";
+      horizSizing = "horizResizeWidth";
+      vertSizing = "vertResizeTop";
+      isContainer = "1";
+      
+      new GuiTextEditCtrl() {
+         position = "0 0";
+         extent = "100 15";
+         text = %stateName;
+      };
+      
+      new GuiButtonCtrl() {
+         //buttonMargin = "4 4";
+         text = "Remove State";
+         position = "184 0";
+         extent = "100 15";
+         //profile = "GuiButtonProfile";
+         command = "ScriptEditorGui.save();";
+      };
+      
+      new GuiSeparatorCtrl() {
+         position = "0 15";
+         extent = %this.extent.x SPC "10";
+         type = "horizontal";
+      };
+      
+      new GuiSimpleStackCtrl(%stateName@"StateStack")
       {
-         %popup.checkItem( 4, %obj.locked );
-         %popup.checkItem( 5, %obj.hidden );
-      }
-      %popup.enableItem( 7, %this.isItemSelected( %itemId ) );
-   }*/
+         //Profile = "EditorContainerProfile";
+         HorizSizing = "right";
+         VertSizing = "bottom";
+         Position = "0 25";
+         Extent = "285 20";
+         padding = 4;
+         
+         new GuiButtonCtrl() {
+            text = "Add field";
+            position = "3 0";
+            extent = "280 20";
+            horizSizing = "left";
+            vertSizing = "top";
+            command = "StateMachineEditor.addField("@%stateName@");";
+         };
+      };
+   };
    
-   %popup.showPopup( Canvas );
-
-   %this.socketRClicked = false;
+   %this-->Stack.add(%state);
+   //%this-->stateStackScroll.computeSizes();
 }
 
-function stateMachineNodeTree::onConnectionChanged(%this, %nodeA, %socketAID, %nodeB, %socketBID)
+function StateMachineEditor::addField(%this, %stateName)
 {
-	echo("Changed a connection!");
+   %index = %this.behavior.stateMachine.count();
+   %field = new GuiControl() {
+      position = "0 0";
+      extent = "285 20";
+      horizSizing = "width";
+      vertSizing = "height";
+      isContainer = "1";
+      fieldValueCtrl = "";
+      fieldID = %index++;
+   };
+      
+   %fieldList = new GuiPopUpMenuCtrlEx() 
+   {
+      class = "stateMachineFieldList";
+      Profile = "GuiPopupMenuProfile";
+      HorizSizing = "width";
+      VertSizing = "bottom";
+      position = "0 1";
+      Extent = "120 18";
+      behavior = %this.behavior;
+   };
+   
+   %field.add(%fieldList);
+   %fieldList.refresh();
+   
+    (%stateName@"StateStack").addToStack(%field);
+      
+   %this-->Stack.updateStack();
+   %this-->stateStackScroll.computeSizes();
+   
+   %this.behavior.addStateField(%stateName, "", "");
+   
+   return %field;
 }
 
-function StateMachineEditor::addState(%this)
+//==============================================================================
+function stateMachineFieldList::refresh(%this)
 {
-	%this.setupRenamer();
-	
-	%node = stateMachineNodeTree.selectedNode;
-	
-	stateMachineRenamer-->windowTitle.text = "Add State";
-	stateMachineRenamer-->textFieldName.setText("State Name:");
-	stateMachineRenamer-->confirmBtn.command = "StateMachineEditor.addNewNode(stateMachineRenamer-->textField.getText()); Canvas.popDialog(stateMachineRenamer);";
-
-	stateMachineRenamer-->textField.setText("");
+   %this.clear();
+   
+   // Find all the types.
+   %count = getWordCount(%this.behavior.stateFields);   
+   %index = 0;
+   for (%j = 0; %j < %count; %j++)
+   {
+      %item = getWord(%this.behavior.stateFields, %j);
+      %this.add(%item, %index);
+      %this.fieldType[%index] = %item;
+      %index++;
+   }
 }
 
-function StateMachineEditor::editTransition(%this, %socketId)
+function stateMachineFieldList::onSelect(%this)
 {
-	%this.setupRenamer();
-	
-	%node = stateMachineNodeTree.selectedNode;
-	
-	stateMachineRenamer-->windowTitle.text = "Edit Transition";
-	stateMachineRenamer-->textFieldName.setText("Set Transition:");
-	stateMachineRenamer-->confirmBtn.command = %node @ ".setSocketName(" @ %socketId @ ", stateMachineRenamer-->textField.getText()); Canvas.popDialog(stateMachineRenamer);";
-
-	stateMachineRenamer-->textField.setText("");
+   //if(%this.getParent().fieldValueCtrl $= "")
+   %this.fieldType = %this.fieldType[%this.getSelected()];
+   
+   if(%this.fieldType $= "transitionOnAnimEnd" || %this.fieldType $= "transitionOnAnimTrigger" 
+      || %this.fieldType $= "transitionOnTimeout")
+   {
+      %fieldCtrl = new GuiPopUpMenuCtrlEx() 
+      {
+         class = "stateMachineFieldList";
+         Profile = "GuiPopupMenuProfile";
+         HorizSizing = "width";
+         VertSizing = "bottom";
+         position = "124 1";
+         Extent = "120 18";
+      };
+   }
+   else if(%this.fieldType $= "animation")
+   {
+      %fieldCtrl = new GuiPopUpMenuCtrlEx() 
+      {
+         class = "stateMachineFieldList";
+         Profile = "GuiPopupMenuProfile";
+         HorizSizing = "width";
+         VertSizing = "bottom";
+         position = "124 1";
+         Extent = "120 18";
+      };
+      
+      %index = 0;
+      %animBhvr = %this.behavior.owner.getBehavior("AnimationController");
+      for(%i = 0; %i < %animBhvr.getAnimationCount(); %i++)
+      {
+         %item = %animBhvr.getAnimationName(%i);
+         %fieldCtrl.add(%item, %index);
+         %fieldCtrl.fieldValue[%index] = %item;
+         %index++;
+      }
+   }
+   else
+   {
+      %fieldCtrl = new GuiTextEditCtrl() {
+         position = "124 1";
+         extent = "120 10";
+         text = "";
+      };
+   }
+   
+   //get the state machine entry
+   %index = %this.getParent().fieldID;
+   
+   %oldValue = %this.behavior.stateMachine.getValue(%index);
+   %this.behavior.stateMachine.setValue(%fieldType SPC %oldValue.y);
+   
+   %this.getParent().add(%fieldCtrl);
 }
 
-function StateMachineEditor::renameNode(%this, %node)
+//==============================================================================
+
+//Now for the unique field types
+/*function stateMachineFieldList::refresh(%this)
 {
-	%this.setupRenamer();
-	
-	stateMachineRenamer-->windowTitle.text = "Rename State";
-	stateMachineRenamer-->textFieldName.setText("State name:");
-	stateMachineRenamer-->confirmBtn.command = %node @ ".nodeName = stateMachineRenamer-->textField.getText(); Canvas.popDialog(stateMachineRenamer);";
-
-	stateMachineRenamer-->textField.setText("");
-}
-
-function StateMachineEditor::setupRenamer(%this)
-{
-	if(!isObject(stateMachineRenamer))
-	{
-		%guiContent = new GuiControl(stateMachineRenamer) {
-			profile = "ToolsGuiDefaultProfile";
-			horizSizing = "right";
-			vertSizing = "bottom";
-			position = "0 0";
-			extent = "800 600";
-			minExtent = "8 8";
-			visible = "1";
-			setFirstResponder = "0";
-			modal = "1";
-			helpTag = "0";
-			
-			new GuiWindowCtrl() {
-				profile = "ToolsGuiWindowProfile";
-				horizSizing = "center";
-				vertSizing = "center";
-				position = "384 205";
-				extent = "256 75";
-				minExtent = "256 8";
-				visible = "1";
-				setFirstResponder = "0";
-				modal = "1";
-				helpTag = "0";
-				resizeWidth = "1";
-				resizeHeight = "1";
-				canMove = "1";
-				canClose = "0";
-				canMinimize = "0";
-				canMaximize = "0";
-				minSize = "50 50";
-				text = "Rename";
-				internalName = "windowTitle";
-			
-				new GuiTextCtrl() {
-					profile = "GuiCenterTextProfile";
-					horizSizing = "right";
-					vertSizing = "bottom";
-					position = "9 26";
-					extent = "84 16";
-					minExtent = "8 8";
-					visible = "1";
-					setFirstResponder = "0";
-					modal = "1";
-					helpTag = "0";
-					text = "Object Name:";
-					internalName = "textFieldName";
-				};
-				new GuiTextEditCtrl() {
-					class = ObjectBuilderGuiTextEditCtrl;
-					profile = "ToolsGuiTextEditProfile";
-					horizSizing = "width";
-					vertSizing = "bottom";
-					position = "78 26";
-					extent = "172 18";
-					minExtent = "8 8";
-					visible = "1";
-					setFirstResponder = "0";
-					modal = "1";
-					helpTag = "0";
-					historySize = "0";
-					internalName = "textField";
-				};
-				new GuiIconButtonCtrl() {
-					buttonMargin = "4 4";
-					iconBitmap = "tools/gui/images/iconCancel.png";
-					iconLocation = "Left";
-					textLocation = "Center";
-					textMargin = "4";
-					text = "Close";
-					position = "90 50";
-					extent = "80 20";
-					horizSizing = "left";
-					vertSizing = "top";
-					command = "Canvas.popDialog(stateMachineRenamer);";
-				};
-				new GuiIconButtonCtrl() {
-					buttonMargin = "4 4";
-					iconBitmap = "tools/gui/images/iconAccept.png";
-					iconLocation = "Left";
-					textLocation = "Center";
-					textMargin = "4";
-					text = "Save";
-					position = "175 50";
-					extent = "80 20";
-					horizSizing = "left";
-					vertSizing = "top";
-					command = "Canvas.popDialog(stateMachineRenamer);";
-					internalName = "confirmBtn";
-				};
-			};
-		};
-	}
-	
-	Canvas.pushdialog(stateMachineRenamer);
-}
+   
+}*/

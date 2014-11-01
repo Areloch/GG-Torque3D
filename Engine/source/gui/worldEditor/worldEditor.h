@@ -55,6 +55,11 @@
 #include "console/dynamicTypes.h"
 #endif
 
+//-JR
+#ifndef _BASE_TOOL_H_
+#include "component/components/baseTool.h"
+#endif
+//-JR
 
 class SceneObject;
 class WorldEditorSelection;
@@ -64,6 +69,10 @@ class WorldEditorSelection;
 class WorldEditor : public EditTSCtrl
 {
       typedef EditTSCtrl Parent;
+
+      //-JR
+      friend class BaseTool;
+      //-JR
 
 	public:
 
@@ -76,7 +85,7 @@ class WorldEditor : public EditTSCtrl
          Point3F p2;
       };
 
-      void ignoreObjClass(U32 argc, const char** argv);
+      void ignoreObjClass(U32 argc, ConsoleValueRef* argv);
       void clearIgnoreList();
 
       static bool setObjectsUseBoxCenter( void *object, const char *index, const char *data ) { static_cast<WorldEditor*>(object)->setObjectsUseBoxCenter( dAtob( data ) ); return false; };
@@ -155,6 +164,14 @@ class WorldEditor : public EditTSCtrl
       void submitUndo( Selection* sel, const UTF8* label="World Editor Action" );
 
    public:
+      //-JR
+      BaseTool* mActiveTool;
+
+      BaseTool* getActiveTool() { return mActiveTool; }
+      void setActiveTool(BaseTool* newTool);
+
+      virtual bool onKeyDown(const GuiEvent &event);
+      //-JR
 
       /// The objects currently in the copy buffer.
       Vector<SimObjectMemento> mCopyBuffer;

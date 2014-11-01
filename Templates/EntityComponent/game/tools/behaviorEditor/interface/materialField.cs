@@ -1,6 +1,12 @@
-function BehaviorFieldStack::createMaterialProperty(%this, %accessor, %filter, %label, %tooltip, %data)
+function BehaviorFieldStack::createMaterialProperty(%this, %label, %tooltip, %behavior, %material)
 {
-   %extent = 64;
+   %extent = 200;
+
+   %currentMaterial = %behavior.getFieldValue(%label);
+
+   //if we don't have a new material set on this slot, just use the default
+   if(%currentMaterial $= "" || %currentMaterial == 0)
+	  %currentMaterial = %material;
       
    %container = new GuiControl() {
       canSaveDynamicFields = "0";
@@ -8,7 +14,7 @@ function BehaviorFieldStack::createMaterialProperty(%this, %accessor, %filter, %
       HorizSizing = "right";
       VertSizing = "bottom";
       Position = "0 0";
-      Extent = "300 89";
+      Extent = "300 110";
       MinExtent = "8 2";
       canSave = "0";
       Visible = "1";
@@ -37,7 +43,7 @@ function BehaviorFieldStack::createMaterialProperty(%this, %accessor, %filter, %
    //
    %imageContainer = new GuiControl(){
       profile = "ToolsGuiDefaultProfile";
-      Position = "0 0";
+      Position = "20 25";
       Extent = "74 87";
       HorizSizing = "right";
       VertSizing = "bottom";
@@ -63,6 +69,7 @@ function BehaviorFieldStack::createMaterialProperty(%this, %accessor, %filter, %
       Command = "";
       text = "Loading...";
       useStates = false;
+	  tooltip = "Change material";
       
       new GuiBitmapButtonCtrl(){
             HorizSizing = "right";
@@ -75,10 +82,12 @@ function BehaviorFieldStack::createMaterialProperty(%this, %accessor, %filter, %
             bitmap = "tools/materialEditor/gui/cubemapBtnBorder";
             groupNum = "0";
             text = "";
+			tooltip = "Change material";
          }; 
    }; 
    
    %previewBorder = new GuiButtonCtrl(){
+	     className = "materialFieldBtn";
          internalName = %matName@"Border";
          HorizSizing = "right";
          VertSizing = "bottom";
@@ -88,16 +97,35 @@ function BehaviorFieldStack::createMaterialProperty(%this, %accessor, %filter, %
          Variable = "";
          buttonType = "toggleButton";
          tooltip = %matName;
-         Command = "MaterialSelector.updateSelection( $ThisControl.getParent().getObject(1).internalName, $ThisControl.getParent().getObject(1).bitmap );"; 
          groupNum = "0";
          text = "";
+		 Object = %behavior;
+		 targetField = %label;
    };
+   %previewBorder.Command = %previewBorder @ ".getMaterialName();"; 
    
    %imageContainer.add(%previewButton);  
    %imageContainer.add(%previewBorder);
    %container.add(%imageContainer);	
    //
    
+   %mapToLabel = new GuiTextCtrl() {
+      canSaveDynamicFields = "0";
+      Profile = "EditorFontHLBold";
+      HorizSizing = "right";
+      VertSizing = "bottom";
+      Position = "100 26";
+      Extent = %extent SPC "18";
+      MinExtent = "8 2";
+      canSave = "0";
+      Visible = "1";
+      hovertime = "100";
+      tooltip = %tooltip;
+      tooltipProfile = "EditorToolTipProfile";
+      text = "Mapped to:" SPC %material.mapTo;
+      maxLength = "1024";
+   };
+
    %editControl = new GuiTextEditCtrl() {
       class = "BehaviorEdTextField";
       internalName = %accessor @ "File";
@@ -105,8 +133,8 @@ function BehaviorFieldStack::createMaterialProperty(%this, %accessor, %filter, %
       Profile = "EditorTextEdit";
       HorizSizing = "right";
       VertSizing = "bottom";
-      Position = "100 1";
-      Extent = %extent - 17 SPC "22";
+      Position = "100 50";
+      Extent = %extent SPC "22";
       MinExtent = "8 2";
       canSave = "0";
       Visible = "1";
@@ -116,7 +144,7 @@ function BehaviorFieldStack::createMaterialProperty(%this, %accessor, %filter, %
       maxLength = "1024";
       historySize = "0";
       password = "0";
-      text = %data;
+      text = %currentMaterial;
       
       tabComplete = "0";
       sinkAllKeyEvents = "0";
@@ -130,48 +158,117 @@ function BehaviorFieldStack::createMaterialProperty(%this, %accessor, %filter, %
       useWords = false;
    };
    
-   %browse = new GuiButtonCtrl() {
+   %resetButton = new GuiButtonCtrl() {
       canSaveDynamicFields = "0";
       className = "materialFieldBtn";
       Profile = "GuiButtonProfile";
       HorizSizing = "right";
       VertSizing = "bottom";
-      Position = %editControl.position.x + %extent - 17 SPC "1";
-      Extent = "15 22";
+      Position = "100 75";
+      Extent = (%extent * 0.3)-3 SPC "22";
       MinExtent = "8 2";
       canSave = "0";
       Visible = "1";
       hovertime = "100";
-      tooltip = "Browse for a file";
+      tooltip = "Reset to default material";
       tooltipProfile = "EditorToolTipProfile";
-      text = "...";
+      text = "Reset";
       pathField = %editControl;
    };
-   %browse.lastPath = %editControl.text;
-   
-   if(%filter $= "models")
-      %browse.filter = $ModelFieldTypes;
-   else if(%filter $= "images")
-      %browse.filter = $ImageFieldTypes;
-   else if(%filter $= "sounds")
-      %browse.filter = $SoundFieldTypes;
-   else
-      %browse.filter = "All Files|*.*";
 
+   %editMatButton = new GuiButtonCtrl() {
+      canSaveDynamicFields = "0";
+      className = "materialFieldBtn";
+      Profile = "GuiButtonProfile";
+      HorizSizing = "right";
+      VertSizing = "bottom";
+      Position = %resetButton.position.x + (%extent * 0.3) + 6 SPC "75";
+      Extent = (%extent * 0.6)-3 SPC "22";
+      MinExtent = "8 2";
+      canSave = "0";
+      Visible = "1";
+      hovertime = "100";
+      tooltip = "Edit in Material Editor";
+      tooltipProfile = "EditorToolTipProfile";
+      text = "Open in Editor";
+      pathField = %editControl;
+   };
+   
+   %container.add(%mapToLabel);
    %container.add(%labelControl);
    %container.add(%editControl);
-   %container.add(%browse);
+   %container.add(%resetButton);
+   %container.add(%editMatButton);
+
+   //load the material
+   %matName = "";
+
+   // CustomMaterials are not available for selection
+   if ( !isObject( %currentMaterial ) || %currentMaterial.isMemberOfClass( "CustomMaterial" ) )
+      return;
+
+   if( %currentMaterial.isMemberOfClass("TerrainMaterial") )
+   {
+      %matName = %currentMaterial.getInternalName();
+      
+      if( %currentMaterial.diffuseMap $= "")
+         %previewImage = "core/art/warnmat";
+      else
+         %previewImage = %currentMaterial.diffuseMap;
+   }
+   else if( %currentMaterial.toneMap[0] $= "" && %currentMaterial.diffuseMap[0] $= "" && !isObject(%material.cubemap) )
+   {
+      %matName = %currentMaterial.name;
+      %previewImage = "core/art/warnmat";
+   }
+   else
+   {
+      %matName = %currentMaterial.name;
+      
+      if( %currentMaterial.toneMap[0] !$= "" )
+         %previewImage = %currentMaterial.toneMap[0];
+      else if( %currentMaterial.diffuseMap[0] !$= "" )
+         %previewImage = %currentMaterial.diffuseMap[0];
+      else if( %currentMaterial.cubemap.cubeFace[0] !$= "" )
+         %previewImage = %currentMaterial.cubemap.cubeFace[0];
+      
+      //%previewImage = MaterialEditorGui.searchForTexture( %material,  %previewImage );
+      
+      // were going to use a couple of string commands in order to properly
+      // find out what the img src path is 
+      // **NEW** this needs to be updated with the above, but has some timing issues
+      %materialDiffuse =  %previewImage;
+      %materialPath = %currentMaterial.getFilename();
+      
+      if( strchr( %materialDiffuse, "/") $= "" )
+      {
+         %k = 0;
+         while( strpos( %materialPath, "/", %k ) != -1 )
+         {
+            %foo = strpos( %materialPath, "/", %k );
+            %k = %foo + 1;
+         }
+      
+         %foobar = getSubStr( %materialPath , %k , 99 );
+         %previewImage =  strreplace( %materialPath, %foobar, %previewImage );
+      }
+      else
+         %previewImage =  strreplace( %materialPath, %materialPath, %previewImage );
+   }
+
+   %previewButton.setBitmap(%previewImage);
+   %previewButton.setText("");
    
    return %container;
 }
 
-function materialFieldBtn::onClick( %this )
+/*function materialFieldBtn::onClick( %this )
 {
    if(%this.lastPath $= "")
       %this.lastPath = "art";
     
    getLoadFilename( %this.filter, %this @ ".onBrowseSelect", %this.lastPath );
-}
+}*/
 
 function materialFieldBtn::onBrowseSelect( %this, %path )
 {
@@ -180,4 +277,17 @@ function materialFieldBtn::onBrowseSelect( %this, %path )
    %this.pathField.text = %path;
    %this.pathField.onReturn(); //force the update
    %this.object.inspectorApply();
+}
+
+function materialFieldBtn::getMaterialName(%this)
+{
+   materialSelector.showDialog(%this @ ".gotMaterialName", "name");
+}
+
+function materialFieldBtn::gotMaterialName(%this, %name)
+{
+   //eval(%this.object @ "." @ %this.targetField @ " = " @ %name @ ";");
+   %this.object.changeMaterial(getTrailingNumber(%this.targetField), %name);
+   %this.object.inspectorApply();
+   echo("New Material name: " @ %name);
 }

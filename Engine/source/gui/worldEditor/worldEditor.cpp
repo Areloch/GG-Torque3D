@@ -1807,6 +1807,9 @@ WorldEditor::WorldEditor()
    
    mFadeIcons = true;
    mFadeIconsDist = 8.f;
+
+   //-JR
+   mActiveTool = NULL;
 }
 
 WorldEditor::~WorldEditor()
@@ -1896,6 +1899,13 @@ void WorldEditor::get3DCursor(GuiCursor *&cursor, bool &visible, const Gui3DMous
 
 void WorldEditor::on3DMouseMove(const Gui3DMouseEvent & event)
 {   
+   //-JR
+   if (mActiveTool)
+      mActiveTool->on3DMouseMove(event);
+   else
+   {
+   //-JR
+
    setCursor(PlatformCursorController::curArrow);
    mHitObject = NULL;
 
@@ -1921,12 +1931,22 @@ void WorldEditor::on3DMouseMove(const Gui3DMouseEvent & event)
          mHitObject = hitObj;
       }
    }
+
+   //-JR
+   }
+   //-JR
    
    mLastMouseEvent = event;
 }
 
 void WorldEditor::on3DMouseDown(const Gui3DMouseEvent & event)
 {
+   //-JR
+   if (mActiveTool)
+      mActiveTool->on3DMouseDown(event);
+   else
+   {
+      //-JR
    mMouseDown = true;
    mMouseDragged = false;
    mPerformedDragCopy = false;
@@ -1989,11 +2009,23 @@ void WorldEditor::on3DMouseDown(const Gui3DMouseEvent & event)
       mDragStart = event.mousePoint;
    }
 
+   //-JR
+   }
+   //-JR
+
    mLastMouseEvent = event;
 }
 
 void WorldEditor::on3DMouseUp( const Gui3DMouseEvent &event )
 {
+   //-JR
+   if (mActiveTool)
+   {
+      mActiveTool->on3DMouseUp(event);
+   }
+   else
+   {
+      //-JR
    const bool wasUsingAxisGizmo = mUsingAxisGizmo;
    
    mMouseDown = false;
@@ -2145,10 +2177,22 @@ void WorldEditor::on3DMouseUp( const Gui3DMouseEvent &event )
    //
    //mHitObject = hitObj;
    mouseUnlock();
+   //-JR
+   }
+   //-JR
 }
 
 void WorldEditor::on3DMouseDragged(const Gui3DMouseEvent & event)
 {
+   //-JR
+   if (mActiveTool)
+   {
+      mActiveTool->on3DMouseDragged(event);
+   }
+   else
+   {
+      //-JR
+
    if ( !mMouseDown )
       return;
 
@@ -2295,6 +2339,10 @@ void WorldEditor::on3DMouseDragged(const Gui3DMouseEvent & event)
       break;
    }
 
+   //-JR
+   }
+   //-JR
+
    mLastMouseEvent = event;
 }
 
@@ -2384,6 +2432,15 @@ void WorldEditor::renderScene( const RectI &updateRect )
    GFXDEBUGEVENT_SCOPE( Editor_renderScene, ColorI::RED );
 
    smRenderSceneSignal.trigger(this);
+
+   //-JR
+   if (mActiveTool)
+   {
+      mActiveTool->renderScene(updateRect);
+   }
+   else
+   {
+      //-JR
 	
    // Grab this before anything here changes it.
    Frustum frustum;
@@ -2675,6 +2732,10 @@ void WorldEditor::renderScene( const RectI &updateRect )
 
    if ( selection && selection->size() )
       mGizmo->renderText( mSaveViewport, mSaveModelview, mSaveProjection );
+
+   //-JR
+   }
+   //-JR
 }
 
 //------------------------------------------------------------------------------
@@ -2760,7 +2821,7 @@ void WorldEditor::initPersistFields()
 //------------------------------------------------------------------------------
 // These methods are needed for the console interfaces.
 
-void WorldEditor::ignoreObjClass( U32 argc, const char **argv )
+void WorldEditor::ignoreObjClass( U32 argc, ConsoleValueRef *argv )
 {
    for(S32 i = 2; i < argc; i++)
    {
@@ -3180,6 +3241,32 @@ void WorldEditor::resetSelectedScale()
    }
 }
 
+//-JR
+void WorldEditor::setActiveTool(BaseTool* newTool)
+{
+   if (newTool == NULL)
+   {
+      if (mActiveTool != NULL)
+         mActiveTool->onDeactivated(NULL);
+
+      mActiveTool = NULL;
+   }
+   else
+   {
+      newTool->onActivated(mActiveTool);
+      newTool->mEditor = this;
+      mActiveTool = newTool;
+   }
+}
+bool WorldEditor::onKeyDown(const GuiEvent &event)
+{
+   if (mActiveTool)
+      mActiveTool->onKeyDown(event);
+
+   return false;
+}
+//-JR
+
 //------------------------------------------------------------------------------
 
 ConsoleMethod( WorldEditor, ignoreObjClass, void, 3, 0, "(string class_name, ...)")
@@ -3210,7 +3297,7 @@ ConsoleMethod( WorldEditor, setActiveSelection, void, 3, 3, "( id set ) - Set th
    WorldEditorSelection* selection;
    if( !Sim::findObject( argv[ 2 ], selection ) )
    {
-      Con::errorf( "WorldEditor::setActiveSelectionSet - no selection set '%s'", argv[ 2 ] );
+      Con::errorf( "WorldEditor::setActiveSelectionSet - no selection set '%s'", (const char*)argv[ 2 ] );
       return;
    }
    
@@ -3337,14 +3424,14 @@ ConsoleMethod( WorldEditor, alignByBounds, void, 3, 3, "(int boundsAxis)"
               "Align all selected objects against the given bounds axis.")
 {
 	if(!object->alignByBounds(dAtoi(argv[2])))
-		Con::warnf(ConsoleLogEntry::General, avar("worldEditor.alignByBounds: invalid bounds axis '%s'", argv[2]));
+		Con::warnf(ConsoleLogEntry::General, avar("worldEditor.alignByBounds: invalid bounds axis '%s'", (const char*)argv[2]));
 }
 
 ConsoleMethod( WorldEditor, alignByAxis, void, 3, 3, "(int axis)"
               "Align all selected objects along the given axis.")
 {
 	if(!object->alignByAxis(dAtoi(argv[2])))
-		Con::warnf(ConsoleLogEntry::General, avar("worldEditor.alignByAxis: invalid axis '%s'", argv[2]));
+		Con::warnf(ConsoleLogEntry::General, avar("worldEditor.alignByAxis: invalid axis '%s'", (const char*)argv[2]));
 }
 
 ConsoleMethod( WorldEditor, resetSelectedRotation, void, 2, 2, "")
@@ -3549,7 +3636,7 @@ void WorldEditor::colladaExportSelection( const String &path )
 ConsoleMethod( WorldEditor, colladaExportSelection, void, 3, 3, 
               "( String path ) - Export the combined geometry of all selected objects to the specified path in collada format." )
 {  
-   object->colladaExportSelection( argv[2] );
+   object->colladaExportSelection( (const char*)argv[2] );
 }
 
 void WorldEditor::makeSelectionPrefab( const char *filename )
@@ -3946,3 +4033,22 @@ DefineEngineMethod( WorldEditor, createConvexShapeFrom, ConvexShape*, ( SceneObj
 
    return shape;
 }
+
+//-JR
+DefineEngineMethod(WorldEditor, setActiveTool, void, (BaseTool* newTool), ,
+   "Create a ConvexShape from the given polyhedral object.")
+{
+   BaseTool* currentTool = object->getActiveTool();
+
+   if (currentTool)
+      currentTool->onDeactivated(newTool);
+
+   object->setActiveTool(newTool);
+}
+
+DefineEngineMethod(WorldEditor, getActiveTool, BaseTool*, (), ,
+   "Create a ConvexShape from the given polyhedral object.")
+{
+   return object->getActiveTool();
+}
+//-JR

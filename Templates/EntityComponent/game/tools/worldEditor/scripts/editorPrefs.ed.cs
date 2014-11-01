@@ -34,6 +34,9 @@ EditorSettings.setDefaultValue(  "orthoFOV",                "50" );
 EditorSettings.setDefaultValue(  "orthoShowGrid",           "1" );
 EditorSettings.setDefaultValue(  "currentEditor",           "WorldEditorInspectorPlugin" );
 EditorSettings.setDefaultValue(  "newLevelFile",            "tools/levels/BlankRoom.mis" );
+EditorSettings.setDefaultValue(  "defaultMaterialsPath",    "game/art/materials" );
+EditorSettings.setDefaultValue(  "defaultShapesPath",       "game/art/shapes" );
+EditorSettings.setDefaultValue(  "defaultSoundsPath",       "game/art/sounds" );
 
 if( isFile( "C:/Program Files/Torsion/Torsion.exe" ) )
    EditorSettings.setDefaultValue(  "torsionPath",          "C:/Program Files/Torsion/Torsion.exe" );

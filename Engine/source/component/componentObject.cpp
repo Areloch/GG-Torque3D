@@ -14,8 +14,12 @@
 #include "math/mTransform.h"
 #include "core/strings/stringUnit.h"
 #include "core/frameAllocator.h"
+#include "console/stringStack.h"
 
 extern ExprEvalState gEvalState;
+
+extern StringStack STR;
+extern ConsoleValueStack CSTK;
 
 IMPLEMENT_CO_NETOBJECT_V1(ComponentObject);
 
@@ -218,7 +222,7 @@ bool ComponentObject::handlesConsoleMethod( const char *fname, S32 *routingId )
 
 const char *ComponentObject::callMethod( S32 argc, const char* methodName, ... )
 {
-   const char *argv[128];
+   ConsoleValueRef argv[128];
    methodName = StringTable->insert( methodName );
 
    argc++;
@@ -261,7 +265,7 @@ void ComponentObject::injectMethodCall( const char* method )
 }
 #endif
 
-const char* ComponentObject::callMethodArgList( U32 argc, const char *argv[], bool callThis)
+const char* ComponentObject::callMethodArgList(U32 argc, ConsoleValueRef argv[], bool callThis)
 {
 #ifdef TORQUE_DEBUG
    injectMethodCall( argv[0] );
@@ -270,7 +274,7 @@ const char* ComponentObject::callMethodArgList( U32 argc, const char *argv[], bo
    return _callComponentMethod( argc, argv, callThis );
 }
 
-const char *ComponentObject::_callMethod( U32 argc, const char *argv[], bool callThis )
+const char *ComponentObject::_callMethod(U32 argc, ConsoleValueRef argv[], bool callThis)
 {
    SimObject *pThis = dynamic_cast<SimObject *>( this );
    AssertFatal( pThis, "ComponentObject::_callMethod : this should always exist!" );
@@ -295,7 +299,7 @@ const char *ComponentObject::_callMethod( U32 argc, const char *argv[], bool cal
 
 // Call all components that implement methodName giving them a chance to operate
 // Components are called in reverse order of addition
-const char *ComponentObject::_callComponentMethod( U32 argc, const char *argv[], bool callThis )
+const char *ComponentObject::_callComponentMethod( U32 argc, ConsoleValueRef argv[], bool callThis )
 {   
 
    // [neo, 5/10/2007 - #3010]
@@ -329,13 +333,13 @@ const char *ComponentObject::_callComponentMethod( U32 argc, const char *argv[],
    // about ifdef'ing this out, though.
 
    // Copy the arguments to avoid weird clobbery situations.
-   FrameTemp<char *> argPtrs (argc);
+   FrameTemp<ConsoleValueRef> argPtrs(argc);
 
    U32 strdupWatermark = FrameAllocator::getWaterMark();
    for( S32 i = 0; i < argc; i++ )
    {
       argPtrs[i] = reinterpret_cast<char *>( FrameAllocator::alloc( dStrlen( argv[i] ) + 1 ) );
-      dStrcpy( argPtrs[i], argv[i] );
+      argPtrs[i] = argv[i];
    }
 
    for( SimSet::iterator i = mComponents.begin(); i != mComponents.end(); i++ )
@@ -358,22 +362,32 @@ const char *ComponentObject::_callComponentMethod( U32 argc, const char *argv[],
       if( pNSEntry )
       {
          // Set %this to our ComponentInstance's Object ID
-         argPtrs[1] = const_cast<char *>( pComponent->getIdString() );
+         argPtrs[1] = pComponent->getIdString();
 
          // [neo, 5/10/2007 - #3010]
          // Set flag so we can call the method on this object directly, should the
          // behavior have 'overloaded' a method on the owner object.
          mInComponentCallback = true;
 
+         // Prevent stack corruption
+         STR.pushFrame();
+         CSTK.pushFrame();
+         // --
+
          // Change the Current Console object, execute, restore Object
          SimObject *save = gEvalState.thisObject;
          gEvalState.thisObject = pComponent;
-         fnRet = pNSEntry->execute(argc, const_cast<const char **>( ~argPtrs ), &gEvalState);
+         fnRet = pNSEntry->execute(argc, argPtrs, &gEvalState);
          gEvalState.thisObject = save;
 
          // [neo, 5/10/2007 - #3010]
          // Reset flag
          mInComponentCallback = false;
+
+         // Prevent stack corruption
+         STR.popFrame();
+         CSTK.popFrame();
+         // --
       }
 
       //Now try our template namespace, make sure we haven't returned something already
@@ -381,19 +395,29 @@ const char *ComponentObject::_callComponentMethod( U32 argc, const char *argv[],
       if(pNSEntry && (!fnRet || !fnRet[0]))
       {
          // Set %this to our ComponentInstance's Object ID
-         argPtrs[1] = const_cast<char *>( pComponent->getIdString() );
+         argPtrs[1] = pComponent->getIdString();
 
          // [neo, 5/10/2007 - #3010]
          // Set flag so we can call the method on this object directly, should the
          // behavior have 'overloaded' a method on the owner object.
          mInComponentCallback = true;
 
+         // Prevent stack corruption
+         STR.pushFrame();
+         CSTK.pushFrame();
+         // --
+
          // Change the Current Console object, execute, restore Object
          SimObject *save = gEvalState.thisObject;
          gEvalState.thisObject = pComponent;
          //const char *ret = pNSEntry->execute(argc, const_cast<const char **>( ~argPtrs ), &gEvalState);
-         fnRet = pNSEntry->execute(argc, const_cast<const char **>( ~argPtrs ), &gEvalState);
+         fnRet = pNSEntry->execute(argc, argPtrs, &gEvalState);
          gEvalState.thisObject = save;
+
+         // Prevent stack corruption
+         STR.popFrame();
+         CSTK.popFrame();
+         // --
 
          // [neo, 5/10/2007 - #3010]
          // Reset flag
@@ -519,7 +543,7 @@ bool ComponentObject::addComponent( ComponentInstance *bi )
    mComponents.pushObject( bi );
 
    // Register the component with this owner.
-   bi->setBehaviorOwner( this );
+   bi->setOwner( this );
 
    // May want to look @ the return value here and optionally pushobject etc
 

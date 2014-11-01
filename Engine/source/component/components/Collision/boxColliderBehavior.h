@@ -84,7 +84,12 @@ class BoxColliderBehaviorInstance : public ComponentInstance,
    typedef ComponentInstance Parent;
 
 protected:
-   Point3F colliderScale;
+   Point3F mColliderScale;
+
+   enum
+   {
+      ColliderMask = Parent::NextFreeMask,
+   };
 
 public:
    BoxColliderBehaviorInstance(Component *btemplate = NULL);
@@ -95,6 +100,8 @@ public:
    virtual void onRemove();
    static void initPersistFields();
    static void consoleInit();
+
+   static bool _setColliderSize( void *object, const char *index, const char *data );
 
    virtual void processTick(const Move* move);
 
@@ -111,6 +118,8 @@ public:
    void _updatePhysics();
 
    virtual bool checkCollisions( const F32 travelTime, Point3F *velocity, Point3F start );
+
+   virtual bool buildPolyList(PolyListContext context, AbstractPolyList* polyList, const Box3F &, const SphereF &);
 
    virtual bool buildConvex(const Box3F& box, Convex* convex);
    virtual bool castRay(const Point3F &start, const Point3F &end, RayInfo* info);

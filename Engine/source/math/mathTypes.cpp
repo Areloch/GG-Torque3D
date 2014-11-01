@@ -37,6 +37,10 @@
 #include "math/mEase.h"
 #include "math/mathUtils.h"
 
+//-JR
+#include "math/mRotation.h"
+#include "core/strings/stringUnit.h"
+//-JR
 
 IMPLEMENT_SCOPE( MathTypes, Math,, "" );
 
@@ -113,6 +117,18 @@ IMPLEMENT_STRUCT( EaseF,
    "" )
 END_IMPLEMENT_STRUCT;
 
+//-JR
+IMPLEMENT_STRUCT(RotationF,
+   RotationF, MathTypes,
+   "")
+
+   FIELD(x, x, 1, "X coordinate.")
+   FIELD(y, y, 1, "Y coordinate.")
+   FIELD(z, z, 1, "Z coordinate.")
+   FIELD(w, w, 1, "W coordinate.")
+
+   END_IMPLEMENT_STRUCT;
+//-JR
 
 //-----------------------------------------------------------------------------
 // TypePoint2I
@@ -570,7 +586,84 @@ ConsoleSetType( TypeEaseF )
       Con::printf("EaseF must be set as \"dir type [param0 param1]\"");
    }
 }
+//-JR
+//-----------------------------------------------------------------------------
+// TypeRotationF
+//-----------------------------------------------------------------------------
+ConsoleType(RotationF, TypeRotationF, RotationF)
+//ImplementConsoleTypeCasters( TypeRotationF, RotationF )
 
+ConsoleGetType(TypeRotationF)
+{
+   RotationF *pt = (RotationF *)dptr;
+   static const U32 bufSize = 256;
+   char* returnBuffer = Con::getReturnBuffer(bufSize);
+
+   if (pt->mRotationType == RotationF::AxisAngle)
+   {
+      dSprintf(returnBuffer, bufSize, "%g %g %g %g", pt->x, pt->y, pt->z, mRadToDeg(pt->w));
+   }
+   else
+   {
+      //we're going to assume that when operating in script we'll want to use eulers with degrees.
+      dSprintf(returnBuffer, bufSize, "%g %g %g", mRadToDeg(pt->x), mRadToDeg(pt->y), mRadToDeg(pt->z));
+   }
+
+   return returnBuffer;
+}
+
+ConsoleSetType(TypeRotationF)
+{
+   if (argc == 1)
+   {
+      U32 elements = StringUnit::getUnitCount(argv[0], " \t\n");
+      if (elements == 3)
+      {
+         dSscanf(argv[0], "%g %g %g", &((RotationF *)dptr)->x, &((RotationF *)dptr)->y, &((RotationF *)dptr)->z);
+         ((RotationF *)dptr)->x = mDegToRad(((RotationF *)dptr)->x);
+         ((RotationF *)dptr)->y = mDegToRad(((RotationF *)dptr)->y);
+         ((RotationF *)dptr)->z = mDegToRad(((RotationF *)dptr)->z);
+         ((RotationF *)dptr)->w = 1;
+
+         ((RotationF *)dptr)->mRotationType = RotationF::Euler;
+
+         //we need to properly encode this, so convert to matrix, then store
+         /*MatrixF temp, imat, xmat, ymat, zmat;
+         xmat.set(EulerF(((RotationF *) dptr)->x,0,0));
+         ymat.set(EulerF(0.0f, ((RotationF *) dptr)->y, 0.0f));
+         zmat.set(EulerF(0,0,((RotationF *) dptr)->z));
+
+         imat.mul(zmat, xmat);
+         temp.mul(imat, ymat);
+
+
+         ((RotationF *) dptr)->set(temp);*/
+      }
+      else
+      {
+         dSscanf(argv[0], "%g %g %g %g", &((RotationF *)dptr)->x, &((RotationF *)dptr)->y, &((RotationF *)dptr)->z, &((RotationF *)dptr)->w);
+         ((RotationF *)dptr)->w = mDegToRad(((RotationF *)dptr)->w);
+
+         ((RotationF *)dptr)->mRotationType = RotationF::AxisAngle;
+
+         //F32 x, y, z, w;
+         //dSscanf(argv[0], "%g %g %g %g", x, y, z, w);
+         //dSscanf(argv[0], "%g %g %g %g", &((RotationF *) dptr)->x, &((RotationF *) dptr)->y, &((RotationF *) dptr)->z, &((RotationF *) dptr)->w);
+         //((RotationF *) dptr)->set(AngAxisF(Point3F(x, y, z), w), RotationF::Degrees);
+      }
+   }
+   else if (argc == 3)
+   {
+      ((RotationF *)dptr)->set(dAtof(argv[0]), dAtof(argv[1]), dAtof(argv[2]), RotationF::Degrees);
+   }
+   else if (argc == 4)
+   {
+      ((RotationF *)dptr)->set(dAtof(argv[0]), dAtof(argv[1]), dAtof(argv[2]), dAtof(argv[3]), RotationF::Degrees);
+   }
+   else
+      Con::printf("RotationF must be set as { x, y, z, w } or \"x y z w\"");
+}
+//-JR
 
 //-----------------------------------------------------------------------------
 

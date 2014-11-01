@@ -154,10 +154,8 @@ void Win32Window::setVideoMode( const GFXVideoMode &mode )
 		SetWindowLong( getHWND(), GWL_STYLE, WS_POPUP);
 		SetWindowPos( getHWND(), HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 		
-		//-JR
-		if(mDisplayWindow)
-		//-JR
-			ShowWindow(getHWND(), SW_SHOWNORMAL);
+      if(mDisplayWindow)
+         ShowWindow(getHWND(), SW_SHOWNORMAL);
 
       // Clear the menu bar from the window for full screen
       HMENU menu = GetMenu(getHWND());
@@ -220,11 +218,9 @@ void Win32Window::setVideoMode( const GFXVideoMode &mode )
 		   // We have to force Win32 to update the window frame and make the window
 		   // visible and no longer topmost - this code might be possible to simplify.
 		   SetWindowPos( getHWND(), HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-		   
-			//-JR
-			if(mDisplayWindow)
-			//-JR
-				ShowWindow( getHWND(), SW_SHOWNORMAL);
+
+         if(mDisplayWindow)
+            ShowWindow( getHWND(), SW_SHOWNORMAL);
       }
 
       mFullscreen = false;
@@ -665,7 +661,7 @@ void Win32Window::_unregisterWindowClass()
 LRESULT PASCAL Win32Window::WindowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
 {
 	// CodeReview [tom, 4/30/2007] The two casts here seem somewhat silly and redundant ?
-	Win32Window* window = (Win32Window*)((PlatformWindow*)GetWindowLong(hWnd, GWL_USERDATA));
+	Win32Window* window = (Win32Window*)((PlatformWindow*)GetWindowLongPtr(hWnd, GWLP_USERDATA));
 	const WindowId devId = window ? window->getWindowId() : 0;
 
    if (window && window->getOffscreenRender())
@@ -716,9 +712,20 @@ LRESULT PASCAL Win32Window::WindowProc( HWND hWnd, UINT message, WPARAM wParam, 
 	case WM_CREATE:
 		// CodeReview [tom, 4/30/2007] Why don't we just cast this to a LONG 
 		//            instead of having a ton of essentially pointless casts ?
-		SetWindowLong(hWnd, GWL_USERDATA,
-			(LONG)((PlatformWindow*)((CREATESTRUCT*)lParam)->lpCreateParams));
+		SetWindowLongPtr(hWnd, GWLP_USERDATA,
+			(LONG_PTR)((PlatformWindow*)((CREATESTRUCT*)lParam)->lpCreateParams));
+
+        //-JR
+        DragAcceptFiles(hWnd, TRUE);
+        //-JR
+
 		break;
+
+   //-JR
+   case WM_DESTROY:
+      DragAcceptFiles(hWnd, FALSE);
+      break;
+   //-JR
 
 	case WM_SETFOCUS:
 		// NOTE: if wParam is NOT equal to our window handle then we are GAINING focus
@@ -765,6 +772,67 @@ LRESULT PASCAL Win32Window::WindowProc( HWND hWnd, UINT message, WPARAM wParam, 
 			}
 		}
 		return 0;
+
+    //-JR
+   case WM_DROPFILES:
+      // Retrieve Number of files
+
+      // Strict policy on these things, better safe than sorry
+      if (!Con::isFunction("onDropBegin") || !Con::isFunction("onDropFile")
+         || !Con::isFunction("onDropEnd"))
+         break;
+
+      int nFileCount; // Number of Files
+      HDROP hTheDrop; // The Drop Handle
+      hTheDrop = (HDROP)wParam;
+      nFileCount = DragQueryFile(hTheDrop, 0xFFFFFFFF, NULL, 0);
+
+      if (nFileCount == 0)
+         break;
+
+      // Notify Drop-Begin
+      Con::executef("onDropBegin", Con::getIntArg(nFileCount));
+
+      int nI;
+      for (nI = 0; nI < nFileCount; nI++)
+      {
+         LPTSTR pszTheBuffer[MAX_PATH];
+         ZeroMemory(pszTheBuffer, MAX_PATH);
+
+         // Query it
+         // FIXME: Deal with Unicode
+         DragQueryFileA(hTheDrop, nI, (LPSTR)pszTheBuffer, sizeof(pszTheBuffer));
+
+         // Notify Drop
+         if (Platform::isFile((const char*)pszTheBuffer))
+         {
+            // The timeout for waiting for files (ms).
+            U32 timeout = 5000;
+
+            // Need to make sure the file is copyable. When ganking images from Firefox, it
+            // isn't necessarily since Firefox insists on redownloading the file instead of
+            // using the local copy.
+            U32 time = Platform::getRealMilliseconds() + timeout;
+            HANDLE hfile;
+            while ((hfile = ::CreateFileA((const char*)pszTheBuffer, GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, NULL)) == INVALID_HANDLE_VALUE)
+            {
+               // Don't wait too long.
+               if (Platform::getRealMilliseconds() > time)
+                  break;
+            }
+            if (hfile == INVALID_HANDLE_VALUE)
+               continue;
+
+            CloseHandle(hfile);
+            Con::executef("onDropFile", StringTable->insert((const char*)pszTheBuffer));
+         }
+      }
+      DragFinish(hTheDrop);
+
+      // Notify Drop-Begin
+      Con::executef("onDropEnd", Con::getIntArg(nFileCount));
+      break;
+      //-JR
 
 		// Limit resize to a safe minimum
 	case WM_GETMINMAXINFO:

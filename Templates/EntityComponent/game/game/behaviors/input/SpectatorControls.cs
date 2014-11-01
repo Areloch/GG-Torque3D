@@ -134,12 +134,13 @@ function SpectatorControls::Update(%this, %moveVector, %moveRotation)
    
    //eulerRotation is managed in degrees for human-readability. 
    if(%moveRotation.x != 0)
-      %this.owner.eulerRotation.x += mRadToDeg(%moveRotation.x);
+      %this.owner.rotation.x += mRadToDeg(%moveRotation.x);
       
    //this setup doesn't use roll, so we ignore the y axis!
+   //%this.owner.rotation.y = 0;
    
    if(%moveRotation.z != 0)
-      %this.owner.eulerRotation.z += mRadToDeg(%moveRotation.z);
+      %this.owner.rotation.z += mRadToDeg(%moveRotation.z);
    
 }
 

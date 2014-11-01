@@ -540,7 +540,7 @@ class SimObject: public ConsoleObject
       
       virtual ~SimObject();
 
-      virtual bool processArguments(S32 argc, const char **argv);  ///< Process constructor options. (ie, new SimObject(1,2,3))
+      virtual bool processArguments(S32 argc, ConsoleValueRef *argv);  ///< Process constructor options. (ie, new SimObject(1,2,3))
 
       /// @}
 
@@ -562,11 +562,11 @@ class SimObject: public ConsoleObject
       /// Called when the object's name is changed.
       virtual void onNameChange(const char *name);
 
-		//-JR
-		/// Called when the adding of the object to the sim is complete, all sub-objects have been processed as well
-		// This is a special-case function that only really gets used with Entities/BehaviorObjects.
-		virtual void onPostAdd() {}
-		//-JR
+      //-JR
+      /// Called when the adding of the object to the sim is complete, all sub-objects have been processed as well
+      // This is a special-case function that only really gets used with Entities/BehaviorObjects.
+      virtual void onPostAdd() {}
+      //-JR
       
       ///
       ///  Specifically, these are called by setDataField

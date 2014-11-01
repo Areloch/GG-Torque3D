@@ -30,3 +30,10 @@ singleton Material( BlankWhite )
 singleton Material( Empty )
 {
 };
+
+singleton Material(WarningMaterial) {
+   detailMap[0] = "missingTexture";
+   diffuseColor[0] = "25 16 0";
+   emissive[0] = false;
+   translucent = false;
+};

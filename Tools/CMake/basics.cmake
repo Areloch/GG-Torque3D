@@ -1,15 +1,44 @@
+# -----------------------------------------------------------------------------
+# Copyright (c) 2014 GarageGames, LLC
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to
+# deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+# sell copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+# IN THE SOFTWARE.
+# -----------------------------------------------------------------------------
+
 project("Torque3DEngine")
 
-set(TORQUE_TEMPLATE "Full" CACHE STRING "the template to use")
+if( CMAKE_CXX_SIZEOF_DATA_PTR EQUAL 8 )
+    set( TORQUE_CPU_X64 ON )
+elseif( CMAKE_CXX_SIZEOF_DATA_PTR EQUAL 4 )
+    set( TORQUE_CPU_X32 ON )
+endif()
 
-if(NOT projectDir)
-    set(projectDir    "${CMAKE_SOURCE_DIR}/My Projects/${TORQUE_APP_NAME}")
+if(NOT TORQUE_TEMPLATE)
+    set(TORQUE_TEMPLATE "Full" CACHE STRING "the template to use")
+endif()
+if(NOT TORQUE_APP_DIR)
+    set(TORQUE_APP_DIR "${CMAKE_SOURCE_DIR}/My Projects/${TORQUE_APP_NAME}")
 endif()
 if(NOT projectOutDir)
-    set(projectOutDir "${projectDir}/game")
+    set(projectOutDir "${TORQUE_APP_DIR}/game")
 endif()
 if(NOT projectSrcDir)
-    set(projectSrcDir "${projectDir}/source")
+    set(projectSrcDir "${TORQUE_APP_DIR}/source")
 endif()
 set(libDir        "${CMAKE_SOURCE_DIR}/Engine/lib")
 set(srcDir        "${CMAKE_SOURCE_DIR}/Engine/source")
@@ -295,7 +324,7 @@ macro(setupPackaging)
     SET(CPACK_PACKAGE_VENDOR "${PROJECT_NAME}")
     SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_NAME}")
     SET(CPACK_INCLUDE_TOPLEVEL_DIRECTORY 1)
-    SET(CPACK_OUTPUT_FILE_PREFIX "${projectDir}/packages/${PROJECT_NAME}")
+    SET(CPACK_OUTPUT_FILE_PREFIX "${TORQUE_APP_DIR}/packages/${PROJECT_NAME}")
     SET(CPACK_PACKAGE_INSTALL_DIRECTORY "")
     #SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt")
     #SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
@@ -317,7 +346,12 @@ if(WIN32)
     set(TORQUE_CXX_FLAGS_LIBS "/W0" CACHE TYPE STRING)
     mark_as_advanced(TORQUE_CXX_FLAGS_LIBS)
 
-    set(TORQUE_CXX_FLAGS_COMMON "-DUNICODE -D_UNICODE /MP /O2 /Ob2 /Oi /Ot /Oy /GT /Zi /W4 /nologo /GF /EHsc /GS- /Gy- /Qpar- /arch:SSE2 /fp:fast /fp:except- /GR /Zc:wchar_t- /D_CRT_SECURE_NO_WARNINGS" CACHE TYPE STRING)
+    set(TORQUE_CXX_FLAGS_COMMON_DEFAULT "-DUNICODE -D_UNICODE /MP /O2 /Ob2 /Oi /Ot /Oy /GT /Zi /W4 /nologo /GF /EHsc /GS- /Gy- /Qpar- /fp:fast /fp:except- /GR /Zc:wchar_t- /D_CRT_SECURE_NO_WARNINGS" )
+    if( TORQUE_CPU_X32 )
+       set(TORQUE_CXX_FLAGS_COMMON_DEFAULT ${TORQUE_CXX_FLAGS_COMMON_DEFAULT}" /arch:SSE2")
+    endif()
+    set(TORQUE_CXX_FLAGS_COMMON ${TORQUE_CXX_FLAGS_COMMON_DEFAULT} CACHE TYPE STRING)
+    
     mark_as_advanced(TORQUE_CXX_FLAGS_COMMON)
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORQUE_CXX_FLAGS_COMMON}")

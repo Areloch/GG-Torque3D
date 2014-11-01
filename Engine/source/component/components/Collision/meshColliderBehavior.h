@@ -167,6 +167,8 @@ public:
 
    virtual bool checkCollisions( const F32 travelTime, Point3F *velocity, Point3F start );
 
+   virtual bool buildPolyList(PolyListContext context, AbstractPolyList* polyList, const Box3F &box, const SphereF &sphere);
+
    virtual bool buildConvex(const Box3F& box, Convex* convex);
    virtual bool castRay(const Point3F &start, const Point3F &end, RayInfo* info);
 

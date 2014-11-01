@@ -476,6 +476,11 @@ function EditorGui::setEditor( %this, %newEditor, %dontActivate )
       %gui.setOrthoFOV( %this.currentOrthoFOV );
       EditorGui.syncCameraGui();
    }
+
+   //-JR
+   //If we're leaving the world editor, stop any sub-tools
+   if( %newEditor !$= "WorldEditorInspectorPlugin")
+		EWorldEditor.setActiveTool("");
 }
 
 function EditorGui::syncEditor( %this, %newEditor, %newEditorFailed )

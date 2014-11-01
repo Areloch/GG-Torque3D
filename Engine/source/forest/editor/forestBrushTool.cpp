@@ -226,7 +226,7 @@ void ForestBrushTool::onRender2D()
       end.x = start.x = mLastBrushPoint.x + vec.x * mSize;
       end.y = start.y = mLastBrushPoint.y + vec.y * mSize;
 
-      bool hit = gServerContainer.castRay( start, end, TerrainObjectType | StaticShapeObjectType | EntityObjectType, &ri );
+      bool hit = gServerContainer.castRay( start, end, TerrainObjectType | StaticShapeObjectType, &ri );
 
       if ( hit )
          pointList.push_back( ri.point );
@@ -545,7 +545,7 @@ void ForestBrushTool::_erase( const Point3F &point )
 bool ForestBrushTool::_updateBrushPoint( const Gui3DMouseEvent &event_ )
 {
    // Do a raycast for terrain... thats the placement center.
-   const U32 mask = TerrainObjectType | StaticShapeObjectType | EntityObjectType; // TODO: Make an option!
+   const U32 mask = TerrainObjectType | StaticShapeObjectType; // TODO: Make an option!
 
    Point3F start( event_.pos );
    Point3F end( event_.pos + ( event_.vec * 10000.0f ) );
@@ -652,7 +652,7 @@ void ForestBrushTool::_collectElements()
 
 bool ForestBrushTool::getGroundAt( const Point3F &worldPt, F32 *zValueOut, VectorF *normalOut )
 {
-   const U32 mask = TerrainObjectType | StaticShapeObjectType | EntityObjectType;
+   const U32 mask = TerrainObjectType | StaticShapeObjectType;
 
    Point3F start( worldPt.x, worldPt.y, worldPt.z + mSize );
    Point3F end( worldPt.x, worldPt.y, worldPt.z - mSize );

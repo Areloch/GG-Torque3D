@@ -887,9 +887,6 @@ void TSStatic::buildConvex(const Box3F& box, Convex* convex)
    {
       TSStaticPolysoupConvex::smCurObject = this;
 
-      Con::printf("TSCOLLISION: TSStatic bounds.min: %g %g %g, max: %g %g %g", getWorldBox().minExtents.x, getWorldBox().minExtents.y, getWorldBox().minExtents.z,
-                                                                           getWorldBox().maxExtents.x, getWorldBox().maxExtents.y, getWorldBox().maxExtents.z);
-
       for (U32 i = 0; i < mCollisionDetails.size(); i++)
          mShapeInstance->buildConvexOpcode( mObjToWorld, mObjScale, mCollisionDetails[i], box, convex, mConvexList );
 
