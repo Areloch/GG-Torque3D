@@ -45,6 +45,11 @@
 // Debug Profiling.
 #include "platform/profiler.h"
 
+#include <assimp/cimport.h>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <assimp/types.h>
+
 static U32 execDepth = 0;
 static U32 journalDepth = 1;
 
@@ -102,6 +107,8 @@ mAssetInitialized(false)
 {
    // Generate an asset definition.
    mpAssetDefinition = new AssetDefinition();
+
+   mModelScene = NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -137,12 +144,96 @@ void ShapeAsset::initializeAsset()
 
 bool ShapeAsset::loadShape()
 {
-   mShape = ResourceManager::get().load(mFileName);
+   //mShape = ResourceManager::get().load(mFileName);
 
-   if (!mShape)
+   mModelScene = mImporter.ReadFile(mFileName, 
+      aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+
+   if (!mModelScene)
    {
-      Con::errorf("StaticMesh::updateShape : failed to load shape file!");
+      Con::errorf("ShapeAsset::loadShape : failed to load shape file!");
       return false; //if it failed to load, bail out
+   }
+
+   bool hasMeshes = mModelScene->HasMeshes();
+
+   if (hasMeshes)
+   {
+      U32 numMeshes = mModelScene->mNumMeshes;
+
+      for (U32 i = 0; i < numMeshes; i++)
+      {
+         String meshName = mModelScene->mMeshes[i]->mName.C_Str();
+
+         S32 LODNum;
+         String::GetTrailingNumber(meshName, LODNum);
+
+         aiMesh* aiSubMesh = mModelScene->mMeshes[i];
+
+         subMesh mesh;
+
+         U32 matIndex = aiSubMesh->mMaterialIndex;
+
+         U32 primitiveType = aiSubMesh->mPrimitiveTypes;
+         
+         //vertex info
+         U32 vertCount = aiSubMesh->mNumVertices;
+         for (U32 v = 0; v < vertCount; v++)
+         {
+            subMesh::vert newVert;
+
+            aiVector3D* asVert = &aiSubMesh->mVertices[v];
+            newVert.position = Point3F(asVert->x, asVert->y, asVert->z);
+
+            aiVector3D* asNorm = &aiSubMesh->mNormals[v];
+            newVert.normal = Point3F(asNorm->x, asNorm->y, asNorm->z);
+
+            aiVector3D* asTangent = &aiSubMesh->mTangents[v];
+            newVert.tangent = Point3F(asTangent->x, asTangent->y, asTangent->z);
+
+            aiVector3D* asBitangent = &aiSubMesh->mBitangents[v];
+            newVert.bitangent = Point3F(asBitangent->x, asBitangent->y, asBitangent->z);
+
+            aiVector3D* texCoord = &aiSubMesh->mTextureCoords[0][v];
+            newVert.texCoord = Point2F(asBitangent->x, asBitangent->y);
+
+            mesh.verts.push_back(newVert);
+         }
+
+         //get faces
+         U32 faceCount = aiSubMesh->mNumFaces;
+         for (U32 f = 0; f < faceCount; f++)
+         {
+            aiFace* asFace = &aiSubMesh->mFaces[f];
+
+            subMesh::face newFace;
+
+            U32 indexCount = asFace->mNumIndices;
+            for (U32 ind = 0; ind < indexCount; ind++)
+            {
+               U32 index = asFace->mIndices[ind];
+               newFace.indicies.push_back(index);
+            }
+
+            mesh.faces.push_back(newFace);
+         }
+
+         U32 boneCount = aiSubMesh->mNumBones;
+         /*for (U32 b = 0; b < boneCount; b++)
+         {
+            aiSubMesh->mBones
+         }*/
+
+         mSubMeshes.push_back(mesh);
+      }
+
+      U32 materialCount = mModelScene->mNumMaterials;
+      for (U32 m = 0; m < materialCount; m++)
+      {
+         aiMaterial* aiMat = mModelScene->mMaterials[m];
+
+         //aiMat->
+      }
    }
 
    return true;

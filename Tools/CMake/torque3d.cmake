@@ -531,6 +531,7 @@ addLib(squish)
 addLib(collada)
 addLib(pcre)
 addLib(convexDecomp)
+addLib(assimp)
 
 if(WIN32)
     # copy pasted from T3D build system, some might not be needed
@@ -623,6 +624,8 @@ addInclude("${libDir}/libogg/include")
 addInclude("${libDir}/opcode")
 addInclude("${libDir}/collada/include")
 addInclude("${libDir}/collada/include/1.4")
+addInclude("${libDir}/assimp/include")
+
 if(TORQUE_OPENGL)
 	addInclude("${libDir}/glew/include")
 endif()

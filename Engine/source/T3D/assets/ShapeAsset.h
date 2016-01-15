@@ -45,6 +45,30 @@
 #include "core/resource.h"
 #endif
 
+
+#ifndef __AI_SCENE_H_INC__
+#include <assimp/scene.h>
+#endif
+#ifndef AI_QUATERNION_H_INC
+#include <assimp/quaternion.h>
+#endif
+#ifndef AI_ANIM_H_INC
+#include <assimp/anim.h>
+#endif
+#ifndef INCLUDED_AI_ASSIMP_HPP
+#include <assimp/Importer.hpp>
+#endif
+
+GFXDeclareVertexFormat(MeshVert)
+{
+   Point3F point;
+   GFXVertexColor color;
+   Point3F normal;
+   Point3F tangent;
+   Point2F texCoord;
+};
+typedef MeshVert VertexType;
+
 //-----------------------------------------------------------------------------
 class ShapeAsset : public AssetBase
 {
@@ -55,9 +79,48 @@ class ShapeAsset : public AssetBase
    AssetDefinition*        mpAssetDefinition;
    U32                     mAcquireReferenceCount;
 
+   struct bone
+   {
+      String name;
+      MatrixF baseTransform;
+   };
+
+   struct subMesh
+   {
+      GFXVertexBufferHandle< VertexType > vertexBuffer;
+      GFXPrimitiveBufferHandle            primitiveBuffer;
+
+      struct vert
+      {
+         Point3F position;
+         ColorI color;
+         Point3F normal;
+         Point2F texCoord;
+         Point3F tangent;
+         Point3F bitangent;
+
+         //4 bones per vert is pretty standard
+         U32 boneIndicies[4];
+         F32 boneWeights[4];
+      };
+
+      struct face
+      {
+         Vector<U32> indicies;
+      };
+
+      Vector<vert> verts;
+      Vector<face> faces;
+   };
+
+   Vector<bone> mBones;
+   Vector<subMesh> mSubMeshes;
+
 protected:
    StringTableEntry   mFileName;
-   Resource<TSShape>	 mShape;
+   //Resource<TSShape>	 mShape;
+   Assimp::Importer   mImporter;
+   const aiScene*     mModelScene;
 
 public:
    ShapeAsset();
@@ -74,7 +137,7 @@ public:
 
    bool loadShape();
 
-   TSShape* getShape() { return mShape; }
+   //TSShape* getShape() { return mShape; }
 
 protected:
    virtual void            onAssetRefresh(void) {}
