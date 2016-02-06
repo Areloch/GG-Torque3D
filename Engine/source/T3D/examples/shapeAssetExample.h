@@ -29,6 +29,8 @@
 
 #include "assets/assetPtr.h"
 #include "T3D/assets/ShapeAsset.h"
+#include "T3D/assets/MaterialAsset.h"
+#include "T3D/assets/AnimationAsset.h"
 
 //-----------------------------------------------------------------------------
 // This class implements a basic SceneObject that can exist in the world at a
@@ -53,7 +55,8 @@ class ShapeAssetExample : public SceneObject
    {
       TransformMask = Parent::NextFreeMask << 0,
       UpdateMask    = Parent::NextFreeMask << 1,
-      NextFreeMask  = Parent::NextFreeMask << 2
+      ShapeMask = Parent::NextFreeMask << 2,
+      NextFreeMask  = Parent::NextFreeMask << 3
    };
 
    //--------------------------------------------------------------------------
@@ -68,6 +71,33 @@ class ShapeAssetExample : public SceneObject
 
    StringTableEntry       mMeshAssetId;
    AssetPtr<ShapeAsset>   mMeshAsset;
+
+   StringTableEntry        mMaterialAssetId;
+   AssetPtr<MaterialAsset> mMaterialAsset;
+
+   Vector<AssetPtr<MaterialAsset>> mMaterialAssets;
+   Vector<BaseMatInstance*>         mMaterialInstances;
+
+   StringTableEntry           mAnimAssetId;
+   AssetPtr<AnimationAsset>   mAnimAsset;
+
+   struct AnimThread
+   {
+      String sequenceName;
+      F32 playTime;
+      F32 playSpeed;
+
+      AnimThread()
+      {
+         sequenceName = "";
+         playTime = 0;
+         playSpeed = 1;
+      }
+   };
+
+   Vector<AnimThread> mAnimationThreads;
+
+   Vector<MatrixF> mNodeTransforms;
 
 public:
    ShapeAssetExample();
@@ -118,8 +148,14 @@ public:
    // This is the function that allows this object to submit itself for rendering
    void prepRenderImage( SceneRenderState *state );
 
+   virtual void processTick(const Move* move);
+   virtual void advanceTime(F32 delta);
+
    static bool _setMesh(void *object, const char *index, const char *data);
    bool setMeshAsset(const char* assetName);
+
+   static bool _setAnimation(void *object, const char *index, const char *data);
+   bool setAnimationAsset(const char* assetName);
 };
 
 #endif // _ShapeAssetExample_H_

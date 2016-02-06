@@ -42,6 +42,13 @@
 
 #include "core/resourceManager.h"
 
+#include "materials/materialDefinition.h"
+#include "materials/materialManager.h"
+
+#include "materials/customMaterialDefinition.h"
+
+#include "materials/shaderData.h"
+
 // Debug Profiling.
 #include "platform/profiler.h"
 
@@ -52,6 +59,15 @@
 
 static U32 execDepth = 0;
 static U32 journalDepth = 1;
+
+GFXImplementVertexFormat(MeshVert)
+{
+   addElement("POSITION", GFXDeclType_Float3);
+   addElement("COLOR", GFXDeclType_Color);
+   addElement("NORMAL", GFXDeclType_Float3);
+   addElement("TANGENT", GFXDeclType_Float3);
+   addElement("TEXCOORD", GFXDeclType_Float2, 0);
+};
 
 //-----------------------------------------------------------------------------
 
@@ -147,7 +163,7 @@ bool ShapeAsset::loadShape()
    //mShape = ResourceManager::get().load(mFileName);
 
    mModelScene = mImporter.ReadFile(mFileName, 
-      aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+      (aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_CalcTangentSpace) & ~aiProcess_RemoveRedundantMaterials);
 
    if (!mModelScene)
    {
@@ -172,7 +188,7 @@ bool ShapeAsset::loadShape()
 
          subMesh mesh;
 
-         U32 matIndex = aiSubMesh->mMaterialIndex;
+         mesh.materialIndex = aiSubMesh->mMaterialIndex;
 
          U32 primitiveType = aiSubMesh->mPrimitiveTypes;
          
@@ -195,7 +211,10 @@ bool ShapeAsset::loadShape()
             newVert.bitangent = Point3F(asBitangent->x, asBitangent->y, asBitangent->z);
 
             aiVector3D* texCoord = &aiSubMesh->mTextureCoords[0][v];
-            newVert.texCoord = Point2F(asBitangent->x, asBitangent->y);
+            newVert.texCoord = Point2F(texCoord->x, texCoord->y);
+
+            //aiVector3D* texCoord2 = &aiSubMesh->mTextureCoords[1][v];
+            //newVert.texCoord2 = Point2F(texCoord2->x, texCoord2->y);
 
             mesh.verts.push_back(newVert);
          }
@@ -205,6 +224,9 @@ bool ShapeAsset::loadShape()
          for (U32 f = 0; f < faceCount; f++)
          {
             aiFace* asFace = &aiSubMesh->mFaces[f];
+
+            if (asFace->mNumIndices != 3)
+               continue; //non-triangle. need to add support for this?
 
             subMesh::face newFace;
 
@@ -218,11 +240,65 @@ bool ShapeAsset::loadShape()
             mesh.faces.push_back(newFace);
          }
 
+         bone newBone;
+
          U32 boneCount = aiSubMesh->mNumBones;
-         /*for (U32 b = 0; b < boneCount; b++)
+         for (U32 b = 0; b < boneCount; b++)
          {
-            aiSubMesh->mBones
-         }*/
+            newBone.name = aiSubMesh->mBones[b]->mName.C_Str();
+            /*for (U32 m = 0; m < 16; ++m)
+            {
+               newBone.baseTransform[m] = *aiSubMesh->mBones[b]->mOffsetMatrix[m];
+            }*/
+
+            U32 numWeights = aiSubMesh->mBones[b]->mNumWeights;
+            for (U32 w = 0; w < numWeights; ++w)
+            {
+               aiVertexWeight* aiWeight = aiSubMesh->mBones[b]->mWeights;
+
+               bone::vertWeight vertWeight;
+               //vertWeight. = aiWeight->
+            }
+            //= mNumWeights
+         }
+
+         mBones.push_back(newBone);
+
+         //now build the buffers
+         mesh.vertexBuffer.set(GFX, mesh.verts.size(), GFXBufferTypeStatic);
+         VertexType *pVert = mesh.vertexBuffer.lock();
+
+         for (U32 v = 0; v < mesh.verts.size(); v++)
+         {
+            pVert->normal = mesh.verts[v].normal;
+            pVert->B = mesh.verts[v].bitangent;
+            pVert->T = mesh.verts[v].tangent;
+            pVert->point = mesh.verts[v].position;
+            pVert->texCoord = mesh.verts[v].texCoord;
+            pVert->texCoord2 = mesh.verts[v].texCoord2;
+
+            pVert++;
+         }
+
+         mesh.vertexBuffer.unlock();
+
+         //primitive buffers
+         // Allocate PB
+         mesh.primitiveBuffer.set(GFX, mesh.faces.size() * 3, mesh.faces.size(), GFXBufferTypeStatic);
+
+         U16 *pIndex;
+         mesh.primitiveBuffer.lock(&pIndex);
+
+         for (U16 f = 0; f < mesh.faces.size(); f++)
+         {
+            for (U16 i = 0; i < mesh.faces[f].indicies.size(); i++)
+            {
+               *pIndex = mesh.faces[f].indicies[i];
+               pIndex++;
+            }
+         }
+
+         mesh.primitiveBuffer.unlock();
 
          mSubMeshes.push_back(mesh);
       }
@@ -232,11 +308,57 @@ bool ShapeAsset::loadShape()
       {
          aiMaterial* aiMat = mModelScene->mMaterials[m];
 
-         //aiMat->
+         aiString matName;
+         aiMat->Get(AI_MATKEY_NAME, matName);
+
+         bool found = false;
+         for (U32 n = 0; n < mMaterialNames.size(); ++n)
+         {
+            if (mMaterialNames[n] == String(matName.C_Str()))
+            {
+               found = true;
+               break;
+            }
+         }
+
+         if (!found)
+            mMaterialNames.push_back(matName.C_Str());
+
+         aiColor3D color(0.f, 0.f, 0.f);
+         aiMat->Get(AI_MATKEY_COLOR_DIFFUSE, color);
       }
+
+      String astid = getAssetId();
+      //String moduleName = AssetDatabase.getAssetModuleDefinition()->getName();
+     //mpAssetDefinition->mpModuleDefinition->getName();
+      for (U32 m = 0; m < mMaterialNames.size(); ++m)
+      {
+         /*BaseMaterialDefinition* mat;
+         if (Sim::findObject(mMaterialNames[m], mat))
+         {
+            mMaterials.push_back(mat);
+         }*/
+
+         ShaderData* shdr = new ShaderData();
+         shdr->registerObject();
+         shdr->mDXPixelShaderName = "shaders/common/MeshAssetP.hlsl";
+         shdr->mDXVertexShaderName = "shaders/common/MeshAssetV.hlsl";
+         shdr->mPixVersion = 2.0;
+
+         CustomMaterial* mat = new CustomMaterial();
+         mat->registerObject();
+         mat->mShaderData = shdr;
+         mat->mSamplerNames[0] = "diffuseMap";
+         mat->mTexFilename[0] = "core/art/grids/512_orange";
+
+         mMaterials.push_back(mat);
+      }
+
+      return true;
    }
 
-   return true;
+   Con::errorf("ShapeAsset::loadShape(): Attempted to load a shape file with no meshes!");
+   return false;
 }
 
 //------------------------------------------------------------------------------

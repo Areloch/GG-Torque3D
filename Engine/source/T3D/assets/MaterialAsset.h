@@ -44,6 +44,7 @@
 
 #include "materials/matTextureTarget.h"
 #include "materials/materialDefinition.h"
+#include "materials/customMaterialDefinition.h"
 
 //-----------------------------------------------------------------------------
 class MaterialAsset : public AssetBase
@@ -56,7 +57,9 @@ class MaterialAsset : public AssetBase
    U32                     mAcquireReferenceCount;
 
    //
-   GFXShaderRef            mShader;
+   BaseMatInstance*        mMatInstance;
+   CustomMaterial*         mMaterial;
+   /*GFXShaderRef            mShader;
    GFXShaderConstBufferRef mShaderConstBuffer;
 
    struct constHandle
@@ -84,9 +87,14 @@ class MaterialAsset : public AssetBase
       GFXTexHandle texture3DVal;
    };
 
-   Vector<constHandle> mConstHandlesList;
+   Vector<constHandle> mConstHandlesList;*/
 
    StringTableEntry mShaderFile;
+
+   String mDiffuseTexture;
+   //AssetPtr<MaterialAsset> mDiffuseTextureAsset;
+
+   String mDiffuseText;
 
 public:
    MaterialAsset();

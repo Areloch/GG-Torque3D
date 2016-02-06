@@ -130,7 +130,10 @@ void MaterialAsset::initPersistFields()
    // Call parent.
    Parent::initPersistFields();
 
-   addField("shaderData", TypeShader, Offset(mShaderFile, MaterialAsset), "");
+   addField("shaderData", TypeRealString, Offset(mShaderFile, MaterialAsset), "");
+
+   addField("diffuseTexture", TypeImageFilename, Offset(mDiffuseText, MaterialAsset), "");
+   //addField("diffuseTexture", TypeAssetId, Offset(mDiffuseTexture, MaterialAsset), "");
 }
 
 void MaterialAsset::initializeAsset()
@@ -138,10 +141,22 @@ void MaterialAsset::initializeAsset()
    // Call parent.
    Parent::initializeAsset();
 
-   if (String::isEmpty(mShaderFile))
+   if (String::isEmpty(mShaderFile) || String::isEmpty(mDiffuseText))
       return;
 
-   mShader = NULL;
+   //
+   //mDiffuseTextureAsset.setAssetId(mDiffuseTexture);
+   //
+
+   SAFE_DELETE(mMaterial);
+
+   mMaterial = new CustomMaterial();
+
+   mMaterial->mShaderData = dynamic_cast<ShaderData*>(Sim::findObject(mShaderFile));
+
+   //mMaterial->mSamplerNames[0]
+
+   /*mShader = NULL;
    mShaderConstBuffer = NULL;
 
    //mPrepassTarget = NULL;
@@ -172,7 +187,7 @@ void MaterialAsset::initializeAsset()
    if (!mPropagatedShader)
       return;*/
 
-   mShaderConstBuffer = mShader->allocConstBuffer();
+   /*mShaderConstBuffer = mShader->allocConstBuffer();
 
    mShader->getSha
 
@@ -181,7 +196,7 @@ void MaterialAsset::initializeAsset()
    handle.handle = mShader->getShaderConstHandle(handle.handleName);
    handle.mType = constHandle::Float3;
 
-   mConstHandlesList.push_back(handle);
+   mConstHandlesList.push_back(handle);*/
 
    //mEyePosWorldPropSC = mShader->getShaderConstHandle("$eyePosWorld");
    //mRTParamsPropSC = mShader->getShaderConstHandle("$rtParams0");
@@ -194,7 +209,7 @@ void MaterialAsset::parseShaderData()
    //we have a shaderdata declaration, so we'll parse that to build our fields and constants
    //load the shader file and parse for uniforms!
 
-   Torque::Path shaderFile = mShader->getPixelShaderFile();
+   /*Torque::Path shaderFile = mShader->getPixelShaderFile();
 
    FileObject f;
    f.readMemory(shaderFile.getFullPath());
@@ -398,7 +413,7 @@ void MaterialAsset::parseShaderData()
    if (handles->mAccuCoverageSC->isValid())
       shaderConsts->set(handles->mAccuCoverageSC, mMaterial->mAccuCoverage[stageNum]);
    if (handles->mAccuSpecularSC->isValid())
-      shaderConsts->set(handles->mAccuSpecularSC, mMaterial->mAccuSpecular[stageNum]);
+      shaderConsts->set(handles->mAccuSpecularSC, mMaterial->mAccuSpecular[stageNum]);*/
 }
 
 void MaterialAsset::parseShaderGraph()

@@ -19,8 +19,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
-#ifndef _SHAPE_ASSET_H_
-#define _SHAPE_ASSET_H_
+#ifndef _ANIMATION_ASSET_H_
+#define _ANIMATION_ASSET_H_
 
 #ifndef _ASSET_BASE_H_
 #include "assets/assetBase.h"
@@ -61,19 +61,10 @@
 
 #include "materials/baseMaterialDefinition.h"
 
-GFXDeclareVertexFormat(MeshVert)
-{
-   Point3F point;
-   GFXVertexColor color;
-   Point3F normal;
-   Point3F tangent;
-   Point2F texCoord;
-};
-
 typedef GFXVertexPNTTB VertexType;
 
 //-----------------------------------------------------------------------------
-class ShapeAsset : public AssetBase
+class AnimationAsset : public AssetBase
 {
    typedef AssetBase Parent;
 
@@ -82,67 +73,63 @@ class ShapeAsset : public AssetBase
    AssetDefinition*        mpAssetDefinition;
    U32                     mAcquireReferenceCount;
 
+   enum AnimationConstants
+   {
+      ANIMATION_FRAMERATE = 60
+   };
+
 public:
+   struct sequence
+   {
+      String name;
+      F32 ticksPerSecond;
+      F32 duration;
+
+      struct node
+      {
+         struct posKey
+         {
+            F32 time;
+            Point3F position;
+         };
+         Vector<posKey> positionKeys;
+
+         struct quatKey
+         {
+            F32 time;
+            QuatF rotation;
+         };
+         Vector<quatKey> rotationKeys;
+
+         struct scaleKey
+         {
+            F32 time;
+            Point3F position;
+         };
+         Vector<scaleKey> scaleKeys;
+      };
+
+      Vector<node> nodes;
+   };
+
    struct bone
    {
       String name;
       MatrixF baseTransform;
-
-      struct vertWeight
-      {
-         U32 vertIndex;
-         F32 weight;
-      };
-
-      Vector<vertWeight> weights;
-   };
-
-   struct subMesh
-   {
-      GFXVertexBufferHandle< VertexType > vertexBuffer;
-      GFXPrimitiveBufferHandle            primitiveBuffer;
-
-      struct vert
-      {
-         Point3F position;
-         ColorI  color;
-         Point3F normal;
-         Point2F texCoord;
-         Point2F texCoord2;
-         Point3F tangent;
-         Point3F bitangent;
-
-         //4 bones per vert is pretty standard
-         U32 boneIndicies[4];
-         F32 boneWeights[4];
-      };
-
-      struct face
-      {
-         Vector<U32> indicies;
-      };
-
-      Vector<vert> verts;
-      Vector<face> faces;
-
-      U32 materialIndex;
    };
 
 protected:
    Vector<bone> mBones;
-   Vector<subMesh> mSubMeshes;
-   Vector<String> mMaterialNames;
-   Vector<BaseMaterialDefinition*> mMaterials;
+   Vector<sequence> mSequences;
 
 protected:
    StringTableEntry   mFileName;
-   //Resource<TSShape>	 mShape;
    Assimp::Importer   mImporter;
    const aiScene*     mModelScene;
 
 public:
-   ShapeAsset();
-   virtual ~ShapeAsset();
+   AnimationAsset();
+   virtual ~AnimationAsset();
 
    /// Engine.
    static void initPersistFields();
@@ -151,34 +138,21 @@ public:
    virtual void initializeAsset();
 
    /// Declare Console Object.
-   DECLARE_CONOBJECT(ShapeAsset);
+   DECLARE_CONOBJECT(AnimationAsset);
 
    bool loadShape();
 
-   U32 getSubmeshCount() { return mSubMeshes.size(); }
+   U32 getSequenceCount() { return mSequences.size(); }
 
-   subMesh* getSubmesh(U32 index) { return &mSubMeshes[index]; }
-
-   U32 getMaterialCount() { return mMaterials.size(); }
-
-   BaseMaterialDefinition* getMaterial(U32 index) 
-   {
-      if (index < 0 || index > mMaterials.size())
-         return NULL; 
-      
-      return mMaterials[index];
-   }
-
-   //GFXVertexBufferHandle< VertexType > getVertBuffer(S32) { return vertexBuffer }
-   //GFXPrimitiveBufferHandle
-
-   //TSShape* getShape() { return mShape; }
+   Vector<MatrixF> getNodeTransforms(U32 animation, F32 time);
+   String getSequenceName(U32 animation);
+   F32 getSequenceDuration(U32 animation);
 
 protected:
    virtual void            onAssetRefresh(void) {}
 };
 
-DefineConsoleType(TypeShapeAssetPtr, ShapeAsset)
+DefineConsoleType(TypeShapeAssetPtr, AnimationAsset)
 
-#endif // _ASSET_BASE_H_
+#endif // _ANIMATION_BASE_H_
 

@@ -53,6 +53,7 @@ protected:
 
    bool mUseDevicePixVersion;
 
+public:
    F32 mPixVersion;
 
    FileName mDXVertexShaderName;
@@ -63,6 +64,7 @@ protected:
 
    FileName mOGLPixelShaderName;
 
+protected:
    /// A semicolon, tab, or newline delimited string of case
    /// sensitive defines that are passed to the shader compiler.
    ///

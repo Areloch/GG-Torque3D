@@ -32,6 +32,8 @@
 #include "renderInstance/renderPassManager.h"
 #include "lighting/lightQuery.h"
 
+#include "materials/materialManager.h"
+#include "materials/baseMatInstance.h"
 
 IMPLEMENT_CO_NETOBJECT_V1(ShapeAssetExample);
 
@@ -62,6 +64,9 @@ ShapeAssetExample::ShapeAssetExample()
    //mShapeInstance = NULL;
 
    mMeshAssetId = StringTable->EmptyString();
+   mAnimAssetId = StringTable->EmptyString();
+
+   mAnimationThreads.clear();
 }
 
 ShapeAssetExample::~ShapeAssetExample()
@@ -75,6 +80,10 @@ void ShapeAssetExample::initPersistFields()
 {
    addGroup( "Rendering" );
    addProtectedField("MeshAsset", TypeAssetId, Offset(mMeshAssetId, ShapeAssetExample), &_setMesh, &defaultProtectedGetFn,
+      "The asset Id used for the mesh.");
+   //addProtectedField("materialAsset", TypeAssetId, Offset(mMaterialAssetId, ShapeAssetExample), &_setMaterial, &defaultProtectedGetFn,
+   //   "The asset Id used for the mesh.");
+   addProtectedField("animationAsset", TypeAssetId, Offset(mAnimAssetId, ShapeAssetExample), &_setAnimation, &defaultProtectedGetFn,
       "The asset Id used for the mesh.");
    endGroup( "Rendering" );
 
@@ -105,11 +114,44 @@ bool ShapeAssetExample::setMeshAsset(const char* assetName)
    }
 
    mMeshAsset = mMeshAssetId;
-   //updateShape(); //make sure we force the update to resize the owner bounds
-   //setMaskBits(ShapeMask);
+   createShape(); //make sure we force the update to resize the owner bounds
+   if (isServerObject())
+      setMaskBits(ShapeMask);
 
    return true;
 }
+
+//
+bool ShapeAssetExample::_setAnimation(void *object, const char *index, const char *data)
+{
+   ShapeAssetExample *shapeExample = static_cast<ShapeAssetExample*>(object);
+
+   // Sanity!
+   AssertFatal(data != NULL, "Cannot use a NULL asset Id.");
+
+   return shapeExample->setAnimationAsset(data);
+}
+
+bool ShapeAssetExample::setAnimationAsset(const char* assetName)
+{
+   // Fetch the asset Id.
+   mAnimAssetId = StringTable->insert(assetName);
+   mAnimAsset.setAssetId(mAnimAssetId);
+
+   if (mAnimAsset.isNull())
+   {
+      Con::errorf("[MeshComponent] Failed to load mesh asset.");
+      return false;
+   }
+
+   mAnimAsset = mAnimAssetId;
+   createShape(); //make sure we force the update to resize the owner bounds
+   if (isServerObject())
+      setMaskBits(ShapeMask);
+
+   return true;
+}
+//
 
 void ShapeAssetExample::inspectPostApply()
 {
@@ -125,6 +167,8 @@ bool ShapeAssetExample::onAdd()
    if ( !Parent::onAdd() )
       return false;
 
+   setProcessTick(true);
+
    // Set up a 1x1x1 bounding box
    mObjBox.set( Point3F( -0.5f, -0.5f, -0.5f ),
                 Point3F(  0.5f,  0.5f,  0.5f ) );
@@ -136,6 +180,9 @@ bool ShapeAssetExample::onAdd()
 
    // Setup the shape.
    createShape();
+
+   if (isServerObject())
+      setMaskBits(ShapeMask);
 
    return true;
 }
@@ -175,13 +222,17 @@ U32 ShapeAssetExample::packUpdate( NetConnection *conn, U32 mask, BitStream *str
    }
 
    // Write out any of the updated editable properties
-   /*if ( stream->writeFlag( mask & UpdateMask ) )
+   if (stream->writeFlag(mask & ShapeMask))
    {
-      stream->write( mShapeFile );
+      String meshId = mMeshAssetId;
+      stream->write(meshId);
+
+      String animId = mAnimAssetId;
+      stream->write(animId);
 
       // Allow the server object a chance to handle a new shape
-      createShape();
-   }*/
+      //createShape();
+   }
 
    return retMask;
 }
@@ -199,13 +250,53 @@ void ShapeAssetExample::unpackUpdate(NetConnection *conn, BitStream *stream)
       setTransform( mObjToWorld );
    }
 
-   /*if ( stream->readFlag() )  // UpdateMask
+   if ( stream->readFlag() )  // ShapeMask
    {
-      stream->read( &mShapeFile );
+      String mesh;
+      stream->read(&mesh);
 
-      if ( isProperlyAdded() )
+      mMeshAssetId = StringTable->insert(mesh);
+
+      //if (isProperlyAdded())
+         setMeshAsset(mMeshAssetId);
+
+      String anim;
+      stream->read(&anim);
+
+      mAnimAssetId = StringTable->insert(anim);
+
+      //if (isProperlyAdded())
+         setAnimationAsset(mAnimAssetId);
+
+      //if ( isProperlyAdded() )
          createShape();
-   }*/
+   }
+}
+
+void ShapeAssetExample::processTick(const Move* move)
+{
+   Parent::processTick(move);
+}
+
+void ShapeAssetExample::advanceTime(F32 delta)
+{
+   Parent::advanceTime(delta);
+
+   if (mAnimAsset && mMeshAsset)
+   {
+      for (U32 i = 0; i < mAnimationThreads.size(); i++)
+      {
+         mAnimationThreads[i].playTime += delta * mAnimationThreads[i].playSpeed;
+
+         if (mAnimationThreads[i].playTime > mAnimAsset->getSequenceDuration(0))
+            mAnimationThreads[i].playTime = mAnimationThreads[i].playTime - mAnimAsset->getSequenceDuration(0);
+
+         Vector<MatrixF> nodeTransforms = mAnimAsset->getNodeTransforms(0, mAnimationThreads[i].playTime);
+
+         mNodeTransforms = nodeTransforms;
+      }
+   }
+   //animation updaaaaaates
 }
 
 //-----------------------------------------------------------------------------
@@ -213,6 +304,46 @@ void ShapeAssetExample::unpackUpdate(NetConnection *conn, BitStream *stream)
 //-----------------------------------------------------------------------------
 void ShapeAssetExample::createShape()
 {
+   if (mMeshAsset == NULL)
+      return;
+
+   if (!isServerObject())
+   {
+      //alright, fetch materials
+      mMaterialInstances.clear();
+
+      for (U32 m = 0; m < mMeshAsset->getMaterialCount(); ++m)
+      {
+         BaseMatInstance *matInst = mMeshAsset->getMaterial(m)->createMatInstance();
+
+         matInst->init(MATMGR->getDefaultFeatures(), getGFXVertexFormat<VertexType>());
+
+         mMaterialInstances.push_back(matInst);
+
+         //
+         /*mMeshAsset->getMaterial(m)->getName();
+         AssetPtr<MaterialAsset> mat;
+         mat.setAssetId(mMeshAsset->getAssetName);
+
+         if (!mat.isNull())
+            mMeshAsset = mMeshAssetId;*/
+      }
+   }
+
+   //set up the animations
+   mAnimationThreads.clear();
+
+   if (mAnimAsset == NULL)
+      return;
+
+   String seqName = mAnimAsset->getSequenceName(0);
+
+   AnimThread newThread;
+
+   newThread.sequenceName = seqName;
+
+   mAnimationThreads.push_back(newThread);
+
    /*if ( mShapeFile.isEmpty() )
       return;
 
@@ -254,51 +385,94 @@ void ShapeAssetExample::createShape()
 
 void ShapeAssetExample::prepRenderImage( SceneRenderState *state )
 {
-   /*// Make sure we have a TSShapeInstance
-   if ( !mShapeInstance )
+   // Do a little prep work if needed
+   if (!mMeshAsset || mMeshAsset->getSubmeshCount() == 0 || !state)
       return;
 
-   // Calculate the distance of this object from the camera
-   Point3F cameraOffset;
-   getRenderTransform().getColumn( 3, &cameraOffset );
-   cameraOffset -= state->getDiffuseCameraPosition();
-   F32 dist = cameraOffset.len();
-   if ( dist < 0.01f )
-      dist = 0.01f;
+   // Get a handy pointer to our RenderPassmanager
+   RenderPassManager *renderPass = state->getRenderPass();
 
-   // Set up the LOD for the shape
-   F32 invScale = ( 1.0f / getMax( getMax( mObjScale.x, mObjScale.y ), mObjScale.z ) );
+   // Set up our transforms
+   MatrixF objectToWorld = getRenderTransform();
+   objectToWorld.scale(getScale());
 
-   mShapeInstance->setDetailFromDistance( state, dist * invScale );
+   U32 subMesheCount = mMeshAsset->getSubmeshCount();
+   for (U32 i = 0; i < subMesheCount; ++i)
+   {
+      ShapeAsset::subMesh* mesh = mMeshAsset->getSubmesh(i);
 
-   // Make sure we have a valid level of detail
-   if ( mShapeInstance->getCurrentDetail() < 0 )
-      return;
+      MeshRenderInst *ri = renderPass->allocInst<MeshRenderInst>();
 
-   // GFXTransformSaver is a handy helper class that restores
-   // the current GFX matrices to their original values when
-   // it goes out of scope at the end of the function
-   GFXTransformSaver saver;
+      //pluck our material
+      BaseMatInstance *matInst = mMaterialInstances[mesh->materialIndex];
 
-   // Set up our TS render state      
-   TSRenderState rdata;
-   rdata.setSceneState( state );
-   rdata.setFadeOverride( 1.0f );
+      if (matInst == NULL)
+         matInst = MATMGR->getWarningMatInstance();
 
-   // We might have some forward lit materials
-   // so pass down a query to gather lights.
-   LightQuery query;
-   query.init( getWorldSphere() );
-   rdata.setLightQuery( &query );
+      //BaseMatInstance *matInst = state->getOverrideMaterial(mMaterialInstances[mesh.materialIndex] 
+      //   ? mMaterialInstances[mesh.materialIndex] : MATMGR->getWarningMatInstance());
 
-   // Set the world matrix to the objects render transform
-   MatrixF mat = getRenderTransform();
-   mat.scale( mObjScale );
-   GFX->setWorldMatrix( mat );
+      //BaseMatInstance *matInst = MATMGR->getWarningMatInstance();
 
-   // Animate the the shape
-   mShapeInstance->animate();
+      if (!matInst)
+         return;
 
-   // Allow the shape to submit the RenderInst(s) for itself
-   mShapeInstance->render( rdata );*/
+      // Set our RenderInst as a standard mesh render
+      ri->type = RenderPassManager::RIT_Mesh;
+
+      // Calculate our sorting point
+      if (state)
+      {
+         // Calculate our sort point manually.
+         const Box3F& rBox = getRenderWorldBox();
+         ri->sortDistSq = rBox.getSqDistanceToPoint(state->getCameraPosition());
+      }
+      else
+         ri->sortDistSq = 0.0f;
+
+      ri->objectToWorld = renderPass->allocUniqueXform(objectToWorld);
+      ri->worldToCamera = renderPass->allocSharedXform(RenderPassManager::View);
+      ri->projection = renderPass->allocSharedXform(RenderPassManager::Projection);
+
+      // If we need lights then set them up.
+      if (matInst->isForwardLit())
+      {
+         LightQuery query;
+         query.init(getWorldSphere());
+         query.getLights(ri->lights, 8);
+      }
+
+      // Make sure we have an up-to-date backbuffer in case
+      // our Material would like to make use of it
+      // NOTICE: SFXBB is removed and refraction is disabled!
+      //ri->backBuffTex = GFX->getSfxBackBuffer();
+
+      // Set our Material
+      ri->matInst = matInst;
+
+      if (matInst->getMaterial()->isTranslucent())
+      {
+         ri->translucentSort = true;
+         ri->type = RenderPassManager::RIT_Translucent;
+      }
+
+      // Set up our vertex buffer and primitive buffer
+      ri->vertBuff = &mesh->vertexBuffer;
+      ri->primBuff = &mesh->primitiveBuffer;
+
+      ri->prim = renderPass->allocPrim();
+      ri->prim->type = GFXTriangleList;
+      ri->prim->minIndex = 0;
+      ri->prim->startIndex = 0;
+      ri->prim->numPrimitives = mesh->faces.size();
+      ri->prim->startVertex = 0;
+      ri->prim->numVertices = mesh->verts.size();
+
+      // We sort by the material then vertex buffer.
+      ri->defaultKey = matInst->getStateHint();
+      ri->defaultKey2 = (uintptr_t)ri->vertBuff; // Not 64bit safe!
+
+      // Submit our RenderInst to the RenderPassManager
+      state->getRenderPass()->addInst(ri);
+   }
 }
