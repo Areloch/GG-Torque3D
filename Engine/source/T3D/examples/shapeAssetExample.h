@@ -99,6 +99,72 @@ class ShapeAssetExample : public SceneObject
 
    Vector<MatrixF> mNodeTransforms;
 
+   //
+   //In the event of a non-animated mesh, we can just use the static buffers that are pre-defined here.
+   //Once Hardware skinning is in, the rendering will use this exclusively rather than temp buffers in the utilizing class
+   struct BufferSet
+   {
+      U32 matId;
+
+      /*struct Buffers
+      {
+         U32 vertStart;
+         U32 primStart;
+         U32 vertCount;
+         U32 primCount;
+
+         GFXVertexBufferHandle< VertexType > vertexBuffer;
+         GFXPrimitiveBufferHandle            primitiveBuffer;
+
+         Buffers()
+         {
+            vertStart = 0;
+            primStart = 0;
+            vertCount = 0;
+            primCount = 0;
+
+            vertexBuffer = NULL;
+            primitiveBuffer = NULL;
+         }
+      };
+
+      Vector<Buffers> buffers;*/
+
+      U32 vertCount;
+      U32 primCount;
+
+      GFXVertexBufferHandle< VertexType > vertexBuffer;
+      GFXPrimitiveBufferHandle            primitiveBuffer;
+
+      BufferSet()
+      {
+         //Buffers newBuffer;
+         //buffers.push_back(newBuffer);
+
+         vertCount = 0;
+         primCount = 0;
+
+         vertexBuffer = NULL;
+         primitiveBuffer = NULL;
+
+         matId = 0;
+      }
+   };
+   
+   Vector < BufferSet > mBufferList;
+
+protected:
+   U32 findBufferSetByMaterial(U32 matId)
+   {
+      for (U32 i = 0; i < mBufferList.size(); i++)
+      {
+         if (mBufferList[i].matId == matId)
+            return i;
+      }
+
+      return -1;
+   }
+
 public:
    ShapeAssetExample();
    virtual ~ShapeAssetExample();
@@ -156,6 +222,13 @@ public:
 
    static bool _setAnimation(void *object, const char *index, const char *data);
    bool setAnimationAsset(const char* assetName);
+
+   //
+   void rebuildMeshBuffer();
+   S32 setDetailFromDistance(const SceneRenderState *state, F32 scaledDistance);
+   S32 setDetailFromScreenError(F32 errorTolerance);
+   S32 setDetailFromPosAndScale(const SceneRenderState *state, const Point3F &pos, const Point3F &scale);
+   //
 };
 
 #endif // _ShapeAssetExample_H_

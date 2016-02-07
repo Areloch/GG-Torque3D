@@ -299,6 +299,253 @@ void ShapeAssetExample::advanceTime(F32 delta)
    //animation updaaaaaates
 }
 
+//
+//In the event our mesh is marked as dirty, we rebuild the mesh's buffer
+//This happens when animations update the mesh shape, or a change in LOD or a change in which meshes are visible
+void ShapeAssetExample::rebuildMeshBuffer()
+{
+   if (!mMeshAsset || mMeshAsset->getDetailLevelCount() == 0)
+      return;
+
+   //rebuild!
+   /*ShapeAsset::DetailLevel* detail = mMeshAsset->getDetailLevel(1000);
+
+   //clear out our old buffer selection
+   mBufferList.clear();
+
+   U32 vertCount = 0;
+   U32 primCount = 0;
+
+   //Iterate through the submeshes so we can accrue their geometry data
+   U32 currentBuffer;
+   U32 BUFFER_SIZE = 65000;
+
+   //Temporarily store the vert and faces so we can collect them into one-per-material buffers
+   Vector<ShapeAsset::SubMesh::Vert> tempVerts;
+   Vector<ShapeAsset::SubMesh::Face> tempFaces;
+
+   for (U32 i = 0; i < detail->mSubMeshes.size(); ++i)
+   {
+      ShapeAsset::SubMesh& subMesh = detail->mSubMeshes[i];
+
+      //double-check that the submesh isn't hidden by us
+      
+      vertCount += subMesh.verts.size();
+      primCount += subMesh.faces.size();
+
+      currentBuffer = findBufferSetByMaterial(subMesh.materialIndex);
+      if (currentBuffer == -1)
+      {
+         BufferSet newSet;
+         newSet.matId = subMesh.materialIndex;
+
+         mBufferList.push_back(newSet);
+
+         currentBuffer = mBufferList.size() - 1;
+      }
+
+      //Now that we know for sure what buffer to write into
+   }
+   
+   //now build the buffers
+   mVertexBuffer.set(GFX, vertCount, GFXBufferTypeStatic);
+   VertexType *pVert = mVertexBuffer.lock();
+
+   for (U32 s = 0; s < detail->mSubMeshes.size(); ++s)
+   {
+      ShapeAsset::SubMesh& subMesh = detail->mSubMeshes[s];
+
+      for (U32 v = 0; v < subMesh.verts.size(); ++v)
+      {
+         pVert->normal = subMesh.verts[v].normal;
+         pVert->B = subMesh.verts[v].bitangent;
+         pVert->T = subMesh.verts[v].tangent;
+         pVert->point = subMesh.verts[v].position;
+         pVert->texCoord = subMesh.verts[v].texCoord;
+         pVert->texCoord2 = subMesh.verts[v].texCoord2;
+      }
+   }
+
+   mVertexBuffer.unlock();
+
+   //primitive buffers
+   // Allocate PB
+   mPrimitiveBuffer.set(GFX, primCount * 3, primCount, GFXBufferTypeStatic);
+
+   U16 *pIndex;
+   mPrimitiveBuffer.lock(&pIndex);
+
+   for (U32 s = 0; s < detail->mSubMeshes.size(); ++s)
+   {
+      ShapeAsset::SubMesh& subMesh = detail->mSubMeshes[s];
+
+      for (U16 f = 0; f < subMesh.faces.size(); ++f)
+      {
+         for (U16 i = 0; i < subMesh.faces[f].indicies.size(); i++)
+         {
+            *pIndex = subMesh.faces[f].indicies[i];
+            pIndex++;
+         }
+      }
+   }
+
+   mPrimitiveBuffer.unlock();*/
+}
+//
+
+//Get the relevent detail level
+S32 ShapeAssetExample::setDetailFromPosAndScale(const SceneRenderState *state,
+   const Point3F &pos,
+   const Point3F &scale)
+{
+   VectorF camVector = pos - state->getDiffuseCameraPosition();
+   F32 dist = getMax(camVector.len(), 0.01f);
+   F32 invScale = (1.0f / getMax(getMax(scale.x, scale.y), scale.z));
+
+   return setDetailFromDistance(state, dist * invScale);
+}
+
+S32 ShapeAssetExample::setDetailFromDistance(const SceneRenderState *state, F32 scaledDistance)
+{
+   /*PROFILE_SCOPE(MeshComponent_setDetailFromDistance);
+
+   // For debugging/metrics.
+   smLastScaledDistance = scaledDistance;
+
+   // Shortcut if the distance is really close or negative.
+   if (scaledDistance <= 0.0f)
+   {
+      mShape->mDetailLevelLookup[0].get(mCurrentDetailLevel, mCurrentIntraDetailLevel);
+      return mCurrentDetailLevel;
+   }
+
+   // The pixel scale is used the linearly scale the lod
+   // selection based on the viewport size.
+   //
+   // The original calculation from TGEA was...
+   //
+   // pixelScale = viewport.extent.x * 1.6f / 640.0f;
+   //
+   // Since we now work on the viewport height, assuming
+   // 4:3 aspect ratio, we've changed the reference value
+   // to 300 to be more compatible with legacy shapes.
+   //
+   const F32 pixelScale = state->getViewport().extent.y / 300.0f;
+
+   // This is legacy DTS support for older "multires" based
+   // meshes.  The original crossbow weapon uses this.
+   //
+   // If we have more than one detail level and the maxError
+   // is non-negative then we do some sort of screen error 
+   // metric for detail selection.
+   //
+   if (mShape->mUseDetailFromScreenError)
+   {
+      // The pixel size of 1 meter at the input distance.
+      F32 pixelRadius = state->projectRadius(scaledDistance, 1.0f) * pixelScale;
+      static const F32 smScreenError = 5.0f;
+      return setDetailFromScreenError(smScreenError / pixelRadius);
+   }
+
+   // We're inlining SceneRenderState::projectRadius here to 
+   // skip the unnessasary divide by zero protection.
+   F32 pixelRadius = (mShape->radius / scaledDistance) * state->getWorldToScreenScale().y * pixelScale;
+   F32 pixelSize = pixelRadius * smDetailAdjust;
+
+   if (pixelSize < smSmallestVisiblePixelSize) {
+      mCurrentDetailLevel = -1;
+      return mCurrentDetailLevel;
+   }
+
+   if (pixelSize > smSmallestVisiblePixelSize &&
+      pixelSize <= mShape->mSmallestVisibleSize)
+      pixelSize = mShape->mSmallestVisibleSize + 0.01f;
+
+   // For debugging/metrics.
+   smLastPixelSize = pixelSize;
+
+   // Clamp it to an acceptable range for the lookup table.
+   U32 index = (U32)mClampF(pixelSize, 0, mShape->mDetailLevelLookup.size() - 1);
+
+   // Check the lookup table for the detail and intra detail levels.
+   mShape->mDetailLevelLookup[index].get(mCurrentDetailLevel, mCurrentIntraDetailLevel);
+
+   // Restrict the chosen detail level by cutoff value.
+   if (smNumSkipRenderDetails > 0 && mCurrentDetailLevel >= 0)
+   {
+      S32 cutoff = getMin(smNumSkipRenderDetails, mShape->mSmallestVisibleDL);
+      if (mCurrentDetailLevel < cutoff)
+      {
+         mCurrentDetailLevel = cutoff;
+         mCurrentIntraDetailLevel = 1.0f;
+      }
+   }
+
+   return mCurrentDetailLevel;*/
+   return 0;
+}
+
+S32 ShapeAssetExample::setDetailFromScreenError(F32 errorTolerance)
+{
+   /*PROFILE_SCOPE(MeshComponent_setDetailFromScreenError);
+
+   // For debugging/metrics.
+   smLastScreenErrorTolerance = errorTolerance;
+
+   // note:  we use 10 time the average error as the metric...this is
+   // more robust than the maxError...the factor of 10 is to put average error
+   // on about the same scale as maxError.  The errorTOL is how much
+   // error we are able to tolerate before going to a more detailed version of the
+   // shape.  We look for a pair of details with errors bounding our errorTOL,
+   // and then we select an interpolation parameter to tween betwen them.  Ok, so
+   // this isn't exactly an error tolerance.  A tween value of 0 is the lower poly
+   // model (higher detail number) and a value of 1 is the higher poly model (lower
+   // detail number).
+
+   // deal with degenerate case first...
+   // if smallest detail corresponds to less than half tolerable error, then don't even draw
+   F32 prevErr;
+   if (mShape->mSmallestVisibleDL < 0)
+      prevErr = 0.0f;
+   else
+      prevErr = 10.0f * mShape->details[mShape->mSmallestVisibleDL].averageError * 20.0f;
+   if (mShape->mSmallestVisibleDL < 0 || prevErr < errorTolerance)
+   {
+      // draw last detail
+      mCurrentDetailLevel = mShape->mSmallestVisibleDL;
+      mCurrentIntraDetailLevel = 0.0f;
+      return mCurrentDetailLevel;
+   }
+
+   // this function is a little odd
+   // the reason is that the detail numbers correspond to
+   // when we stop using a given detail level...
+   // we search the details from most error to least error
+   // until we fit under the tolerance (errorTOL) and then
+   // we use the next highest detail (higher error)
+   for (S32 i = mShape->mSmallestVisibleDL; i >= 0; i--)
+   {
+      F32 err0 = 10.0f * mShape->details[i].averageError;
+      if (err0 < errorTolerance)
+      {
+         // ok, stop here
+
+         // intraDL = 1 corresponds to fully this detail
+         // intraDL = 0 corresponds to the next lower (higher number) detail
+         mCurrentDetailLevel = i;
+         mCurrentIntraDetailLevel = 1.0f - (errorTolerance - err0) / (prevErr - err0);
+         return mCurrentDetailLevel;
+      }
+      prevErr = err0;
+   }
+
+   // get here if we are drawing at DL==0
+   mCurrentDetailLevel = 0;
+   mCurrentIntraDetailLevel = 1.0f;
+   return mCurrentDetailLevel;*/
+   return 0;
+}
+
 //-----------------------------------------------------------------------------
 // Object Rendering
 //-----------------------------------------------------------------------------
@@ -328,6 +575,8 @@ void ShapeAssetExample::createShape()
          if (!mat.isNull())
             mMeshAsset = mMeshAssetId;*/
       }
+
+      rebuildMeshBuffer();
    }
 
    //set up the animations
@@ -386,7 +635,7 @@ void ShapeAssetExample::createShape()
 void ShapeAssetExample::prepRenderImage( SceneRenderState *state )
 {
    // Do a little prep work if needed
-   if (!mMeshAsset || mMeshAsset->getSubmeshCount() == 0 || !state)
+   if (!mMeshAsset || mMeshAsset->getDetailLevelCount() == 0 || !state)
       return;
 
    // Get a handy pointer to our RenderPassmanager
@@ -396,10 +645,14 @@ void ShapeAssetExample::prepRenderImage( SceneRenderState *state )
    MatrixF objectToWorld = getRenderTransform();
    objectToWorld.scale(getScale());
 
-   U32 subMesheCount = mMeshAsset->getSubmeshCount();
+   ShapeAsset::DetailLevel* detail = mMeshAsset->getDetailLevel(1000);
+   if (detail == NULL)
+      return;
+
+   U32 subMesheCount = detail->mSubMeshes.size();;
    for (U32 i = 0; i < subMesheCount; ++i)
    {
-      ShapeAsset::subMesh* mesh = mMeshAsset->getSubmesh(i);
+      ShapeAsset::SubMesh* mesh = &detail->mSubMeshes[i];
 
       MeshRenderInst *ri = renderPass->allocInst<MeshRenderInst>();
 

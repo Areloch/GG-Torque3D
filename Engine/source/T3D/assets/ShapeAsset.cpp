@@ -125,6 +125,8 @@ mAssetInitialized(false)
    mpAssetDefinition = new AssetDefinition();
 
    mModelScene = NULL;
+
+   mDetailLevels.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -162,8 +164,12 @@ bool ShapeAsset::loadShape()
 {
    //mShape = ResourceManager::get().load(mFileName);
 
+   U32 tmp = (aiProcessPreset_TargetRealtime_Quality | aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_CalcTangentSpace) & ~aiProcess_RemoveRedundantMaterials & ~aiProcess_OptimizeMeshes;
+
+   U32 tmp2 = (aiProcessPreset_TargetRealtime_Quality | aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_CalcTangentSpace) & ~aiProcess_RemoveRedundantMaterials;
+
    mModelScene = mImporter.ReadFile(mFileName, 
-      (aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_CalcTangentSpace) & ~aiProcess_RemoveRedundantMaterials);
+      (aiProcessPreset_TargetRealtime_Quality | aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_CalcTangentSpace) & ~aiProcess_RemoveRedundantMaterials);
 
    if (!mModelScene)
    {
@@ -184,9 +190,33 @@ bool ShapeAsset::loadShape()
          S32 LODNum;
          String::GetTrailingNumber(meshName, LODNum);
 
+         //Get the relevent detail level
+         DetailLevel *detail;
+
+         bool found = false;
+         for (U32 i = 0; i < mDetailLevels.size(); ++i)
+         {
+            if (mDetailLevels[i].pixelSize = LODNum)
+            {
+               detail = &mDetailLevels[i];
+               found = true;
+               break;
+            }
+         }
+
+         if (!found)
+         {
+            DetailLevel newLevel;
+            newLevel.pixelSize = LODNum;
+
+            mDetailLevels.push_back(newLevel);
+
+            detail = &newLevel;
+         }
+
          aiMesh* aiSubMesh = mModelScene->mMeshes[i];
 
-         subMesh mesh;
+         SubMesh mesh;
 
          mesh.materialIndex = aiSubMesh->mMaterialIndex;
 
@@ -196,7 +226,7 @@ bool ShapeAsset::loadShape()
          U32 vertCount = aiSubMesh->mNumVertices;
          for (U32 v = 0; v < vertCount; v++)
          {
-            subMesh::vert newVert;
+            SubMesh::Vert newVert;
 
             aiVector3D* asVert = &aiSubMesh->mVertices[v];
             newVert.position = Point3F(asVert->x, asVert->y, asVert->z);
@@ -228,7 +258,7 @@ bool ShapeAsset::loadShape()
             if (asFace->mNumIndices != 3)
                continue; //non-triangle. need to add support for this?
 
-            subMesh::face newFace;
+            SubMesh::Face newFace;
 
             U32 indexCount = asFace->mNumIndices;
             for (U32 ind = 0; ind < indexCount; ind++)
@@ -240,7 +270,7 @@ bool ShapeAsset::loadShape()
             mesh.faces.push_back(newFace);
          }
 
-         bone newBone;
+         Bone newBone;
 
          U32 boneCount = aiSubMesh->mNumBones;
          for (U32 b = 0; b < boneCount; b++)
@@ -256,7 +286,7 @@ bool ShapeAsset::loadShape()
             {
                aiVertexWeight* aiWeight = aiSubMesh->mBones[b]->mWeights;
 
-               bone::vertWeight vertWeight;
+               Bone::vertWeight vertWeight;
                //vertWeight. = aiWeight->
             }
             //= mNumWeights
@@ -300,7 +330,7 @@ bool ShapeAsset::loadShape()
 
          mesh.primitiveBuffer.unlock();
 
-         mSubMeshes.push_back(mesh);
+         detail->mSubMeshes.push_back(mesh);
       }
 
       U32 materialCount = mModelScene->mNumMaterials;
@@ -361,6 +391,28 @@ bool ShapeAsset::loadShape()
    return false;
 }
 
+ShapeAsset::DetailLevel* ShapeAsset::getDetailLevel(S32 pixelLevel)
+{
+   DetailLevel *DL;
+
+   S32 bestLevel = -1;
+   S32 bestLevelSize = 0;
+
+   for (U32 i = 0; i < mDetailLevels.size(); ++i)
+   {
+      S32 pixelSize = mDetailLevels[i].pixelSize;
+      if (pixelSize < pixelLevel && pixelSize >= bestLevelSize)
+      {
+         bestLevel = i;
+         bestLevelSize = pixelSize;
+      }
+   }
+
+   if (bestLevel == -1)
+      return NULL;
+
+   return &mDetailLevels[bestLevel];
+}
 //------------------------------------------------------------------------------
 
 void ShapeAsset::copyTo(SimObject* object)
