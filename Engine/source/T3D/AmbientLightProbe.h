@@ -17,9 +17,15 @@
 #include "postFx/postEffectCommon.h"
 #endif
 
+#ifndef _REFLECTOR_H_
+#include "scene/reflector.h"
+#endif
+
 #include "materials/matTextureTarget.h"
 #include "renderInstance/renderBinManager.h"
 #include "core/resourceManager.h"
+
+GFX_DeclareTextureProfile(AmbinetLightProbeProfile);
 
 struct CameraQuery;
 class CubemapData;
@@ -38,6 +44,14 @@ public:
    String mCubemapName;
    CubemapData *mCubemap;
    bool mUseCubemap;
+
+   bool mUseDynamicReflection;
+   F32 mDynamicCubemapUpdateRate;
+   S32 mDynamicCubemapSize;
+   String mCubeDescName;
+   U32 cubeDescId;
+   ReflectorDesc *reflectorDesc;
+   CubeReflector mCubeReflector;
 
 protected:
    // We sample from prepass and render to light buffer.
@@ -66,13 +80,15 @@ protected:
    GFXShaderConstHandle    *mUseCubemapSC;
    GFXShaderConstHandle    *mCubemapSC;
 
+   //ScenePolyhedralSpace::PolyhedronType mPolyhedron;
+
    void     _initShaders();
 
    void _handleBinEvent(RenderBinManager *bin, const SceneRenderState* sceneState, bool isBinStart);
    void _updateScreenGeometry(const Frustum &frustum, GFXVertexBufferHandle<PFXVertex> *outVB);
 
    // World Editor Visualization.
-   typedef SilhouetteExtractorPerspective< PolyhedronType > SilhouetteExtractorType;
+   typedef SilhouetteExtractorPerspective< ScenePolyhedralSpace::PolyhedronType > SilhouetteExtractorType;
    bool mTransformDirty;
    Vector< Point3F > mWSPoints;
    SilhouetteExtractorType mSilhouetteExtractor;
@@ -104,6 +120,10 @@ public:
    // Static Functions.
    static void consoleInit();
    static void initPersistFields();
+
+   void _debugRender(ObjectRenderInst *ri, SceneRenderState *state, BaseMatInstance *overrideMat);
+
+   void bakeFace(U32 faceidx);
 };
 
 #endif // AmbientLightProbe_H

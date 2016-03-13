@@ -9,6 +9,7 @@ struct Conn
 };
 
 uniform sampler2D prePassBuffer : register(S0);
+uniform sampler2D matInfoBuffer : register(S2);
 
 uniform float3 eyePosWorld;
 uniform float3 volumeStart;
@@ -64,10 +65,17 @@ float4 main( Conn IN ) : COLOR0
    {
       float3 reflectionVec = reflect(IN.wsEyeRay, wsNormal);
 
-      color = texCUBElod(cubeMap, float4(reflectionVec, 0.1));
+      float spec = (1 - tex2D(matInfoBuffer, IN.uv0).b) * 6.0;
+
+      color = texCUBElod(cubeMap, float4(reflectionVec, spec));
       color.a = 1;
 
-      color *= Intensity;
+      //spec vis
+      //float specl = tex2D(matInfoBuffer, IN.uv0).b;
+
+      //color = float4(specl, specl, specl, 1);
+
+      //color *= Intensity;
    }
 
    //return color;

@@ -51,7 +51,28 @@
 
 #include "gfx/sim/cubemapData.h"
 
+#include "gfx/gfxDrawUtil.h"
+#include "math/util/sphereMesh.h"
+
+//Render manager stuff
+#include "core/module.h"
+#include "scene/sceneManager.h"
+#include "windowManager/platformWindowMgr.h"
+#include "console/engineAPI.h"
+#include "gui/core/guiCanvas.h"
+//
+
+#include "renderInstance/renderPrePassMgr.h"
+#include "gfx/bitmap/pngUtils.h"
+#include "gfx/bitmap/ddsUtils.h"
+
 extern ColorI gCanvasClearColor;
+static SphereMesh gSphere;
+
+GFX_ImplementTextureProfile(AmbientLightProbeProfile,
+   GFXTextureProfile::DiffuseMap,
+   GFXTextureProfile::RenderTarget | GFXTextureProfile::KeepBitmap,
+   GFXTextureProfile::NONE);
 
 IMPLEMENT_CO_NETOBJECT_V1(AmbientLightProbe);
 
@@ -78,6 +99,8 @@ AmbientLightProbe::AmbientLightProbe()
       Point3F(0.5f, 0.5f, 0.5f)
       );
 
+   mTypeMask |= LightObjectType;
+
    mObjToWorld.identity();
    mWorldToObj.identity();
 
@@ -99,6 +122,10 @@ AmbientLightProbe::AmbientLightProbe()
 
    mUseCubemap = false;
    mCubemap = NULL;
+
+   mUseDynamicReflection = false;
+   reflectorDesc = NULL;
+   mCubeDescName = "";
 }
 
 AmbientLightProbe::~AmbientLightProbe()
@@ -114,17 +141,23 @@ AmbientLightProbe::~AmbientLightProbe()
 void AmbientLightProbe::initPersistFields()
 {
    //
-   addGroup("AmbientLightProbe");
-
-   addField("useCubemap", TypeBool, Offset(mUseCubemap, AmbientLightProbe), "Cubemap used instead of reflection texture if fullReflect is off.");
-   addField("cubemap", TypeCubemapName, Offset(mCubemapName, AmbientLightProbe), "Cubemap used instead of reflection texture if fullReflect is off.");
-
+   addGroup("HorizonColorProbe");
    addField("OverrideSkyColor", TypeBool, Offset(mOverrideSkyColor, AmbientLightProbe), "Path of file to save and load results.");
    addField("SkyColor", TypeColorF, Offset(mSkyColor, AmbientLightProbe), "Path of file to save and load results.");
    addField("GroundColor", TypeColorF, Offset(mGroundColor, AmbientLightProbe), "Path of file to save and load results.");
    addField("Intensity", TypeF32, Offset(mIntensity, AmbientLightProbe), "Path of file to save and load results.");
+   endGroup("HorizonColorProbe");
 
-   endGroup("AmbientLightProbe");
+   addGroup("StaticProbe");
+   addField("useCubemap", TypeBool, Offset(mUseCubemap, AmbientLightProbe), "Cubemap used instead of reflection texture if fullReflect is off.");
+   addField("cubemap", TypeCubemapName, Offset(mCubemapName, AmbientLightProbe), "Cubemap used instead of reflection texture if fullReflect is off.");
+   endGroup("StaticProbe");
+
+   addGroup("DynamicProbe");
+   addField("useDynamicReflection", TypeBool, Offset(mUseDynamicReflection, AmbientLightProbe), "Cubemap used instead of reflection texture if fullReflect is off.");
+   addField("cubeReflectorDesc", TypeRealString, Offset(mCubeDescName, AmbientLightProbe),
+      "References a ReflectorDesc datablock that defines performance and quality properties for dynamic reflections.\n");
+   endGroup("DynamicProbe");
 
    Parent::initPersistFields();
 }
@@ -152,11 +185,22 @@ bool AmbientLightProbe::onAdd()
       mProbeShaderConsts->setSafe(mGroundColorSC, mGroundColor);
       mProbeShaderConsts->setSafe(mIntensitySC, mIntensity);
 
-      if (isClientObject())
+      if (mCubemapName.isNotEmpty())
+         Sim::findObject(mCubemapName, mCubemap);
+
+      if (mUseDynamicReflection)
       {
-         if (mCubemapName.isNotEmpty())
-            Sim::findObject(mCubemapName, mCubemap);
+         if (mCubeDescName.isNotEmpty())
+         {
+            Sim::findObject(mCubeDescName, reflectorDesc);
+         }
+         else if (cubeDescId > 0)
+         {
+            Sim::findObject(cubeDescId, reflectorDesc);
+         }
       }
+
+      mPolyhedron.buildBox(MatrixF::Identity, this->getObjBox());
    }
 
    // Set up the silhouette extractor.
@@ -167,20 +211,22 @@ bool AmbientLightProbe::onAdd()
 
 void AmbientLightProbe::onRemove()
 {
-   /*if (isClientObject())
+   if (isClientObject())
    {
       mCubeReflector.unregisterReflector();
-   }*/
+   }
+
    Parent::onRemove();
 }
 
 //-----------------------------------------------------------------------------
 void AmbientLightProbe::_renderObject(ObjectRenderInst* ri, SceneRenderState* state, BaseMatInstance* overrideMat)
 {
+   if (mCubeReflector.isRendering())
+      return;
+
    Parent::_renderObject(ri, state, overrideMat);
 }
-
-//-----------------------------------------------------------------------------
 
 void AmbientLightProbe::setTransform(const MatrixF& mat)
 {
@@ -205,7 +251,7 @@ void AmbientLightProbe::buildSilhouette(const SceneCameraState& cameraState, Vec
       getWorldTransform().mulV(cameraState.getViewDirection(), &osViewDir);
 
       // And extract the silhouette.
-      SilhouetteExtractorOrtho< PolyhedronType > extractor(mPolyhedron);
+      SilhouetteExtractorOrtho< ScenePolyhedralSpace::PolyhedronType > extractor(mPolyhedron);
       numPoints = extractor.extractSilhouette(osViewDir, indices, indices.size);
    }
    else
@@ -227,7 +273,7 @@ void AmbientLightProbe::buildSilhouette(const SceneCameraState& cameraState, Vec
    if (mTransformDirty)
    {
       const U32 numPoints = mPolyhedron.getNumPoints();
-      const PolyhedronType::PointType* points = getPolyhedron().getPoints();
+      const ScenePolyhedralSpace::PolyhedronType::PointType* points = mPolyhedron.getPoints();
 
       mWSPoints.setSize(numPoints);
       for (U32 i = 0; i < numPoints; ++i)
@@ -260,6 +306,9 @@ U32 AmbientLightProbe::packUpdate(NetConnection *connection, U32 mask, BitStream
    stream->writeFlag(mUseCubemap);
    stream->write(mCubemapName);
 
+   stream->writeFlag(mUseDynamicReflection);
+   stream->writeString(mCubeDescName);
+
    return retMask;
 }
 
@@ -277,6 +326,27 @@ void AmbientLightProbe::unpackUpdate(NetConnection *connection, BitStream *strea
 
    if (mCubemapName.isNotEmpty())
       Sim::findObject(mCubemapName, mCubemap);
+
+   mUseDynamicReflection = stream->readFlag();
+
+   char buf[256];
+   stream->readString(buf);
+   mCubeDescName = buf;
+
+   if (mUseDynamicReflection && mCubeDescName.isNotEmpty())
+   {
+      Sim::findObject(mCubeDescName, reflectorDesc);
+
+      
+
+      if (reflectorDesc)
+         mCubeReflector.registerReflector(this, reflectorDesc);
+   }
+   else
+   {
+      mCubeReflector.unregisterReflector();
+   }
+   
 }
 
 //-----------------------------------------------------------------------------
@@ -361,6 +431,16 @@ void AmbientLightProbe::_handleBinEvent(RenderBinManager *bin,
 
       mRenderTarget->attachTexture(GFXTextureTarget::Color0, texObject);
 
+      //
+      //MatInfo
+      mMatInfoTarget = NamedTexTarget::find(RenderPrePassMgr::MatInfoBufferName);
+      if (!mMatInfoTarget)
+         return;
+      GFXTextureObject *matTexObject = mMatInfoTarget->getTexture();
+      if (!matTexObject) return;
+
+      mRenderTarget->attachTexture(GFXTextureTarget::Color2, matTexObject);
+
       // We also need to sample from the depth buffer.
       if (!mPrepassTarget)
          mPrepassTarget = NamedTexTarget::find("prepass");
@@ -421,7 +501,10 @@ void AmbientLightProbe::_handleBinEvent(RenderBinManager *bin,
          if (!mCubemap->mCubemap)
             mCubemap->createMap();
 
-         GFX->setCubeTexture(1, mCubemap->mCubemap);
+         if (mUseDynamicReflection && mCubeReflector.isEnabled())
+            GFX->setCubeTexture(1, mCubeReflector.getCubemap());
+         else
+            GFX->setCubeTexture(1, mCubemap->mCubemap);
       }
       else
       {
@@ -446,6 +529,8 @@ void AmbientLightProbe::_handleBinEvent(RenderBinManager *bin,
 
       // Setup Textures
       GFX->setTexture(0, prepassTexObject);
+
+      GFX->setTexture(2, matTexObject);
 
       // Draw the screenspace quad.
       GFX->drawPrimitive(GFXTriangleFan, 0, 2);
@@ -527,4 +612,117 @@ void AmbientLightProbe::_updateScreenGeometry(const Frustum &frustum,
       GFX->setFrustum(l, r, b, t, n, f);
    else
       GFX->setOrtho(l, r, b, t, n, f);
+}
+
+void AmbientLightProbe::bakeFace(U32 faceidx)
+{
+   GFXDEBUGEVENT_SCOPE(AmbientLightProbe_BakeFace, ColorI::WHITE);
+
+   // store current matrices
+   GFXTransformSaver saver;
+
+   // set projection to 90 degrees vertical and horizontal
+   F32 left, right, top, bottom;
+   F32 nearPlane = 0.1;
+   F32 farDist = 1000;
+
+   MathUtils::makeFrustum(&left, &right, &top, &bottom, M_HALFPI_F, 1.0f, nearPlane);
+   GFX->setFrustum(left, right, bottom, top, nearPlane, farDist);
+
+   // We don't use a special clipping projection, but still need to initialize 
+   // this for objects like SkyBox which will use it during a reflect pass.
+   gClientSceneGraph->setNonClipProjection(GFX->getProjectionMatrix());
+
+   // Standard view that will be overridden below.
+   VectorF vLookatPt(0.0f, 0.0f, 0.0f), vUpVec(0.0f, 0.0f, 0.0f), vRight(0.0f, 0.0f, 0.0f);
+
+   switch (faceidx)
+   {
+   case 0: // D3DCUBEMAP_FACE_POSITIVE_X:
+      vLookatPt = VectorF(1.0f, 0.0f, 0.0f);
+      vUpVec = VectorF(0.0f, 1.0f, 0.0f);
+      break;
+   case 1: // D3DCUBEMAP_FACE_NEGATIVE_X:
+      vLookatPt = VectorF(-1.0f, 0.0f, 0.0f);
+      vUpVec = VectorF(0.0f, 1.0f, 0.0f);
+      break;
+   case 2: // D3DCUBEMAP_FACE_POSITIVE_Y:
+      vLookatPt = VectorF(0.0f, 1.0f, 0.0f);
+      vUpVec = VectorF(0.0f, 0.0f, -1.0f);
+      break;
+   case 3: // D3DCUBEMAP_FACE_NEGATIVE_Y:
+      vLookatPt = VectorF(0.0f, -1.0f, 0.0f);
+      vUpVec = VectorF(0.0f, 0.0f, 1.0f);
+      break;
+   case 4: // D3DCUBEMAP_FACE_POSITIVE_Z:
+      vLookatPt = VectorF(0.0f, 0.0f, 1.0f);
+      vUpVec = VectorF(0.0f, 1.0f, 0.0f);
+      break;
+   case 5: // D3DCUBEMAP_FACE_NEGATIVE_Z:
+      vLookatPt = VectorF(0.0f, 0.0f, -1.0f);
+      vUpVec = VectorF(0.0f, 1.0f, 0.0f);
+      break;
+   }
+
+   // create camera matrix
+   VectorF cross = mCross(vUpVec, vLookatPt);
+   cross.normalizeSafe();
+
+   MatrixF matView(true);
+   matView.setColumn(0, cross);
+   matView.setColumn(1, vLookatPt);
+   matView.setColumn(2, vUpVec);
+   matView.setPosition(getPosition());
+   matView.inverse();
+
+   GFX->setWorldMatrix(matView);
+
+   Point2I destSize = Point2I(1024, 1024);
+   GFXTexHandle blendTex;
+   blendTex.set(destSize.x, destSize.y, GFXFormatR8G8B8A8, &GFXDefaultRenderTargetProfile, "");
+
+   GFXTextureTargetRef mBaseTarget = GFX->allocRenderToTextureTarget();
+   mBaseTarget->attachTexture(GFXTextureTarget::Color0, blendTex);
+   GFX->setActiveRenderTarget(mBaseTarget);
+
+   GFX->clear(GFXClearStencil | GFXClearTarget | GFXClearZBuffer, gCanvasClearColor, 1.0f, 0);
+
+   SceneRenderState reflectRenderState
+      (
+      gClientSceneGraph,
+      SPT_Reflect,
+      SceneCameraState::fromGFX()
+      );
+
+   reflectRenderState.getMaterialDelegate().bind(REFLECTMGR, &ReflectionManager::getReflectionMaterial);
+   reflectRenderState.setDiffuseCameraTransform(matView);
+
+   // render scene
+   LIGHTMGR->registerGlobalLights(&reflectRenderState.getCullingFrustum(), false);
+   gClientSceneGraph->renderScene(&reflectRenderState, -1);
+   LIGHTMGR->unregisterAllLights();
+
+   mBaseTarget->resolve();
+
+   GFXTextureObject *faceTexture;
+
+   char fileName[256];
+   dSprintf(fileName, 256, "bakeTest%i.png", faceidx);
+
+   FileStream stream;
+   if (!stream.open(fileName, Torque::FS::File::Write))
+   {
+      return;
+   }
+
+   GBitmap bitmap(blendTex->getWidth(), blendTex->getHeight(), false, GFXFormatR8G8B8);
+   blendTex->copyToBmp(&bitmap);
+   bitmap.writeBitmap("png", stream);
+}
+
+DefineEngineMethod(AmbientLightProbe, Bake, void, (), ,
+   "@brief returns true if control object is inside the fog\n\n.")
+{
+   for (U32 i = 0; i < 6; i++)
+      object->bakeFace(i);
 }
