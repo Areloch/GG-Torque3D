@@ -102,6 +102,7 @@ public:
    // Default bin types.  Not necessarily the only bin types in the system.
    // RIT = "R"ender "I"nstance "T"ype
    static const RenderInstType RIT_Mesh;
+   static const RenderInstType RIT_StaticMesh;
    static const RenderInstType RIT_Shadow;
    static const RenderInstType RIT_Sky;
    static const RenderInstType RIT_Terrain;

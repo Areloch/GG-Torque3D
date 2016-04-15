@@ -45,6 +45,7 @@
 const RenderInstType RenderInstType::Invalid( "" );
 
 const RenderInstType RenderPassManager::RIT_Mesh("Mesh");
+const RenderInstType RenderPassManager::RIT_StaticMesh("StaticMesh");
 const RenderInstType RenderPassManager::RIT_Shadow("Shadow");
 const RenderInstType RenderPassManager::RIT_Sky("Sky");
 const RenderInstType RenderPassManager::RIT_Terrain("Terrain");
