@@ -53,21 +53,21 @@ private:
 
    //We retain the pushed geometry data for rendering here. It's static(unless forced to change through editing or whatnot)
    //so rendering the batches is real fast
-   struct SurfaceMaterials
+   struct BufferMaterials
    {
       // The name of the Material we will use for rendering
       String            mMaterialName;
       // The actual Material instance
       BaseMatInstance*  mMaterialInst;
 
-      SurfaceMaterials()
+      BufferMaterials()
       {
          mMaterialName = "";
          mMaterialInst = NULL;
       }
    };
 
-   Vector<SurfaceMaterials> mSurfaceMaterials;
+   Vector<BufferMaterials> mBufferMaterials;
 
    struct BufferSet
    {
