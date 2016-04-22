@@ -86,6 +86,7 @@ class Profiler
    U32 mMaxStackDepth;
    bool mDumpToConsole;
    bool mDumpToFile;
+   bool mDumpToScript;
    char mDumpFileName[DumpFileNameLength];
    void dump();
    void validate();
@@ -97,6 +98,8 @@ public:
    void reset();
    /// Dumps the profile to console
    void dumpToConsole();
+   /// Dumps the profile to a guiTreeViewCtrl so it can be readily access in script
+   void dumpToScript();
    /// Dumps the profile data to a file
    /// @param fileName filename to dump data to
    void dumpToFile(const char *fileName);

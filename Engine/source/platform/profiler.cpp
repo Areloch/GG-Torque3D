@@ -40,6 +40,8 @@
 
 #include "console/engineAPI.h"
 
+#include "gui/controls/guiTreeViewCtrl.h"
+
 #ifdef TORQUE_ENABLE_PROFILER
 ProfilerRootData *ProfilerRootData::sRootList = NULL;
 Profiler *gProfiler = NULL;
@@ -201,6 +203,7 @@ Profiler::Profiler()
    gProfiler = this;
    mDumpToConsole   = false;
    mDumpToFile      = false;
+   mDumpToScript    = false;
    mDumpFileName[0] = '\0';
 }
 
@@ -422,6 +425,14 @@ void Profiler::dumpToConsole()
    mDumpFileName[0] = '\0';
 }
 
+void Profiler::dumpToScript()
+{
+   mDumpToConsole = false;
+   mDumpToFile = false;
+   mDumpToScript = true;
+   mDumpFileName[0] = '\0';
+}
+
 void Profiler::dumpToFile(const char* fileName)
 {
    AssertFatal(dStrlen(fileName) < DumpFileNameLength, "Error, dump filename too long");
@@ -467,7 +478,7 @@ void Profiler::hashPop(ProfilerRootData *expected)
    if(mStackDepth == 0)
    {
       // apply the next enable...
-      if(mDumpToConsole || mDumpToFile)
+      if(mDumpToConsole || mDumpToFile || mDumpToScript)
       {
          dump();
          startHighResolutionTimer(mCurrentProfilerData->mStartTime);
@@ -587,6 +598,46 @@ static void profilerDataDumpRecurseFile(ProfilerData *data, char *buffer, U32 bu
    buffer[bufferLen] = 0;
 }
 
+static void profilerDataDumpRecurseScript(ProfilerData *data, 
+   char *buffer, U32 bufferLen, F64 totalTime, S32 parentId, GuiTreeViewCtrl* tree)
+{
+   char pbuffer[256];
+   dSprintf(pbuffer, 255, "%s Total Time(%0.3f) NSTime(%0.3f) Invokes(%d)", data->mRoot ? data->mRoot->mName : "ROOT",
+      100 * data->mTotalTime / totalTime,
+      100 * (data->mTotalTime - data->mSubTime) / totalTime,
+      data->mInvokeCount);
+
+   S32 newItem = tree->insertItem(parentId, pbuffer);
+
+   data->mTotalTime = 0;
+   data->mSubTime = 0;
+   data->mInvokeCount = 0;
+
+   buffer[bufferLen] = ' ';
+   buffer[bufferLen + 1] = ' ';
+   buffer[bufferLen + 2] = 0;
+   // sort data's children...
+   ProfilerData *list = NULL;
+   while (data->mFirstChild)
+   {
+      ProfilerData *ins = data->mFirstChild;
+      data->mFirstChild = ins->mNextSibling;
+      ProfilerData **walk = &list;
+      while (*walk && (*walk)->mTotalTime > ins->mTotalTime)
+         walk = &(*walk)->mNextSibling;
+      ins->mNextSibling = *walk;
+      *walk = ins;
+   }
+   data->mFirstChild = list;
+   while (list)
+   {
+      if (list->mInvokeCount)
+         profilerDataDumpRecurseScript(list, buffer, bufferLen + 2, totalTime, newItem, tree);
+      list = list->mNextSibling;
+   }
+   buffer[bufferLen] = 0;
+}
+
 void Profiler::dump()
 {
    bool enableSave = mEnabled;
@@ -631,6 +682,55 @@ void Profiler::dump()
       profilerDataDumpRecurse(mCurrentProfilerData, depthBuffer, 0, totalTime);
       mEnabled = enableSave;
       mStackDepth--;
+   }
+   else if (mDumpToScript == true)
+   {
+      //First, get our tree object. If it doesn't exist, create it.
+      GuiTreeViewCtrl* mDumpTreeView;
+      if (!Sim::findObject("ProfilerTreeView", mDumpTreeView))
+      {
+         mDumpTreeView = new GuiTreeViewCtrl();
+         mDumpTreeView->registerObject("ProfilerTreeView");
+
+         GuiControlProfile *prof;
+         Sim::findObject("ToolsGuiTreeViewProfile", prof);
+         
+         mDumpTreeView->setControlProfile(prof);
+      }
+
+      if (mDumpTreeView != NULL && mDumpTreeView->isProperlyAdded())
+      {
+         //S32 rootItemId = mDumpTreeView->insertItem(0, "ROOT");
+         //Con::printf("Profiler Data Dump:");
+         //Con::printf("Ordered by non-sub total time -");
+         //Con::printf("%%NSTime  %% Time  Invoke #  Name");
+         /*for (U32 i = 0; i < rootVector.size(); i++)
+         {
+            char itemText[1024];
+
+            /*dSprintf(itemText, 1024, "%s %7.3f %7.3f %8d",
+               rootVector[i]->mName, 100 * (rootVector[i]->mTotalTime - rootVector[i]->mSubTime) / totalTime,
+               100 * rootVector[i]->mTotalTime / totalTime, rootVector[i]->mTotalInvokeCount);*/
+
+           /* dSprintf(itemText, 1024, "%s", rootVector[i]->mName);
+
+            rootItemId = mDumpTreeView->insertItem(0, itemText);
+            rootVector[i]->mTotalInvokeCount = 0;
+            rootVector[i]->mTotalTime = 0;
+            rootVector[i]->mSubTime = 0;
+         }*/
+         //Con::printf("");
+         //Con::printf("Ordered by stack trace total time -");
+         //Con::printf("%% Time  %% NSTime  Invoke #  Name");
+
+         mCurrentProfilerData->mTotalTime = endHighResolutionTimer(mCurrentProfilerData->mStartTime);
+
+         char depthBuffer[MaxStackDepth * 2 + 1];
+         depthBuffer[0] = 0;
+         profilerDataDumpRecurseScript(mCurrentProfilerData, depthBuffer, 0, totalTime, 0, mDumpTreeView);
+         mEnabled = enableSave;
+         mStackDepth--;
+      }
    }
    else if (mDumpToFile == true && mDumpFileName[0] != '\0')
    {
@@ -677,6 +777,7 @@ void Profiler::dump()
 
    mDumpToConsole = false;
    mDumpToFile    = false;
+   mDumpToScript  = false;
    mDumpFileName[0] = '\0';
 }
 
@@ -758,6 +859,16 @@ DefineEngineFunction( profilerDumpToFile, void, ( const char* fileName ),,
 {
    if(gProfiler)
       gProfiler->dumpToFile(fileName);
+}
+
+DefineEngineFunction(profilerDumpToScript, void, (), ,
+   "@brief Dumps current profiling stats to a guiTreeViewCtrl object.\n\n"
+   "@note Markers disabled with profilerMarkerEnable() will be skipped over. "
+   "If the profiler is currently running, it will be disabled.\n"
+   "@ingroup Debugging")
+{
+   if (gProfiler)
+      gProfiler->dumpToScript();
 }
 
 DefineEngineFunction( profilerReset, void, (),,
