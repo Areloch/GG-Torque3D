@@ -21,6 +21,7 @@
 #include "T3D/gameBase/gameConnection.h"
 #include "T3D/gameFunctions.h"
 #include "math/mathUtils.h"
+#include "math/mathIO.h"
 
 #include "T3D/Components/render/renderComponentInterface.h"
 
@@ -357,6 +358,8 @@ bool CameraComponent::getCameraTransform(F32* pos,MatrixF* mat)
 
             Point3F position = rMat.getPosition();
 
+            EulerF camRot = mRotOffset.asEulerF(RotationF::Degrees);
+
             RotationF rot = mRotOffset;
 
             if (mTargetNodeIdx != -1)
@@ -416,7 +419,7 @@ U32 CameraComponent::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
       //send offsets here
 
       stream->writeCompressedPoint(mPosOffset);
-      stream->writeCompressedPoint(mRotOffset.asEulerF());
+      mathWrite(*stream, mRotOffset);
 
       stream->writeFlag(mUseParentTransform);
    }
@@ -452,10 +455,7 @@ void CameraComponent::unpackUpdate(NetConnection *con, BitStream *stream)
 
       stream->readCompressedPoint(&mPosOffset);
 
-      EulerF rot;
-      stream->readCompressedPoint(&rot);
-
-      mRotOffset = RotationF(rot);
+      mathRead(*stream, &mRotOffset);
 
       mUseParentTransform = stream->readFlag();
    }
@@ -519,8 +519,9 @@ void CameraComponent::setForwardVector(VectorF newForward, VectorF upVector)
    mat.setColumn(1, axisY);
    mat.setColumn(2, axisZ);
 
-   mRotOffset = RotationF(mat.toEuler());
-   mRotOffset.y = 0;
+   EulerF tempEul = mat.toEuler();
+   tempEul.y = 0;
+   mRotOffset = RotationF(tempEul);
 
    setMaskBits(OffsetMask);
 }
@@ -534,6 +535,13 @@ void CameraComponent::setPosition(Point3F newPos)
 void CameraComponent::setRotation(RotationF newRot)
 {
    mRotOffset = newRot;
+
+   EulerF rotEUl = mRotOffset.asEulerF(RotationF::Degrees);
+   if (!mIsEqual(rotEUl.y, 0))
+   {
+      bool tmp = true;
+   }
+
    setMaskBits(OffsetMask);
 }
 

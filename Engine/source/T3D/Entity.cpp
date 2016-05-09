@@ -139,7 +139,7 @@ void Entity::initPersistFields()
    addProtectedField("Position", TypePoint3F, Offset(mPos, Entity), &_setPosition, &_getPosition, "Object world orientation.");
 
    removeField("Rotation");
-   addProtectedField("Rotation", TypeRotationF, Offset(mRot, Entity), &_setRotation, &_getRotation, "Object world orientation.");
+   addProtectedField("Rotation", TypeRotationF, Offset(mRot, Entity), &_setRotation, &defaultProtectedGetFn, "Object world orientation.");
 
    //These are basically renamed mountPos/Rot. pretty much there for conveinence
    addField("LocalPosition", TypeMatrixPosition, Offset(mMount.xfm, Entity), "Position we are mounted at ( object space of our mount object ).");
@@ -412,8 +412,7 @@ U32 Entity::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
       //mathWrite(*stream, getPosition());
       mathWrite(*stream, mPos);
 
-      //mathWrite(*stream, getRotation());
-      mathWrite(*stream, getRotation().asEulerF());
+      mathWrite(*stream, getRotation());
 
       mDelta.move.pack(stream);
 
@@ -510,10 +509,7 @@ void Entity::unpackUpdate(NetConnection *con, BitStream *stream)
 
       RotationF rot;
 
-      EulerF eRot;
-      mathRead(*stream, &eRot);
-
-      rot = RotationF(eRot);
+      mathRead(*stream, &rot);
 
       mDelta.move.unpack(stream);
 
@@ -637,20 +633,6 @@ void Entity::unpackUpdate(NetConnection *con, BitStream *stream)
       }
    }
 
-   /*if (stream->readFlag())
-   {
-      Point3F mountOffset;
-      EulerF mountRot;
-      mathRead(*stream, &mountOffset);
-      mathRead(*stream, &mountRot);
-
-      RotationF rot = RotationF(mountRot);
-      mountRot = rot.asEulerF(RotationF::Degrees);
-
-      setMountOffset(mountOffset);
-      setMountRotation(mountRot);
-   }*/
-
    if (stream->readFlag())
    {
       mathRead(*stream, &mObjBox);
@@ -723,28 +705,15 @@ void Entity::setTransform(const MatrixF &mat)
    }
    else
    {
-      //Are we part of a prefab?
-      /*Prefab* p = Prefab::getPrefabByChild(this);
-      if (p)
-      {
-         //just let our prefab know we moved
-         p->childTransformUpdated(this, mat);
-      }*/
-      //else
-      {
-         //mRot.set(mat);
-         //Parent::setTransform(mat);
+      RotationF rot = RotationF(mat);
 
-         RotationF rot = RotationF(mat);
+      EulerF tempRot = rot.asEulerF(RotationF::Degrees);
 
-         EulerF tempRot = rot.asEulerF(RotationF::Degrees);
+      Point3F pos;
 
-         Point3F pos;
+      mat.getColumn(3,&pos);
 
-         mat.getColumn(3,&pos);
-
-         setTransform(pos, rot);
-      }
+      setTransform(pos, rot);
    }
 }
 
@@ -893,7 +862,6 @@ void Entity::setMountRotation(EulerF rotOffset)
       temp.setColumn(3, mMount.xfm.getPosition());
 
       mMount.xfm = temp;
-      //mRot = RotationF(temp);
       setMaskBits(MountedMask);
    }
 }

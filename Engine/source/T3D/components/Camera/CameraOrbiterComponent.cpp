@@ -97,28 +97,44 @@ void CameraOrbiterComponent::processTick()
    {
       Point3F pos;
 
-      mRotation.x = mClampF(mRotation.x, mDegToRad(mMinPitchAngle), mDegToRad(mMaxPitchAngle));
+      EulerF tempEul = mRotation.asEulerF();
+      //tempEul.x = mClampF(tempEul.x, mDegToRad(mMinPitchAngle), mDegToRad(mMaxPitchAngle));
+
+      //mRotation = tempEul;
 
       MatrixF ownerTrans = mOwner->getRenderTransform();
       Point3F ownerPos = ownerTrans.getPosition();
 
-      pos.x = mCurOrbitDist * mSin(mRotation.x + mDegToRad(90.0f)) * mCos(-1.0f * (mRotation.z + mDegToRad(90.0f)));
-      pos.y = mCurOrbitDist * mSin(mRotation.x + mDegToRad(90.0f)) * mSin(-1.0f * (mRotation.z + mDegToRad(90.0f)));
-      pos.z = mCurOrbitDist * mSin(mRotation.x);
+      pos.x = mCurOrbitDist * mSin(tempEul.x + mDegToRad(90.0f)) * mCos(-1.0f * (tempEul.z + mDegToRad(90.0f)));
+      pos.y = mCurOrbitDist * mSin(tempEul.x + mDegToRad(90.0f)) * mSin(-1.0f * (tempEul.z + mDegToRad(90.0f)));
+      pos.z = mCurOrbitDist * mSin(tempEul.x);
+
+      RotationF xRot = EulerF(tempEul.x, 0, 0);
+      RotationF zRot = EulerF(0, 0, tempEul.z);
 
       //orient the camera towards the owner
-      VectorF ownerVec = ownerPos - pos;
+      /*VectorF ownerVec = ownerPos - pos;
       ownerVec.normalize();
 
       MatrixF xRot, zRot, cameraMatrix;
-      xRot.set(EulerF(mRotation.x, 0.0f, 0.0f));
-      zRot.set(EulerF(0.0f, 0.0f, mRotation.z));
+      xRot.set(EulerF(tempEul.x, 0.0f, 0.0f));
+      zRot.set(EulerF(0.0f, 0.0f, tempEul.z));
 
       cameraMatrix.mul(zRot, xRot);
       cameraMatrix.getColumn(1, &ownerVec);
-      cameraMatrix.setColumn(3, pos - ownerVec * pos);
+      cameraMatrix.setColumn(3, pos - ownerVec * pos);*/
 
-      RotationF camRot = RotationF(cameraMatrix);
+      //RotationF camRot = RotationF(cameraMatrix);
+
+      RotationF camRot;
+
+      //camRot.lookAt(pos, ownerPos);
+
+      camRot = zRot + xRot;
+
+      //RotationF camRot = tempEul;
+
+      EulerF camRotEul = camRot.asEulerF(RotationF::Degrees);
 
       //if (camRot != mCamera->getRotOffset())
          mCamera->setRotation(camRot);
