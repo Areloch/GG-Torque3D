@@ -32,12 +32,14 @@
 
 
 MaterialList::MaterialList()
+    : mUserObject(NULL)
 {
    VECTOR_SET_ASSOCIATION(mMatInstList);
    VECTOR_SET_ASSOCIATION(mMaterialNames);
 }
 
 MaterialList::MaterialList(const MaterialList* pCopy)
+    : mUserObject(NULL)
 {
    VECTOR_SET_ASSOCIATION(mMatInstList);
    VECTOR_SET_ASSOCIATION(mMaterialNames);
@@ -389,6 +391,9 @@ void MaterialList::initMatInstances(   const FeatureSet &features,
       BaseMatInstance *matInst = mMatInstList[i];
       if ( !matInst )
          continue;
+
+      if( mUserObject )
+          matInst->setUserObject( mUserObject );
 
       if ( !matInst->init( features, vertexFormat ) )
       {

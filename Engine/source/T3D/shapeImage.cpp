@@ -2314,7 +2314,10 @@ void ShapeBase::setImage(  U32 imageSlot,
    for (U32 i=0; i<ShapeBaseImageData::MaxShapes; ++i)
    {
       if (image.dataBlock->shapeIsValid[i])
+      {
          image.shapeInstance[i] = new TSShapeInstance(image.dataBlock->shape[i], isClientObject());
+         image.shapeInstance[i]->setUserObject(this);
+      }
    }
 
    if (isClientObject())

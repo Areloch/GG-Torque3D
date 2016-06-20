@@ -49,7 +49,6 @@ uniform float Contrast;
 
 out vec4 OUT_col;
 
-
 void main()
 {
    vec4 _sample = hdrDecode( texture( sceneTex, IN_uv0 ) );

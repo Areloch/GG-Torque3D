@@ -659,7 +659,6 @@ public:
 											MaterialFeatureData *outFeatureData );
 };
 
-
 class DeferredSkyGLSL : public ShaderFeatureGLSL
 {
 public:

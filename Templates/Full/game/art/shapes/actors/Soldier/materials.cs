@@ -26,15 +26,8 @@ singleton Material(Mat_Soldier_Main)
 
    diffuseMap[0] = "Soldier_Dif.dds";
    normalMap[0] = "Soldier_N.dds";
-   specularMap[0] = "Soldier_Spec.dds";
-
-   diffuseColor[0] = "1 1 1 1";
-   specular[0] = "0.9 0.9 0.9 1";
-   specularPower[0] = 10;
-
-   doubleSided = false;
-   translucent = false;
-   showFootprints = "0";
+   specularMap[0] = "Soldier_c";
+   FlipRB[0] = "1";
    castDynamicShadows = true;
    materialTag0 = "Player";
 };
@@ -110,7 +103,8 @@ singleton Material(Mat_Orange_Soldier_Main : Mat_Soldier_Main)
 singleton Material(Mat_Red_Soldier_Main : Mat_Soldier_Main)
 {
    mapTo = "Red_Soldier_Main";
-   diffuseMap[0] = "Soldier_Red_Dif.dds";
+   diffuseMap[0] = "art/shapes/actors/Soldier/Soldier_Red_Dif.dds";
+   normalMap[0] = "art/shapes/actors/Soldier/Soldier_N.dds";
 };
 
 singleton Material(Mat_Teal_Soldier_Main : Mat_Soldier_Main)

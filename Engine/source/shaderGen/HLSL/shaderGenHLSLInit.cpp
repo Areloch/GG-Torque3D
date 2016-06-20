@@ -35,6 +35,7 @@
 // Deferred Shading
 #include "lighting/advanced/hlsl/deferredShadingFeaturesHLSL.h"
 #include "shaderGen/HLSL/accuFeatureHLSL.h"
+#include "shaderGen/HLSL/materialDamageHLSL.h"
 
 static ShaderGen::ShaderGenInitDelegate sInitDelegate;
 
@@ -61,8 +62,11 @@ void _initShaderGenHLSL( ShaderGen *shaderGen )
    FEATUREMGR->registerFeature( MFT_NormalMap, new BumpFeatHLSL );
    FEATUREMGR->registerFeature( MFT_DetailNormalMap, new NamedFeatureHLSL( "Detail Normal Map" ) );
    FEATUREMGR->registerFeature( MFT_DetailMap, new DetailFeatHLSL );
+	FEATUREMGR->registerFeature( MFT_StaticCubemap, new NamedFeatureHLSL( "Static Cubemap" ) );
    FEATUREMGR->registerFeature( MFT_CubeMap, new ReflectCubeFeatHLSL );
    FEATUREMGR->registerFeature( MFT_PixSpecular, new PixelSpecularHLSL );
+   FEATUREMGR->registerFeature( MFT_FlipRB, new NamedFeatureHLSL( "Substance Workaround" ) );
+   FEATUREMGR->registerFeature( MFT_InvertSmoothness, new NamedFeatureHLSL( "Roughest = 1.0" ) );
    FEATUREMGR->registerFeature( MFT_IsTranslucent, new NamedFeatureHLSL( "Translucent" ) );
    FEATUREMGR->registerFeature( MFT_IsTranslucentZWrite, new NamedFeatureHLSL( "Translucent ZWrite" ) );
    FEATUREMGR->registerFeature( MFT_Visibility, new VisibilityFeatHLSL );
@@ -75,6 +79,12 @@ void _initShaderGenHLSL( ShaderGen *shaderGen )
    FEATUREMGR->registerFeature( MFT_RenderTarget2_Zero, new RenderTargetZeroHLSL( ShaderFeature::RenderTarget2 ) );
    FEATUREMGR->registerFeature( MFT_RenderTarget3_Zero, new RenderTargetZeroHLSL( ShaderFeature::RenderTarget3 ) );
    FEATUREMGR->registerFeature( MFT_Imposter, new NamedFeatureHLSL( "Imposter" ) );
+   
+   //damage blend 
+   FEATUREMGR->registerFeature(MFT_AlbedoDamage, new AlbedoDamageFeatHLSL);
+   FEATUREMGR->registerFeature(MFT_NormalDamage, new NamedFeatureHLSL("Damage Normal Map"));
+   FEATUREMGR->registerFeature(MFT_CompositeDamage, new CompositeDamageFeatHLSL);
+   FEATUREMGR->registerFeature(MFT_Damage, new NamedFeatureHLSL("materialDamage"));
 
    FEATUREMGR->registerFeature( MFT_DiffuseMapAtlas, new NamedFeatureHLSL( "Diffuse Map Atlas" ) );
    FEATUREMGR->registerFeature( MFT_NormalMapAtlas, new NamedFeatureHLSL( "Normal Map Atlas" ) );
@@ -105,7 +115,6 @@ void _initShaderGenHLSL( ShaderGen *shaderGen )
    FEATUREMGR->registerFeature( MFT_DeferredSpecMap, new DeferredSpecMapHLSL );
    FEATUREMGR->registerFeature( MFT_DeferredSpecVars, new DeferredSpecVarsHLSL );
    FEATUREMGR->registerFeature( MFT_DeferredMatInfoFlags, new DeferredMatInfoFlagsHLSL );
-   FEATUREMGR->registerFeature( MFT_DeferredEmptySpec, new DeferredEmptySpecHLSL );
    FEATUREMGR->registerFeature( MFT_SkyBox, new DeferredSkyHLSL );
 }
 

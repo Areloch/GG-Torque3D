@@ -155,6 +155,13 @@ public:
    void setLightQuery( LightQuery *query ) { mLightQuery = query; }
    LightQuery* getLightQuery() const { return mLightQuery; }
 
+   /// @}protected:
+   F32 mMaterialDamage;
+public:
+   const F32 getMaterialDamage() const 
+      { return mMaterialDamage; }
+   void setMaterialDamage(const F32 val)
+      { mMaterialDamage = val; }
    ///@see mAccuTex
    void setAccuTex( GFXTextureObject* query ) { mAccuTex = query; }
    GFXTextureObject* getAccuTex() const { return mAccuTex; }

@@ -67,6 +67,7 @@ void ShaderGenPrinterHLSL::printPixelShaderOutputStruct(Stream& stream, const Ma
          numMRTs |= info.feature->getOutputTargets( featureData );
    }
 
+
    WRITESTR("struct Fragout\r\n");
    WRITESTR("{\r\n");
    if (GFX->getAdapterType() == Direct3D11)

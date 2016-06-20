@@ -271,6 +271,7 @@ Var* GBufferConditionerHLSL::printMethodHeader( MethodType methodType, const Str
 #else
       // The gbuffer has no mipmaps, so use tex2dlod when 
       // possible so that the shader compiler can optimize.
+
       meta->addStatement( new GenOp( "   #if TORQUE_SM >= 30\r\n" ) );
       if (isDirect3D11)
          meta->addStatement(new GenOp("      @ = @.SampleLevel(@, @,0);\r\n", bufferSampleDecl, prepassTex, prepassSampler, screenUV));

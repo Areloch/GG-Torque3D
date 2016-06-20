@@ -969,7 +969,7 @@ bool GFXGLShader::_loadShaderFromStream(  GLuint shader,
    const char *newLine = "\r\n";
    buffers.push_back( dStrdup( newLine ) );
    lengths.push_back( dStrlen( newLine ) );
-
+   
    // Now add all the macros.
    for( U32 i = 0; i < macros.size(); i++ )
    {

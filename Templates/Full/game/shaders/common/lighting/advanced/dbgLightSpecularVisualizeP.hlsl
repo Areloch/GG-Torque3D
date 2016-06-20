@@ -24,6 +24,7 @@
  
 TORQUE_UNIFORM_SAMPLER2D(lightPrePassTex,0);
 
+
 float4 main( PFXVertToPix IN ) : TORQUE_TARGET0
 {   
    float specular = TORQUE_TEX2D( lightPrePassTex, IN.uv0 ).a;    

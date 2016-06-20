@@ -57,14 +57,14 @@ void BumpFeatHLSL::processVert(  Vector<ShaderComponent*> &componentList,
    getOutWorldToTangent( componentList, meta, fd );
 }
 
-void BumpFeatHLSL::processPix(   Vector<ShaderComponent*> &componentList, 
-                                 const MaterialFeatureData &fd )
+void BumpFeatHLSL::processPix(Vector<ShaderComponent*> &componentList,
+   const MaterialFeatureData &fd)
 {
    MultiLine *meta = new MultiLine;
    output = meta;
 
    // Get the texture coord.
-   Var *texCoord = getInTexCoord( "texCoord", "float2", true, componentList );
+   Var *texCoord = getInTexCoord("texCoord", "float2", true, componentList);
 
    // Sample the bumpmap.
    Var *bumpMap = getNormalMapTex();
@@ -79,42 +79,42 @@ void BumpFeatHLSL::processPix(   Vector<ShaderComponent*> &componentList,
 
    // Handle atlased textures
    // http://www.infinity-universe.com/Infinity/index.php?option=com_content&task=view&id=65&Itemid=47
-   if(fd.features[MFT_NormalMapAtlas])
+   if (fd.features[MFT_NormalMapAtlas])
    {
       // This is a big block of code, so put a comment in the shader code
-      meta->addStatement( new GenOp( "   // Atlased texture coordinate calculation (see BumpFeat*LSL for details)\r\n") );
+      meta->addStatement(new GenOp("   // Atlased texture coordinate calculation (see BumpFeat*LSL for details)\r\n"));
 
       Var *atlasedTex = new Var;
       atlasedTex->setName("atlasedBumpCoord");
-      atlasedTex->setType( "float2" );
-      LangElement *atDecl = new DecOp( atlasedTex );
+      atlasedTex->setType("float2");
+      LangElement *atDecl = new DecOp(atlasedTex);
 
       // Parameters of the texture atlas
-      Var *atParams  = new Var;
-      atParams->setType( "float4" );
+      Var *atParams = new Var;
+      atParams->setType("float4");
       atParams->setName("bumpAtlasParams");
       atParams->uniform = true;
       atParams->constSortPos = cspPotentialPrimitive;
 
       // Parameters of the texture (tile) this object is using in the atlas
-      Var *tileParams  = new Var;
-      tileParams->setType( "float4" );
+      Var *tileParams = new Var;
+      tileParams->setType("float4");
       tileParams->setName("bumpAtlasTileParams");
       tileParams->uniform = true;
       tileParams->constSortPos = cspPotentialPrimitive;
 
       const bool is_sm3 = (GFX->getPixelShaderVersion() > 2.0f);
-      if(is_sm3)
+      if (is_sm3)
       {
          // Figure out the mip level
-         meta->addStatement( new GenOp( "   float2 _dx_bump = ddx(@ * @.z);\r\n", texCoord, atParams ) );
-         meta->addStatement( new GenOp( "   float2 _dy_bump = ddy(@ * @.z);\r\n", texCoord, atParams ) );
-         meta->addStatement( new GenOp( "   float mipLod_bump = 0.5 * log2(max(dot(_dx_bump, _dx_bump), dot(_dy_bump, _dy_bump)));\r\n" ) );
-         meta->addStatement( new GenOp( "   mipLod_bump = clamp(mipLod_bump, 0.0, @.w);\r\n", atParams ) );
+         meta->addStatement(new GenOp("   float2 _dx_bump = ddx(@ * @.z);\r\n", texCoord, atParams));
+         meta->addStatement(new GenOp("   float2 _dy_bump = ddy(@ * @.z);\r\n", texCoord, atParams));
+         meta->addStatement(new GenOp("   float mipLod_bump = 0.5 * log2(max(dot(_dx_bump, _dx_bump), dot(_dy_bump, _dy_bump)));\r\n"));
+         meta->addStatement(new GenOp("   mipLod_bump = clamp(mipLod_bump, 0.0, @.w);\r\n", atParams));
 
          // And the size of the mip level
-         meta->addStatement( new GenOp( "   float mipPixSz_bump = pow(2.0, @.w - mipLod_bump);\r\n", atParams ) );
-         meta->addStatement( new GenOp( "   float2 mipSz_bump = mipPixSz_bump / @.xy;\r\n", atParams ) );
+         meta->addStatement(new GenOp("   float mipPixSz_bump = pow(2.0, @.w - mipLod_bump);\r\n", atParams));
+         meta->addStatement(new GenOp("   float2 mipSz_bump = mipPixSz_bump / @.xy;\r\n", atParams));
       }
       else
       {
@@ -122,17 +122,18 @@ void BumpFeatHLSL::processPix(   Vector<ShaderComponent*> &componentList,
       }
 
       // Tiling mode
-      if( true ) // Wrap
-         meta->addStatement( new GenOp( "   @ = frac(@);\r\n", atDecl, texCoord ) );
+      if (true) // Wrap
+         meta->addStatement(new GenOp("   @ = frac(@);\r\n", atDecl, texCoord));
       else       // Clamp
-         meta->addStatement( new GenOp( "   @ = saturate(@);\r\n", atDecl, texCoord ) );
+         meta->addStatement(new GenOp("   @ = saturate(@);\r\n", atDecl, texCoord));
 
       // Finally scale/offset, and correct for filtering
-      meta->addStatement( new GenOp( "   @ = @ * ((mipSz_bump * @.xy - 1.0) / mipSz_bump) + 0.5 / mipSz_bump + @.xy * @.xy;\r\n", 
-         atlasedTex, atlasedTex, atParams, atParams, tileParams ) );
+      meta->addStatement(new GenOp("   @ = @ * ((mipSz_bump * @.xy - 1.0) / mipSz_bump) + 0.5 / mipSz_bump + @.xy * @.xy;\r\n",
+         atlasedTex, atlasedTex, atParams, atParams, tileParams));
 
       // Add a newline
-      meta->addStatement( new GenOp( "\r\n" ) );
+      meta->addStatement(new GenOp("\r\n"));
+
 
       if (mIsDirect3D11)
       {
@@ -155,17 +156,17 @@ void BumpFeatHLSL::processPix(   Vector<ShaderComponent*> &componentList,
          texOp = new GenOp("tex2D(@, @)", bumpMap, texCoord);
    }
 
-   Var *bumpNorm = new Var( "bumpNormal", "float4" );
-   meta->addStatement( expandNormalMap( texOp, new DecOp( bumpNorm ), bumpNorm, fd ) );
+   Var *bumpNorm = new Var("bumpNormal", "float4");
+   meta->addStatement(expandNormalMap(texOp, new DecOp(bumpNorm), bumpNorm, fd));
 
    // If we have a detail normal map we add the xy coords of
    // it to the base normal map.  This gives us the effect we
    // want with few instructions and minial artifacts.
-   if ( fd.features.hasFeature( MFT_DetailNormalMap ) )
+   if (fd.features.hasFeature(MFT_DetailNormalMap))
    {
       bumpMap = new Var;
-      bumpMap->setType( "sampler2D" );
-      bumpMap->setName( "detailBumpMap" );
+      bumpMap->setType("sampler2D");
+      bumpMap->setName("detailBumpMap");
       bumpMap->uniform = true;
       bumpMap->sampler = true;
       bumpMap->constNum = Var::getTexUnitNum();
@@ -181,8 +182,6 @@ void BumpFeatHLSL::processPix(   Vector<ShaderComponent*> &componentList,
          detailBumpTex->texture = true;
          detailBumpTex->constNum = bumpMap->constNum;
       }
-      else
-         bumpMap->setType("sampler2D");
 
       texCoord = getInTexCoord( "detCoord", "float2", true, componentList );
 
@@ -192,25 +191,83 @@ void BumpFeatHLSL::processPix(   Vector<ShaderComponent*> &componentList,
          texOp = new GenOp("tex2D(@, @)", bumpMap, texCoord);
 
       Var *detailBump = new Var;
-      detailBump->setName( "detailBump" );
-      detailBump->setType( "float4" );
-      meta->addStatement( expandNormalMap( texOp, new DecOp( detailBump ), detailBump, fd ) );
+      detailBump->setName("detailBump");
+      detailBump->setType("float4");
+      meta->addStatement(expandNormalMap(texOp, new DecOp(detailBump), detailBump, fd));
 
       Var *detailBumpScale = new Var;
-      detailBumpScale->setType( "float" );
-      detailBumpScale->setName( "detailBumpStrength" );
+      detailBumpScale->setType("float");
+      detailBumpScale->setName("detailBumpStrength");
       detailBumpScale->uniform = true;
       detailBumpScale->constSortPos = cspPass;
-      meta->addStatement( new GenOp( "   @.xy += @.xy * @;\r\n", bumpNorm, detailBump, detailBumpScale ) );
+      meta->addStatement(new GenOp("   @.xy += @.xy * @;\r\n", bumpNorm, detailBump, detailBumpScale));
    }
 
+   if (fd.features.hasFeature(MFT_NormalDamage))
+   {
+      bumpMap = new Var;
+      Var* damageBumpTex = NULL; //only used in D3D10 or D3D11
+
+      bumpMap->setName("normalDamageMap");
+      bumpMap->uniform = true;
+      bumpMap->sampler = true;
+
+      bumpMap->constNum = Var::getTexUnitNum();
+      if (mIsDirect3D11)
+      {
+         bumpMap->setType("SamplerState");
+
+         damageBumpTex = new Var;
+         damageBumpTex->setName("detailBumpTex");
+         damageBumpTex->setType("Texture2D");
+         damageBumpTex->uniform = true;
+         damageBumpTex->texture = true;
+         damageBumpTex->constNum = bumpMap->constNum;
+      }
+      else
+         bumpMap->setType("sampler2D");
+
+      texCoord = getInTexCoord("texCoord", "float2", true, componentList);
+
+      if (mIsDirect3D11)
+         texOp = new GenOp("@.Sample(@, @)", damageBumpTex, bumpMap, texCoord);
+      else
+         texOp = new GenOp("tex2D(@, @)", bumpMap, texCoord);
+
+      Var *damageBump = new Var;
+      damageBump->setName("damageBump");
+      damageBump->setType("float4");
+      meta->addStatement(expandNormalMap(texOp, new DecOp(damageBump), damageBump, fd));
+
+      Var *damage = (Var*)LangElement::find("materialDamage");
+      if (!damage){
+         damage = new Var("materialDamage", "float");
+         damage->uniform = true;
+         damage->constSortPos = cspPrimitive;
+      }
+      Var *floor = (Var*)LangElement::find("materialDamageMin");
+      if (!floor){
+         floor = new Var("materialDamageMin", "float");
+         floor->uniform = true;
+         floor->constSortPos = cspPrimitive;
+      }
+
+      Var *damageResult = (Var*)LangElement::find("damageResult");
+      if (!damageResult){
+         damageResult = new Var("damageResult", "float");
+         meta->addStatement(new GenOp("   @ = max(@,@);\r\n", new DecOp(damageResult), floor, damage));
+      }
+      else
+         meta->addStatement(new GenOp("   @ = max(@,@);\r\n", damageResult, floor, damage));
+
+      meta->addStatement(new GenOp("   @.xyz = lerp(@.xyz, @.xyz, @);\r\n", bumpNorm, bumpNorm, damageBump, damageResult));
+   }
    // We transform it into world space by reversing the 
    // multiplication by the worldToTanget transform.
-   Var *wsNormal = new Var( "wsNormal", "float3" );
-   Var *worldToTanget = getInWorldToTangent( componentList );
-   meta->addStatement( new GenOp( "   @ = normalize( mul( @.xyz, @ ) );\r\n", new DecOp( wsNormal ), bumpNorm, worldToTanget ) );
+   Var *wsNormal = new Var("wsNormal", "float3");
+   Var *worldToTanget = getInWorldToTangent(componentList);
+   meta->addStatement(new GenOp("   @ = normalize( mul( @.xyz, @ ) );\r\n", new DecOp(wsNormal), bumpNorm, worldToTanget));
 }
-
 ShaderFeature::Resources BumpFeatHLSL::getResources( const MaterialFeatureData &fd )
 {
    Resources res; 
@@ -235,6 +292,14 @@ ShaderFeature::Resources BumpFeatHLSL::getResources( const MaterialFeatureData &
    {
       res.numTex++;
       if ( !fd.features[MFT_DetailMap] )
+         res.numTexReg++;
+   }
+
+   // Do we have damage normal mapping?
+   if (fd.features[MFT_NormalDamage])
+   {
+      res.numTex++;
+      if (!fd.features[MFT_NormalDamage])
          res.numTexReg++;
    }
 
@@ -263,6 +328,13 @@ void BumpFeatHLSL::setTexData(   Material::StageData &stageDat,
       passData.mTexType[ texIndex ] = Material::DetailBump;
       passData.mSamplerNames[ texIndex ] = "detailBumpMap";
       passData.mTexSlot[ texIndex++ ].texObject = stageDat.getTex( MFT_DetailNormalMap );
+   }
+
+   if (fd.features[MFT_NormalDamage])
+   {
+      passData.mTexType[texIndex] = Material::Bump;
+      passData.mSamplerNames[texIndex] = "normalDamageMap";
+      passData.mTexSlot[texIndex++].texObject = stageDat.getTex(MFT_NormalDamage);
    }
 }
 

@@ -122,11 +122,19 @@ GFXLockedRect *GFXD3D9TextureObject::lock(U32 mipLevel /*= 0*/, RectI *inRect /*
          r.bottom = inRect->point.y + inRect->extent.y;
          r.right  = inRect->point.x + inRect->extent.x;
       }
+      if ( getDepth() > 1 )
+      {
+         D3DLOCKED_BOX box;
+         D3D9Assert( get3DTex()->LockBox(mipLevel, &box, NULL, 0), 
+            "GFXD3D9TextureObject::lock - could not lock 3D texture!" );
 
-      D3D9Assert( get2DTex()->LockRect(mipLevel, &mLockRect, inRect ? &r : NULL, 0), 
-         "GFXD3D9TextureObject::lock - could not lock non-RT texture!" );
+         mLockRect.Pitch = box.RowPitch;
+         mLockRect.pBits = box.pBits;
+      } else {
+         D3D9Assert( get2DTex()->LockRect(mipLevel, &mLockRect, inRect ? &r : NULL, 0), 
+            "GFXD3D9TextureObject::lock - could not lock non-RT texture!" );
+      }
       mLocked = true;
-
    }
 
    // GFXLockedRect is set up to correspond to D3DLOCKED_RECT, so this is ok.
@@ -155,8 +163,14 @@ void GFXD3D9TextureObject::unlock(U32 mipLevel)
    else
 #endif
    {
-      D3D9Assert( get2DTex()->UnlockRect(mipLevel), 
-         "GFXD3D9TextureObject::unlock - could not unlock non-RT texture." );
+      if ( getDepth() > 1 )
+      {
+         D3D9Assert( get3DTex()->UnlockBox(mipLevel), 
+            "GFXD3D9TextureObject::unlock - could not unlock 3D texture." );
+      } else {
+         D3D9Assert( get2DTex()->UnlockRect(mipLevel), 
+            "GFXD3D9TextureObject::unlock - could not unlock non-RT texture." );
+      }
 
       mLocked = false;
    }

@@ -212,6 +212,7 @@ void TSMesh::innerRender( TSMaterialList *materials, const TSRenderState &rdata,
 
    coreRI->visibility = meshVisibility;  
    coreRI->cubemap = rdata.getCubemap();
+   coreRI->mMaterialDamage = rdata.getMaterialDamage();
 
    // NOTICE: SFXBB is removed and refraction is disabled!
    //coreRI->backBuffTex = GFX->getSfxBackBuffer();

@@ -36,6 +36,10 @@
    #include "sfx/sfxCommon.h"
 #endif
 
+#ifndef _CUBEMAPDATA_H_
+#include "gfx/sim/cubemapData.h"
+#endif
+
 class SFXAmbience;
 class SFXSoundscape;
 
@@ -97,6 +101,11 @@ class LevelInfo : public NetObject
 
       void _onLMActivate(const char *lm, bool enable);
 
+      // Name (path) of the area environment cube map.
+      String mLevelEnvMapName;
+
+      // Level environment cube map handle.
+      CubemapData *mLevelEnvMap;
    public:
 
       LevelInfo();
@@ -132,7 +141,7 @@ class LevelInfo : public NetObject
 
       virtual U32 packUpdate( NetConnection *conn, U32 mask, BitStream *stream );
       virtual void unpackUpdate( NetConnection *conn, BitStream *stream );
-
+      void setLevelEnvMap(const String& name);
       /// @}
 };
 

@@ -870,7 +870,7 @@ void DiffuseMapFeatGLSL::processPix(   Vector<ShaderComponent*> &componentList,
    diffuseMap->uniform = true;
    diffuseMap->sampler = true;
    diffuseMap->constNum = Var::getTexUnitNum();     // used as texture unit num here
-
+   
    // create sample color var
    Var *diffColor = new Var;
    diffColor->setType("vec4");
@@ -880,7 +880,7 @@ void DiffuseMapFeatGLSL::processPix(   Vector<ShaderComponent*> &componentList,
    MultiLine * meta = new MultiLine;
    output = meta;
    if (  fd.features[MFT_CubeMap] )
-   {
+   {      
       meta->addStatement(  new GenOp( "   @ = tex2D(@, @);\r\n", 
                            colorDecl, 
                            diffuseMap, 
@@ -948,7 +948,7 @@ void DiffuseMapFeatGLSL::processPix(   Vector<ShaderComponent*> &componentList,
 
       // For the rest of the feature...
       inTex = atlasedTex;
-
+      
       // To dump out UV coords...
       //#define DEBUG_ATLASED_UV_COORDS
 #ifdef DEBUG_ATLASED_UV_COORDS
@@ -1110,7 +1110,7 @@ void DiffuseFeatureGLSL::processPix(   Vector<ShaderComponent*> &componentList,
    diffuseMaterialColor->setName( "diffuseMaterialColor" );
    diffuseMaterialColor->uniform = true;
    diffuseMaterialColor->constSortPos = cspPotentialPrimitive;
-
+   
    MultiLine* meta = new MultiLine;
    Var *col = (Var*)LangElement::find("col");
    ShaderFeature::OutputTarget targ = ShaderFeature::DefaultTarget;
@@ -1787,10 +1787,10 @@ void ReflectCubeFeatGLSL::processPix(  Vector<ShaderComponent*> &componentList,
    // current pass - we need to add one to the current pass to use
    // its alpha channel as a gloss map.
    if( !fd.features[MFT_DiffuseMap] &&
-       !fd.features[MFT_NormalMap] )
+       !fd.features[MFT_NormalMap])
    {
       if( fd.materialFeatures[MFT_DiffuseMap] ||
-          fd.materialFeatures[MFT_NormalMap] )
+          fd.materialFeatures[MFT_NormalMap])
       {
          // grab connector texcoord register
          Var *inTex = getInTexCoord( "texCoord", "vec2", true, componentList );
@@ -1814,12 +1814,12 @@ void ReflectCubeFeatGLSL::processPix(  Vector<ShaderComponent*> &componentList,
          meta->addStatement( new GenOp( "   @ = tex2D( @, @ );\r\n", colorDecl, newMap, inTex ) );
       }
    }
-   else
+   if (!glossColor)
    {
       if (fd.features[MFT_isDeferred])
          glossColor = (Var*)LangElement::find(getOutputTargetVarName(ShaderFeature::RenderTarget1));
-      if (!glossColor)
-         glossColor = (Var*)LangElement::find("specularColor");  
+      //if (!glossColor)
+         //glossColor = (Var*)LangElement::find("specularColor");  
       if (!glossColor)
          glossColor = (Var*)LangElement::find("diffuseColor");
       if (!glossColor)
@@ -1852,20 +1852,13 @@ void ReflectCubeFeatGLSL::processPix(  Vector<ShaderComponent*> &componentList,
 
    LangElement *texCube = NULL;
    Var* matinfo = (Var*) LangElement::find( getOutputTargetVarName(ShaderFeature::RenderTarget2) );
-   //first try and grab the gbuffer
-   if (fd.features[MFT_isDeferred] && matinfo)
-   {
-
-      if (fd.features[MFT_DeferredSpecMap])
-         texCube = new GenOp("textureLod(  @, @, (@.a*5) )", cubeMap, reflectVec, matinfo);
-      else
-         texCube = new GenOp("textureLod(  @, @, ((1.0-@.a)*6) )", cubeMap, reflectVec, matinfo);
-   }
-   else if(glossColor) //failing that, rtry and find color data
-      texCube = new GenOp("textureLod( @, @, @.a*5)", cubeMap, reflectVec, glossColor);
-   else
+   Var *smoothness = (Var*)LangElement::find("smoothness");
+   if (smoothness) //try to grab smoothness directly
+      texCube = new GenOp("textureLod(  @, @, min((1.0 - @)*11.0 + 1.0, 8.0))", cubeMap, reflectVec, smoothness);
+   else if (glossColor) //failing that, try and find color data
+      texCube = new GenOp("textureLod( @, @, min((1.0 - @.b)*11.0 + 1.0, 8.0))", cubeMap, reflectVec, glossColor);
+   else //failing *that*, just draw the cubemap
       texCube = new GenOp("texture( @, @)", cubeMap, reflectVec);
-      
    LangElement *lerpVal = NULL;
    Material::BlendOp blendOp = Material::LerpAlpha;
 
@@ -1893,16 +1886,35 @@ void ReflectCubeFeatGLSL::processPix(  Vector<ShaderComponent*> &componentList,
       else
          blendOp = Material::Mul;
    }
+   
+   Var* targ = (Var*)LangElement::find(getOutputTargetVarName(ShaderFeature::RenderTarget3));
    if (fd.features[MFT_isDeferred])
    {
-      Var* targ = (Var*)LangElement::find(getOutputTargetVarName(ShaderFeature::RenderTarget1));
-      if (fd.features[MFT_DeferredSpecMap])
-         meta->addStatement(new GenOp("   @.rgb = lerp( @.rgb, (@).rgb, (@.b));\r\n", targ, targ, texCube, lerpVal));
+      //metalness: black(0) = color, white(1) = reflection
+      if (fd.features[MFT_ToneMap])
+         meta->addStatement(new GenOp("   @ *= @;\r\n", targ, texCube));
       else
-         meta->addStatement(new GenOp("   @.rgb = lerp( @.rgb, (@).rgb, (@.b));\r\n", targ, targ, texCube, lerpVal));
+         meta->addStatement(new GenOp("   @ = @;\r\n", targ, texCube));
    }
    else
-        meta->addStatement( new GenOp( "   @;\r\n", assignColor( texCube, blendOp, lerpVal ) ) );         
+   {
+      meta->addStatement(new GenOp("   //forward lit cubemapping\r\n"));
+      targ = (Var*)LangElement::find(getOutputTargetVarName(ShaderFeature::DefaultTarget));
+
+      Var *metalness = (Var*)LangElement::find("metalness");
+      if (metalness)
+      {
+         Var *dColor = new Var("dColor", "vec3");
+         Var *envColor = new Var("envColor", "vec3");
+         meta->addStatement(new GenOp("   @ = @.rgb - (@.rgb * @);\r\n", new DecOp(dColor), targ, targ, metalness));
+         meta->addStatement(new GenOp("   @ = @.rgb*(@).rgb;\r\n", new DecOp(envColor), targ, texCube));
+         meta->addStatement(new GenOp("   @.rgb = toLinear(@)+@*@;\r\n", targ, dColor, envColor, metalness));
+      }
+      else if (lerpVal)
+         meta->addStatement(new GenOp("   @ *= vec4(@.rgb*@.a, @.a);\r\n", targ, texCube, lerpVal, targ));
+      else
+         meta->addStatement(new GenOp("   @.rgb *= @.rgb;\r\n", targ, texCube));
+   }
    output = meta;
 }
 
@@ -2135,28 +2147,40 @@ void RTLightingFeatGLSL::processPix(   Vector<ShaderComponent*> &componentList,
    lightSpotFalloff->uniform = true;
    lightSpotFalloff->constSortPos = cspPotentialPrimitive;
 
-   Var *specularPower  = new Var( "specularPower", "float" );
-   specularPower->uniform = true;
-   specularPower->constSortPos = cspPotentialPrimitive;
-
-   Var *specularColor = (Var*)LangElement::find( "specularColor" );
-   if ( !specularColor )
+   Var *smoothness = (Var*)LangElement::find("smoothness");
+   if (!fd.features[MFT_SpecularMap])
    {
-      specularColor  = new Var( "specularColor", "vec4" );
-      specularColor->uniform = true;
-      specularColor->constSortPos = cspPotentialPrimitive;
+      if (!smoothness)
+      {
+         smoothness = new Var("smoothness", "float");
+         smoothness->uniform = true;
+         smoothness->constSortPos = cspPotentialPrimitive;
+      }
    }
+
+   Var *metalness = (Var*)LangElement::find("metalness");
+   if (!fd.features[MFT_SpecularMap])
+   {
+      if (!metalness)
+      {
+         metalness = new Var("metalness", "float");
+         metalness->uniform = true;
+         metalness->constSortPos = cspPotentialPrimitive;
+      }
+   }
+
+   Var *albedo = (Var*)LangElement::find(getOutputTargetVarName(ShaderFeature::DefaultTarget));
 
    Var *ambient  = new Var( "ambient", "vec4" );
    ambient->uniform = true;
    ambient->constSortPos = cspPass;
-
+   
    // Calculate the diffuse shading and specular powers.
    meta->addStatement( new GenOp( "   compute4Lights( @, @, @, @,\r\n"
-                                  "      @, @, @, @, @, @, @, @,\r\n"
+                                  "      @, @, @, @, @, @, @, @, @,\r\n"
                                   "      @, @ );\r\n", 
       wsView, wsPosition, wsNormal, lightMask,
-      inLightPos, inLightInvRadiusSq, inLightColor, inLightSpotDir, inLightSpotAngle, lightSpotFalloff, specularPower, specularColor,
+      inLightPos, inLightInvRadiusSq, inLightColor, inLightSpotDir, inLightSpotAngle, lightSpotFalloff, smoothness, metalness, albedo,
       rtShading, specular ) );
 
    // Apply the lighting to the diffuse color.

@@ -26,7 +26,6 @@
 #include "shaderGen/featureMgr.h"
 #include "gfx/gl/tGL/tGL.h"
 
-
 void ShaderGenPrinterGLSL::printShaderHeader( Stream& stream )
 {
    const char *header1 = "//*****************************************************************************\r\n";
@@ -63,7 +62,7 @@ void ShaderGenPrinterGLSL::printVertexShaderCloser( Stream& stream )
    stream.write( dStrlen(closer), closer );
 }
 
-void ShaderGenPrinterGLSL::printPixelShaderOutputStruct( Stream& stream, const MaterialFeatureData &featureData )
+void ShaderGenPrinterGLSL::printPixelShaderOutputStruct(Stream& stream, const MaterialFeatureData &featureData)
 {
     // Determine the number of output targets we need
     U32 numMRTs = 0;
@@ -86,10 +85,10 @@ void ShaderGenPrinterGLSL::printPixelShaderOutputStruct( Stream& stream, const M
     WRITESTR("\r\n");
 }
 
-void ShaderGenPrinterGLSL::printPixelShaderCloser( Stream& stream )
+void ShaderGenPrinterGLSL::printPixelShaderCloser(Stream& stream)
 {
     const char *closer = "   \r\n}\r\n";
-    stream.write( dStrlen(closer), closer );
+    stream.write(dStrlen(closer), closer);
 }
 
 void ShaderGenPrinterGLSL::printLine(Stream& stream, const String& line)

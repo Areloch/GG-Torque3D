@@ -84,8 +84,8 @@ ConsoleStaticMethod( TerrainBlock, createNew, S32, 5, 5,
       // Set up some defaults.
       F32 octaves = 3.0f;
       U32 freq = 4;
-      F32 roughness = 0.0f;
-      noise.fBm( &floatHeights, blockSize, freq, 1.0f - roughness, octaves );
+      F32 smoothness = 0.0f;
+      noise.fBm( &floatHeights, blockSize, freq, 1.0f - smoothness, octaves );
 
       F32 height = 0;
 

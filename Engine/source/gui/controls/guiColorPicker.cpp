@@ -120,8 +120,7 @@ void GuiColorPickerCtrl::drawBlendBox(RectI &bounds, ColorF &c1, ColorF &c2, Col
 
    S32 l = bounds.point.x, r = bounds.point.x + bounds.extent.x;
    S32 t = bounds.point.y, b = bounds.point.y + bounds.extent.y;
-   
-   //A couple of checks to determine if color blend
+
    //A couple of checks to determine if color blend
    if(c1 == colorWhite && c3 == colorAlpha && c4 == colorBlack)
    {
@@ -182,8 +181,8 @@ void GuiColorPickerCtrl::drawBlendBox(RectI &bounds, ColorF &c1, ColorF &c2, Col
       PrimBuild::color( c1 );
       PrimBuild::vertex2i( l, t );
 
-      PrimBuild::color( c2 );
-      PrimBuild::vertex2i( r, t );
+      PrimBuild::color(c2);
+      PrimBuild::vertex2i(r, t);
 
       PrimBuild::color(c4);
       PrimBuild::vertex2i(l, b);
@@ -194,6 +193,7 @@ void GuiColorPickerCtrl::drawBlendBox(RectI &bounds, ColorF &c1, ColorF &c2, Col
       PrimBuild::end();
    }
 }
+
 
 //--------------------------------------------------------------------------
 /// Function to draw a set of boxes blending throughout an array of colors

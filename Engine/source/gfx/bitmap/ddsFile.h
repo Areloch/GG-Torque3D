@@ -200,6 +200,7 @@ struct DDSFile
    }
 
    static DDSFile *createDDSFileFromGBitmap( const GBitmap *gbmp );
+   bool decompressToGBitmap(GBitmap *dest);
 };
 
 #endif // _DDSFILE_H_

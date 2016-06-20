@@ -45,8 +45,8 @@ public:
    GFXShaderConstHandle* mToneMapTexSC;
    GFXShaderConstHandle* mTexMatSC;
    GFXShaderConstHandle* mSpecularColorSC;
-   GFXShaderConstHandle* mSpecularPowerSC;
-   GFXShaderConstHandle* mSpecularStrengthSC;
+   GFXShaderConstHandle* msmoothnessSC;
+   GFXShaderConstHandle* mMetalnessSC;
    GFXShaderConstHandle* mParallaxInfoSC;
    GFXShaderConstHandle* mAccuScaleSC;
    GFXShaderConstHandle* mAccuDirectionSC;
@@ -86,6 +86,10 @@ public:
 
    GFXShaderConstHandle *mImposterUVs;
    GFXShaderConstHandle *mImposterLimits;
+
+   // Material Damage
+   GFXShaderConstHandle* mMaterialDamageSC;
+   GFXShaderConstHandle* mMaterialDamageMinSC;
 
    // Deferred Shading : Material Info Flags
    GFXShaderConstHandle* mMatInfoFlagsSC;

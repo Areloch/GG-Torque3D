@@ -46,7 +46,8 @@ public:
    String                     specularMap;
    ColorF                     diffuseColor;
    ColorF                     specularColor;
-   F32                        specularPower;
+   F32                        smoothness;
+   F32                        metalness;
    bool                       doubleSided;
 
    ColladaAppMaterial(const char* matName);

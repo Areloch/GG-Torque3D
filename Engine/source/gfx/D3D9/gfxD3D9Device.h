@@ -238,7 +238,6 @@ protected:
    // }
 
    virtual GFXShader* createShader();
-   void disableShaders(bool force = false);
 
    /// Device helper function
    virtual D3DPRESENT_PARAMETERS setupPresentParams( const GFXVideoMode &mode, const HWND &hwnd ) const = 0;
@@ -326,7 +325,10 @@ public:
    /// Reset
    virtual void reset( D3DPRESENT_PARAMETERS &d3dpp ) = 0;
 
+   GFXShader* mCurrentShader;
    GFXShaderRef mGenericShader[GS_COUNT];
+   GFXShaderConstBufferRef mGenericShaderBuffer[GS_COUNT];
+   GFXShaderConstHandle *mModelViewProjSC[GS_COUNT];
 
    virtual void setupGenericShaders( GenericShaderType type  = GSColor );
 

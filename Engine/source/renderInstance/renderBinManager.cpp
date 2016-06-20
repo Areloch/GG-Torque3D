@@ -172,6 +172,7 @@ void RenderBinManager::setupSGData( MeshRenderInst *ri, SceneData &data )
    data.lightmap     = ri->lightmap;
    data.visibility   = ri->visibility;
    data.materialHint = ri->materialHint;
+   data.mMaterialDamage = ri->mMaterialDamage;
 }
 
 DefineEngineMethod( RenderBinManager, getBinType, const char*, (),,

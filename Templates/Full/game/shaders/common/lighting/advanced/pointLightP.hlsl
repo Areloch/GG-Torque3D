@@ -249,12 +249,18 @@ float4 main( ConvexConnectP IN ) : TORQUE_TARGET0
    // cause the hardware occlusion query to disable the shadow.
 
    // Specular term
-   float specular = AL_CalcSpecular(   lightVec, 
-                                       normal, 
-                                       normalize( -eyeRay ) ) * lightBrightness * atten * shadowed;
-
+   float specular = 0;
+   
+   float4 real_specular = EvalBDRF( float3( 1.0, 1.0, 1.0 ),
+                                    lightcol,
+                                    lightVec,
+                                    viewSpacePos,
+                                    normal,
+                                    1.0-matInfo.b,
+                                    matInfo.a*0.5 );
+   float3 lightColorOut = real_specular.rgb * lightBrightness * shadowed* atten;
+   //lightColorOut /= colorSample.rgb;
    float Sat_NL_Att = saturate( nDotL * atten * shadowed ) * lightBrightness;
-   float3 lightColorOut = lightMapParams.rgb * lightcol;
    float4 addToResult = 0.0;
     
    // TODO: This needs to be removed when lightmapping is disabled
@@ -271,7 +277,6 @@ float4 main( ConvexConnectP IN ) : TORQUE_TARGET0
       lightColorOut = shadowed;
       specular *= lightBrightness;
       addToResult = ( 1.0 - shadowed ) * abs(lightMapParams);
-   }
-
-   return AL_DeferredOutput(lightColorOut+subsurface*(1.0-Sat_NL_Att), colorSample.rgb, matInfo, addToResult, specular, Sat_NL_Att);
+   }     
+   return matInfo.g*(float4(lightColorOut+subsurface*(1.0-Sat_NL_Att),real_specular.a)*Sat_NL_Att+addToResult);
 }

@@ -180,18 +180,18 @@ void GuiGraphCtrl::onRender(Point2I offset, const RectI &updateRect)
                PrimBuild::begin( GFXTriangleStrip, 4 );
                PrimBuild::color( mGraphColor[ k ] );
 
-               F32 offset = F32( getExtent().x ) / F32( MaxDataPoints ) * F32( sample + 1 );
+               F32 offset = F32(getExtent().x) / F32(MaxDataPoints) * F32(sample + 1);
 
-               PrimBuild::vertex2f( globalPos.x + prevOffset,
+               PrimBuild::vertex2f(globalPos.x + prevOffset,
                   midPointY - ( getDatum( k, sample ) * Scale ) );
 
                PrimBuild::vertex2f( globalPos.x + offset,
                   midPointY - ( getDatum( k, sample ) * Scale ) );
 
-               PrimBuild::vertex2f( globalPos.x + offset,
-                  midPointY );
+               PrimBuild::vertex2f(globalPos.x + offset,
+                  midPointY);
 
-               PrimBuild::vertex2f( globalPos.x + prevOffset,
+               PrimBuild::vertex2f(globalPos.x + prevOffset,
                   midPointY );
 
                prevOffset = offset;

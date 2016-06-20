@@ -50,6 +50,7 @@ class TSThread;
 class ConvexFeature;
 class SceneRenderState;
 class FeatureSet;
+class SimObject;
 
 
 //-------------------------------------------------------------------------------------
@@ -238,6 +239,10 @@ class TSShapeInstance
    /// @}
 	
 	TSMaterialList* mMaterialList;    ///< by default, points to hShape material list
+
+    virtual void setUserObject( SimObject *userObject ) { mUserObject = userObject; }
+    virtual SimObject* getUserObject() const { return mUserObject; }
+    
 //-------------------------------------------------------------------------------------
 // Misc.
 //-------------------------------------------------------------------------------------
@@ -267,6 +272,8 @@ protected:
    /// This should always point to a valid shape and should
    /// equal mShapeResource if it was created from a resource.
    TSShape *mShape;
+
+   SimObject *mUserObject;
 
    
    bool            mOwnMaterialList; ///< Does this own the material list pointer?

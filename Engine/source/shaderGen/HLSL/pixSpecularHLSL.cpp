@@ -133,17 +133,17 @@ void SpecularMapHLSL::processVert(Vector<ShaderComponent*> &componentList, const
 void SpecularMapHLSL::processPix( Vector<ShaderComponent*> &componentList, const MaterialFeatureData &fd )
 {
    // Get the texture coord.
-   Var *texCoord = getInTexCoord( "texCoord", "float2", true, componentList );
+   Var *texCoord = getInTexCoord("texCoord", "float2", true, componentList);
 
    // create texture var
    Var *specularMap = new Var;
-   specularMap->setType( "sampler2D" );
-   specularMap->setName( "specularMap" );
+   specularMap->setName("specularMap");
    specularMap->uniform = true;
    specularMap->sampler = true;
    specularMap->constNum = Var::getTexUnitNum();
+   
    Var *specularMapTex = NULL;
-
+   LangElement *texOp = NULL;
    if (mIsDirect3D11)
    {
       specularMap->setType("SamplerState");
@@ -153,22 +153,35 @@ void SpecularMapHLSL::processPix( Vector<ShaderComponent*> &componentList, const
       specularMapTex->uniform = true;
       specularMapTex->texture = true;
       specularMapTex->constNum = specularMap->constNum;
+      texOp = new GenOp("@.Sample(@, @)", specularMapTex, specularMap, texCoord);
    }
    else
    {
       specularMap->setType("sampler2D");
+      texOp = new GenOp("tex2D(@, @)", specularMap, texCoord);
    }
 
-   LangElement *texOp = NULL;
+   Var *specularColor = new Var( "specularColor", "float4" );
+   Var *metalness = (Var*)LangElement::find("metalness");
+   if (!metalness) metalness = new Var("metalness", "float");
+   Var *smoothness = (Var*)LangElement::find("smoothness");
+   if (!smoothness) smoothness = new Var("smoothness", "float");
+   MultiLine * meta = new MultiLine;
 
-   if (specularMapTex)
-      texOp = new GenOp("@.Sample(@, @)", specularMapTex, specularMap, texCoord);
+   if (fd.features[MFT_FlipRB])
+   {
+      meta->addStatement(new GenOp("   @ = @.r;\r\n", new DecOp(metalness), texOp));
+      meta->addStatement(new GenOp("   @ = @.b;\r\n", new DecOp(smoothness), texOp));
+   }
    else
-      texOp = new GenOp("tex2D(@, @)", specularMap, texCoord);
-
-   Var *specularColor = new Var("specularColor", "float4");
-
-   output = new GenOp("   @ = @;\r\n", new DecOp(specularColor), texOp);
+   {
+      meta->addStatement(new GenOp("   @ = @.r;\r\n", new DecOp(smoothness), texOp));
+      meta->addStatement(new GenOp("   @ = @.b;\r\n", new DecOp(metalness), texOp));
+   }
+   if (fd.features[MFT_InvertSmoothness])
+      meta->addStatement(new GenOp("   @ = 1.0-@;\r\n", smoothness, smoothness));
+   meta->addStatement(new GenOp("   @ = @.ggga;\r\n", new DecOp(specularColor), texOp));
+   output = meta;
 }
 
 ShaderFeature::Resources SpecularMapHLSL::getResources( const MaterialFeatureData &fd )

@@ -36,7 +36,7 @@ class BaseMatInstance;
 class Stream;
 class GFXVertexFormat;
 class FeatureSet;
-
+class SimObject;
 
 class MaterialList
 {
@@ -76,6 +76,9 @@ public:
 
    void mapMaterials();
 
+   virtual void setUserObject( SimObject *userObject ) { mUserObject = userObject; }
+   virtual SimObject* getUserObject() const { return mUserObject; }
+
    /// Initialize material instances in material list.
    void initMatInstances(  const FeatureSet &features, 
                            const GFXVertexFormat *vertexFormat );
@@ -98,6 +101,8 @@ protected:
    Vector<String>       mMaterialNames;            //!< Material 'mapTo' targets
 
    virtual void mapMaterial( U32 index );
+
+   SimObject *mUserObject;
 
 private:
    enum Constants { BINARY_FILE_VERSION = 1 };

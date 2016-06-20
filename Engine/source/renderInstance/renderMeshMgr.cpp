@@ -100,7 +100,6 @@ void RenderMeshMgr::render(SceneRenderState * state)
    if(!mElementList.size())
       return;
 
-
    GFXDEBUGEVENT_SCOPE( RenderMeshMgr_Render, ColorI::GREEN );
 
    // Automagically save & restore our viewport and transforms.

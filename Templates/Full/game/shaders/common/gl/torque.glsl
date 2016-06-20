@@ -165,7 +165,6 @@ vec2 parallaxOffsetDxtnm(sampler2D texMap, vec2 texCoord, vec3 negViewTS, float 
    return offset;
 }
 
-
 /// The maximum value for 16bit per component integer HDR encoding.
 const float HDR_RGB16_MAX = 100.0;
 /// The maximum value for 10bit per component integer HDR encoding.
@@ -304,6 +303,15 @@ vec4 toGamma(vec4 tex)
 {
    return tex;
 }
+vec3 toLinear(vec3 tex)
+{
+   return tex;
+}
+// Encodes gamma.
+vec3 toGamma(vec3 tex)
+{
+   return tex;
+}
 #else
 // Sample in linear space. Decodes gamma.
 vec4 toLinear(vec4 tex)
@@ -314,6 +322,16 @@ vec4 toLinear(vec4 tex)
 vec4 toGamma(vec4 tex)
 {
    return vec4(pow(abs(tex.rgb), vec3(1.0/2.2)), tex.a);
+}
+// Sample in linear space. Decodes gamma.
+vec3 toLinear(vec3 tex)
+{
+   return pow(abs(tex), vec3(2.2));
+}
+// Encodes gamma.
+vec3 toGamma(vec3 tex)
+{
+   return pow(abs(tex), vec3(1.0/2.2));
 }
 #endif //
 

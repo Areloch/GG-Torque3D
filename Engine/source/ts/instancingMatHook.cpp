@@ -60,6 +60,8 @@ BaseMatInstance* InstancingMaterialHook::getInstancingMat( BaseMatInstance *matI
       // Allow for named texture assignments
       Material::sAllowTextureTargetAssignment = true;
 
+      instMat->setUserObject( matInst->getUserObject() );
+
       if ( !instMat->init( features, matInst->getVertexFormat() ) )
          SAFE_DELETE( instMat );
 

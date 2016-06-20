@@ -96,6 +96,11 @@ DeclareFeatureType( MFT_DiffuseColor );
 DeclareFeatureType( MFT_DetailNormalMap );
 DeclareFeatureType( MFT_Imposter );
 
+DeclareFeatureType(MFT_Damage);
+DeclareFeatureType(MFT_AlbedoDamage);
+DeclareFeatureType(MFT_NormalDamage);
+DeclareFeatureType(MFT_CompositeDamage);
+
 DeclareFeatureType( MFT_AccuMap );
 DeclareFeatureType( MFT_AccuScale );
 DeclareFeatureType( MFT_AccuDirection );
@@ -121,8 +126,11 @@ DeclareFeatureType( MFT_ToneMap );
 DeclareFeatureType( MFT_VertLit );
 DeclareFeatureType( MFT_VertLitTone );
 
+DeclareFeatureType( MFT_StaticCubemap );
 DeclareFeatureType( MFT_CubeMap );
 DeclareFeatureType( MFT_PixSpecular );
+DeclareFeatureType( MFT_FlipRB );
+DeclareFeatureType( MFT_InvertSmoothness );
 DeclareFeatureType( MFT_SpecularMap );
 DeclareFeatureType( MFT_GlossMap );
 
@@ -179,12 +187,10 @@ DeclareFeatureType( MFT_ForwardShading );
 /// so that the rest of the material features can work on it.
 DeclareFeatureType( MFT_ImposterVert );
 
-
 // Deferred Shading
 DeclareFeatureType( MFT_isDeferred );
 DeclareFeatureType( MFT_SkyBox );
 DeclareFeatureType( MFT_DeferredSpecMap );
 DeclareFeatureType( MFT_DeferredSpecVars );
 DeclareFeatureType( MFT_DeferredMatInfoFlags );
-DeclareFeatureType( MFT_DeferredEmptySpec );
 #endif // _MATERIALFEATURETYPES_H_

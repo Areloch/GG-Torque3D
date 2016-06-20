@@ -56,6 +56,7 @@ const String RenderPrePassMgr::BufferName("prepass");
 const RenderInstType RenderPrePassMgr::RIT_PrePass("PrePass");
 const String RenderPrePassMgr::ColorBufferName("color");
 const String RenderPrePassMgr::MatInfoBufferName("matinfo");
+const String RenderPrePassMgr::LightMapBufferName("indirectLighting");
 
 IMPLEMENT_CONOBJECT(RenderPrePassMgr);
 
@@ -101,6 +102,7 @@ RenderPrePassMgr::RenderPrePassMgr( bool gatherDepth,
    mNamedTarget.registerWithName( BufferName );
    mColorTarget.registerWithName( ColorBufferName );
    mMatInfoTarget.registerWithName( MatInfoBufferName );
+   mLightMapTarget.registerWithName( LightMapBufferName );
 
    mClearGBufferShader = NULL;
 
@@ -110,9 +112,9 @@ RenderPrePassMgr::RenderPrePassMgr( bool gatherDepth,
 RenderPrePassMgr::~RenderPrePassMgr()
 {
    GFXShader::removeGlobalMacro( "TORQUE_LINEAR_DEPTH" );
-
    mColorTarget.release();
    mMatInfoTarget.release();
+   mLightMapTarget.release();
    _unregisterFeatures();
    SAFE_DELETE( mPrePassMatInstance );
 }
@@ -136,6 +138,7 @@ bool RenderPrePassMgr::setTargetSize(const Point2I &newTargetSize)
    mNamedTarget.setViewport( GFX->getViewport() );
    mColorTarget.setViewport( GFX->getViewport() );
    mMatInfoTarget.setViewport( GFX->getViewport() );
+   mLightMapTarget.setViewport( GFX->getViewport() );
    return ret;
 }
 
@@ -187,32 +190,18 @@ bool RenderPrePassMgr::_updateTargets()
                         mTargetChain[i]->attachTexture(GFXTextureTarget::Color2, mMatInfoTarget.getTexture());
    }
 
-   GFX->finalizeReset();
-
-   // Attach the light info buffer as a second render target, if there is
-   // lightmapped geometry in the scene.
-   AdvancedLightBinManager *lightBin;
-   if (  Sim::findObject( "AL_LightBinMgr", lightBin ) &&
-         lightBin->MRTLightmapsDuringPrePass() &&
-         lightBin->isProperlyAdded() )
+   if (mLightMapTex.getFormat() != colorFormat || mLightMapTex.getWidthHeight() != mTargetSize || GFX->recentlyReset())
    {
-      // Update the size of the light bin target here. This will call _updateTargets
-      // on the light bin
-      ret &= lightBin->setTargetSize( mTargetSize );
-      if ( ret )
-      {
-         // Sanity check
-         AssertFatal(lightBin->getTargetChainLength() == mTargetChainLength, "Target chain length mismatch");
+      mLightMapTarget.release();
+      mLightMapTex.set(mTargetSize.x, mTargetSize.y, colorFormat,
+         &GFXDefaultRenderTargetProfile, avar("%s() - (line %d)", __FUNCTION__, __LINE__),
+         1, GFXTextureManager::AA_MATCH_BACKBUFFER);
+      mLightMapTarget.setTexture(mLightMapTex);
 
-         // Attach light info buffer to Color1 for each target in the chain
-         for ( U32 i = 0; i < mTargetChainLength; i++ )
-         {
-            GFXTexHandle lightInfoTex = lightBin->getTargetTexture(0, i);
-            mTargetChain[i]->attachTexture(GFXTextureTarget::Color3, lightInfoTex);
-         }
-      }
+      for (U32 i = 0; i < mTargetChainLength; i++)
+         mTargetChain[i]->attachTexture(GFXTextureTarget::Color3, mLightMapTarget.getTexture());
    }
-
+   GFX->finalizeReset();
    _initShaders();
 
    return ret;
@@ -631,20 +620,29 @@ void ProcessedPrePassMaterial::_determineFeatures( U32 stageNum,
    }
    newFeatures.addFeature( MFT_DiffuseColor );
 
+   if (mMaterial->mFlipRB[stageNum])
+      newFeatures.addFeature(MFT_FlipRB);
+
+   if (mMaterial->mInvertSmoothness[stageNum])
+      newFeatures.addFeature(MFT_InvertSmoothness);
+
    // Deferred Shading : Specular
    if( mStages[stageNum].getTex( MFT_SpecularMap ) )
-   {
        newFeatures.addFeature( MFT_DeferredSpecMap );
-   }
-   else if ( mMaterial->mPixelSpecular[stageNum] )
-   {
-       newFeatures.addFeature( MFT_DeferredSpecVars );
-   }
    else
-       newFeatures.addFeature(MFT_DeferredEmptySpec);
-   
+       newFeatures.addFeature( MFT_DeferredSpecVars );
+
    // Deferred Shading : Material Info Flags
    newFeatures.addFeature( MFT_DeferredMatInfoFlags );
+
+   //Damage 
+   if (mStages[stageNum].getTex(MFT_AlbedoDamage))
+      newFeatures.addFeature(MFT_AlbedoDamage);
+   if (mStages[stageNum].getTex(MFT_NormalDamage))
+      newFeatures.addFeature(MFT_NormalDamage);
+   if (mStages[stageNum].getTex(MFT_CompositeDamage))
+      newFeatures.addFeature(MFT_CompositeDamage);
+
 
    for ( U32 i=0; i < fd.features.getCount(); i++ )
    {
@@ -746,14 +744,30 @@ void ProcessedPrePassMaterial::_determineFeatures( U32 stageNum,
       }
    }
 
+   bool envmapped = false;
+   SceneObject * test = dynamic_cast<SceneObject *>(mUserObject);
+   if (!mMaterial->mEmissive[stageNum] && test && (test->getTypeMask() & (DynamicShapeObjectType | StaticObjectType | StaticShapeObjectType)))
+      envmapped = true;
    // cubemaps only available on stage 0 for now - bramage   
-   if ( stageNum < 1 && 
+   if ( stageNum < 1 &&
          (  (  mMaterial->mCubemapData && mMaterial->mCubemapData->mCubemap ) ||
-               mMaterial->mDynamicCubemap ) )
-   newFeatures.addFeature( MFT_CubeMap );
+               mMaterial->mDynamicCubemap || envmapped) )
+   {
+      if (!mMaterial->mDynamicCubemap)
+         fd.features.addFeature(MFT_StaticCubemap);
+      newFeatures.addFeature( MFT_CubeMap );
+   }
+   if (mMaterial->mVertLit[stageNum])
+      newFeatures.addFeature(MFT_VertLit);
+
+   if (mMaterial->mMinnaertConstant[stageNum] > 0.0f)
+      newFeatures.addFeature(MFT_MinnaertShading);
+
+   if (mMaterial->mSubSurface[stageNum])
+      newFeatures.addFeature(MFT_SubSurface);
    
 #endif
-
+   
    // Set the new features.
    fd.features = newFeatures;
 }
@@ -834,9 +848,9 @@ void ProcessedPrePassMaterial::addStateBlockDesc(const GFXStateBlockDesc& desc)
    // If we're translucent then we're doing prepass blending
    // which never writes to the depth channels.
    const bool isTranslucent = getMaterial()->isTranslucent();
-   if ( isTranslucent )
+   if (isTranslucent)
    {
-      prePassStateBlock.setBlend( true, GFXBlendSrcAlpha, GFXBlendInvSrcAlpha );
+	   prePassStateBlock.setBlend(true, GFXBlendSrcAlpha, GFXBlendInvSrcAlpha);
 	   prePassStateBlock.setColorWrites(false, false, false, true);
    }
 
@@ -864,8 +878,8 @@ ProcessedMaterial* PrePassMatInstance::getShaderMaterial()
    return new ProcessedPrePassMaterial(*mMaterial, mPrePassMgr);
 }
 
-bool PrePassMatInstance::init( const FeatureSet &features,
-                               const GFXVertexFormat *vertexFormat )
+bool PrePassMatInstance::init(const FeatureSet &features,
+   const GFXVertexFormat *vertexFormat)
 {
    bool vaild = Parent::init(features, vertexFormat);
 
@@ -1004,13 +1018,13 @@ Var *LinearEyeDepthConditioner::_unconditionInput( Var *conditionedInput, MultiL
 
 Var* LinearEyeDepthConditioner::printMethodHeader( MethodType methodType, const String &methodName, Stream &stream, MultiLine *meta )
 {
-   const bool isCondition = ( methodType == ConditionerFeature::ConditionMethod );
+   const bool isCondition = (methodType == ConditionerFeature::ConditionMethod);
 
    Var *retVal = NULL;
 
    // The uncondition method inputs are changed
-   if( isCondition )
-      retVal = Parent::printMethodHeader( methodType, methodName, stream, meta );
+   if (isCondition)
+      retVal = Parent::printMethodHeader(methodType, methodName, stream, meta);
    else
    {
       Var *methodVar = new Var;
@@ -1024,7 +1038,21 @@ Var* LinearEyeDepthConditioner::printMethodHeader( MethodType methodType, const 
       Var *prepassSampler = new Var;
       prepassSampler->setName("prepassSamplerVar");
       prepassSampler->setType("sampler2D");
-      DecOp *prepassSamplerDecl = new DecOp(prepassSampler);
+      DecOp *prepassSamplerDecl = NULL;
+
+      Var *prepassTex = NULL;
+      DecOp *prepassTexDecl = NULL;
+      if (GFX->getAdapterType() == Direct3D11)
+      {
+         prepassSampler->setType("SamplerState");
+
+         prepassTex = new Var;
+         prepassTex->setName("prepassTexVar");
+         prepassTex->setType("Texture2D");
+         prepassTexDecl = new DecOp(prepassTex);
+      }
+
+      prepassSamplerDecl = new DecOp(prepassSampler);
 
       Var *screenUV = new Var;
       screenUV->setName("screenUVVar");
@@ -1042,25 +1070,33 @@ Var* LinearEyeDepthConditioner::printMethodHeader( MethodType methodType, const 
          bufferSample->setType("float4");
       DecOp *bufferSampleDecl = new DecOp(bufferSample);
 
-      meta->addStatement( new GenOp( "@(@, @)\r\n", methodDecl, prepassSamplerDecl, screenUVDecl ) );
+      if (prepassTex)
+         meta->addStatement(new GenOp("@(@, @, @)\r\n", methodDecl, prepassSamplerDecl, prepassTexDecl, screenUVDecl));
+      else
+         meta->addStatement(new GenOp("@(@, @)\r\n", methodDecl, prepassSamplerDecl, screenUVDecl));
 
-      meta->addStatement( new GenOp( "{\r\n" ) );
+      meta->addStatement(new GenOp("{\r\n"));
 
-      meta->addStatement( new GenOp( "   // Sampler g-buffer\r\n" ) );
+      meta->addStatement(new GenOp("   // Sampler g-buffer\r\n"));
 
       // The linear depth target has no mipmaps, so use tex2dlod when
       // possible so that the shader compiler can optimize.
-      meta->addStatement( new GenOp( "   #if TORQUE_SM >= 30\r\n" ) );
+      meta->addStatement(new GenOp("   #if TORQUE_SM >= 30\r\n"));
       if (GFX->getAdapterType() == OpenGL)
-         meta->addStatement( new GenOp( "    @ = textureLod(@, @, 0); \r\n", bufferSampleDecl, prepassSampler, screenUV) );
+         meta->addStatement(new GenOp("    @ = texture2DLod(@, @, 0); \r\n", bufferSampleDecl, prepassSampler, screenUV));
       else
-         meta->addStatement( new GenOp( "      @ = tex2Dlod(@, float4(@,0,0));\r\n", bufferSampleDecl, prepassSampler, screenUV ) );
-      meta->addStatement( new GenOp( "   #else\r\n" ) );
+      {
+         if (prepassTex)
+            meta->addStatement(new GenOp("      @ = @.SampleLevel(@, @, 0);\r\n", bufferSampleDecl, prepassTex, prepassSampler, screenUV));
+         else
+            meta->addStatement(new GenOp("      @ = tex2Dlod(@, float4(@,0,0));\r\n", bufferSampleDecl, prepassSampler, screenUV));
+      }
+      meta->addStatement(new GenOp("   #else\r\n"));
       if (GFX->getAdapterType() == OpenGL)
          meta->addStatement( new GenOp( "    @ = texture(@, @);\r\n", bufferSampleDecl, prepassSampler, screenUV) );
       else
-         meta->addStatement( new GenOp( "      @ = tex2D(@, @);\r\n", bufferSampleDecl, prepassSampler, screenUV ) );
-      meta->addStatement( new GenOp( "   #endif\r\n\r\n" ) );
+         meta->addStatement(new GenOp("      @ = tex2D(@, @);\r\n", bufferSampleDecl, prepassSampler, screenUV));
+      meta->addStatement(new GenOp("   #endif\r\n\r\n"));
 
       // We don't use this way of passing var's around, so this should cause a crash
       // if something uses this improperly
@@ -1086,20 +1122,21 @@ void RenderPrePassMgr::_initShaders()
    desc.setBlend( true );
    desc.setZReadWrite( false, false );
    desc.samplersDefined = true;
-   desc.samplers[0].addressModeU = GFXAddressWrap;
-   desc.samplers[0].addressModeV = GFXAddressWrap;
-   desc.samplers[0].addressModeW = GFXAddressWrap;
-   desc.samplers[0].magFilter = GFXTextureFilterLinear;
-   desc.samplers[0].minFilter = GFXTextureFilterLinear;
-   desc.samplers[0].mipFilter = GFXTextureFilterLinear;
-   desc.samplers[0].textureColorOp = GFXTOPModulate;
+   for (int i = 0; i < TEXTURE_STAGE_COUNT; i++)
+   {
+       desc.samplers[i].addressModeU = GFXAddressWrap;
+       desc.samplers[i].addressModeV = GFXAddressWrap;
+       desc.samplers[i].addressModeW = GFXAddressWrap;
+       desc.samplers[i].magFilter = GFXTextureFilterLinear;
+       desc.samplers[i].minFilter = GFXTextureFilterLinear;
+       desc.samplers[i].mipFilter = GFXTextureFilterLinear;
+       desc.samplers[i].textureColorOp = GFXTOPModulate;
+   }
 
    mStateblock = GFX->createStateBlock( desc );   
 
    // Set up shader constants.
    mShaderConsts = mClearGBufferShader->allocConstBuffer();
-   mSpecularStrengthSC = mClearGBufferShader->getShaderConstHandle( "$specularStrength" );
-   mSpecularPowerSC = mClearGBufferShader->getShaderConstHandle( "$specularPower" );
 }
 
 void RenderPrePassMgr::clearBuffers()

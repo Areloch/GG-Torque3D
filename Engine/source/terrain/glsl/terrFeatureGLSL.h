@@ -35,22 +35,23 @@
 /// includes some helper functions.
 class TerrainFeatGLSL : public ShaderFeatureGLSL
 {
+
 protected:
    ShaderIncludeDependency mTorqueDep;
-   
+
 public:
    TerrainFeatGLSL();
    Var* _getInDetailCoord(Vector<ShaderComponent*> &componentList );
-   
+
    Var* _getInMacroCoord(Vector<ShaderComponent*> &componentList );
 
    Var* _getNormalMapTex();
-   
+
    static Var* _getUniformVar( const char *name, const char *type, ConstantSortPosition csp );
-   
+
    Var* _getDetailIdStrengthParallax();
    Var* _getMacroIdStrengthParallax();
-      
+
 };
 
 
@@ -127,13 +128,13 @@ class TerrainNormalMapFeatGLSL : public TerrainFeatGLSL
 public:
 
    virtual void processVert(  Vector<ShaderComponent*> &componentList,
-                            const MaterialFeatureData &fd );
-   
+                              const MaterialFeatureData &fd );
+
    virtual void processPix(   Vector<ShaderComponent*> &componentList, 
-                           const MaterialFeatureData &fd );
-   
+                              const MaterialFeatureData &fd );
+
    virtual Resources getResources( const MaterialFeatureData &fd );
-   
+
    virtual String getName() { return "Terrain Normal Texture"; }
 };
 

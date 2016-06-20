@@ -33,6 +33,7 @@
 #include "materials/materialFeatureTypes.h"
 #include "core/module.h"
 #include "shaderGen/GLSL/accuFeatureGLSL.h"
+#include "shaderGen/GLSL/materialDamageGLSL.h"
 
 // Deferred Shading
 #include "lighting/advanced/glsl/deferredShadingFeaturesGLSL.h"
@@ -62,8 +63,11 @@ void _initShaderGenGLSL( ShaderGen *shaderGen )
    FEATUREMGR->registerFeature( MFT_NormalMap, new BumpFeatGLSL );
 	FEATUREMGR->registerFeature( MFT_DetailNormalMap, new NamedFeatureGLSL( "Detail Normal Map" ) );
    FEATUREMGR->registerFeature( MFT_DetailMap, new DetailFeatGLSL );
+	FEATUREMGR->registerFeature( MFT_StaticCubemap, new NamedFeatureGLSL( "Static Cubemap" ) );
    FEATUREMGR->registerFeature( MFT_CubeMap, new ReflectCubeFeatGLSL );
    FEATUREMGR->registerFeature( MFT_PixSpecular, new PixelSpecularGLSL );
+   FEATUREMGR->registerFeature( MFT_FlipRB, new NamedFeatureGLSL( "Substance Workaround" ) );
+   FEATUREMGR->registerFeature( MFT_InvertSmoothness, new NamedFeatureGLSL("Roughest = 1.0"));
    FEATUREMGR->registerFeature( MFT_SpecularMap, new SpecularMapGLSL );
    FEATUREMGR->registerFeature( MFT_AccuMap, new AccuTexFeatGLSL );
    FEATUREMGR->registerFeature( MFT_GlossMap, new NamedFeatureGLSL( "Gloss Map" ) );
@@ -87,7 +91,13 @@ void _initShaderGenGLSL( ShaderGen *shaderGen )
    FEATUREMGR->registerFeature( MFT_ParaboloidVertTransform, new ParaboloidVertTransformGLSL );
    FEATUREMGR->registerFeature( MFT_IsSinglePassParaboloid, new NamedFeatureGLSL( "Single Pass Paraboloid" ) );
    FEATUREMGR->registerFeature( MFT_UseInstancing, new NamedFeatureGLSL( "Hardware Instancing" ) );
-	
+
+   //damage blend 
+   FEATUREMGR->registerFeature(MFT_AlbedoDamage, new AlbedoDamageFeatGLSL);
+   FEATUREMGR->registerFeature(MFT_NormalDamage, new NamedFeatureGLSL("Damage Normal Map"));
+   FEATUREMGR->registerFeature(MFT_CompositeDamage, new CompositeDamageFeatGLSL);
+   FEATUREMGR->registerFeature(MFT_Damage, new NamedFeatureGLSL("materialDamage"));
+
    FEATUREMGR->registerFeature( MFT_DiffuseMapAtlas, new NamedFeatureGLSL( "Diffuse Map Atlas" ) );
    FEATUREMGR->registerFeature( MFT_NormalMapAtlas, new NamedFeatureGLSL( "Normal Map Atlas" ) );
 
@@ -103,7 +113,6 @@ void _initShaderGenGLSL( ShaderGen *shaderGen )
    FEATUREMGR->registerFeature( MFT_DeferredSpecMap, new DeferredSpecMapGLSL );
    FEATUREMGR->registerFeature( MFT_DeferredSpecVars, new DeferredSpecVarsGLSL );
    FEATUREMGR->registerFeature( MFT_DeferredMatInfoFlags, new DeferredMatInfoFlagsGLSL );
-   FEATUREMGR->registerFeature( MFT_DeferredEmptySpec, new DeferredEmptySpecGLSL );
    FEATUREMGR->registerFeature( MFT_SkyBox, new DeferredSkyGLSL );
 }
 

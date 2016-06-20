@@ -32,7 +32,7 @@ GFXGLOcclusionQuery::GFXGLOcclusionQuery(GFXDevice* device) :
 
 GFXGLOcclusionQuery::~GFXGLOcclusionQuery()
 {
-   glDeleteQueries(1, &mQuery);
+      glDeleteQueries(1, &mQuery);
 }
 
 bool GFXGLOcclusionQuery::begin()

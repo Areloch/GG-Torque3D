@@ -40,6 +40,8 @@ const String ShaderGenVars::nearPlaneWorld("$nearPlaneWorld");
 const String ShaderGenVars::fogData("$fogData");
 const String ShaderGenVars::fogColor("$fogColor");
 const String ShaderGenVars::detailScale("$detailScale");
+const String ShaderGenVars::materialDamage("$materialDamage");
+const String ShaderGenVars::materialDamageMin("$materialDamageMin");
 const String ShaderGenVars::visibility("$visibility");
 const String ShaderGenVars::colorMultiply("$colorMultiply");
 const String ShaderGenVars::alphaTestValue("$alphaTestValue");
@@ -64,8 +66,8 @@ const String ShaderGenVars::lightSpotDir("$inLightSpotDir");
 const String ShaderGenVars::lightSpotAngle("$inLightSpotAngle");
 const String ShaderGenVars::lightSpotFalloff("$inLightSpotFalloff");
 const String ShaderGenVars::specularColor("$specularColor");
-const String ShaderGenVars::specularPower("$specularPower");
-const String ShaderGenVars::specularStrength("$specularStrength");
+const String ShaderGenVars::smoothness("$smoothness");
+const String ShaderGenVars::metalness("$metalness");
 
 // These are ignored by the D3D layers.
 const String ShaderGenVars::fogMap("$fogMap");

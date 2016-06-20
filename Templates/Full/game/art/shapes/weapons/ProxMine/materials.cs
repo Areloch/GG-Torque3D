@@ -23,15 +23,16 @@
 singleton Material(ProxMine_Base)
 {
    mapTo = "ProxMine_Base";
-   diffuseMap[0] = "ProxMine_D.dds";
+   diffuseMap[0] = "art/shapes/weapons/ProxMine/ProxMine_D.dds";
    specular[0] = "0.9 0.9 0.9 1";
    specularPower[0] = "10";
    translucentBlendOp = "None";
-   normalMap[0] = "ProxMine_N.dds";
-   pixelSpecular[0] = "1";
-   specularMap[0] = "ProxMine_S.dds";
+   normalMap[0] = "art/shapes/weapons/ProxMine/ProxMine_N.dds";
+   pixelSpecular[0] = "0";
    useAnisotropic[0] = "1";
-   castDynamicShadows = true;    
+   materialTag0 = "Miscellaneous";
+   specularMap[0] = "art/shapes/weapons/ProxMine/ProxMine_S.dds";
+   castDynamicShadows = true;
 };
 
 singleton Material(ProxMine_Glow_Base)

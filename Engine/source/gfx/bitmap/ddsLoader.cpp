@@ -31,7 +31,7 @@
 #include "gfx/bitmap/gBitmap.h"
 #include "console/engineAPI.h"
 
-
+#include <squish.h>
 
 S32 DDSFile::smActiveCopies = 0;
 U32 DDSFile::smDropMipCount = 0;
@@ -910,6 +910,44 @@ DDSFile *DDSFile::createDDSFileFromGBitmap( const GBitmap *gbmp )
    }
 
    return ret;
+}
+
+bool DDSFile::decompressToGBitmap(GBitmap *dest)
+{
+   // TBD: do we support other formats?
+   if (mFormat != GFXFormatDXT1 && mFormat != GFXFormatDXT3 && mFormat != GFXFormatDXT5)
+      return false;
+
+   dest->allocateBitmapWithMips(getWidth(), getHeight(), getMipLevels(), GFXFormatR8G8B8A8);
+
+   // Decompress and copy mips...
+
+   U32 numMips = getMipLevels();
+
+   for (U32 i = 0; i < numMips; i++)
+   {
+      U8 *addr = dest->getAddress(0, 0, i);
+      const U8 *mipBuffer = mSurfaces[0]->mMips[i];
+      U32 squishFlag = squish::kDxt1 | squish::kColourRangeFit;
+      U32 blockSize = 4;
+      switch (mFormat)
+      {
+      case GFXFormatDXT3:
+         squishFlag = squish::kDxt3;
+         blockSize = 1;
+         break;
+      case GFXFormatDXT5:
+         squishFlag = squish::kDxt5;
+         blockSize = 4;
+         break;
+      default:
+         break;
+      }
+
+      squish::DecompressImage(addr, getWidth(i), getHeight(i), mSurfaces[0]->mMips[i], squishFlag);
+   }
+
+   return true;
 }
 
 DefineEngineFunction( getActiveDDSFiles, S32, (),,

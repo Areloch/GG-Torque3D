@@ -48,10 +48,7 @@ namespace
       FEATUREMGR->registerFeature( MFT_TerrainMacroMap, new TerrainMacroMapFeatGLSL );
       FEATUREMGR->registerFeature( MFT_TerrainLightMap, new TerrainLightMapFeatGLSL );
       FEATUREMGR->registerFeature( MFT_TerrainSideProject, new NamedFeatureGLSL( "Terrain Side Projection" ) );
-      FEATUREMGR->registerFeature( MFT_TerrainAdditive, new TerrainAdditiveFeatGLSL );     
-      FEATUREMGR->registerFeature( MFT_DeferredTerrainBaseMap, new TerrainBaseMapFeatGLSL );
-      FEATUREMGR->registerFeature( MFT_DeferredTerrainMacroMap, new TerrainMacroMapFeatGLSL );
-      FEATUREMGR->registerFeature( MFT_DeferredTerrainDetailMap, new TerrainDetailMapFeatGLSL ); 
+      FEATUREMGR->registerFeature( MFT_TerrainAdditive, new TerrainAdditiveFeatGLSL );
       FEATUREMGR->registerFeature( MFT_DeferredTerrainBlankInfoMap, new TerrainBlankInfoMapFeatGLSL );
    }
 
@@ -62,7 +59,7 @@ MODULE_BEGIN( TerrainFeatGLSL )
    MODULE_INIT_AFTER( ShaderGen )
 
    MODULE_INIT
-   {      
+   {
       SHADERGEN->getFeatureInitSignal().notify(&register_glsl_shader_features_for_terrain);
    }
 
@@ -86,7 +83,7 @@ Var* TerrainFeatGLSL::_getUniformVar( const char *name, const char *type, Consta
       theVar->uniform = true;
       theVar->constSortPos = csp;
    }
-   
+
    return theVar;
 }
 
@@ -94,18 +91,18 @@ Var* TerrainFeatGLSL::_getInDetailCoord( Vector<ShaderComponent*> &componentList
 {
    String name( String::ToString( "detCoord%d", getProcessIndex() ) );
    Var *inDet = (Var*)LangElement::find( name );
-   
+
    if ( !inDet )
    {
       ShaderConnector *connectComp = dynamic_cast<ShaderConnector *>( componentList[C_CONNECTOR] );
-      
+
       inDet = connectComp->getElement( RT_TEXCOORD );
       inDet->setName( name );
       inDet->setStructName( "IN" );
       inDet->setType( "vec4" );
       inDet->mapsToSampler = true;
    }
-   
+
    return inDet;
 }
 
@@ -132,7 +129,7 @@ Var* TerrainFeatGLSL::_getNormalMapTex()
 {
    String name( String::ToString( "normalMap%d", getProcessIndex() ) );
    Var *normalMap =  (Var*)LangElement::find( name );
-   
+
    if ( !normalMap )
    {
       normalMap = new Var;
@@ -142,14 +139,14 @@ Var* TerrainFeatGLSL::_getNormalMapTex()
       normalMap->sampler = true;
       normalMap->constNum = Var::getTexUnitNum();
    }
-   
+
    return normalMap;
 }
 
 Var* TerrainFeatGLSL::_getDetailIdStrengthParallax()
 {
    String name( String::ToString( "detailIdStrengthParallax%d", getProcessIndex() ) );
-   
+
    Var *detailInfo = (Var*)LangElement::find( name );
    if ( !detailInfo )
    {
@@ -159,7 +156,7 @@ Var* TerrainFeatGLSL::_getDetailIdStrengthParallax()
       detailInfo->uniform = true;
       detailInfo->constSortPos = cspPotentialPrimitive;
    }
-   
+
    return detailInfo;
 }
 
@@ -246,7 +243,7 @@ void TerrainBaseMapFeatGLSL::processVert( Vector<ShaderComponent*> &componentLis
    Var *inTanget = new Var( "T", "vec3" );
    Var *squareSize = _getUniformVar( "squareSize", "float", cspPass );
    meta->addStatement( new GenOp( "   @ = normalize( float3( @, 0, @ ) );\r\n", 
-      new DecOp( inTanget ), squareSize, inTangentZ ) );  
+      new DecOp( inTanget ), squareSize, inTangentZ ) );
 }
 
 void TerrainBaseMapFeatGLSL::processPix(  Vector<ShaderComponent*> &componentList, 
@@ -413,7 +410,7 @@ void TerrainDetailMapFeatGLSL::processPix(   Vector<ShaderComponent*> &component
          inNegViewTS->setStructName( "IN" );
          inNegViewTS->setType( "vec3" );
       }
-   
+
       negViewTS = new Var( "negViewTS", "vec3" );
       meta->addStatement( new GenOp( "   @ = normalize( @ );\r\n", new DecOp( negViewTS ), inNegViewTS ) );
    }
@@ -489,7 +486,7 @@ void TerrainDetailMapFeatGLSL::processPix(   Vector<ShaderComponent*> &component
 
    ShaderFeature::OutputTarget target = ShaderFeature::DefaultTarget;
 
-   if(fd.features.hasFeature( MFT_DeferredTerrainDetailMap ))
+   if (fd.features.hasFeature(MFT_isDeferred))
       target= ShaderFeature::RenderTarget1;
 
    Var *outColor = (Var*)LangElement::find( getOutputTargetVarName(target) );
@@ -581,13 +578,29 @@ void TerrainDetailMapFeatGLSL::processPix(   Vector<ShaderComponent*> &component
       if (fd.features.hasFeature(MFT_IsDXTnm, detailIndex))
       {
          meta->addStatement(new GenOp("   @.xy += parallaxOffsetDxtnm( @, @.xy, @, @.z * @ );\r\n",
-         inDet, normalMap, inDet, negViewTS, detailInfo, detailBlend));
+            inDet, normalMap, inDet, negViewTS, detailInfo, detailBlend));
       }
       else
       {
          meta->addStatement(new GenOp("   @.xy += parallaxOffset( @, @.xy, @, @.z * @ );\r\n",
          inDet, normalMap, inDet, negViewTS, detailInfo, detailBlend));
       }
+   }
+   
+   // Check to see if we have a gbuffer normal.
+   Var *gbNormal = (Var*)LangElement::find( "gbNormal" );
+   
+   // If we have a gbuffer normal and we don't have a
+   // normal map feature then we need to lerp in a 
+   // default normal else the normals below this layer
+   // will show thru.
+   if (gbNormal &&
+      !fd.features.hasFeature(MFT_TerrainNormalMap, detailIndex))
+   {
+      Var *viewToTangent = getInViewToTangent(componentList);
+
+      meta->addStatement(new GenOp("   @ = lerp( @, @[2], min( @, @.w ) );\r\n",
+         gbNormal, gbNormal, viewToTangent, detailBlend, inDet));
    }
 
    // If we're using SM 3.0 then take advantage of 
@@ -662,7 +675,7 @@ ShaderFeature::Resources TerrainDetailMapFeatGLSL::getResources( const MaterialF
 
 U32 TerrainDetailMapFeatGLSL::getOutputTargets( const MaterialFeatureData &fd ) const
 {
-   return fd.features[MFT_DeferredTerrainDetailMap] ? ShaderFeature::RenderTarget1 : ShaderFeature::DefaultTarget;
+   return fd.features[MFT_isDeferred] ? ShaderFeature::RenderTarget1 : ShaderFeature::DefaultTarget;
 }
 
 
@@ -866,9 +879,10 @@ void TerrainMacroMapFeatGLSL::processPix(   Vector<ShaderComponent*> &componentL
 
    meta->addStatement( new GenOp( "      @ *= @.y * @.w;\r\n",
                                     detailColor, detailInfo, inDet ) );
+
    ShaderFeature::OutputTarget target = ShaderFeature::DefaultTarget;
 
-   if(fd.features.hasFeature(MFT_DeferredTerrainMacroMap))
+   if (fd.features.hasFeature(MFT_isDeferred))
       target= ShaderFeature::RenderTarget1;
 
    Var *outColor = (Var*)LangElement::find( getOutputTargetVarName(target) );
@@ -891,7 +905,7 @@ ShaderFeature::Resources TerrainMacroMapFeatGLSL::getResources( const MaterialFe
    {
       // If this is the first detail pass then we 
       // samples from the layer tex.
-         res.numTex += 1;
+      res.numTex += 1;
    }
 
       res.numTex += 1;
@@ -905,7 +919,7 @@ ShaderFeature::Resources TerrainMacroMapFeatGLSL::getResources( const MaterialFe
 
 U32 TerrainMacroMapFeatGLSL::getOutputTargets( const MaterialFeatureData &fd ) const
 {
-   return fd.features[MFT_DeferredTerrainMacroMap] ? ShaderFeature::RenderTarget1 : ShaderFeature::DefaultTarget;
+   return fd.features[MFT_isDeferred] ? ShaderFeature::RenderTarget1 : ShaderFeature::DefaultTarget;
 }
 
 void TerrainNormalMapFeatGLSL::processVert(  Vector<ShaderComponent*> &componentList, 
@@ -1067,10 +1081,10 @@ void TerrainAdditiveFeatGLSL::processPix( Vector<ShaderComponent*> &componentLis
                                           const MaterialFeatureData &fd )
 {
    Var *color = NULL;
-   if (fd.features[MFT_DeferredTerrainDetailMap])
-       color = (Var*) LangElement::find( getOutputTargetVarName(ShaderFeature::RenderTarget1) );
+   if (fd.features[MFT_isDeferred])
+      color = (Var*)LangElement::find(getOutputTargetVarName(ShaderFeature::RenderTarget1));
    else
-       color = (Var*) LangElement::find( getOutputTargetVarName(ShaderFeature::DefaultTarget) );
+      color = (Var*)LangElement::find(getOutputTargetVarName(ShaderFeature::DefaultTarget));
 
    Var *blendTotal = (Var*)LangElement::find( "blendTotal" );
    if ( !color || !blendTotal )
@@ -1116,7 +1130,7 @@ void TerrainBlankInfoMapFeatGLSL::processPix(Vector<ShaderComponent*> &component
       material->setStructName("OUT");
    }
 
-   meta->addStatement(new GenOp("   @ = float4(0.0,0.0,0.0,0.0001);\r\n", material));
+   meta->addStatement(new GenOp("   @ = float4(0.0,1.0,0.0,0.0001);\r\n", material));
 
    output = meta;
 }

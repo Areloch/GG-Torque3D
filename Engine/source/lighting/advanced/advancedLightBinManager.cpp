@@ -41,8 +41,8 @@
 #include "math/util/matrixSet.h"
 #include "console/consoleTypes.h"
 
-const RenderInstType AdvancedLightBinManager::RIT_LightInfo( "LightInfo" );
-const String AdvancedLightBinManager::smBufferName( "lightinfo" );
+const RenderInstType AdvancedLightBinManager::RIT_LightInfo( "directLighting" );
+const String AdvancedLightBinManager::smBufferName( "directLighting" );
 
 ShadowFilterMode AdvancedLightBinManager::smShadowFilterMode = ShadowFilterMode_SoftShadowHighQuality;
 bool AdvancedLightBinManager::smPSSMDebugRender = false;
@@ -130,7 +130,7 @@ AdvancedLightBinManager::AdvancedLightBinManager( AdvancedLightManager *lm /* = 
    // We want a full-resolution buffer
    mTargetSizeType = RenderTexTargetBinManager::WindowSize;
 
-   mMRTLightmapsDuringPrePass = false;
+   mMRTLightmapsDuringPrePass = true;
 
    Con::NotifyDelegate callback( this, &AdvancedLightBinManager::_deleteLightMaterials );
    Con::addVariableNotify( "$pref::Shadows::filterMode", callback );
@@ -252,8 +252,6 @@ void AdvancedLightBinManager::render( SceneRenderState *state )
    if ( !_onPreRender( state ) )
       return;
 
-   // Clear as long as there isn't MRT population of light buffer with lightmap data
-   if ( !MRTLightmapsDuringPrePass() )
       GFX->clear(GFXClearTarget, ColorI(0, 0, 0, 0), 1.0f, 0);
 
    // Restore transforms
@@ -706,7 +704,7 @@ void AdvancedLightBinManager::LightMaterialInfo::setLightParameters( const Light
          // in the light info!
          //
          //ColorF lightAlt = lightInfo->getAltColor();
-         ColorF lightAlt( ColorF::BLACK ); // = lightInfo->getAltColor();
+         ColorF lightAlt( ColorF::ZERO ); // = lightInfo->getAltColor();
          if ( lightAlt.red == 0.0f && lightAlt.green == 0.0f && lightAlt.blue == 0.0f )
             lightAlt = (lightInfo->getColor() + renderState->getAmbientLightColor()) / 2.0f;
 

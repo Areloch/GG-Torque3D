@@ -189,7 +189,6 @@ vec4 AL_VectorLightShadowCast( sampler2D _sourceshadowMap,
                                  _dotNL,
                                  dot( finalMask, _overDarkPSSM ) ) );
 }
-
 out vec4 OUT_col;
 void main()             
 {
@@ -269,7 +268,7 @@ void main()
       #ifdef PSSM_DEBUG_RENDER
 	     debugColor = static_shadowed_colors.rgb*0.5+dynamic_shadowed_colors.rgb*0.5;
       #endif
-      
+	   
       // Fade out the shadow at the end of the range.
       vec4 zDist = vec4(zNearFarInvNearFar.x + zNearFarInvNearFar.y * depth);
       float fadeOutAmt = ( zDist.x - fadeStartLength.x ) * fadeStartLength.y;
@@ -289,29 +288,20 @@ void main()
 
    #endif // !NO_SHADOW
 
-   // Specular term
-   float specular = AL_CalcSpecular(   -lightDirection, 
-                                       normal, 
-                                       normalize(-vsEyeRay) ) * lightBrightness * shadowed;
+   // Specular term   
+   vec3 viewSpacePos = vsEyeRay * depth;
+   vec4 real_specular = EvalBDRF( colorSample.rgb,
+                                    lightColor.rgb,
+                                    normalize( -lightDirection ),
+                                    viewSpacePos,
+                                    normal,
+                                    1.0-matInfo.b*0.9, //slightly compress roughness to allow for non-baked lighting
+                                    matInfo.a );
+   vec3 lightColorOut = real_specular.rgb * lightBrightness * shadowed;
    
    float Sat_NL_Att = saturate( dotNL * shadowed ) * lightBrightness;
-   vec3 lightColorOut = lightMapParams.rgb * lightColor.rgb;
+   
    vec4 addToResult = (lightAmbient * (1 - ambientCameraFactor)) + ( lightAmbient * ambientCameraFactor * saturate(dot(normalize(-vsEyeRay), normal)) );
-
-   // TODO: This needs to be removed when lightmapping is disabled
-   // as its extra work per-pixel on dynamic lit scenes.
-   //
-   // Special lightmapping pass.
-   if ( lightMapParams.a < 0.0 )
-   {
-      // This disables shadows on the backsides of objects.
-      shadowed = dotNL < 0.0f ? 1.0f : shadowed;
-
-      Sat_NL_Att = 1.0f;
-      lightColorOut = vec3(shadowed);
-      specular *= lightBrightness;
-      addToResult = ( 1.0 - shadowed ) * abs(lightMapParams);
-   }
 
    // Sample the AO texture.      
    #ifdef USE_SSAO_MASK
@@ -323,5 +313,5 @@ void main()
       lightColorOut = debugColor;
    #endif
 
-   OUT_col = AL_DeferredOutput(lightColorOut+subsurface*(1.0-Sat_NL_Att), colorSample.rgb, matInfo, addToResult, specular, Sat_NL_Att); 
+   OUT_col = matInfo.g*(vec4(lightColorOut+subsurface*(1.0-Sat_NL_Att),real_specular.a)*Sat_NL_Att+addToResult);
 }

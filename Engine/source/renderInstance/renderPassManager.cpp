@@ -76,6 +76,7 @@ void MeshRenderInst::clear()
 {
    dMemset( this, 0, sizeof(MeshRenderInst) );
    visibility = 1.0f;
+   mMaterialDamage = 0.0f;
 }
 
 void ParticleRenderInst::clear()

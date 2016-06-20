@@ -1388,10 +1388,10 @@ void TerrainEditor::renderPoints( const Vector<GFXVertexPCT> &pointList )
 
 void TerrainEditor::renderSelection( const Selection & sel, const ColorF & inColorFull, const ColorF & inColorNone, const ColorF & outColorFull, const ColorF & outColorNone, bool renderFill, bool renderFrame )
 {
-   PROFILE_SCOPE( TerrainEditor_RenderSelection );
+   PROFILE_SCOPE(TerrainEditor_RenderSelection);
 
    // Draw nothing if nothing selected.
-   if(sel.size() == 0)
+   if (sel.size() == 0)
       return;
 
    Vector<GFXVertexPCT> vertexBuffer;
@@ -1400,32 +1400,32 @@ void TerrainEditor::renderSelection( const Selection & sel, const ColorF & inCol
 
    vertexBuffer.setSize(sel.size() * 5);
 
-   F32 squareSize = ( mActiveTerrain ) ? mActiveTerrain->getSquareSize() : 1;
+   F32 squareSize = (mActiveTerrain) ? mActiveTerrain->getSquareSize() : 1;
 
    // 'RenderVertexSelection' looks really bad so just always use the good one.
-   if( false && mRenderVertexSelection)
+   if (false && mRenderVertexSelection)
    {
 
-      for(U32 i = 0; i < sel.size(); i++)
+      for (U32 i = 0; i < sel.size(); i++)
       {
          Point3F wPos;
          bool center = gridToWorld(sel[i].mGridPoint, wPos);
 
          F32 weight = sel[i].mWeight;
 
-         if(center)
+         if (center)
          {
-            if ( weight < 0.f || weight > 1.f )
+            if (weight < 0.f || weight > 1.f)
                color = inColorFull;
             else
-               color.interpolate( inColorNone, inColorFull, weight );
+               color.interpolate(inColorNone, inColorFull, weight);
          }
          else
          {
-            if ( weight < 0.f || weight > 1.f)
+            if (weight < 0.f || weight > 1.f)
                color = outColorFull;
             else
-               color.interpolate( outColorFull, outColorNone, weight );
+               color.interpolate(outColorFull, outColorNone, weight);
          }
          //
          iColor = color;
@@ -1440,6 +1440,7 @@ void TerrainEditor::renderSelection( const Selection & sel, const ColorF & inCol
          verts[2].color = iColor;
          verts[3].point = wPos + Point3F( squareSize,  -squareSize, 0);
          verts[3].color = iColor;
+
          verts[4].point = verts[0].point;
          verts[4].color = iColor;
       }
@@ -1447,7 +1448,7 @@ void TerrainEditor::renderSelection( const Selection & sel, const ColorF & inCol
    else
    {
       // walk the points in the selection
-      for(U32 i = 0; i < sel.size(); i++)
+      for (U32 i = 0; i < sel.size(); i++)
       {
          GridPoint selectedGridPoint = sel[i].mGridPoint;
          Point2I gPos = selectedGridPoint.gridPos;
@@ -1462,28 +1463,28 @@ void TerrainEditor::renderSelection( const Selection & sel, const ColorF & inCol
 
          F32 weight = sel[i].mWeight;
 
-         if( !mRenderSolidBrush )
+         if (!mRenderSolidBrush)
          {
-            if ( center )
+            if (center)
             {
-               if ( weight < 0.f || weight > 1.f )
+               if (weight < 0.f || weight > 1.f)
                   color = inColorFull;
                else
-                  color.interpolate(inColorNone, inColorFull, weight );
+                  color.interpolate(inColorNone, inColorFull, weight);
             }
             else
             {
-               if( weight < 0.f || weight > 1.f )
+               if (weight < 0.f || weight > 1.f)
                   color = outColorFull;
                else
-                  color.interpolate(outColorFull, outColorNone, weight );
+                  color.interpolate(outColorFull, outColorNone, weight);
             }
 
             iColor = color;
          }
          else
          {
-            if ( center )
+            if (center)
             {
                iColor = inColorNone;
             }

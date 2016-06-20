@@ -141,6 +141,31 @@ $c->setDotNetInfo('vc2012_csproj.tpl');
 
 $c->setDontCompilePatterns( "#/platformPOSIX.*#", "#/platformMac.*#", "#\.mac\.#", "#/mac/#", "#\.mm$#", "#\.m$#" );
 
+///////////////////////////// VS2013 /////////////////////////////
+
+$c = BuildTarget::add(	'VS2013',							   // Name
+                        'buildFiles/VisualStudio 2013',	   // Solution output directory
+                        'projects/',	                   // Project output directory (relative to solution)
+                        '../../source/',				   // Base directory         
+                        'vc2013_proj.tpl',				   // App Project Template
+                        'vc2013_shared.tpl',				   // Shared App Project Template
+                        'vc2013_lib_proj.tpl',			   // Lib Project Template
+                        'vc2013_dll_proj.tpl',			   // Shared Lib Project Template
+                        'vc2013_activex_proj.tpl',		   // ActiveX Control	
+                        '.vcxproj' );				       // File ext to write the project to
+                  
+// Solution template and extension
+$c->setSolutionInfo( 'vc2013_sln.tpl', '', '.sln', 'vc2013_filter.tpl' );
+
+$c->setFileExtensions( 'c', 'cc', 'h', 'cpp', 'inl', 'asm', 'rc', 'm', 'mm', 'cs' );
+$c->setSourceFileExtensions( 'c', 'cc', 'cpp' );
+
+$c->setPlatforms( "win", "win32" );
+
+$c->setDotNetInfo('vc2013_csproj.tpl');
+
+$c->setDontCompilePatterns( "#/platformPOSIX.*#", "#/platformMac.*#", "#\.mac\.#", "#/mac/#", "#\.mm$#", "#\.m$#" );
+
 /////////////////////////// XCode /////////////////////////////
 
 $c = BuildTarget::add( 'Xcode',						         // Name

@@ -36,8 +36,8 @@ float calcBlend( float texId, vec2 layerCoord, float layerSize, vec4 layerSample
    // match the current texture id.
    vec4 factors = vec4(0);
    for(int i = 0; i < 4; i++)
-      factors[i] = (layerSample[i] == texId) ? 1 : 0; // workaround for Intel
- 
+   factors[i] = (layerSample[i] == texId) ? 1 : 0; // workaround for Intel
+   
    // This is a custom bilinear filter.
 
    vec2 uv = layerCoord * layerSize;

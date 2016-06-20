@@ -100,7 +100,7 @@ void GFXD3D9Cubemap::initStatic( GFXTexHandle *faces )
       // NOTE - check tex sizes on all faces - they MUST be all same size
       mTexSize = faces[0].getWidth();
       mFaceFormat = faces[0].getFormat();
-
+      
       U32 levels = faces->getPointer()->getMipLevels();
       if (levels >1)
       { 
@@ -189,11 +189,11 @@ void GFXD3D9Cubemap::initDynamic( U32 texSize, GFXFormat faceFormat )
 
    // might want to try this as a 16 bit texture...
    D3D9Assert( D3D9Device->CreateCubeTexture( texSize,
-                                            1, 
+                                            0, 
 #ifdef TORQUE_OS_XENON
                                             0,
 #else
-                                            D3DUSAGE_RENDERTARGET, 
+                                            D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP,
 #endif
                                             GFXD3D9TextureFormat[faceFormat],
                                             D3DPOOL_DEFAULT, 
