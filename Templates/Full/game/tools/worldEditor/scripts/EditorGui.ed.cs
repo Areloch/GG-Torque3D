@@ -252,6 +252,9 @@ function EditorGui::init(%this)
       %obj = EditorPluginSet.getObject( %i );
       %obj.onWorldEditorStartup();      
    }
+   
+   //Prep the asset browser
+   AssetBrowser.addToolbarButton();
 
    // With everything loaded, start up the settings window
    ESettingsWindow.startup();

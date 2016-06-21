@@ -231,3 +231,7 @@ function addComponent(%obj, %instance)
    EWorldEditor.isDirty = true;
 }
 
+function GuiInspectorComponentGroup::onConstructComponentField(%this, %component, %fieldName)
+{
+   echo("Tried to make a component field!");
+}
