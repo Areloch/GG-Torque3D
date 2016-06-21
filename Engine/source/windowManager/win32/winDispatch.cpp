@@ -39,6 +39,8 @@
 #include "core/util/journal/process.h"
 #include "core/util/journal/journaledSignal.h"
 
+#include <shellapi.h>
+
 #if !defined( TORQUE_SDL )
 
 static U32 _ModifierKeys=0;
@@ -185,268 +187,333 @@ static bool _dispatch(HWND hWnd,UINT message,WPARAM wParam,WPARAM lParam)
 	static bool cursorLocked = false;
 	static bool cursorVisible = true;
 
-	switch(message) 
-	{
-	case WM_MOUSEMOVE:
-		{
-			// Skip it if we have no window!
-			if (!window || !window->getCursorController())
-				break;
+   switch (message)
+   {
+   case WM_MOUSEMOVE:
+   {
+      // Skip it if we have no window!
+      if (!window || !window->getCursorController())
+         break;
 
 
-			PlatformCursorController *pController = window->getCursorController();
+      PlatformCursorController *pController = window->getCursorController();
 
-			// If we're locked and unfocused, ignore it.
-			if(window->shouldLockMouse() && !window->isFocused())
-				break;
+      // If we're locked and unfocused, ignore it.
+      if (window->shouldLockMouse() && !window->isFocused())
+         break;
 
-			// If the mouse was shown to accommodate a NC mouse move
-			//  we need to change it back to what it was
-			if( mouseNCState != -1 )
-			{
-				pController->setCursorVisible( mouseNCState );
-				mouseNCState = -1; // reset to unchanged
-			}
+      // If the mouse was shown to accommodate a NC mouse move
+      //  we need to change it back to what it was
+      if (mouseNCState != -1)
+      {
+         pController->setCursorVisible(mouseNCState);
+         mouseNCState = -1; // reset to unchanged
+      }
 
-			// Let the cursor manager update the native cursor.
-			pController->refreshCursor();
+      // Let the cursor manager update the native cursor.
+      pController->refreshCursor();
 
-			// Grab the mouse pos so we can modify it.
-			S32 mouseX = S16(LOWORD(lParam));
-			S32 mouseY = S16(HIWORD(lParam));
+      // Grab the mouse pos so we can modify it.
+      S32 mouseX = S16(LOWORD(lParam));
+      S32 mouseY = S16(HIWORD(lParam));
 
-			// Ensure mouse lock when appropriate
-			window->setMouseLocked( window->shouldLockMouse() );
+      // Ensure mouse lock when appropriate
+      window->setMouseLocked(window->shouldLockMouse());
 
-			// Are we locked?
-			if(window->isMouseLocked())
-			{
-				// Always invisible when locked.
-				if( window->isCursorVisible() )
-					window->setCursorVisible( false );
+      // Are we locked?
+      if (window->isMouseLocked())
+      {
+         // Always invisible when locked.
+         if (window->isCursorVisible())
+            window->setCursorVisible(false);
 
-				RECT r;
-				GetWindowRect(window->getHWND(), &r);
+         RECT r;
+         GetWindowRect(window->getHWND(), &r);
 
-				// See Win32Window::setMouseLocked for explanation
-				RECT rCopy = r;
-				rCopy.top  += 32; rCopy.bottom -= 64;
-				rCopy.left += 32; rCopy.right  -= 64;
-				ClipCursor(&rCopy);
+         // See Win32Window::setMouseLocked for explanation
+         RECT rCopy = r;
+         rCopy.top += 32; rCopy.bottom -= 64;
+         rCopy.left += 32; rCopy.right -= 64;
+         ClipCursor(&rCopy);
 
-				// Recenter the mouse if necessary (don't flood the message pump)
-				Point2I curPos;
-				pController->getCursorPosition( curPos );
+         // Recenter the mouse if necessary (don't flood the message pump)
+         Point2I curPos;
+         pController->getCursorPosition(curPos);
 
-				const S32 centerX = (r.right + r.left) / 2;
-				const S32 centerY = (r.bottom + r.top) / 2;
+         const S32 centerX = (r.right + r.left) / 2;
+         const S32 centerY = (r.bottom + r.top) / 2;
 
-				if( curPos.x != centerX || curPos.y != centerY )
-					pController->setCursorPosition(centerX, centerY);
+         if (curPos.x != centerX || curPos.y != centerY)
+            pController->setCursorPosition(centerX, centerY);
 
-				// Convert the incoming client pos into a screen pos, so we can
-				// accurately convert to relative coordinates.
-				POINT mousePos;
-				mousePos.x = mouseX;
-				mousePos.y = mouseY;
+         // Convert the incoming client pos into a screen pos, so we can
+         // accurately convert to relative coordinates.
+         POINT mousePos;
+         mousePos.x = mouseX;
+         mousePos.y = mouseY;
 
-				ClientToScreen(window->getHWND(), &mousePos);
+         ClientToScreen(window->getHWND(), &mousePos);
 
-				// Now we can calculate the position relative to the center we set.
-				mouseX = mousePos.x - centerX;
-				mouseY = mousePos.y - centerY;
-			}
-			else
-			{
-				// Probably don't need to call this all the time but better
-				// safe than sorry...
-				ClipCursor(NULL);
-			}
+         // Now we can calculate the position relative to the center we set.
+         mouseX = mousePos.x - centerX;
+         mouseY = mousePos.y - centerY;
+      }
+      else
+      {
+         // Probably don't need to call this all the time but better
+         // safe than sorry...
+         ClipCursor(NULL);
+      }
 
-			window->mouseEvent.trigger(devId,_ModifierKeys,mouseX,mouseY,window->isMouseLocked());
-			break;
-		}
+      window->mouseEvent.trigger(devId, _ModifierKeys, mouseX, mouseY, window->isMouseLocked());
+      break;
+   }
 
-		// We want to show the system cursor whenever we leave
-		// our window, and it'd be simple, except for one problem:
-		// showcursor isn't a toggle.  so, keep hammering it until
-		// the cursor is *actually* going to be shown.
-	case WM_NCMOUSEMOVE:
-		{
-			if( window )
-			{
-				mouseNCState = ( window->isCursorVisible() ? 1 : 0);
-				window->setCursorVisible( true );
-			}
+   // We want to show the system cursor whenever we leave
+   // our window, and it'd be simple, except for one problem:
+   // showcursor isn't a toggle.  so, keep hammering it until
+   // the cursor is *actually* going to be shown.
+   case WM_NCMOUSEMOVE:
+   {
+      if (window)
+      {
+         mouseNCState = (window->isCursorVisible() ? 1 : 0);
+         window->setCursorVisible(true);
+      }
 
-			break;
-		}
+      break;
+   }
 
-	case WM_LBUTTONDOWN:
-	case WM_MBUTTONDOWN:
-	case WM_RBUTTONDOWN: {
-		S32 index = (message - WM_LBUTTONDOWN) / 3;
-		button[index] = true;
+   case WM_LBUTTONDOWN:
+   case WM_MBUTTONDOWN:
+   case WM_RBUTTONDOWN: {
+      S32 index = (message - WM_LBUTTONDOWN) / 3;
+      button[index] = true;
 
-		// Capture the mouse on button down to allow dragging outside
-		// of the window boundary.
-		if (GetCapture() != hWnd)
-			SetCapture(hWnd);
+      // Capture the mouse on button down to allow dragging outside
+      // of the window boundary.
+      if (GetCapture() != hWnd)
+         SetCapture(hWnd);
 
-		if (window)
-			window->buttonEvent.trigger(devId,_ModifierKeys,IA_MAKE,index);
-		break;
-						 }
+      if (window)
+         window->buttonEvent.trigger(devId, _ModifierKeys, IA_MAKE, index);
+      break;
+   }
 
-	case WM_LBUTTONUP:
-	case WM_MBUTTONUP:
-	case WM_RBUTTONUP: {
-		S32 index = (message - WM_LBUTTONUP) / 3;
-		button[index] = false;
+   case WM_LBUTTONUP:
+   case WM_MBUTTONUP:
+   case WM_RBUTTONUP: {
+      S32 index = (message - WM_LBUTTONUP) / 3;
+      button[index] = false;
 
-		// Release mouse capture from button down.
-		if (!button[0] && !button[1] && !button[2])
-			ReleaseCapture();
+      // Release mouse capture from button down.
+      if (!button[0] && !button[1] && !button[2])
+         ReleaseCapture();
 
-		if (window)
-			window->buttonEvent.trigger(devId,_ModifierKeys,IA_BREAK,index);
-		break;
-					   }
+      if (window)
+         window->buttonEvent.trigger(devId, _ModifierKeys, IA_BREAK, index);
+      break;
+   }
 
-	case WM_MOUSEWHEEL: // Vertical wheel.
-		if (window)
-			window->wheelEvent.trigger(devId,_ModifierKeys,0,GET_WHEEL_DELTA_WPARAM(wParam));
-		break;
+   case WM_MOUSEWHEEL: // Vertical wheel.
+      if (window)
+         window->wheelEvent.trigger(devId, _ModifierKeys, 0, GET_WHEEL_DELTA_WPARAM(wParam));
+      break;
 
 #ifdef WM_MOUSEHWHEEL // Vista
    case WM_MOUSEHWHEEL: // Horizontal wheel.
-      if( window )
-         window->wheelEvent.trigger( devId, _ModifierKeys, GET_WHEEL_DELTA_WPARAM( wParam ), 0 );
+      if (window)
+         window->wheelEvent.trigger(devId, _ModifierKeys, GET_WHEEL_DELTA_WPARAM(wParam), 0);
       break;
 #endif
 
-	case WM_KEYUP:
-	case WM_SYSKEYUP:
-	case WM_KEYDOWN:
-	case WM_SYSKEYDOWN:
-		if (window)
-			_keyboardEvent(window,message,wParam,lParam);
-		break;
+   case WM_KEYUP:
+   case WM_SYSKEYUP:
+   case WM_KEYDOWN:
+   case WM_SYSKEYDOWN:
+      if (window)
+         _keyboardEvent(window, message, wParam, lParam);
+      break;
 
-		// NOTE: if wParam is NOT equal to our window handle then we are GAINING focus
-	case WM_SETFOCUS:
+      // NOTE: if wParam is NOT equal to our window handle then we are GAINING focus
+   case WM_SETFOCUS:
 
-		// clear any key states 
-		_ModifierKeys = 0;
-		dMemset(keyboardState, 0, 256);
-		Input::setModifierKeys(0);
+      // clear any key states 
+      _ModifierKeys = 0;
+      dMemset(keyboardState, 0, 256);
+      Input::setModifierKeys(0);
 
-		// We must have a window present; otherwise there's nothing further
-		// we can do about this event.
-		if (window && window->getHWND() != (HWND)wParam)
-		{
-			if (cursorVisible == false)
-				window->setCursorVisible(false);
+      // We must have a window present; otherwise there's nothing further
+      // we can do about this event.
+      if (window && window->getHWND() != (HWND)wParam)
+      {
+         if (cursorVisible == false)
+            window->setCursorVisible(false);
 
-			if (cursorLocked == true)
-				window->setMouseLocked(true);
+         if (cursorLocked == true)
+            window->setMouseLocked(true);
 
-			// Update window state.
-			window->setBackground(false);
+         // Update window state.
+         window->setBackground(false);
 
-			// Fire event.
-			window->appEvent.trigger(devId, GainFocus);
+         // Fire event.
+         window->appEvent.trigger(devId, GainFocus);
 
-			if (!Input::isActive())
-				Input::activate();
-		}
-		break;
+         if (!Input::isActive())
+            Input::activate();
+      }
+      break;
 
-		// NOTE: if wParam is NOT equal to our window handle then we are LOSING focus
-	case WM_KILLFOCUS:
+      // NOTE: if wParam is NOT equal to our window handle then we are LOSING focus
+   case WM_KILLFOCUS:
 
-		// clear any key states 
-		_ModifierKeys = 0;
-		dMemset(keyboardState, 0, 256);
-		Input::setModifierKeys(0);
+      // clear any key states 
+      _ModifierKeys = 0;
+      dMemset(keyboardState, 0, 256);
+      Input::setModifierKeys(0);
 
-		// We must have a window present; otherwise there's nothing further
-		// we can do about this event.
-		if (window && window->getHWND() != (HWND)wParam)
-		{
-			HWND hwnd = (HWND)wParam;
-			UTF16 classBuf[256];
+      // We must have a window present; otherwise there's nothing further
+      // we can do about this event.
+      if (window && window->getHWND() != (HWND)wParam)
+      {
+         HWND hwnd = (HWND)wParam;
+         UTF16 classBuf[256];
 
-			if (hwnd)
-				GetClassName(hwnd, classBuf, sizeof(classBuf));
+         if (hwnd)
+            GetClassName(hwnd, classBuf, sizeof(classBuf));
 
-			// We toggle the mouse lock when we become inactive 
-			// causing the subsequent lock call to defer itself
-			// until the window becomes active again.
-			if (window && window->isMouseLocked())
-			{
-				window->setMouseLocked( false );
-				window->setMouseLocked( true );
-			}
+         // We toggle the mouse lock when we become inactive 
+         // causing the subsequent lock call to defer itself
+         // until the window becomes active again.
+         if (window && window->isMouseLocked())
+         {
+            window->setMouseLocked(false);
+            window->setMouseLocked(true);
+         }
 
-			// FIXME [tom, 5/1/2007] Hard coding this is lame since there's a const in win32Window.cpp
-			// CodeReview - this fails if there is a second jug app in the arena.
-			if (hwnd == NULL || dStrcmp(classBuf, L"TorqueJuggernaughtWindow") != 0)
-			{
-				// We are being made inactive and the window being made active isn't
-				// a jugg window. Thus, we need to deactivate input.
-				if (Input::isActive())
-					Input::deactivate();
-			}
+         // FIXME [tom, 5/1/2007] Hard coding this is lame since there's a const in win32Window.cpp
+         // CodeReview - this fails if there is a second jug app in the arena.
+         if (hwnd == NULL || dStrcmp(classBuf, L"TorqueJuggernaughtWindow") != 0)
+         {
+            // We are being made inactive and the window being made active isn't
+            // a jugg window. Thus, we need to deactivate input.
+            if (Input::isActive())
+               Input::deactivate();
+         }
 
-			cursorVisible = window->isCursorVisible();
-			if (!cursorVisible)
-				window->setCursorVisible(true);
+         cursorVisible = window->isCursorVisible();
+         if (!cursorVisible)
+            window->setCursorVisible(true);
 
-			cursorLocked = window->isMouseLocked();
-			if (cursorLocked)
-				window->setMouseLocked(false);
+         cursorLocked = window->isMouseLocked();
+         if (cursorLocked)
+            window->setMouseLocked(false);
 
-			// Update window state.
-			window->setBackground(true);
+         // Update window state.
+         window->setBackground(true);
 
-			// Fire event.
-			window->appEvent.trigger(devId, LoseFocus);
-		}
-		break;      
+         // Fire event.
+         window->appEvent.trigger(devId, LoseFocus);
+      }
+      break;
 
-	case WM_ACTIVATEAPP:
-		if (wParam) 
-		{
-			// Could extract current modifier state from windows.
-			_ModifierKeys = 0;
-			Input::setModifierKeys(_ModifierKeys);
-		}
-		break;
+   case WM_ACTIVATEAPP:
+      if (wParam)
+      {
+         // Could extract current modifier state from windows.
+         _ModifierKeys = 0;
+         Input::setModifierKeys(_ModifierKeys);
+      }
+      break;
 
-	case WM_CLOSE:
-		if (window)
-			window->appEvent.trigger(devId,WindowClose);
+   case WM_CLOSE:
+      if (window)
+         window->appEvent.trigger(devId, WindowClose);
 
-		// Force a quit if we're in play mode, otherwise there would be
-		// no way to stop a journal playback.(
-		if (Journal::IsPlaying())
-			Process::requestShutdown();
-		break;
+      // Force a quit if we're in play mode, otherwise there would be
+      // no way to stop a journal playback.(
+      if (Journal::IsPlaying())
+         Process::requestShutdown();
+      break;
 
-	case WM_TIMER: {
-		if (window)
-			window->appEvent.trigger(devId,Timer);
-		break;
-				   }
+   case WM_TIMER: {
+      if (window)
+         window->appEvent.trigger(devId, Timer);
+      break;
+   }
 
-	case WM_DESTROY:{
-		// Only people who care about this currently are web plugins, because
-		// everyone else will just handle the WM_CLOSE app event.
-		if(window)
-			window->appEvent.trigger(devId,WindowDestroy);
-		break;
-					}
+   case WM_DESTROY:{
+      // Only people who care about this currently are web plugins, because
+      // everyone else will just handle the WM_CLOSE app event.
+      if (window)
+         window->appEvent.trigger(devId, WindowDestroy);
+      DragAcceptFiles(hWnd, FALSE);
+      break;
+   }
+
+   case WM_CREATE:
+      DragAcceptFiles(hWnd, TRUE);
+      break;
+   case WM_DROPFILES:
+   {
+      // Retrieve Number of files
+
+      // Strict policy on these things, better safe than sorry
+      if (!Con::isFunction("onDropBegin") || !Con::isFunction("onDropFile")
+         || !Con::isFunction("onDropEnd"))
+         break;
+
+      int nFileCount; // Number of Files
+      HDROP hTheDrop; // The Drop Handle
+      hTheDrop = (HDROP)wParam;
+      nFileCount = DragQueryFile(hTheDrop, 0xFFFFFFFF, NULL, 0);
+
+      if (nFileCount == 0)
+         break;
+
+      // Notify Drop-Begin
+      Con::executef("onDropBegin", Con::getIntArg(nFileCount));
+
+      int nI;
+      for (nI = 0; nI < nFileCount; nI++)
+      {
+         LPTSTR pszTheBuffer[MAX_PATH];
+         ZeroMemory(pszTheBuffer, MAX_PATH);
+
+         // Query it
+         // FIXME: Deal with Unicode
+         DragQueryFileA(hTheDrop, nI, (LPSTR)pszTheBuffer, sizeof(pszTheBuffer));
+
+         // Notify Drop
+         if (Platform::isFile((const char*)pszTheBuffer))
+         {
+            // The timeout for waiting for files (ms).
+            U32 timeout = 5000;
+
+            // Need to make sure the file is copyable. When ganking images from Firefox, it
+            // isn't necessarily since Firefox insists on redownloading the file instead of
+            // using the local copy.
+            U32 time = Platform::getRealMilliseconds() + timeout;
+            HANDLE hfile;
+            while ((hfile = ::CreateFileA((const char*)pszTheBuffer, GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, NULL)) == INVALID_HANDLE_VALUE)
+            {
+               // Don't wait too long.
+               if (Platform::getRealMilliseconds() > time)
+                  break;
+            }
+            if (hfile == INVALID_HANDLE_VALUE)
+               continue;
+
+            CloseHandle(hfile);
+            Con::executef("onDropFile", StringTable->insert((const char*)pszTheBuffer));
+         }
+      }
+      DragFinish(hTheDrop);
+
+      // Notify Drop-Begin
+      Con::executef("onDropEnd", Con::getIntArg(nFileCount));
+      break;
+   }
 
 	case WM_QUIT: {
 		// Quit indicates that we're not going to receive anymore Win32 messages.

@@ -1,3 +1,4 @@
+#pragma once
 //-----------------------------------------------------------------------------
 // Copyright (c) 2013 GarageGames, LLC
 //
@@ -19,8 +20,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
-#ifndef SHAPE_ASSET_H
-#define SHAPE_ASSET_H
+#ifndef IMAGE_ASSET_H
+#define IMAGE_ASSET_H
 
 #ifndef _ASSET_BASE_H_
 #include "assets/assetBase.h"
@@ -38,17 +39,8 @@
 #include "assets/assetFieldTypes.h"
 #endif
 
-#ifndef _TSSHAPE_H_
-#include "ts/tsShape.h"
-#endif
-#ifndef __RESOURCE_H__
-#include "core/resource.h"
-#endif
-
-#include "gui/editor/guiInspectorTypes.h"
-
 //-----------------------------------------------------------------------------
-class ShapeAsset : public AssetBase
+class ImageAsset : public AssetBase
 {
    typedef AssetBase Parent;
 
@@ -57,51 +49,27 @@ class ShapeAsset : public AssetBase
    AssetDefinition*        mpAssetDefinition;
    U32                     mAcquireReferenceCount;
 
-protected:
-   StringTableEntry   mFileName;
-   Resource<TSShape>	 mShape;
+   StringTableEntry mImageFileName;
 
 public:
-   ShapeAsset();
-   virtual ~ShapeAsset();
+   ImageAsset();
+   virtual ~ImageAsset();
 
    /// Engine.
    static void initPersistFields();
    virtual void copyTo(SimObject* object);
 
-   virtual void initializeAsset();
-
    /// Declare Console Object.
-   DECLARE_CONOBJECT(ShapeAsset);
+   DECLARE_CONOBJECT(ImageAsset);
 
-   bool loadShape();
-
-   TSShape* getShape() { return mShape; }
-
-   Resource<TSShape> getShapeResource() { return mShape; }
+   StringTableEntry getImageFileName() { return mImageFileName; }
 
 protected:
-   virtual void            onAssetRefresh(void);
+   virtual void            initializeAsset(void) {}
+   virtual void            onAssetRefresh(void) {}
 };
 
-DefineConsoleType(TypeShapeAssetPtr, S32)
-
-//-----------------------------------------------------------------------------
-// TypeAssetId GuiInspectorField Class
-//-----------------------------------------------------------------------------
-class GuiInspectorTypeShapeAssetPtr : public GuiInspectorTypeFileName
-{
-   typedef GuiInspectorTypeFileName Parent;
-public:
-
-   GuiBitmapButtonCtrl  *mShapeEdButton;
-
-   DECLARE_CONOBJECT(GuiInspectorTypeShapeAssetPtr);
-   static void consoleInit();
-
-   virtual GuiControl* constructEditControl();
-   virtual bool updateRects();
-};
+DefineConsoleType(TypeImageAssetPtr, ImageAsset)
 
 #endif
 

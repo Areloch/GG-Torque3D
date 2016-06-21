@@ -52,14 +52,14 @@ static U32 journalDepth = 1;
 
 IMPLEMENT_CONOBJECT(ShapeAsset);
 
-ConsoleType(TestAssetPtr, TypeShapeAssetPtr, ShapeAsset, ASSET_ID_FIELD_PREFIX)
+ConsoleType(assetIdString, TypeShapeAssetPtr, String, ASSET_ID_FIELD_PREFIX)
 
 //-----------------------------------------------------------------------------
 
 ConsoleGetType(TypeShapeAssetPtr)
 {
    // Fetch asset Id.
-   return (*((AssetPtr<ShapeAsset>*)dptr)).getAssetId();
+   return *((StringTableEntry*)dptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -72,25 +72,17 @@ ConsoleSetType(TypeShapeAssetPtr)
       // Yes, so fetch field value.
       const char* pFieldValue = argv[0];
 
-      // Fetch asset pointer.
-      AssetPtr<ShapeAsset>* pAssetPtr = dynamic_cast<AssetPtr<ShapeAsset>*>((AssetPtrBase*)(dptr));
+      // Fetch asset Id.
+      StringTableEntry* assetId = (StringTableEntry*)(dptr);
 
-      // Is the asset pointer the correct type?
-      if (pAssetPtr == NULL)
-      {
-         // No, so fail.
-         //Con::warnf("(TypeTextureAssetPtr) - Failed to set asset Id '%d'.", pFieldValue);
-         return;
-      }
-
-      // Set asset.
-      pAssetPtr->setAssetId(pFieldValue);
+      // Update asset value.
+      *assetId = StringTable->insert(pFieldValue);
 
       return;
    }
 
    // Warn.
-   Con::warnf("(TypeTextureAssetPtr) - Cannot set multiple args to a single asset.");
+   Con::warnf("(TypeAssetId) - Cannot set multiple args to a single asset.");
 }
 
 //-----------------------------------------------------------------------------
@@ -156,4 +148,83 @@ void ShapeAsset::copyTo(SimObject* object)
 
 void ShapeAsset::onAssetRefresh(void)
 {
+}
+
+//-----------------------------------------------------------------------------
+// GuiInspectorTypeAssetId
+//-----------------------------------------------------------------------------
+
+IMPLEMENT_CONOBJECT(GuiInspectorTypeShapeAssetPtr);
+
+ConsoleDocClass(GuiInspectorTypeShapeAssetPtr,
+   "@brief Inspector field type for Shapes\n\n"
+   "Editor use only.\n\n"
+   "@internal"
+   );
+
+void GuiInspectorTypeShapeAssetPtr::consoleInit()
+{
+   Parent::consoleInit();
+
+   ConsoleBaseType::getType(TypeShapeAssetPtr)->setInspectorFieldType("GuiInspectorTypeShapeAssetPtr");
+}
+
+GuiControl* GuiInspectorTypeShapeAssetPtr::constructEditControl()
+{
+   // Create base filename edit controls
+   GuiControl *retCtrl = Parent::constructEditControl();
+   if (retCtrl == NULL)
+      return retCtrl;
+
+   // Change filespec
+   char szBuffer[512];
+   dSprintf(szBuffer, sizeof(szBuffer), "AssetBrowser.showDialog(\"ShapeAsset\", \"AssetBrowser.changeAsset\", %d, %s);", 
+      mInspector->getInspectObject(0)->getId(), mCaption);
+   mBrowseButton->setField("Command", szBuffer);
+
+   // Create "Open in ShapeEditor" button
+   mShapeEdButton = new GuiBitmapButtonCtrl();
+
+
+   dSprintf(szBuffer, sizeof(szBuffer), "ShapeEditorPlugin.openShapeAsset(%d.getText());", retCtrl->getId());
+   mShapeEdButton->setField("Command", szBuffer);
+
+   char bitmapName[512] = "tools/worldEditor/images/toolbar/shape-editor";
+   mShapeEdButton->setBitmap(bitmapName);
+
+   mShapeEdButton->setDataField(StringTable->insert("Profile"), NULL, "GuiButtonProfile");
+   mShapeEdButton->setDataField(StringTable->insert("tooltipprofile"), NULL, "GuiToolTipProfile");
+   mShapeEdButton->setDataField(StringTable->insert("hovertime"), NULL, "1000");
+   mShapeEdButton->setDataField(StringTable->insert("tooltip"), NULL, "Open this file in the Shape Editor");
+
+   mShapeEdButton->registerObject();
+   addObject(mShapeEdButton);
+
+   return retCtrl;
+}
+
+bool GuiInspectorTypeShapeAssetPtr::updateRects()
+{
+   S32 dividerPos, dividerMargin;
+   mInspector->getDivider(dividerPos, dividerMargin);
+   Point2I fieldExtent = getExtent();
+   Point2I fieldPos = getPosition();
+
+   mCaptionRect.set(0, 0, fieldExtent.x - dividerPos - dividerMargin, fieldExtent.y);
+   mEditCtrlRect.set(fieldExtent.x - dividerPos + dividerMargin, 1, dividerPos - dividerMargin - 34, fieldExtent.y);
+
+   bool resized = mEdit->resize(mEditCtrlRect.point, mEditCtrlRect.extent);
+   if (mBrowseButton != NULL)
+   {
+      mBrowseRect.set(fieldExtent.x - 32, 2, 14, fieldExtent.y - 4);
+      resized |= mBrowseButton->resize(mBrowseRect.point, mBrowseRect.extent);
+   }
+
+   if (mShapeEdButton != NULL)
+   {
+      RectI shapeEdRect(fieldExtent.x - 16, 2, 14, fieldExtent.y - 4);
+      resized |= mShapeEdButton->resize(shapeEdRect.point, shapeEdRect.extent);
+   }
+
+   return resized;
 }

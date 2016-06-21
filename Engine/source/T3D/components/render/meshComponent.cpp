@@ -138,7 +138,7 @@ void MeshComponent::initPersistFields()
 
    //create a hook to our internal variables
    addGroup("Model");
-   addProtectedField("MeshAsset", TypeAssetId, Offset(mShapeAsset, MeshComponent), &_setMesh, &defaultProtectedGetFn, 
+   addProtectedField("MeshAsset", TypeShapeAssetPtr, Offset(mShapeAsset, MeshComponent), &_setMesh, &defaultProtectedGetFn,
       "The asset Id used for the mesh.", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
    endGroup("Model");
 }
