@@ -1,7 +1,8 @@
 <ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
     AssetName="MeshComponentAsset"
-    componentName=""
     componentClass="MeshComponent"
-    friendlyName="Mesh"
+    friendlyName="mesh"
     componentType="Render"
-    description="Enables an entity to render a shape."/>
+    description="Enables an entity to render a shape." />

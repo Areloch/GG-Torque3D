@@ -14,6 +14,7 @@ function ThirdPersonPlayerObject::onAdd(%this)
 
    %this.crouch = false;
    
+   %this.aiming = false;
    %this.firstPerson = false;
    
    %this.crouchSpeedMod = 0.5;

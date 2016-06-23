@@ -225,6 +225,8 @@ bool Entity::onAdd()
    //Make sure we get positioned
    setMaskBits(TransformMask);
 
+   setMaskBits(NamespaceMask);
+
    return true;
 }
 
@@ -363,7 +365,7 @@ void Entity::processTick(const Move* move)
          }
       }
 
-      if (isMethod("processTick"))
+      if (isServerObject() && isMethod("processTick"))
          Con::executef(this, "processTick");
    }
 }
@@ -482,6 +484,19 @@ U32 Entity::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
    }
    else
       stream->writeFlag(false);
+
+   if (stream->writeFlag(mask & NamespaceMask))
+   {
+      const char* name = getName();
+      if (stream->writeFlag(name && name[0]))
+         stream->writeString(String(name));
+
+      if (stream->writeFlag(mSuperClassName && mSuperClassName[0]))
+         stream->writeString(String(mSuperClassName));
+
+      if (stream->writeFlag(mClassName && mClassName[0]))
+         stream->writeString(String(mClassName));
+   }
 
    return retMask;
 }
@@ -668,6 +683,30 @@ void Entity::unpackUpdate(NetConnection *con, BitStream *stream)
             addComponent(dynamic_cast<Component*>(con->resolveGhost(gIndex)));
          }
       }
+   }
+
+   if (stream->readFlag())
+   {
+      if (stream->readFlag())
+      {
+         char name[256];
+         stream->readString(name);
+         assignName(name);
+      }
+      if (stream->readFlag())
+      {
+         char superClassname[256];
+         stream->readString(superClassname);
+         mSuperClassName = superClassname;
+      }
+      if (stream->readFlag())
+      {
+         char classname[256];
+         stream->readString(classname);
+         mClassName = classname;
+      }
+
+      linkNamespaces();
    }
 }
 
@@ -1615,6 +1654,21 @@ void Entity::updateContainer()
 }
 //
 
+void Entity::notifyComponents(String signalFunction, String argA, String argB, String argC, String argD, String argE)
+{
+   for (U32 i = 0; i < mComponents.size(); i++)
+   {
+      // We can do this because both are in the string table
+      Component *comp = mComponents[i];
+
+      if (comp->isActive())
+      {
+         if (comp->isMethod(signalFunction))
+            Con::executef(comp, signalFunction, argA, argB, argC, argD, argE);
+      }
+   }
+}
+
 void Entity::setComponentsDirty()
 {
    if (mToLoadComponents.empty())
@@ -1936,4 +1990,14 @@ DefineConsoleMethod(Entity, rotateTo, void, (Point3F lookPosition, F32 degreePer
    "@return The number of static fields defined on the object.")
 {
    //object->setForwardVector(newForward);
+}
+
+DefineConsoleMethod(Entity, notify, void, (String signalFunction, String argA, String argB, String argC, String argD, String argE), 
+   ("","","","","",""),
+   "Triggers a signal call to all components for a certain function.")
+{
+   if (signalFunction == String(""))
+      return;
+
+   object->notifyComponents(signalFunction, argA, argB, argC, argD, argE);
 }

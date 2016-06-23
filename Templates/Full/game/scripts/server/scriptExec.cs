@@ -55,9 +55,7 @@ exec("./cheetah.cs");
 // Load turret support scripts
 exec("./turret.cs");
 
-// Load our gametypes
-exec("./gameCore.cs"); // This is the 'core' of the gametype functionality.
-exec("./gameDM.cs"); // Overrides GameCore with DeathMatch functionality.
+exec("./gameCore.cs");
 
 //Entity/Component stuff
 if(isFile("./components/game/camera.cs"))
@@ -77,4 +75,22 @@ if(isFile("./gameObjects/GameObjectManager.cs"))
 {
    exec("./gameObjects/GameObjectManager.cs");
    execGameObjects();  
+   
+   //also, exec any components that may exist
+   //find all GameObjectAssets
+   %assetQuery = new AssetQuery();
+   if(!AssetDatabase.findAssetType(%assetQuery, "ComponentAsset"))
+      return; //if we didn't find ANY, just exit
+      
+   %count = %assetQuery.getCount();
+      
+	for(%i=0; %i < %count; %i++)
+	{
+	   %assetId = %assetQuery.getAsset(%i);
+      
+      %gameObjectAsset = AssetDatabase.acquireAsset(%assetId);
+      
+      if(isFile(%gameObjectAsset.scriptFile))
+         exec(%gameObjectAsset.scriptFile);
+	}
 }

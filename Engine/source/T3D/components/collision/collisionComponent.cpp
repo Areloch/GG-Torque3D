@@ -446,7 +446,7 @@ bool CollisionComponent::castRay(const Point3F &start, const Point3F &end, RayIn
    {
       if (mPhysicsWorld)
       {
-         return mPhysicsWorld->castRay(start, end, info, Point3F::Zero);
+         return mPhysicsWorld->castRay(start, end, info, -1, Point3F::Zero);
       }
    }
 
@@ -461,6 +461,10 @@ PhysicsCollision* CollisionComponent::buildColShapes()
    U32 surfaceKey = 0;
 
    TSShape* shape = mOwnerRenderInterface->getShape();
+
+   //if we, by happenstance, don't have a shape yet
+   if (!shape)
+      return NULL;
 
    if (mCollisionType == VisibleMesh)
    {

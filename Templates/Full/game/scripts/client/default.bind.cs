@@ -262,7 +262,7 @@ moveMap.bind( keyboard, s, movebackward );
 moveMap.bind( keyboard, up, moveforward );
 moveMap.bind( keyboard, down, movebackward );
 
-moveMap.bind( keyboard, e, moveup );
+moveMap.bind( keyboard, e, interact );
 moveMap.bind( keyboard, c, movedown );
 
 moveMap.bind( keyboard, space, jump );
@@ -281,6 +281,17 @@ moveMap.bindCmd(gamepad, dpadl, "toggleLightColorViz();", "");
 moveMap.bindCmd(gamepad, dpadu, "toggleDepthViz();", "");
 moveMap.bindCmd(gamepad, dpadd, "toggleNormalsViz();", "");
 moveMap.bindCmd(gamepad, dpadr, "toggleLightSpecularViz();", "");
+
+
+//
+//
+function interact(%val)
+{
+   if(%val)
+   {
+      $mvTriggerCount6++;
+   }
+}
 
 // ----------------------------------------------------------------------------
 // Stance/pose

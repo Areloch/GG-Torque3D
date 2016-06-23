@@ -1,0 +1,90 @@
+<Entity
+    scale="1 1 1"
+    class="FoxPlayer"
+    canSave="true"
+    canSaveDynamicFields="true"
+    position="0 0 -0.02"
+    Rotation="0 -0 -0"
+    LocalPosition="0 0 0"
+    LocalRotation="1 0 0 0"
+    aimedMaxPitch="90"
+    aimedMinPitch="-90"
+    aiming="0"
+    aimOrbitDist="1.5"
+    animation="20096"
+    cam="20094"
+    camArm="20095"
+    Collision="20090"
+    crouch="0"
+    crouchSpeedMod="0.5"
+    firstPerson="0"
+    GameObjectAsset="FoxPlayer"
+    mesh="20092"
+    phys="20097"
+    regularOrbitDist="5"
+    regularOrbitMaxPitch="70"
+    regularOrbitMinPitch="-10"
+    stateMachine="0"
+    turnRate="0.3">
+    <Component
+        networked="false"
+        Enabled="true"
+        class="ControlObjectComponent" />
+    <CollisionComponent
+        friendlyName="Collision(Component)"
+        networked="false"
+        Enabled="true"
+        CollisionType="Bounds"
+        LineOfSightType="Collision Mesh"
+        DecalType="Collision Mesh"
+        CollisionMeshPrefix="Collision"
+        BlockCollisions="true" />
+    <MeshComponent
+        componentType="Render"
+        friendlyName="Mesh Component"
+        description="Causes the object to render a non-animating 3d shape using the file provided."
+        networked="true"
+        Enabled="true"
+        MeshAsset="@asset=Characters:playerBox" />
+    <Component
+        networked="false"
+        Enabled="true"
+        class="FPSControls" />
+    <CameraComponent
+        friendlyName="Camera(Component)"
+        networked="false"
+        Enabled="true"
+        FOV="80"
+        MinFOV="5"
+        MaxFOV="175"
+        ScreenAspect="1024 768"
+        targetNode="Eye"
+        positionOffset="2.9607 -3.58061 1.84757"
+        rotationOffset="16.5451 14.2196 -41.6643"
+        useParentTransform="false" />
+    <CameraOrbiterComponent
+        networked="false"
+        Enabled="true"
+        orbitDistance="5"
+        Rotation="21.6856 0 -39.5864"
+        maxPitchAngle="70"
+        minPitchAngle="-70" />
+    <AnimationComponent
+        componentType="Render"
+        friendlyName="Animation Component"
+        description="An animation component"
+        networked="true"
+        Enabled="true" />
+    <PlayerControllerComponent
+        componentType="Physics"
+        friendlyName="Player Controller"
+        description="A general-purpose physics player controller."
+        networked="false"
+        Enabled="true"
+        inputVelocity="0 0 0"
+        useDirectMoveInput="true" />
+    <Component
+        networked="false"
+        Enabled="true"
+        class="InteractComponent" />
+</Entity>

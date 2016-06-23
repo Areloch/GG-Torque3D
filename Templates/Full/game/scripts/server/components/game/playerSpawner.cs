@@ -34,14 +34,12 @@ function PlayerSpawner::onAdd(%this)
 
 function PlayerSpawner::onClientConnect(%this, %client)
 {
-	%playerObj = SGOManager.spawn(%this.GameObjectName);
+	%playerObj = spawnGameObject(%this.GameObjectName, false);
 	
 	if(!isObject(%playerObj))
 		return;
 
 	%playerObj.position = %this.owner.position;
-	
-	MissionCleanup.add(%playerObj);
 	
 	for(%b = 0; %b < %playerObj.getComponentCount(); %b++)
     {
@@ -54,7 +52,7 @@ function PlayerSpawner::onClientConnect(%this, %client)
 	switchControlObject(%client, %playerObj);
 	switchCamera(%client, %playerObj);
 	
-	//%playerObj.getComponent(FPSControls).setupControls(%client);
+	%client.playerObject = %playerObj;
 	
 	%this.clientCount++;
 }

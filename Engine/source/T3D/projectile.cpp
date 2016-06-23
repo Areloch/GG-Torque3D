@@ -1103,7 +1103,7 @@ void Projectile::simulate( F32 dt )
    bool hit = false;
 
    if ( mPhysicsWorld )
-      hit = mPhysicsWorld->castRay( oldPosition, newPosition, &rInfo, Point3F( newPosition - oldPosition) * mDataBlock->impactForce );            
+      hit = mPhysicsWorld->castRay(oldPosition, newPosition, &rInfo, csmDynamicCollisionMask | csmStaticCollisionMask, Point3F(newPosition - oldPosition) * mDataBlock->impactForce);
    else 
       hit = getContainer()->castRay(oldPosition, newPosition, csmDynamicCollisionMask | csmStaticCollisionMask, &rInfo);
 

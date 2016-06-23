@@ -94,7 +94,7 @@ public:
    /// be very complex to write in a PhysicsPlugin-Abstract way...
    //
    // Optional forceAmt parameter will also apply a force to hit objects.
-   virtual bool castRay( const Point3F &startPnt, const Point3F &endPnt, RayInfo *ri, const Point3F &impulse ) = 0;
+   virtual bool castRay(const Point3F &startPnt, const Point3F &endPnt, RayInfo *ri, U32 mask, const Point3F &impulse) = 0;
 
 
    ///

@@ -107,7 +107,7 @@ bool GuiInspectorComponentGroup::inspectGroup()
 
       fieldGui->init(mParent, this);
 
-      AbstractClassRep::Field *refField;
+      AbstractClassRep::Field *refField = NULL;
 
       //check dynamics
       SimFieldDictionary* fieldDictionary = comp->getFieldDictionary();

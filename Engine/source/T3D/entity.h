@@ -98,7 +98,8 @@ public:
       BoundsMask = Parent::NextFreeMask << 1,
       ComponentsMask = Parent::NextFreeMask << 2,
       NoWarpMask = Parent::NextFreeMask << 3,
-      NextFreeMask = Parent::NextFreeMask << 4
+      NamespaceMask = Parent::NextFreeMask << 4,
+      NextFreeMask = Parent::NextFreeMask << 5
    };
 
    StateDelta mDelta;
@@ -162,6 +163,8 @@ public:
 
    //Components
    virtual bool deferAddingComponents() const { return true; }
+
+   void notifyComponents(String signalFunction, String argA, String argB, String argC, String argD, String argE);
 
    template <class T>
    T* getComponent();

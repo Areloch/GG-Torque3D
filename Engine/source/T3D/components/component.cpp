@@ -150,6 +150,8 @@ bool Component::onAdd()
 
    setMaskBits(UpdateMask);
 
+   setMaskBits(NamespaceMask);
+
    return true;
 }
 
@@ -274,6 +276,19 @@ U32 Component::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
       stream->writeFlag(mEnabled);
    }
 
+   if (stream->writeFlag(mask & NamespaceMask))
+   {
+      const char* name = getName();
+      if (stream->writeFlag(name && name[0]))
+         stream->writeString(String(name));
+
+      if (stream->writeFlag(mSuperClassName && mSuperClassName[0]))
+         stream->writeString(String(mSuperClassName));
+
+      if (stream->writeFlag(mClassName && mClassName[0]))
+         stream->writeString(String(mClassName));
+   }
+
    return retMask;
 }
 
@@ -302,6 +317,30 @@ void Component::unpackUpdate(NetConnection *con, BitStream *stream)
    if (stream->readFlag())
    {
       mEnabled = stream->readFlag();
+   }
+
+   if (stream->readFlag())
+   {
+      if (stream->readFlag())
+      {
+         char name[256];
+         stream->readString(name);
+         assignName(name);
+      }
+      if (stream->readFlag())
+      {
+         char superClassname[256];
+         stream->readString(superClassname);
+         mSuperClassName = superClassname;
+      }
+      if (stream->readFlag())
+      {
+         char classname[256];
+         stream->readString(classname);
+         mClassName = classname;
+      }
+
+      linkNamespaces();
    }
 }
 

@@ -43,11 +43,3 @@ function onDropEnd( %fileCount )
    //error("% DragDrop - Completed file dropping");
    Input::GetEventManager().postEvent( "EndDropFiles" );
 }
-
-//Subscribe to dragDrop events
-if( isObject( AssetBrowser ) )
-{
-   Input::GetEventManager().subscribe( AssetBrowser, "BeginDropFiles" );
-   Input::GetEventManager().subscribe( AssetBrowser, "DropFile" );
-   Input::GetEventManager().subscribe( AssetBrowser, "EndDropFiles" );
-}

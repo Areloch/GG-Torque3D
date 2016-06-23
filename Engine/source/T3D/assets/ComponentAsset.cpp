@@ -103,6 +103,7 @@ ComponentAsset::ComponentAsset() :
    mFriendlyName = StringTable->lookup("");
    mComponentType = StringTable->lookup("");
    mDescription = StringTable->lookup("");
+   mScriptFile = StringTable->lookup("");
 }
 
 //-----------------------------------------------------------------------------
@@ -127,6 +128,8 @@ void ComponentAsset::initPersistFields()
    addField("friendlyName", TypeString, Offset(mFriendlyName, ComponentAsset), "The human-readble name for the component.");
    addField("componentType", TypeString, Offset(mComponentType, ComponentAsset), "The category of the component for organizing in the editor.");
    addField("description", TypeString, Offset(mDescription, ComponentAsset), "Simple description of the component.");
+
+   addField("scriptFile", TypeString, Offset(mScriptFile, ComponentAsset), "A script file with additional scripted functionality for this component.");
 }
 
 //------------------------------------------------------------------------------

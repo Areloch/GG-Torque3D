@@ -513,12 +513,28 @@ void MeshComponent::onDynamicModified(const char* slotName, const char* newValue
 
 void MeshComponent::changeMaterial(U32 slot, const char* newMat)
 {
-   
    char fieldName[512];
 
    //update our respective field
    dSprintf(fieldName, 512, "materialSlot%d", slot);
    setDataField(fieldName, NULL, newMat);
+}
+
+bool MeshComponent::setMatInstField(U32 slot, const char* field, const char* value)
+{
+   TSMaterialList* pMatList = mShapeInstance->getMaterialList();
+   pMatList->setTextureLookupPath(getShapeResource().getPath().getPath());
+
+   MaterialParameters* params = pMatList->getMaterialInst(slot)->getMaterialParameters();
+
+   if (pMatList->getMaterialInst(slot)->getFeatures().hasFeature(MFT_DiffuseColor))
+   {
+      MaterialParameterHandle* handle = pMatList->getMaterialInst(slot)->getMaterialParameterHandle("DiffuseColor");
+
+      params->set(handle, ColorF(0, 0, 0));
+   }
+
+   return true;
 }
 
 void MeshComponent::onInspect()

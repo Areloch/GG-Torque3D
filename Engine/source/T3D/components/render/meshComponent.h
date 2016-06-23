@@ -164,6 +164,7 @@ public:
    virtual void onDynamicModified(const char* slotName, const char* newValue);
 
    void changeMaterial(U32 slot, const char* newMat);
+   bool setMatInstField(U32 slot, const char* field, const char* value);
 
    virtual void onInspect();
    virtual void onEndInspect();

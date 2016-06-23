@@ -190,7 +190,7 @@ void BtWorld::destroyWorld()
    _destroy();
 }
 
-bool BtWorld::castRay( const Point3F &startPnt, const Point3F &endPnt, RayInfo *ri, const Point3F &impulse )
+bool BtWorld::castRay( const Point3F &startPnt, const Point3F &endPnt, RayInfo *ri, U32 mask, const Point3F &impulse )
 {
    btCollisionWorld::ClosestRayResultCallback result( btCast<btVector3>( startPnt ), btCast<btVector3>( endPnt ) );
    mDynamicsWorld->rayTest( btCast<btVector3>( startPnt ), btCast<btVector3>( endPnt ), result );
@@ -201,6 +201,17 @@ bool BtWorld::castRay( const Point3F &startPnt, const Point3F &endPnt, RayInfo *
    if ( ri )
    {
       ri->object = PhysicsUserData::getObject( result.m_collisionObject->getUserPointer() );
+
+      if (ri->object->getTypeMask() & mask == 0 || !ri->object->isCollisionEnabled())
+      {
+         //bump our starting poisition and recast to keep moving, we hit something we need to mask out
+         Point3F newStart = btCast<Point3F>(result.m_hitPointWorld);
+
+         //nudge it to move it along it's way
+         newStart.interpolate(newStart, endPnt, 0.01);
+
+         return castRay(newStart, endPnt, ri, mask, impulse);
+      }
       
       // If we were passed a RayInfo, we can only return true signifying a collision
       // if we hit an object that actually has a torque object associated with it.

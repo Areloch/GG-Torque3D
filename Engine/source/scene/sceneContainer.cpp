@@ -30,6 +30,9 @@
 #include "console/engineAPI.h"
 #include "math/util/frustum.h"
 
+#include "T3D/physics/physicsPlugin.h"
+#include "T3D/physics/physicsWorld.h"
+
 
 // [rene, 02-Mar-11]
 //  - *Loads* of copy&paste sin in this file (among its many other sins); all the findObjectXXX methods
@@ -1630,8 +1633,23 @@ DefineEngineFunction( containerRayCast, const char*,
 
    RayInfo rinfo;
    S32 ret = 0;
-   if (pContainer->castRay(start, end, mask, &rinfo) == true)
-      ret = rinfo.object->getId();
+
+   if (PHYSICSMGR)
+   {
+      PhysicsWorld* mPhysicsWorld = PHYSICSMGR->getWorld("server");
+      if (mPhysicsWorld->castRay(start, end, &rinfo, mask, Point3F(0, 0, 0)) == true)
+      {
+         //The physics world cast doesn't have any kind of mask filtering, 
+         //so lets do a last-second check here for that
+         if (rinfo.object->getTypeMask() & mask)
+            ret = rinfo.object->getId();
+      }
+   }
+   else
+   {
+      if (pContainer->castRay(start, end, mask, &rinfo) == true)
+         ret = rinfo.object->getId();
+   }
 
    if (pExempt)
       pExempt->enableCollision();

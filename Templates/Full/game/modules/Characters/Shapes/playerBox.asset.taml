@@ -1,0 +1,6 @@
+<ShapeAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="playerBox"
+    fileName="modules/Characters/Shapes/playerBox.dae"
+    VersionId="1" />

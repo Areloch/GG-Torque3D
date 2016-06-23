@@ -55,6 +55,8 @@ class ComponentAsset : public AssetBase
    StringTableEntry mComponentType;
    StringTableEntry mDescription;
 
+   StringTableEntry mScriptFile;
+
 public:
    ComponentAsset();
    virtual ~ComponentAsset();
@@ -73,7 +75,7 @@ public:
    StringTableEntry getDescription() { return mDescription; }
 
 protected:
-   virtual void            initializeAsset(void) {}
+   virtual void            initializeAsset(void){}
    virtual void            onAssetRefresh(void) {}
 };
 

@@ -503,76 +503,6 @@ function GameCore::onClientEnterGame(%game, %client)
 
    // Sync the client's clocks to the server's
    commandToClient(%client, 'SyncClock', $Sim::Time - $Game::StartTime);
-
-   // Find a spawn point for the camera
-   // This function currently relies on some helper functions defined in
-   // core/scripts/server/spawn.cs. For custom spawn behaviors one can either
-   // override the properties on the SpawnSphere's or directly override the
-   // functions themselves.
-   %cameraSpawnPoint = pickCameraSpawnPoint($Game::DefaultCameraSpawnGroups);
-   // Spawn a camera for this client using the found %spawnPoint
-   %client.spawnCamera(%cameraSpawnPoint);
-
-   // Setup game parameters, the onConnect method currently starts
-   // everyone with a 0 score.
-   %client.score = 0;
-   %client.kills = 0;
-   %client.deaths = 0;
-
-   // weaponHUD
-   %client.RefreshWeaponHud(0, "", "");
-
-   // Prepare the player object.
-   %game.preparePlayer(%client);
-
-   // Inform the client of all the other clients
-   %count = ClientGroup.getCount();
-   for (%cl = 0; %cl < %count; %cl++)
-   {
-      %other = ClientGroup.getObject(%cl);
-      if ((%other != %client))
-      {
-         // These should be "silent" versions of these messages...
-         messageClient(%client, 'MsgClientJoin', "",
-            %other.playerName,
-            %other,
-            %other.sendGuid,
-            %other.team,
-            %other.score,
-            %other.kills,
-            %other.deaths,
-            %other.isAIControlled(),
-            %other.isAdmin,
-            %other.isSuperAdmin);
-      }
-   }
-
-   // Inform the client we've joined up
-   messageClient(%client,
-      'MsgClientJoin', '\c2Welcome to the Torque demo app %1.',
-      %client.playerName,
-      %client,
-      %client.sendGuid,
-      %client.team,
-      %client.score,
-      %client.kills,
-      %client.deaths,
-      %client.isAiControlled(),
-      %client.isAdmin,
-      %client.isSuperAdmin);
-
-   // Inform all the other clients of the new guy
-   messageAllExcept(%client, -1, 'MsgClientJoin', '\c1%1 joined the game.',
-      %client.playerName,
-      %client,
-      %client.sendGuid,
-      %client.team,
-      %client.score,
-      %client.kills,
-      %client.deaths,
-      %client.isAiControlled(),
-      %client.isAdmin,
-      %client.isSuperAdmin);
       
    %entityIds = parseMissionGroupForIds("Entity", "");
    %entityCount = getWordCount(%entityIds);
@@ -610,62 +540,37 @@ function GameCore::onClientLeaveGame(%game, %client)
    // Cleanup the player
    if (isObject(%client.player))
       %client.player.delete();
+      
+   %entityIds = parseMissionGroupForIds("Entity", "");
+   %entityCount = getWordCount(%entityIds);
+   
+   for(%i=0; %i < %entityCount; %i++)
+   {
+      %entity = getWord(%entityIds, %i);
+      
+      for(%e=0; %e < %entity.getCount(); %e++)
+      {
+         %child = %entity.getObject(%e);
+         if(%child.getClassName() $= "Entity")
+            %entityIds = %entityIds SPC %child.getID();  
+      }
+      
+      for(%c=0; %c < %entity.getComponentCount(); %c++)
+      {
+         %comp = %entity.getComponentByIndex(%c);
+         
+         if(%comp.isMethod("onClientDisconnect"))
+         {
+            %comp.onClientDisconnect(%client);  
+         }
+      }
+   }
 }
 
 // Added this stage to creating a player so game types can override it easily.
 // This is a good place to initiate team selection.
 function GameCore::preparePlayer(%game, %client)
 {
-   //echo (%game @"\c4 -> "@ %game.class @" -> GameCore::preparePlayer");
-
-   // Find a spawn point for the player
-   // This function currently relies on some helper functions defined in
-   // core/scripts/spawn.cs. For custom spawn behaviors one can either
-   // override the properties on the SpawnSphere's or directly override the
-   // functions themselves.
-   %playerSpawnPoint = pickPlayerSpawnPoint($Game::DefaultPlayerSpawnGroups);
-   // Spawn a camera for this client using the found %spawnPoint
-   //%client.spawnPlayer(%playerSpawnPoint);
-   %game.spawnPlayer(%client, %playerSpawnPoint);
-
-   // Starting equipment
-   %game.loadOut(%client.player);
-}
-
-function GameCore::loadOut(%game, %player)
-{
-   //echo (%game @"\c4 -> "@ %game.class @" -> GameCore::loadOut");
-
-   %player.clearWeaponCycle();
-   
-   %player.setInventory(Ryder, 1);
-   %player.setInventory(RyderClip, %player.maxInventory(RyderClip));
-   %player.setInventory(RyderAmmo, %player.maxInventory(RyderAmmo));    // Start the gun loaded
-   %player.addToWeaponCycle(Ryder);
-
-   %player.setInventory(Lurker, 1);
-   %player.setInventory(LurkerClip, %player.maxInventory(LurkerClip));
-   %player.setInventory(LurkerAmmo, %player.maxInventory(LurkerAmmo));  // Start the gun loaded
-   %player.addToWeaponCycle(Lurker);
-
-   %player.setInventory(LurkerGrenadeLauncher, 1);
-   %player.setInventory(LurkerGrenadeAmmo, %player.maxInventory(LurkerGrenadeAmmo));
-   %player.addToWeaponCycle(LurkerGrenadeLauncher);
-
-   %player.setInventory(ProxMine, %player.maxInventory(ProxMine));
-   %player.addToWeaponCycle(ProxMine);
-
-   %player.setInventory(DeployableTurret, %player.maxInventory(DeployableTurret));
-   %player.addToWeaponCycle(DeployableTurret);
-   
-   if (%player.getDatablock().mainWeapon.image !$= "")
-   {
-      %player.mountImage(%player.getDatablock().mainWeapon.image, 0);
-   }
-   else
-   {
-      %player.mountImage(Ryder, 0);
-   }
 }
 
 // Customized kill message for falling deaths
@@ -782,275 +687,6 @@ function GameCore::getTeamScore(%client)
    }
    return %score;
 }
-
-// ----------------------------------------------------------------------------
-// Spawning
-// ----------------------------------------------------------------------------
-
-function GameCore::spawnPlayer(%game, %client, %spawnPoint, %noControl)
-{
-   //echo (%game @"\c4 -> "@ %game.class @" -> GameCore::spawnPlayer");
-
-   if (isObject(%client.player))
-   {
-      // The client should not already have a player. Assigning
-      // a new one could result in an uncontrolled player object.
-      error("Attempting to create a player for a client that already has one!");
-   }
-
-   // Attempt to treat %spawnPoint as an object
-   if (getWordCount(%spawnPoint) == 1 && isObject(%spawnPoint))
-   {
-      // Defaults
-      %spawnClass      = $Game::DefaultPlayerClass;
-      %spawnDataBlock  = $Game::DefaultPlayerDataBlock;
-
-      // Overrides by the %spawnPoint
-      if (isDefined("%spawnPoint.spawnClass"))
-      {
-         %spawnClass = %spawnPoint.spawnClass;
-         %spawnDataBlock = %spawnPoint.spawnDatablock;
-      }
-      else if (isDefined("%spawnPoint.spawnDatablock"))
-      {
-         // This may seem redundant given the above but it allows
-         // the SpawnSphere to override the datablock without
-         // overriding the default player class
-         %spawnDataBlock = %spawnPoint.spawnDatablock;
-      }
-
-      %spawnProperties = %spawnPoint.spawnProperties;
-      %spawnScript     = %spawnPoint.spawnScript;
-
-      // Spawn with the engine's Sim::spawnObject() function
-      %player = spawnObject(%spawnClass, %spawnDatablock, "",
-                            %spawnProperties, %spawnScript);
-
-      // If we have an object do some initial setup
-      if (isObject(%player))
-      {
-         // Pick a location within the spawn sphere.
-         %spawnLocation = GameCore::pickPointInSpawnSphere(%player, %spawnPoint);
-         %player.setTransform(%spawnLocation);
-         
-      }
-      else
-      {
-         // If we weren't able to create the player object then warn the user
-         // When the player clicks OK in one of these message boxes, we will fall through
-         // to the "if (!isObject(%player))" check below.
-         if (isDefined("%spawnDatablock"))
-         {
-               MessageBoxOK("Spawn Player Failed",
-                             "Unable to create a player with class " @ %spawnClass @
-                             " and datablock " @ %spawnDatablock @ ".\n\nStarting as an Observer instead.",
-                             "");
-         }
-         else
-         {
-               MessageBoxOK("Spawn Player Failed",
-                              "Unable to create a player with class " @ %spawnClass @
-                              ".\n\nStarting as an Observer instead.",
-                              "");
-         }
-      }
-   }
-   else
-   {
-      
-      // Create a default player
-      %player = spawnObject($Game::DefaultPlayerClass, $Game::DefaultPlayerDataBlock);
-      
-      if (!%player.isMemberOfClass("Player"))
-         warn("Trying to spawn a class that does not derive from Player.");
-
-      // Treat %spawnPoint as a transform
-      %player.setTransform(%spawnPoint);
-   }
-
-   // If we didn't actually create a player object then bail
-   if (!isObject(%player))
-   {
-      // Make sure we at least have a camera
-      %client.spawnCamera(%spawnPoint);
-
-      return;
-   }
-
-   // Update the default camera to start with the player
-   if (isObject(%client.camera) && !isDefined("%noControl"))
-   {
-      if (%player.getClassname() $= "Player")
-         %client.camera.setTransform(%player.getEyeTransform());
-      else
-         %client.camera.setTransform(%player.getTransform());
-   }
-
-   // Add the player object to MissionCleanup so that it
-   // won't get saved into the level files and will get
-   // cleaned up properly
-   MissionCleanup.add(%player);
-
-   // Store the client object on the player object for
-   // future reference
-   %player.client = %client;
-   
-   // If the player's client has some owned turrets, make sure we let them
-   // know that we're a friend too.
-   if (%client.ownedTurrets)
-   {
-      for (%i=0; %i<%client.ownedTurrets.getCount(); %i++)
-      {
-         %turret = %client.ownedTurrets.getObject(%i);
-         %turret.addToIgnoreList(%player);
-      }
-   }
-
-   // Player setup...
-   if (%player.isMethod("setShapeName"))
-      %player.setShapeName(%client.playerName);
-
-   if (%player.isMethod("setEnergyLevel"))
-      %player.setEnergyLevel(%player.getDataBlock().maxEnergy);
-
-   if (!isDefined("%client.skin"))
-   {
-      // Determine which character skins are not already in use
-      %availableSkins = %player.getDatablock().availableSkins;             // TAB delimited list of skin names
-      %count = ClientGroup.getCount();
-      for (%cl = 0; %cl < %count; %cl++)
-      {
-         %other = ClientGroup.getObject(%cl);
-         if (%other != %client)
-         {
-            %availableSkins = strreplace(%availableSkins, %other.skin, "");
-            %availableSkins = strreplace(%availableSkins, "\t\t", "");     // remove empty fields
-         }
-      }
-
-      // Choose a random, unique skin for this client
-      %count = getFieldCount(%availableSkins);
-      %client.skin = addTaggedString( getField(%availableSkins, getRandom(%count)) );
-   }
-
-   %player.setSkinName(%client.skin);
-
-   // Give the client control of the player
-   %client.player = %player;
-
-   // Give the client control of the camera if in the editor
-   if( $startWorldEditor )
-   {
-      %control = %client.camera;
-      %control.mode = "Fly";
-      EditorGui.syncCameraGui();
-   }
-   else
-      %control = %player;
-
-   // Allow the player/camera to receive move data from the GameConnection.  Without this
-   // the user is unable to control the player/camera.
-   if (!isDefined("%noControl"))
-      %client.setControlObject(%control);
-}
-
-function GameCore::pickPointInSpawnSphere(%objectToSpawn, %spawnSphere)
-{
-   %SpawnLocationFound = false;
-   %attemptsToSpawn = 0;
-   while(!%SpawnLocationFound && (%attemptsToSpawn < 5))
-   {
-      %sphereLocation = %spawnSphere.getTransform();
-      
-      // Attempt to spawn the player within the bounds of the spawnsphere.
-      %angleY = mDegToRad(getRandom(0, 100) * m2Pi());
-      %angleXZ = mDegToRad(getRandom(0, 100) * m2Pi());
-
-      %sphereLocation = setWord( %sphereLocation, 0, getWord(%sphereLocation, 0) + (mCos(%angleY) * mSin(%angleXZ) * getRandom(-%spawnSphere.radius, %spawnSphere.radius)));
-      %sphereLocation = setWord( %sphereLocation, 1, getWord(%sphereLocation, 1) + (mCos(%angleXZ) * getRandom(-%spawnSphere.radius, %spawnSphere.radius)));
-      
-      %SpawnLocationFound = true;
-
-      // Now have to check that another object doesn't already exist at this spot.
-      // Use the bounding box of the object to check if where we are about to spawn in is
-      // clear.
-      %boundingBoxSize = %objectToSpawn.getDatablock().boundingBox;
-      %searchRadius = getWord(%boundingBoxSize, 0);
-      %boxSizeY = getWord(%boundingBoxSize, 1);
-      
-      // Use the larger dimention as the radius to search
-      if (%boxSizeY > %searchRadius)
-         %searchRadius = %boxSizeY;
-         
-      // Search a radius about the area we're about to spawn for players.
-      initContainerRadiusSearch( %sphereLocation, %searchRadius, $TypeMasks::PlayerObjectType );
-      while ( (%objectNearExit = containerSearchNext()) != 0 )
-      {
-         // If any player is found within this radius, mark that we need to look
-         // for another spot.
-         %SpawnLocationFound = false;
-         break;
-      }
-         
-      // If the attempt at finding a clear spawn location failed
-      // try no more than 5 times.
-      %attemptsToSpawn++;
-   }
-      
-   // If we couldn't find a spawn location after 5 tries, spawn the object
-   // At the center of the sphere and give a warning.
-   if (!%SpawnLocationFound)
-   {
-      %sphereLocation = %spawnSphere.getTransform();
-      warn("WARNING: Could not spawn player after" SPC %attemptsToSpawn 
-      SPC "tries in spawnsphere" SPC %spawnSphere SPC "without overlapping another player. Attempting spawn in center of sphere.");
-   }
-   
-   return %sphereLocation;
-}
-
-// ----------------------------------------------------------------------------
-// Observer
-// ----------------------------------------------------------------------------
-
-function GameCore::spawnObserver(%game, %client)
-{
-   //echo (%game @"\c4 -> "@ %game.class @" -> GameCore::spawnObserver");
-
-   // Position the camera on one of our observer spawn points
-   %client.camera.setTransform(%game.pickObserverSpawnPoint());
-
-   // Set control to the camera
-   %client.setControlObject(%client.camera);
-}
-
-function GameCore::pickObserverSpawnPoint(%game)
-{
-   //echo (%game @"\c4 -> "@ %game.class @" -> GameCore::pickObserverSpawnPoint");
-
-   %groupName = "MissionGroup/ObserverSpawnPoints";
-   %group = nameToID(%groupName);
-
-   if (%group != -1)
-   {
-      %count = %group.getCount();
-      if (%count != 0)
-      {
-         %index = getRandom(%count-1);
-         %spawn = %group.getObject(%index);
-         return %spawn.getTransform();
-      }
-      else
-         error("No spawn points found in "@ %groupName);
-   }
-   else
-      error("Missing spawn points group "@ %groupName);
-
-   // Could be no spawn points, in which case we'll stick the
-   // player at the center of the world.
-   return "0 0 300 1 0 0 0";
-}
-
 // ----------------------------------------------------------------------------
 // Server
 // ----------------------------------------------------------------------------

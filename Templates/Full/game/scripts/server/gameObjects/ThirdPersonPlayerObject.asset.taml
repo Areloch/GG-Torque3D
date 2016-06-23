@@ -1,5 +1,7 @@
 <GameObjectAsset
+    canSave="true"
+    canSaveDynamicFields="true"
     AssetName="ThirdPersonPlayerGameObjectAsset"
     gameObjectName="ThirdPersonPlayer"
-    TAMLFilePath="scripts/server/gameObjects/ThirdPersonPlayerObject.taml"
-    scriptFilePath="scripts/server/gameObjects/ThirdPersonPlayerObject.cs"/>
+    scriptFilePath="scripts/server/gameObjects/ThirdPersonPlayerObject.cs"
+    TAMLFilePath="scripts/server/gameObjects/ThirdPersonPlayerObject.taml" />
