@@ -1,0 +1,500 @@
+//--- OBJECT WRITE BEGIN ---
+new SimGroup(MissionGroup) {
+   canSave = "1";
+   canSaveDynamicFields = "1";
+      Enabled = "1";
+
+   new LevelInfo(theLevelInfo) {
+      nearClip = "0.1";
+      visibleDistance = "1000";
+      visibleGhostDistance = "0";
+      decalBias = "0.0015";
+      fogColor = "0.6 0.6 0.7 1";
+      fogDensity = "0";
+      fogDensityOffset = "700";
+      fogAtmosphereHeight = "0";
+      canvasClearColor = "0 0 0 255";
+      ambientLightBlendPhase = "1";
+      ambientLightBlendCurve = "0 0 -1 -1";
+      soundAmbience = "AudioAmbienceDefault";
+      soundDistanceModel = "Linear";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+         desc0 = "An empty room ready to be populated with Torque objects.";
+         Enabled = "1";
+         levelName = "Empty Room";
+   };
+   new SkyBox(theSky) {
+      Material = "NightSkyMat";
+      drawBottom = "0";
+      fogBandHeight = "0";
+      position = "0 0 0";
+      Rotation = "1 0 0 0";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+   };
+   new Sun(theSun) {
+      azimuth = "230.396";
+      elevation = "46";
+      color = "0.968628 0.901961 0.901961 1";
+      ambient = "0.078431 0.113725 0.156863 1";
+      brightness = "1";
+      castShadows = "1";
+      staticRefreshFreq = "250";
+      dynamicRefreshFreq = "8";
+      coronaEnabled = "1";
+      coronaScale = "0.5";
+      coronaTint = "1 1 1 1";
+      coronaUseLightColor = "1";
+      flareScale = "1";
+      attenuationRatio = "0 1 1";
+      shadowType = "PSSM";
+      texSize = "1024";
+      overDarkFactor = "3000 2000 1000 250";
+      shadowDistance = "200";
+      shadowSoftness = "0.25";
+      numSplits = "4";
+      logWeight = "0.96";
+      fadeStartDistance = "150";
+      lastSplitTerrainOnly = "0";
+      representedInLightmap = "0";
+      shadowDarkenColor = "0 0 0 -1";
+      includeLightmappedGeometryInShadow = "0";
+      position = "0 0 0";
+      Rotation = "1 0 0 0";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+   };
+   new GroundPlane() {
+      squareSize = "128";
+      scaleU = "48";
+      scaleV = "48";
+      Material = "Grid512_Grey_Mat";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+         Enabled = "1";
+         position = "0 0 0";
+         Rotation = "1 0 0 0";
+         scale = "1 1 1";
+   };
+   new Entity() {
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+      position = "0 0 1.17632";
+      Rotation = "0 -0 -0";
+      LocalPosition = "0 0 0";
+      LocalRotation = "1 0 0 0";
+
+      new Component() {
+         componentType = "Spawner";
+         friendlyName = "Player Spawner";
+         networked = "0";
+         Enabled = "1";
+         class = "PlayerSpawner";
+         gameObjectName = "FoxPlayer";
+      };
+   };
+   new Entity() {
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+      position = "-4.19759 -0.133468 2";
+      Rotation = "0 -0 -0";
+      LocalPosition = "0 0 0";
+      LocalRotation = "1 0 0 0";
+
+      new MeshComponent() {
+         componentType = "Render";
+         friendlyName = "Mesh Component";
+         description = "Causes the object to render a non-animating 3d shape using the file provided.";
+         networked = "1";
+         Enabled = "1";
+         MeshAsset = "Placeholder:cube";
+      };
+      new CollisionComponent() {
+         friendlyName = "Collision(Component)";
+         networked = "0";
+         Enabled = "1";
+         CollisionType = "Bounds";
+         LineOfSightType = "Collision Mesh";
+         DecalType = "Collision Mesh";
+         CollisionMeshPrefix = "Collision";
+         BlockCollisions = "1";
+      };
+      new Component() {
+         networked = "0";
+         Enabled = "1";
+         class = "ItemComponent";
+      };
+      new Component() {
+         networked = "0";
+         Enabled = "1";
+         class = "InteractableComponent";
+      };
+   };
+   new TSStatic() {
+      shapeName = "art/shapes/cube/cube.dae";
+      playAmbient = "1";
+      meshCulling = "0";
+      originSort = "0";
+      CollisionType = "Collision Mesh";
+      DecalType = "Collision Mesh";
+      allowPlayerStep = "0";
+      alphaFadeEnable = "0";
+      alphaFadeStart = "100";
+      alphaFadeEnd = "150";
+      alphaFadeInverse = "0";
+      renderNormals = "0";
+      forceDetail = "-1";
+      position = "-2.16643 2.99628 0.983892";
+      Rotation = "1 0 0 0";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+   };
+   new Entity() {
+      scale = "1 1 1";
+      class = "candle";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+      persistentId = "2cae8e1e-391d-11e6-a29f-f9abd89016af";
+      position = "-5.01672 -2.93727 0.784164";
+      Rotation = "0 -0 -0";
+      LocalPosition = "0 0 0";
+      LocalRotation = "1 0 0 0";
+         GameObjectAsset = "Candle";
+
+      new CollisionComponent() {
+         friendlyName = "Collision(Component)";
+         networked = "0";
+         Enabled = "1";
+         CollisionType = "Bounds";
+         LineOfSightType = "Collision Mesh";
+         DecalType = "Collision Mesh";
+         CollisionMeshPrefix = "Collision";
+         BlockCollisions = "1";
+      };
+      new Component() {
+         networked = "0";
+         Enabled = "1";
+         class = "InteractableComponent";
+      };
+      new Component() {
+         networked = "0";
+         Enabled = "1";
+         class = "CandleItemComponent";
+      };
+      new MeshComponent() {
+         componentType = "Render";
+         friendlyName = "Mesh Component";
+         description = "Causes the object to render a non-animating 3d shape using the file provided.";
+         networked = "1";
+         Enabled = "1";
+      };
+      new PointLight() {
+         radius = "5";
+         isEnabled = "1";
+         color = "0.996078 0.988235 0.254902 1";
+         brightness = "1";
+         castShadows = "0";
+         staticRefreshFreq = "250";
+         dynamicRefreshFreq = "8";
+         priority = "1";
+         animate = "0";
+         animationType = "FireLightAnim";
+         animationPeriod = "1";
+         animationPhase = "1";
+         flareScale = "1";
+         attenuationRatio = "0 1 1";
+         shadowType = "DualParaboloidSinglePass";
+         texSize = "512";
+         overDarkFactor = "2000 1000 500 100";
+         shadowDistance = "400";
+         shadowSoftness = "0.15";
+         numSplits = "1";
+         logWeight = "0.91";
+         fadeStartDistance = "0";
+         lastSplitTerrainOnly = "0";
+         representedInLightmap = "0";
+         shadowDarkenColor = "0 0 0 -1";
+         includeLightmappedGeometryInShadow = "0";
+         position = "-5.01672 -2.93727 1.08416";
+         Rotation = "1 0 0 0";
+         mountPID = "2cae8e1e-391d-11e6-a29f-f9abd89016af";
+         mountNode = "-1";
+         mountPos = "0 0 0.299996";
+         mountRot = "1 0 0 0";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+         persistentId = "2cae8e1d-391d-11e6-a29f-f9abd89016af";
+      };
+   };
+   new Entity() {
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+      position = "0.500505 5.03301 0.14665";
+      Rotation = "0 -0 -0";
+      LocalPosition = "0 0 0";
+      LocalRotation = "1 0 0 0";
+
+      new MeshComponent() {
+         componentType = "Render";
+         friendlyName = "Mesh Component";
+         description = "Causes the object to render a non-animating 3d shape using the file provided.";
+         networked = "1";
+         Enabled = "1";
+         MeshAsset = "Placeholder:cube";
+      };
+      new CollisionComponent() {
+         friendlyName = "Collision(Component)";
+         networked = "0";
+         Enabled = "1";
+         CollisionType = "Bounds";
+         LineOfSightType = "Collision Mesh";
+         DecalType = "Collision Mesh";
+         CollisionMeshPrefix = "Collision";
+         BlockCollisions = "1";
+      };
+      new Component() {
+         networked = "0";
+         Enabled = "1";
+         class = "InteractableComponent";
+      };
+      new Component() {
+         networked = "0";
+         Enabled = "1";
+         class = "SwitchComponent";
+         targetEntity = "20085";
+      };
+   };
+   new Entity() {
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+      persistentId = "77ee881e-391e-11e6-8665-d0698d1aa712";
+      position = "-1.76022 8.28598 1.75927";
+      Rotation = "0 -0 -0";
+      LocalPosition = "0 0 0";
+      LocalRotation = "1 0 0 0";
+
+      new Component() {
+         networked = "0";
+         Enabled = "1";
+         class = "CandleItemComponent";
+      };
+      new PointLight() {
+         radius = "5";
+         isEnabled = "1";
+         color = "1 1 1 1";
+         brightness = "1";
+         castShadows = "0";
+         staticRefreshFreq = "250";
+         dynamicRefreshFreq = "8";
+         priority = "1";
+         animate = "1";
+         animationPeriod = "1";
+         animationPhase = "1";
+         flareScale = "1";
+         attenuationRatio = "0 1 1";
+         shadowType = "DualParaboloidSinglePass";
+         texSize = "512";
+         overDarkFactor = "2000 1000 500 100";
+         shadowDistance = "400";
+         shadowSoftness = "0.15";
+         numSplits = "1";
+         logWeight = "0.91";
+         fadeStartDistance = "0";
+         lastSplitTerrainOnly = "0";
+         representedInLightmap = "0";
+         shadowDarkenColor = "0 0 0 -1";
+         includeLightmappedGeometryInShadow = "0";
+         position = "-1.76022 8.28598 1.75927";
+         Rotation = "1 0 0 0";
+         mountPID = "77ee881e-391e-11e6-8665-d0698d1aa712";
+         mountNode = "-1";
+         mountPos = "0 0 0";
+         mountRot = "1 0 0 0";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+         persistentId = "77ee881d-391e-11e6-8665-d0698d1aa712";
+      };
+   };
+   new ConvexShape() {
+      Material = "Grid512_OrangeLines_Mat";
+      position = "-5.97337 16.3482 1.44161";
+      Rotation = "0 0 1 2.18972";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      surface = "0 0 0 1 0 0 3.80403";
+      surface = "0 1 0 0 0 0 -1.44161";
+      surface = "0.707107 0 0 0.707107 0 1.1373 1.18121";
+      surface = "0 0.707107 -0.707107 0 0 -1.1373 1.18121";
+      surface = "0.5 0.5 -0.5 0.5 -11.9297 0 1.18121";
+      surface = "0.5 -0.5 0.5 0.5 11.9297 0 1.18121";
+   };
+   new ConvexShape() {
+      Material = "Grid512_OrangeLines_Mat";
+      position = "-5.36701 -3.65765 0.207179";
+      Rotation = "0 0 -1 90.0765";
+      scale = "0.551189 0.551189 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      surface = "0 0 0 1 0 0 0.543305";
+      surface = "0 1 0 0 0 0 -0.207179";
+      surface = "0.707107 0 0 0.707107 0 0.05 0.168063";
+      surface = "0 0.707107 -0.707107 0 0 -0.05 0.168063";
+      surface = "0.5 0.5 -0.5 0.5 -0.05 0 0.168062";
+      surface = "0.5 -0.5 0.5 0.5 0.05 0 0.168062";
+   };
+   new ConvexShape() {
+      Material = "Grid512_OrangeLines_Mat";
+      position = "-5.36847 -2.56673 0.207179";
+      Rotation = "0 0 -1 90.0765";
+      scale = "0.551189 0.551189 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      surface = "0 0 0 1 0 0 0.543305";
+      surface = "0 1 0 0 0 0 -0.207179";
+      surface = "0.707107 0 0 0.707107 0 0.05 0.168063";
+      surface = "0 0.707107 -0.707107 0 0 -0.05 0.168063";
+      surface = "0.5 0.5 -0.5 0.5 -0.05 0 0.168062";
+      surface = "0.5 -0.5 0.5 0.5 0.05 0 0.168062";
+   };
+   new ConvexShape() {
+      Material = "Grid512_OrangeLines_Mat";
+      position = "-4.7011 -2.56673 0.207179";
+      Rotation = "0 0 -1 90.0765";
+      scale = "0.551189 0.551189 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      surface = "0 0 0 1 0 0 0.543305";
+      surface = "0 1 0 0 0 0 -0.207179";
+      surface = "0.707107 0 0 0.707106 0 0.05 0.168063";
+      surface = "0 0.707107 -0.707107 0 0 -0.05 0.168063";
+      surface = "0.5 0.5 -0.5 0.5 -0.05 0 0.168062";
+      surface = "0.5 -0.5 0.5 0.5 0.05 0 0.168062";
+   };
+   new ConvexShape() {
+      Material = "Grid512_OrangeLines_Mat";
+      position = "-4.69964 -3.65764 0.207179";
+      Rotation = "0 0 -1 90.0765";
+      scale = "0.551189 0.551189 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      surface = "0 0 0 1 0 0 0.543305";
+      surface = "0 1 0 0 0 0 -0.207179";
+      surface = "0.707107 0 0 0.707106 0 0.05 0.168063";
+      surface = "0 0.707107 -0.707107 0 0 -0.05 0.168063";
+      surface = "0.5 0.5 -0.5 0.5 -0.05 0 0.168062";
+      surface = "0.5 -0.5 0.5 0.5 0.05 0 0.168062";
+   };
+   new ConvexShape() {
+      Material = "Grid512_OrangeLines_Mat";
+      position = "-5.36701 -3.65765 0.750484";
+      Rotation = "0 0 -1 90.0765";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      surface = "0 0 0 1 0.544209 -0.334492 0.0363785";
+      surface = "0 1 0 0 0.544209 -0.334492 0";
+      surface = "-0.707107 1.06884e-006 1.06884e-006 0.707107 0.544208 -0.696542 0.0181892";
+      surface = "-0.499999 0.500001 0.500001 0.499999 -0.0275612 -0.33449 0.0181892";
+      surface = "1.06884e-006 0.707107 0.707107 -1.06884e-006 0.544211 0.0275576 0.0181893";
+      surface = "-0.500001 -0.499999 -0.499999 0.500001 1.11598 -0.334494 0.0181892";
+   };
+   new ConvexShape() {
+      Material = "Grid512_OrangeLines_Mat";
+      position = "-6.88782 -1.19352 4.72666";
+      Rotation = "0 0 1 3.34491";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      surface = "0 0 0 1 -1.5954 3.80982 1.27228";
+      surface = "0 1 0 0 -1.5954 3.80982 -4.75674";
+      surface = "0.707107 0 0 0.707106 -1.5954 16.5335 -1.74223";
+      surface = "0 0.707107 -0.707107 0 -1.5954 -8.91387 -1.74223";
+      surface = "0.5 0.5 -0.5 0.5 -3.50633 3.80982 -1.74223";
+      surface = "0.5 -0.5 0.5 0.5 0.315537 3.80982 -1.74223";
+   };
+   new Entity() {
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+      position = "2.39782 0.383755 2.97084";
+      Rotation = "0 -0 -0";
+      LocalPosition = "0 0 0";
+      LocalRotation = "1 0 0 0";
+
+      new Component() {
+         networked = "0";
+         Enabled = "1";
+         class = "GameInfoComponent";
+      };
+   };
+   new ConvexShape() {
+      Material = "Grid512_OrangeLines_Mat";
+      position = "-9.00059 -9.99912 2.98443";
+      Rotation = "0.0206418 0.706956 -0.706956 177.635";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      surface = "0 0 0 1 0 6.16637 11.3751";
+      surface = "0 1 0 0 0 -1.78814e-006 0";
+      surface = "-0.511579 -6.70175e-009 1.12561e-008 0.859236 4.70764e-015 0.068676 5.68755";
+      surface = "0.5 -0.5 -0.5 -0.5 -1.91093 3.08319 5.68755";
+      surface = "1.12561e-008 0.859236 0.511579 6.70175e-009 -7.71409e-008 6.09769 5.68755";
+      surface = "0.5 0.5 0.5 -0.5 1.91093 3.08319 5.68755";
+   };
+   new Entity() {
+      scale = "1 1 1";
+      class = "grass";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+      position = "3.45397 0.0840976 0.229193";
+      Rotation = "0 -0 -0";
+      LocalPosition = "0 0 0";
+      LocalRotation = "1 0 0 0";
+         GameObjectAsset = "grass";
+
+      new MeshComponent() {
+         componentType = "Render";
+         friendlyName = "Mesh Component";
+         description = "Causes the object to render a non-animating 3d shape using the file provided.";
+         networked = "1";
+         Enabled = "1";
+         MeshAsset = "Characters:Red_Guy";
+      };
+      new CollisionComponent() {
+         friendlyName = "Collision(Component)";
+         networked = "0";
+         Enabled = "1";
+         CollisionType = "Bounds";
+         LineOfSightType = "Collision Mesh";
+         DecalType = "Collision Mesh";
+         CollisionMeshPrefix = "Collision";
+         BlockCollisions = "0";
+      };
+      new AnimationComponent() {
+         componentType = "Render";
+         friendlyName = "Animation(Component)";
+         description = "Allows a rendered mesh to be animated";
+         networked = "1";
+         Enabled = "1";
+      };
+   };
+};
+//--- OBJECT WRITE END ---
+

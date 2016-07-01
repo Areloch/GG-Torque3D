@@ -1,0 +1,8 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="CameraComponentAsset"
+    componentClass="CameraComponent"
+    friendlyName="Camera"
+    componentType="Game"
+    description="Allows the component owner to operate as a camera." />

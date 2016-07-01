@@ -1,0 +1,7 @@
+<GameObjectAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="FoxPlayerAsset"
+    gameObjectName="FoxPlayer"
+    scriptFilePath="modules/Characters/gameObjects/FoxPlayer.cs"
+    TAMLFilePath="modules/Characters/gameObjects/FoxPlayer.taml" />

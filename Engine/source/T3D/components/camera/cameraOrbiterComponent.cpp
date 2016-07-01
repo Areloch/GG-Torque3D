@@ -73,6 +73,7 @@ void CameraOrbiterComponent::initPersistFields()
    addField("Rotation", TypeRotationF, Offset(mRotation, CameraOrbiterComponent), "Object world orientation.");
    addField("maxPitchAngle", TypeF32, Offset(mMaxPitchAngle, CameraOrbiterComponent), "Object world orientation.");
    addField("minPitchAngle", TypeF32, Offset(mMinPitchAngle, CameraOrbiterComponent), "Object world orientation.");
+   addField("positionOffset", TypePoint3F, Offset(mPosition, CameraOrbiterComponent), "Object world orientation.");
 }
 
 //This is mostly a catch for situations where the behavior is re-added to the object and the like and we may need to force an update to the behavior
@@ -141,6 +142,11 @@ void CameraOrbiterComponent::processTick()
       //Clamp our pitch to whatever range we allow, first.
       mRotation.x = mClampF(mRotation.x, mDegToRad(mMinPitchAngle), mDegToRad(mMaxPitchAngle));
 
+      MatrixF ownerCamTrans;
+      mCamera->getCameraTransform(0, &ownerCamTrans);
+
+      Point3F ownerCamPos = ownerCamTrans.getPosition();
+
       MatrixF ownerTrans = mOwner->getRenderTransform();
       Point3F ownerPos = ownerTrans.getPosition();
 
@@ -157,9 +163,11 @@ void CameraOrbiterComponent::processTick()
       xRot.set(EulerF(mRotation.x, 0.0f, 0.0f));
       zRot.set(EulerF(0.0f, 0.0f, mRotation.z));
 
+      Point3F camPos = pos - ownerVec * pos;
+
       cameraMatrix.mul(zRot, xRot);
       cameraMatrix.getColumn(1, &ownerVec);
-      cameraMatrix.setColumn(3, pos - ownerVec * pos);
+      cameraMatrix.setColumn(3, camPos);
 
       RotationF camRot = RotationF(cameraMatrix);
 
@@ -167,6 +175,6 @@ void CameraOrbiterComponent::processTick()
          mCamera->setRotation(camRot);
 
       if (pos != mCamera->getPosOffset())
-         mCamera->setPosition(pos);
+         mCamera->setPosition(pos + mPosition);
    }
 }

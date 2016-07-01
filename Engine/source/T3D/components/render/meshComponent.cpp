@@ -356,7 +356,7 @@ void MeshComponent::updateShape()
 
             dSprintf(matFieldName, 128, "MaterialSlot%d", i);
             
-            addComponentField(matFieldName, "A material used in the shape file", "TypeAssetId", materialname, "");
+            addComponentField(matFieldName, "A material used in the shape file", "Material", materialname, "");
          }
 
          if(materialCount > 0)
@@ -428,10 +428,19 @@ MatrixF MeshComponent::getNodeTransform(S32 nodeIdx)
       if(nodeIdx >= 0 && nodeIdx < nodeCount)
       {
          //animate();
-         MatrixF mountTransform = mShapeInstance->mNodeTransforms[nodeIdx];
-         mountTransform.mul(mOwner->getRenderTransform());
+         MatrixF nodeTransform = mShapeInstance->mNodeTransforms[nodeIdx];
+         const Point3F& scale = mOwner->getScale();
 
-         return mountTransform;
+         // The position of the node needs to be scaled.
+         Point3F position = nodeTransform.getPosition();
+         position.convolve(scale);
+         nodeTransform.setPosition(position);
+
+         MatrixF finalTransform = MatrixF::Identity;
+
+         finalTransform.mul(mOwner->getRenderTransform(), nodeTransform);
+
+         return finalTransform;
       }
    }
 

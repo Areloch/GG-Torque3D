@@ -1,0 +1,9 @@
+<GameObjectAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="LongswordWeapon"
+    gameObjectName="LongswordWeapon"
+    scriptFilePath="modules/Weapons/gameObjects/LongswordWeapon.cs"
+    TAMLFilePath="modules/Weapons/gameObjects/LongswordWeapon.taml"
+    assetId="LongswordWeaponAsset"
+    VersionId="1" />

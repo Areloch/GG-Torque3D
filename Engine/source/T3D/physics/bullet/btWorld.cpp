@@ -49,6 +49,7 @@ BtWorld::BtWorld() :
    mDynamicsWorld( NULL ),
    mThreadSupportCollision( NULL )
 {
+   raymarchCount = 0;
 } 
 
 BtWorld::~BtWorld()
@@ -195,8 +196,11 @@ bool BtWorld::castRay( const Point3F &startPnt, const Point3F &endPnt, RayInfo *
    btCollisionWorld::ClosestRayResultCallback result( btCast<btVector3>( startPnt ), btCast<btVector3>( endPnt ) );
    mDynamicsWorld->rayTest( btCast<btVector3>( startPnt ), btCast<btVector3>( endPnt ), result );
 
-   if ( !result.hasHit() || !result.m_collisionObject )
+   if (!result.hasHit() || !result.m_collisionObject)
+   {
+      raymarchCount = 0;
       return false;
+   }
 
    if ( ri )
    {
@@ -210,8 +214,18 @@ bool BtWorld::castRay( const Point3F &startPnt, const Point3F &endPnt, RayInfo *
          //nudge it to move it along it's way
          newStart.interpolate(newStart, endPnt, 0.01);
 
+         if (raymarchCount > 15)
+         {
+            raymarchCount = 0;
+            return false;
+         }
+
+         raymarchCount++;
+
          return castRay(newStart, endPnt, ri, mask, impulse);
       }
+
+      raymarchCount = 0;
       
       // If we were passed a RayInfo, we can only return true signifying a collision
       // if we hit an object that actually has a torque object associated with it.

@@ -1,0 +1,35 @@
+<Entity
+    scale="1 1 1"
+    class="LongswordWeapon"
+    canSave="true"
+    canSaveDynamicFields="true"
+    position="12.665 -0.182812 2.73641"
+    Rotation="0 -0 -0"
+    LocalPosition="0 0 0"
+    LocalRotation="1 0 0 0"
+    GameObjectAsset="LongswordWeapon">
+    <MeshComponent
+        componentType="Render"
+        friendlyName="Mesh Component"
+        description="Causes the object to render a non-animating 3d shape using the file provided."
+        networked="true"
+        Enabled="true"
+        MeshAsset="@asset=Weapons:longswordModel" />
+    <Component
+        networked="false"
+        Enabled="true"
+        class="ItemComponent" />
+    <Component
+        networked="false"
+        Enabled="true"
+        class="InteractableComponent" />
+    <CollisionComponent
+        friendlyName="Collision(Component)"
+        networked="false"
+        Enabled="true"
+        CollisionType="Collision Mesh"
+        LineOfSightType="Collision Mesh"
+        DecalType="Collision Mesh"
+        CollisionMeshPrefix="Collision"
+        BlockCollisions="true" />
+</Entity>

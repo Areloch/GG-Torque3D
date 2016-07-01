@@ -1,0 +1,9 @@
+<GameObjectAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="grass"
+    gameObjectName="grass"
+    scriptFilePath="modules/environment/gameObjects/grass.cs"
+    TAMLFilePath="modules/environment/gameObjects/grass.taml"
+    assetId="grassAsset"
+    VersionId="1" />

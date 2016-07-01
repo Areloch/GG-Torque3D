@@ -650,7 +650,7 @@ bool GuiTreeViewCtrl::Item::isParent() const
 #ifdef TORQUE_EXPERIMENTAL_EC
    //We might have a special case with entities
    //So if our entity either has children, or has some component with the EditorInspect interface, we return true
-   if (mInspectorInfo.mObject)
+   /*if (mInspectorInfo.mObject)
    {
       Entity* e = dynamic_cast<Entity*>(mInspectorInfo.mObject.getObject());
       if (e)
@@ -658,7 +658,7 @@ bool GuiTreeViewCtrl::Item::isParent() const
          if (e->size() > 0 || e->getComponentCount() != 0)
             return true;
       }
-   }
+   }*/
 #endif
 
    if(mState.test(VirtualParent))

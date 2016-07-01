@@ -372,6 +372,11 @@ void CollisionComponent::prepCollision()
          mPhysicsRep->setTransform(mOwner->getTransform());
       }
    }
+   else
+   {
+      //We have no collision or physics data, so... delete the physics rep
+      SAFE_DELETE(mPhysicsRep);
+   }
 
    mOwner->enableCollision();
 

@@ -64,6 +64,8 @@ protected:
 
    U32 mTickCount;
 
+   U32 raymarchCount;
+
    ProcessList *mProcessList;
 
    void _destroy();

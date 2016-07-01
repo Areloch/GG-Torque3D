@@ -168,6 +168,8 @@ class GuiBitmapButtonCtrl : public GuiButtonCtrl
       static void initPersistFields();
       bool pointInControl(const Point2I& parentCoordPoint);
 
+      void setBitmapMode(BitmapMode newMode) { mBitmapMode = newMode; }
+
       DECLARE_CONOBJECT(GuiBitmapButtonCtrl);
       DECLARE_DESCRIPTION( "A button control rendered entirely from bitmaps.\n"
                            "The individual button states are represented with separate bitmaps." );

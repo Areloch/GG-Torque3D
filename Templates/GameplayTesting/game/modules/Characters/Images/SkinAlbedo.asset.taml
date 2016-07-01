@@ -1,0 +1,6 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="SkinAlbedo"
+    imageFile="modules/Characters/Images/SkinAlbedo.png"
+    VersionId="1" />

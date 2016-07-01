@@ -1,0 +1,11 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="InteractComponent"
+    componentName="InteractComponent"
+    componentClass="Component"
+    friendlyName="Interaction"
+    componentType="Game"
+    description="Lets an entity be interacted with."
+    scriptFile="modules/Items/components/InteractComponent.cs"
+    VersionId="1" />

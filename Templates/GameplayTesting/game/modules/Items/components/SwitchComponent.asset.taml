@@ -1,0 +1,11 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="SwitchComponent"
+    componentName="SwitchComponent"
+    componentClass="Component"
+    friendlyName="Switch"
+    componentType="Interaction"
+    description="Makes the entity act as a interactable switch."
+    scriptFile="modules/Items/components/SwitchComponent.cs"
+    VersionId="1" />

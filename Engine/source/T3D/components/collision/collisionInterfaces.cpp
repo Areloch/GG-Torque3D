@@ -94,19 +94,20 @@ void CollisionInterface::handleCollision( Collision &col, VectorF velocity )
    {
       queueCollision(col.object, velocity - col.object->getVelocity());
 
+      S32 matId = col.material != NULL ? col.material->getMaterial()->getId() : 0;
+
       //do the callbacks to script for this collision
       Component *comp = dynamic_cast<Component*>(this);
       if (comp->isMethod("onCollision"))
-      {
-         S32 matId = col.material != NULL ? col.material->getMaterial()->getId() : 0;
          Con::executef(comp, "onCollision", col.object, col.normal, col.point, matId, velocity);
-      }
 
       if (comp->getOwner()->isMethod("onCollisionEvent"))
-      {
-         S32 matId = col.material != NULL ? col.material->getMaterial()->getId() : 0;
          Con::executef(comp->getOwner(), "onCollisionEvent", col.object, col.normal, col.point, matId, velocity);
-      }
+
+      //Let any components that care know we had a collision
+      comp->getOwner()->notifyComponents("onCollision",
+         String::ToString(col.object), String::ToString(col.normal),
+         String::ToString(col.point), String::ToString(matId), String::ToString(velocity));
    }
 }
 

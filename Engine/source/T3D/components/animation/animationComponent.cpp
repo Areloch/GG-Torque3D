@@ -673,7 +673,15 @@ void AnimationComponent::advanceThreads(F32 dt)
          }
 
          if (isGhost())
+         {
             mOwnerShapeInstance->animate();
+            /*mOwnerShapeInstance->animateGround();
+            MatrixF groundTransform = mOwnerShapeInstance->getGroundTransform();
+            if (groundTransform != MatrixF::Identity)
+            {
+               mOwner->setPosition(groundTransform.getPosition());
+            }*/
+         }
       }
    }
 }

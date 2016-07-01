@@ -34,13 +34,16 @@
 #endif
 
 class Entity;
+class Namespace;
 
 struct ComponentField
 {
    StringTableEntry mFieldName;
    StringTableEntry mFieldDescription;
 
+   StringTableEntry mFieldTypeName;
    S32 mFieldType;
+
    StringTableEntry mUserData;
 
    StringTableEntry mDefaultValue;
@@ -193,6 +196,8 @@ public:
    void checkComponentFieldModified(const char* slotName, const char* newValue);
 
    virtual void checkDependencies(){}
+
+   StringTableEntry getComponentName();
 };
 
 #endif // COMPONENT_H

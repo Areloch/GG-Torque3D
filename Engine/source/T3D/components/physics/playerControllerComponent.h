@@ -193,9 +193,9 @@ public:
    virtual void setTransform(const MatrixF& mat);
 
    void findContact(bool *run, bool *jump, VectorF *contactNormal);
-   Point3F getContactNormal() { return mContactInfo.contactNormal; }
-   SceneObject* getContactObject() { return mContactInfo.contactObject; }
-   bool isContacted() { return mContactInfo.contacted; }
+   Point3F getContactNormal() { return mOwnerCollisionInterface->getContactInfo()->contactNormal; }
+   SceneObject* getContactObject() { return mOwnerCollisionInterface->getContactInfo()->contactObject; }
+   bool isContacted() { return mOwnerCollisionInterface->getContactInfo()->contacted; }
 
    //
    void applyImpulse(const Point3F &pos, const VectorF &vec);

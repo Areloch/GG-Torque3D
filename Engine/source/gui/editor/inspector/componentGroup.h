@@ -34,12 +34,14 @@ private:
    typedef GuiInspectorGroup Parent;
    GuiControl* mAddCtrl;
 
+   Component* mTargetComponent;
+
    Vector<AbstractClassRep::Field> tempFields;
 
 public:
    DECLARE_CONOBJECT(GuiInspectorComponentGroup);
    GuiInspectorComponentGroup() { /*mNeedScroll=false;*/ };
-   GuiInspectorComponentGroup(StringTableEntry groupName, SimObjectPtr<GuiInspector> parent);
+   GuiInspectorComponentGroup(StringTableEntry groupName, SimObjectPtr<GuiInspector> parent, Component* targetComponent);
 
    //-----------------------------------------------------------------------------
    // inspectGroup is overridden in GuiInspectorComponentGroup to inspect an 

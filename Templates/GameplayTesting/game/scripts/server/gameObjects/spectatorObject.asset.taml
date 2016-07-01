@@ -1,0 +1,7 @@
+<GameObjectAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="SpectatorObjectAsset"
+    gameObjectName="SpectatorObject"
+    scriptFilePath="scripts/server/gameObjects/spectatorObject.cs"
+    TAMLFilePath="scripts/server/gameObjects/spectatorObject.taml" />

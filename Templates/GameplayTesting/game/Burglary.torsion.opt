@@ -1,0 +1,37 @@
+<TorsionProjectOptions>
+<Address>127.0.0.1</Address>
+<Password>password</Password>
+<Port>6060</Port>
+<LastConfig>Release</LastConfig>
+<Breakpoints>
+<Breakpoint>
+<File>tools\gui\assetBrowser.cs</File>
+<Line>201</Line>
+<Pass>0</Pass>
+<Condition/>
+<Enabled/>
+</Breakpoint>
+</Breakpoints>
+<Bookmarks/>
+<OpenFiles>
+<File ScrollX="0" ScrollY="20">tools\gui\guiDialogs.ed.cs</File>
+<File ScrollX="0" ScrollY="201">tools\componentEditor\scripts\componentEditor.ed.cs</File>
+<File ScrollX="0" ScrollY="136">tools\materialEditor\gui\guiMaterialPropertiesWindow.ed.gui</File>
+<File ScrollX="0" ScrollY="80">scripts\server\gameObjects\GameObjectManager.cs</File>
+<File ScrollX="0" ScrollY="2218">tools\worldEditor\scripts\EditorGui.ed.cs</File>
+<File ScrollX="0" ScrollY="118">tools\assetBrowser\assetBrowser.cs</File>
+<File ScrollX="0" ScrollY="188">tools\assetBrowser\assetImport.cs</File>
+<File ScrollX="0" ScrollY="71">scripts\server\game.cs</File>
+<File ScrollX="0" ScrollY="0">art\datablocks\datablockExec.cs</File>
+<File ScrollX="0" ScrollY="38">scripts\server\scriptExec.cs</File>
+<File ScrollX="0" ScrollY="67">core\scripts\server\spawn.cs</File>
+<File ScrollX="0" ScrollY="570">scripts\server\gameCore.cs</File>
+<File ScrollX="0" ScrollY="481">tools\worldEditor\gui\objectBuilderGui.ed.gui</File>
+<File ScrollX="0" ScrollY="802">tools\worldEditor\scripts\editors\creator.ed.cs</File>
+<File ScrollX="0" ScrollY="90">tools\worldEditor\scripts\editor.ed.cs</File>
+<File ScrollX="0" ScrollY="46">tools\gui\gameObjectCreator.cs</File>
+<File ScrollX="0" ScrollY="900">tools\assetBrowser\assetBrowser.gui</File>
+<File ScrollX="0" ScrollY="24">tools\assetBrowser\addPackageWindow.gui</File>
+<File ScrollX="0" ScrollY="72" Active="true">levels\Empty Room.mis</File>
+</OpenFiles>
+</TorsionProjectOptions>

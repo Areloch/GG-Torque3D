@@ -1,0 +1,11 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="ProjectileComponent"
+    componentName="ProjectileComponent"
+    componentClass="Component"
+    friendlyName="Projectile"
+    componentType="Weapons"
+    description="Makes an entity move and collide like a projectile."
+    scriptFile="modules/Weapons/components/ProjectileComponent.cs"
+    VersionId="1" />

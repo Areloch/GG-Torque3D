@@ -33,6 +33,7 @@
 #include "gui/editor/inspector/entityGroup.h"
 #include "gui/editor/inspector/mountingGroup.h"
 #include "gui/editor/inspector/componentGroup.h"
+#include "T3D/components/component.h"
 #endif
 
 IMPLEMENT_CONOBJECT(GuiInspector);
@@ -601,6 +602,29 @@ void GuiInspector::refresh()
          addObject(components);
       }
 
+      Entity* selectedEntity = dynamic_cast<Entity*>(mTargets.first().getObject());
+
+      U32 compCount = selectedEntity->getComponentCount();
+      //Now, add the component groups
+      for (U32 c = 0; c < compCount; ++c)
+      {
+         Component* comp = selectedEntity->getComponent(c);
+         
+         String compName;
+         if (comp->getFriendlyName() != StringTable->EmptyString())
+            compName = comp->getFriendlyName();
+         else
+            compName = comp->getComponentName();
+
+         GuiInspectorGroup *compGroup = new GuiInspectorComponentGroup(compName, this, comp);
+         if (compGroup != NULL)
+         {
+            compGroup->registerObject();
+            mGroups.push_back(compGroup);
+            addObject(compGroup);
+         }
+      }
+
       //Mounting group override
       GuiInspectorGroup *mounting = new GuiInspectorMountingGroup("Mounting", this);
       if (mounting != NULL)
@@ -611,7 +635,7 @@ void GuiInspector::refresh()
       }
    }
 
-   if (mTargets.first()->getClassRep()->isSubclassOf("Component"))
+   /*if (mTargets.first()->getClassRep()->isSubclassOf("Component"))
    {
       //Build the component field groups as the component describes it
       Component* comp = dynamic_cast<Component*>(mTargets.first().getPointer());
@@ -623,7 +647,7 @@ void GuiInspector::refresh()
          mGroups.push_back(compGroup);
          addObject(compGroup);
       }
-   }
+   }*/
 #endif
 
    // Create the inspector groups for static fields.

@@ -221,6 +221,9 @@ void Component::setOwner(Entity* owner)
       mOwner->onTransformSet.notify(this, &Component::ownerTransformSet);
    }
 
+   //Ensure our internal name is set up as our className
+   mInternalName = getComponentName();
+
    if (isServerObject())
       setMaskBits(OwnerMask);
 }
@@ -276,7 +279,7 @@ U32 Component::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
       stream->writeFlag(mEnabled);
    }
 
-   if (stream->writeFlag(mask & NamespaceMask))
+   /*if (stream->writeFlag(mask & NamespaceMask))
    {
       const char* name = getName();
       if (stream->writeFlag(name && name[0]))
@@ -287,7 +290,7 @@ U32 Component::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
 
       if (stream->writeFlag(mClassName && mClassName[0]))
          stream->writeString(String(mClassName));
-   }
+   }*/
 
    return retMask;
 }
@@ -319,7 +322,7 @@ void Component::unpackUpdate(NetConnection *con, BitStream *stream)
       mEnabled = stream->readFlag();
    }
 
-   if (stream->readFlag())
+   /*if (stream->readFlag())
    {
       if (stream->readFlag())
       {
@@ -341,7 +344,7 @@ void Component::unpackUpdate(NetConnection *con, BitStream *stream)
       }
 
       linkNamespaces();
-   }
+   }*/
 }
 
 void Component::packToStream(Stream &stream, U32 tabStop, S32 behaviorID, U32 flags /* = 0  */)
@@ -385,6 +388,10 @@ void Component::setDataField(StringTableEntry slotName, const char *array, const
    onDataSet.trigger(this, slotName, value);
 }
 
+StringTableEntry Component::getComponentName()
+{
+   return getNamespace()->getName();
+}
 
 //catch any behavior field updates
 void Component::onStaticModified(const char* slotName, const char* newValue)
@@ -455,8 +462,8 @@ void Component::addComponentField(const char *fieldName, const char *desc, const
       fieldTypeMask = TypeF32;
    else if (fieldType == StringTable->insert("vector"))
       fieldTypeMask = TypePoint3F;
-   else if (fieldType == StringTable->insert("material"))
-      fieldTypeMask = TypeMaterialName;
+   //else if (fieldType == StringTable->insert("material"))
+   //   fieldTypeMask = TypeMaterialName;
    else if (fieldType == StringTable->insert("image"))
       fieldTypeMask = TypeImageFilename;
    else if (fieldType == StringTable->insert("shape"))
@@ -465,8 +472,18 @@ void Component::addComponentField(const char *fieldName, const char *desc, const
       fieldTypeMask = TypeBool;
    else if (fieldType == StringTable->insert("object"))
       fieldTypeMask = TypeSimObjectPtr;
-   else
+   else if (fieldType == StringTable->insert("string"))
       fieldTypeMask = TypeString;
+   else if (fieldType == StringTable->insert("colorI"))
+      fieldTypeMask = TypeColorI;
+   else if (fieldType == StringTable->insert("colorF"))
+      fieldTypeMask = TypeColorF;
+   else if (fieldType == StringTable->insert("ease"))
+      fieldTypeMask = TypeEaseF;
+   else
+      fieldTypeMask = -1;
+
+   field.mFieldTypeName = fieldType;
 
    field.mFieldType = fieldTypeMask;
 
@@ -626,6 +643,17 @@ ConsoleMethod(Component, getComponentField, const char *, 3, 3, "(int index) - G
    dSprintf(buf, 1024, "%s\t%s\t%s\t%s", field->mFieldName, field->mFieldType, field->mDefaultValue, field->mGroup);
 
    return buf;
+}
+
+DefineConsoleMethod(Component, getComponentFieldType, const char *, (String fieldName), ,
+   "Get the number of static fields on the object.\n"
+   "@return The number of static fields defined on the object.")
+{
+   ComponentField *field = object->getComponentField(fieldName);
+   if (field == NULL)
+      return "";
+
+   return field->mFieldTypeName;;
 }
 
 ConsoleMethod(Component, setComponentield, const char *, 3, 3, "(int index) - Gets a Tab-Delimited list of information about a ComponentField specified by Index\n"

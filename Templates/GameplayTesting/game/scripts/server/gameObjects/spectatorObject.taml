@@ -1,0 +1,26 @@
+<Entity
+    scale="1 1 1"
+    isSelectionEnabled="false"
+    class="spectatorObject"
+    canSave="true"
+    canSaveDynamicFields="true"
+    position="0 0 0"
+    rotation="0 0 0">
+    <Component
+        networked="false"
+        enabled="true"
+        class="ControlObjectComponent"
+        clientOwner="1" />
+    <CameraComponent
+        networked="false"
+        enabled="true"
+        FOV="80"
+        MinFOV="5"
+        MaxFOV="175"
+        ScreenAspect="1024 768"
+        targetNode=""
+        positionOffset="0 0 0"
+        rotationOffset="0 0 0"
+        useParentTransform="true" />
+</Entity>
+

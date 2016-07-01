@@ -1,0 +1,6 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="BowMat"
+    imageFile="modules/Weapons/Images/BowMat.png"
+    VersionId="1" />

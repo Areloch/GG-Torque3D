@@ -278,6 +278,16 @@ void NetObject::setScopeAlways()
    }
 }
 
+DefineEngineMethod(NetObject, clearScopeAlways, void, (), ,
+   "@brief Always scope this object on all connections.\n\n"
+
+   "The object is marked as ScopeAlways and is immediately ghosted to "
+   "all active connections.  This function has no effect if the object "
+   "is not marked as Ghostable.\n\n")
+{
+   object->clearScopeAlways();
+}
+
 void NetObject::clearScopeAlways()
 {
    if(!mNetFlags.test(IsGhost))

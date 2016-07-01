@@ -1,0 +1,14 @@
+<ModuleDefinition
+    canSave="true"
+    canSaveDynamicFields="true"
+    ModuleId="Placeholder"
+    VersionId="1"
+    ScriptFile="Placeholder.cs"
+    CreateFunction="Create"
+    DestroyFunction="destroy">
+    <DeclaredAssets
+        canSave="true"
+        canSaveDynamicFields="true"
+        Extension="asset.taml"
+        Recurse="true" />
+</ModuleDefinition>
