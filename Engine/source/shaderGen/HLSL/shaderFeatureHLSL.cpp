@@ -2710,3 +2710,67 @@ void ImposterVertFeatureHLSL::determineFeature( Material *material,
       outFeatureData->features.addFeature( MFT_ImposterVert );
 }
 
+
+//****************************************************************************
+// HardwareSkinningFeatureHLSL
+//****************************************************************************
+
+void HardwareSkinningFeatureHLSL::processVert(   Vector<ShaderComponent*> &componentList, 
+                                             const MaterialFeatureData &fd )
+{      
+   MultiLine *meta = new MultiLine;
+
+   Var *inPosition = (Var*)LangElement::find( "inPosition" );
+   Var *inNormal = (Var*)LangElement::find( "inNormal" );
+
+   if ( !inPosition )
+      inPosition = (Var*)LangElement::find( "position" );
+
+   if ( !inNormal )
+      inNormal = (Var*)LangElement::find( "normal" );
+
+   Var* posePos = new Var("posePos", "float3");
+   Var* poseNormal = new Var("poseNormal", "float3");
+   Var* poseMat = new Var("poseMat", "float4x3");
+   Var* poseRotMat = new Var("poseRotMat", "float3x3");
+   Var* nodeTransforms = (Var*)LangElement::find("nodeTransforms");
+
+   if (!nodeTransforms)
+   {
+      nodeTransforms = new Var("nodeTransforms", "float4x3");
+      nodeTransforms->uniform = true;
+      nodeTransforms->arraySize = 70;
+      nodeTransforms->constSortPos = cspPotentialPrimitive;
+   }
+   
+   U32 numIndices = mVertexFormat->getNumBlendIndices();
+   meta->addStatement( new GenOp( "   @ = 0.0;\r\n", new DecOp( posePos ) ) );  
+   meta->addStatement( new GenOp( "   @ = 0.0;\r\n", new DecOp( poseNormal ) ) );
+   meta->addStatement( new GenOp( "   @;\r\n", new DecOp( poseMat ) ) );
+   meta->addStatement( new GenOp( "   @;\r\n", new DecOp( poseRotMat ) ) );
+
+   for (U32 i=0; i<numIndices; i++)
+   {
+      // NOTE: To keep things simple, we assume all 4 bone indices are used in each element chunk.
+      LangElement* inIndices = (Var*)LangElement::find(String::ToString( "blendIndices%d", i ));
+      LangElement* inWeights = (Var*)LangElement::find(String::ToString( "blendWeight%d", i ));
+       
+      AssertFatal(inIndices && inWeights, "Something went wrong here");
+      AssertFatal(poseMat && nodeTransforms && posePos && inPosition && inWeights && poseNormal && inNormal && poseRotMat, "Something went REALLY wrong here");
+      
+      meta->addStatement( new GenOp( "   for (int i=0; i<4; i++) {\r\n" ) );
+         meta->addStatement( new GenOp( "      int poseIdx = int(@[i]);\r\n", inIndices ) );
+         meta->addStatement( new GenOp( "      float poseWeight = @[i];\r\n", inWeights) );
+         meta->addStatement( new GenOp( "      @ = @[poseIdx];\r\n", poseMat, nodeTransforms) );
+         meta->addStatement( new GenOp( "      @ = @;\r\n", poseRotMat, poseMat) );
+         meta->addStatement( new GenOp( "      @ += (mul(float4(@, 1), @)).xyz * poseWeight;\r\n", posePos, inPosition, poseMat) );
+         meta->addStatement( new GenOp( "      @ += (mul(@,@) * poseWeight);\r\n", poseNormal, inNormal, poseRotMat) );
+      meta->addStatement( new GenOp( "   }\r\n" ) );
+   }
+   
+   // Assign new position and normal
+   meta->addStatement( new GenOp( "   @ = @;\r\n", inPosition, posePos ) );
+   meta->addStatement( new GenOp( "   @ = normalize(@);\r\n", inNormal, poseNormal ) );
+
+   output = meta;
+}

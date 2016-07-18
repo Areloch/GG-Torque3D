@@ -71,6 +71,8 @@ protected:
    Vector <Var*> mElementList;
 
    U32 mCurTexElem;
+   U32 mCurBlendIndicesElem;
+   U32 mCurBlendWeightsElem;
    U8 mName[32];
 
 public:

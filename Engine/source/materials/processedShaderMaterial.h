@@ -90,6 +90,8 @@ public:
    GFXShaderConstHandle* mTexHandlesSC[Material::MAX_TEX_PER_PASS];
    GFXShaderConstHandle* mRTParamsSC[TEXTURE_STAGE_COUNT];
 
+   GFXShaderConstHandle* mNodeTransforms;
+
    void init( GFXShader* shader, CustomMaterial* mat = NULL );
 };
 
@@ -125,6 +127,7 @@ public:
    virtual bool setupPass(SceneRenderState *, const SceneData& sgData, U32 pass);
    virtual void setTextureStages(SceneRenderState *, const SceneData &sgData, U32 pass );
    virtual void setTransforms(const MatrixSet &matrixSet, SceneRenderState *state, const U32 pass);
+   virtual void setNodeTransforms(const MatrixF *address, const U32 numTransforms, const U32 pass);
    virtual void setSceneInfo(SceneRenderState *, const SceneData& sgData, U32 pass);
    virtual void setBuffers(GFXVertexBufferHandleBase* vertBuffer, GFXPrimitiveBufferHandle* primBuffer); 
    virtual bool stepInstance();

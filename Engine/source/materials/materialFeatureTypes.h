@@ -177,5 +177,7 @@ DeclareFeatureType( MFT_ForwardShading );
 /// so that the rest of the material features can work on it.
 DeclareFeatureType( MFT_ImposterVert );
 
+DeclareFeatureType( MFT_HardwareSkinning );
+
 
 #endif // _MATERIALFEATURETYPES_H_

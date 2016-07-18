@@ -876,10 +876,12 @@ GFXVertexDecl* GFXD3D9Device::allocVertexDecl( const GFXVertexFormat *vertexForm
    U32 elemCount = vertexFormat->getElementCount();
    U32 offsets[4] = { 0 };
    U32 stream;
+   S32 i = 0;
+   S32 elemIdx = 0;
    D3DVERTEXELEMENT9 *vd = new D3DVERTEXELEMENT9[ elemCount + 1 ];
-   for ( U32 i=0; i < elemCount; i++ )
+   for ( i=0; elemIdx < elemCount; i++, elemIdx++ )
    {
-      const GFXVertexElement &element = vertexFormat->getElement( i );
+      const GFXVertexElement &element = vertexFormat->getElement( elemIdx );
       
       stream = element.getStreamIndex();
 
@@ -902,6 +904,18 @@ GFXVertexDecl* GFXD3D9Device::allocVertexDecl( const GFXVertexFormat *vertexForm
          vd[i].Usage = D3DDECLUSAGE_TANGENT;
       else if ( element.isSemantic( GFXSemantic::BINORMAL ) )
          vd[i].Usage = D3DDECLUSAGE_BINORMAL;
+      else if ( element.isSemantic( GFXSemantic::BLENDINDICES ) )
+      {
+         vd[i].Usage = D3DDECLUSAGE_BLENDINDICES;
+         vd[i].UsageIndex = element.getSemanticIndex();
+      }
+      else if ( element.isSemantic( GFXSemantic::BLENDWEIGHT ) )
+      {
+         vd[i].Usage = D3DDECLUSAGE_BLENDWEIGHT;
+         vd[i].UsageIndex = element.getSemanticIndex();
+      }
+      else if ( element.isSemantic( GFXSemantic::PADDING ) )
+         i--;
       else
       {
          // Anything that falls thru to here will be a texture coord.
@@ -913,7 +927,7 @@ GFXVertexDecl* GFXD3D9Device::allocVertexDecl( const GFXVertexFormat *vertexForm
    }
 
    D3DVERTEXELEMENT9 declEnd = D3DDECL_END();
-   vd[elemCount] = declEnd;
+   vd[i] = declEnd;
 
    decl = new D3D9VertexDecl();
    D3D9Assert( mD3DDevice->CreateVertexDeclaration( vd, &decl->decl ), 

@@ -650,5 +650,19 @@ public:
                                   MaterialFeatureData *outFeatureData );
 };
 
+/// Special feature for unpacking imposter verts.
+/// @see RenderImposterMgr
+class HardwareSkinningFeatureHLSL : public ShaderFeatureHLSL
+{
+protected:
+
+public:
+
+   virtual void processVert(  Vector<ShaderComponent*> &componentList,
+                              const MaterialFeatureData &fd );
+
+   virtual String getName() { return "Hardware Skinning"; }
+};
+
 
 #endif // _SHADERGEN_HLSL_SHADERFEATUREHLSL_H_

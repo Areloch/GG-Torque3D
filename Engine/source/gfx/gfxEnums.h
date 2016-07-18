@@ -579,6 +579,8 @@ enum GFXShaderConstType
    // Matrices
    GFXSCT_Float2x2, 
    GFXSCT_Float3x3, 
+   GFXSCT_Float3x4,
+   GFXSCT_Float4x3,
    GFXSCT_Float4x4, 
    // Scalar
    GFXSCT_Int, 
@@ -617,6 +619,9 @@ enum GFXDeclType
    /// A four-component, packed, unsigned bytes mapped to 0 to 1 range.
    /// @see GFXVertexColor
    GFXDeclType_Color,
+
+   /// Four-component, packed, unsigned bytes ranged 0-255
+   GFXDeclType_UByte4,
 
    /// The count of total GFXDeclTypes.
    GFXDeclType_COUNT,

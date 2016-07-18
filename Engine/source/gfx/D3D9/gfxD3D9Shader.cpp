@@ -186,6 +186,12 @@ bool GFXD3D9ShaderBufferLayout::setMatrix(const ParamDesc& pd, const GFXShaderCo
       case GFXSCT_Float3x3 :
          csize = 48;
          break;
+      case GFXSCT_Float3x4 :
+         csize = 64;
+         break;
+      case GFXSCT_Float4x3 :
+         csize = 48;
+         break;
       default:
          AssertFatal(false, "Unhandled case!");
          return false;
@@ -1069,13 +1075,13 @@ void GFXD3D9Shader::_getShaderConstants( ID3DXConstantTable *table,
                   case D3DXPC_MATRIX_ROWS :
                   case D3DXPC_MATRIX_COLUMNS :                     
                      {
-                        switch (constantDesc.RegisterCount)                        
+                        switch (constantDesc.Rows)                        
                         {
                            case 3 :
-                              desc.constType = GFXSCT_Float3x3;
+                              desc.constType = constantDesc.Columns == 4 ? GFXSCT_Float3x4 : GFXSCT_Float3x3;
                               break;
                            case 4 :
-                              desc.constType = GFXSCT_Float4x4;
+                              desc.constType = constantDesc.Columns == 3 ? GFXSCT_Float4x3 : GFXSCT_Float4x4;
                               break;
                         }
                      }
@@ -1431,9 +1437,15 @@ U32 GFXD3D9Shader::getAlignmentValue(const GFXShaderConstType constType) const
       case GFXSCT_Float3x3 : 
          return mRowSizeF * 3;
          break;
+      case GFXSCT_Float3x4 : 
+         return mRowSizeF * 4;
+         break;
       case GFXSCT_Float4x4 :
          return mRowSizeF * 4;
          break;   
+      case GFXSCT_Float4x3 : 
+         return mRowSizeF * 3;
+         break;
       //// Scalar
       case GFXSCT_Int :
       case GFXSCT_Int2 :

@@ -371,6 +371,12 @@ void RenderPrePassMgr::render( SceneRenderState *state )
             mat->setSceneInfo(state, sgData);
             mat->setTransforms(matrixSet, state);
 
+            // Setup HW skinning transforms if applicable
+            if (mat->usesHardwareSkinning() && passRI->mNodeTransforms)
+            {
+               mat->setNodeTransforms(passRI->mNodeTransforms, passRI->mNodeTransformCount);
+            }
+
             // If we're instanced then don't render yet.
             if ( mat->isInstanced() )
             {

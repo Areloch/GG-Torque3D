@@ -19,27 +19,31 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
-#include "shaderComp.h"
+#ifndef _RENDERMESHBATCHMGR_H_
+#define _RENDERMESHBATCHMGR_H_
+
+#ifndef _RENDERBINMANAGER_H_
+#include "renderInstance/renderBinManager.h"
+#endif
 
 //**************************************************************************
-// Connector Struct Component
+// RenderMeshBatchManager
 //**************************************************************************
-
-//----------------------------------------------------------------------------
-// Constructor
-//----------------------------------------------------------------------------
-ShaderConnector::ShaderConnector()
+class RenderMeshBatchManager : public ManagedSingleton<RenderMeshBatchManager>
 {
-   mCurTexElem = 0;
-   mName[0] = '\0';
-   mCurBlendIndicesElem = 0;
-   mCurBlendWeightsElem = 0;}
+public:
+   RenderMeshBatchManager();
+   ~RenderMeshBatchManager();
 
-//----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
-ShaderConnector::~ShaderConnector()
-{
-   // Elements freed by LangElement::freeElements()
-}
+   // ManagedSingleton
+   static const char* getSingletonName() { return "RenderMeshBatchManager"; }
 
+protected:
+   
+};
+
+/// Helper for accessing MaterialManager singleton.
+#define MESHBATCHMGR RenderMeshBatchManager::instance()
+
+
+#endif // _RenderMeshBatchMgr_H_

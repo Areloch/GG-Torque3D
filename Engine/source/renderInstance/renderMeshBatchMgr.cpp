@@ -19,27 +19,42 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
-#include "shaderComp.h"
 
-//**************************************************************************
-// Connector Struct Component
-//**************************************************************************
+#include "platform/platform.h"
+#include "renderInstance/RenderMeshBatchMgr.h"
 
-//----------------------------------------------------------------------------
-// Constructor
-//----------------------------------------------------------------------------
-ShaderConnector::ShaderConnector()
+#include "console/consoleTypes.h"
+#include "gfx/gfxTransformSaver.h"
+#include "gfx/gfxPrimitiveBuffer.h"
+#include "materials/sceneData.h"
+#include "materials/processedMaterial.h"
+#include "scene/sceneRenderState.h"
+#include "gfx/gfxDebugEvent.h"
+#include "math/util/matrixSet.h"
+
+MODULE_BEGIN(RenderMeshBatchManager)
+
+MODULE_INIT_BEFORE(GFX)
+MODULE_SHUTDOWN_BEFORE(GFX)
+
+MODULE_INIT
 {
-   mCurTexElem = 0;
-   mName[0] = '\0';
-   mCurBlendIndicesElem = 0;
-   mCurBlendWeightsElem = 0;}
-
-//----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
-ShaderConnector::~ShaderConnector()
-{
-   // Elements freed by LangElement::freeElements()
+   RenderMeshBatchManager::createSingleton();
 }
 
+MODULE_SHUTDOWN
+{
+   RenderMeshBatchManager::deleteSingleton();
+}
+
+MODULE_END;
+
+
+RenderMeshBatchManager::RenderMeshBatchManager()
+{
+}
+
+RenderMeshBatchManager::~RenderMeshBatchManager()
+{
+   
+}

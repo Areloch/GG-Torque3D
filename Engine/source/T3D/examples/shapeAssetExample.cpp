@@ -184,6 +184,10 @@ bool ShapeAssetExample::onAdd()
    if (isServerObject())
       setMaskBits(ShapeMask);
 
+   mNodeTransforms.clear();
+   mNodeTransforms.increment();
+   mNodeTransforms[0] = MatrixF::Identity;
+
    return true;
 }
 
@@ -284,7 +288,7 @@ void ShapeAssetExample::advanceTime(F32 delta)
 
    if (mAnimAsset && mMeshAsset)
    {
-      for (U32 i = 0; i < mAnimationThreads.size(); i++)
+      /*for (U32 i = 0; i < mAnimationThreads.size(); i++)
       {
          mAnimationThreads[i].playTime += delta * mAnimationThreads[i].playSpeed;
 
@@ -294,6 +298,11 @@ void ShapeAssetExample::advanceTime(F32 delta)
          Vector<MatrixF> nodeTransforms = mAnimAsset->getNodeTransforms(0, mAnimationThreads[i].playTime);
 
          mNodeTransforms = nodeTransforms;
+      }*/
+
+      for (U32 i = 0; i < mNodeTransforms.size(); i++)
+      {
+         mNodeTransforms[i].setPosition(mNodeTransforms[i].getPosition() + (Point3F(0, 0, 0.1) * delta));
       }
    }
    //animation updaaaaaates
@@ -699,6 +708,8 @@ void ShapeAssetExample::prepRenderImage( SceneRenderState *state )
       // our Material would like to make use of it
       // NOTICE: SFXBB is removed and refraction is disabled!
       //ri->backBuffTex = GFX->getSfxBackBuffer();
+
+      matInst->setNodeTransforms(mNodeTransforms.address(), mNodeTransforms.size());
 
       // Set our Material
       ri->matInst = matInst;

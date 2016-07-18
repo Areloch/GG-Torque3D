@@ -264,6 +264,7 @@ void ShaderGen::_processVertFeatures( Vector<GFXShaderMacro> &macros, bool macro
          if ( macrosOnly )
             continue;
 
+         feature->mVertexFormat = mVertexFormat;
          feature->mInstancingFormat = &mInstancingFormat;
          feature->processVert( mComponents, mFeatureData );
 

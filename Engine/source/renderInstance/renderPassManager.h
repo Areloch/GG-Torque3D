@@ -370,6 +370,12 @@ struct MeshRenderInst : public RenderInst
    GFXTextureObject *accuTex;
    GFXCubemap   *cubemap;
 
+   /// @name Hardware Skinning
+   /// {
+   MatrixF *mNodeTransforms;
+   U32 mNodeTransformCount;
+   /// }
+
    void clear();
 };
 
