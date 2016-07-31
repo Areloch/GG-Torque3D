@@ -1669,29 +1669,30 @@ void GuiCanvas::setupFences()
 }
 
 U32 lastCanvasChangeTime = 0;
+U32 lastRenderThreadTime = 0;
 
 void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
 {
    AssertISV(mPlatformWindow, "GuiCanvas::renderFrame - no window present!");
-   if(!mPlatformWindow->isVisible() || !GFX->allowRender() || GFX->canCurrentlyRender())
+   if(!mPlatformWindow->isVisible()/* || !GFX->allowRender() || GFX->canCurrentlyRender()*/)
       return;
 
-   PROFILE_START(CanvasPreRender);
+   //PROFILE_START(CanvasPreRender);
 
    // Set our window as the current render target so we can see outputs.
-   GFX->setActiveRenderTarget(mPlatformWindow->getGFXTarget());
+   /*GFX->setActiveRenderTarget(mPlatformWindow->getGFXTarget());
 
    if (!GFX->getActiveRenderTarget())
    {
       PROFILE_END();
       return;
-   }
+   }*/
 
 #ifdef TORQUE_GFX_STATE_DEBUG
    GFX->getDebugStateManager()->startFrame();
 #endif
 
-   GFXTarget* renderTarget = GFX->getActiveRenderTarget();
+   /*GFXTarget* renderTarget = GFX->getActiveRenderTarget();
    if (renderTarget == NULL)
    {
       PROFILE_END();
@@ -1795,9 +1796,9 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
    // Begin GFX
    PROFILE_START(GFXBeginScene);
 
-   bool beginSceneRes = GFX->beginScene();
+   //bool beginSceneRes = GFX->beginScene();
 
-   PROFILE_END();
+   PROFILE_END();*/
 
    // Render all offscreen canvas objects here since we may need them in the render loop
    /*if (GuiOffscreenCanvas::sList.size() != 0)
@@ -1926,24 +1927,50 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
    //DynamicTexture::updateEndOfFrameTextures();
    // mPending is set when the console function "screenShot()" is called
    // this situation is necessary because it needs to take the screenshot
-   // before the buffers swap*/
+   // before the buffers swap
 
-   PROFILE_END();
+   PROFILE_END();*/
+
+   //GFX->clear(GFXClearTarget, ColorI(0, 0, 255), 1.0f, 0);
 
    //RENDER THREAD
    //The thread that will be used
 
+   /*if (!GFX->allowRender() || GFX->canCurrentlyRender())
+      return;
+
+   GFX->setActiveRenderTarget(mPlatformWindow->getGFXTarget());
+
+   GFXTarget* renderTarget = GFX->getActiveRenderTarget();
+   if (renderTarget == NULL)
+   {
+      return;
+   }
+
+   Point2I size = renderTarget->getSize();
+
+   if (size.x == 0 || size.y == 0)
+   {
+      return;
+   }
+
+   bool beginSceneRes = GFX->beginScene();*/
+
+   GFX->mPlatformWindow = mPlatformWindow;
+
    if (mLastRenderMs - lastCanvasChangeTime > 1000)
    {
-      RectI updateUnion;
-      buildUpdateUnion(&updateUnion);
-      if (updateUnion.intersect(screenRect))
+      RectI updateUnion(0,0,1024,768);
+      //buildUpdateUnion(&updateUnion);
+      //if (updateUnion.intersect(screenRect))
       {
          GFXDevice::DrawCallState DCS;
 
          DCS.stateBlock = mDefaultGuiSB;
          DCS.updateUnion = updateUnion;
          DCS.canvasColor = ColorI(mRandI(0, 255), mRandI(0, 255), mRandI(0, 255), mRandI(0, 255));
+
+         //SDL_mutexP(GFX->mMutex);
 
          GFXDevice::DrawCallStateQueue* DCSQueue = GFX->getWritableDCSQueue();
          if (DCSQueue)
@@ -1954,10 +1981,20 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
 
             lastCanvasChangeTime = Platform::getRealMilliseconds();
          }
+
+         //SDL_mutexV(GFX->mMutex);
+
+         //SDL_CondSignal(GFX->mCanDrawCondition);
       }
    }
 
-   GFX->setupRenderThread();
+   //if (mLastRenderMs - lastRenderThreadTime > 50)
+   {
+      lastRenderThreadTime = Platform::getRealMilliseconds();
+      GFX->setupRenderThread();
+   }   
+
+  // GFX->endScene();
    //RENDER THREAD
 
    // Fence logic here, because this is where endScene is called.
@@ -1974,16 +2011,16 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
 
       // Block on previous fence
       mFences[mNextFenceIdx]->block();
-   }*/
+   }
 
    PROFILE_START(GFXEndScene);
-   GFX->endScene();
-   PROFILE_END();
+   //GFX->endScene();
+   PROFILE_END();*/
    
-   GFX->getDeviceEventSignal().trigger( GFXDevice::dePostFrame );
-   swapBuffers();
+   //GFX->getDeviceEventSignal().trigger( GFXDevice::dePostFrame );
+   //swapBuffers();
 
-   GuiCanvas::getGuiCanvasFrameSignal().trigger(false);
+   //GuiCanvas::getGuiCanvasFrameSignal().trigger(false);
 
 #ifdef TORQUE_GFX_STATE_DEBUG
    GFX->getDebugStateManager()->endFrame();

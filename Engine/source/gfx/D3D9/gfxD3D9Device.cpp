@@ -244,7 +244,7 @@ void GFXD3D9Device::setShaderConstBufferInternal(GFXShaderConstBuffer* buffer)
 void GFXD3D9Device::clear( U32 flags, ColorI color, F32 z, U32 stencil ) 
 {
    // Make sure we have flushed our render target state.
-   _updateRenderTargets();
+   //_updateRenderTargets();
 
    // Kind of a bummer we have to do this, there should be a better way made
    DWORD realflags = 0;

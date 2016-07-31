@@ -166,8 +166,12 @@ PlatformWindow *PlatformWindowManagerSDL::createWindow(GFXDevice *device, const 
    if(device)
    {
       window->mDevice = device;
-      window->mTarget = device->allocWindowTarget(window);
-      AssertISV(window->mTarget, "PlatformWindowManagerSDL::createWindow - failed to get a window target back from the device.");
+      //window->mTarget = device->allocWindowTarget(window);
+
+      device->mWindowTarget = device->allocWindowTarget(window);
+
+      //AssertISV(window->mTarget, "PlatformWindowManagerSDL::createWindow - failed to get a window target back from the device.");
+      AssertISV(device->mWindowTarget, "PlatformWindowManagerSDL::createWindow - failed to get a window target back from the device.");
    }
    else
    {

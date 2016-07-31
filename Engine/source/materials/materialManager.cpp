@@ -294,6 +294,8 @@ String MaterialManager::getMapEntry(const String & textureName) const
 
 void MaterialManager::flushAndReInitInstances()
 {
+   return;
+
    // Clear the flag if its set.
    mFlushAndReInit = false;   
 

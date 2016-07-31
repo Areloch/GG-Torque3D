@@ -58,8 +58,8 @@
 #include "platform/platformTimer.h"
 #endif
 
-#include "SDL.h"
-#include "SDL_thread.h"
+#include "platform/threads/thread.h"
+#include "windowManager/platformWindowMgr.h"
 
 class FontRenderBatcher;
 class GFont;
@@ -320,8 +320,12 @@ public:
    GFXDevice();
    virtual ~GFXDevice();
 
-   SDL_Thread* mRenderThread;
+   Thread* mRenderThread;
    void setupRenderThread();
+
+   PlatformWindow *mPlatformWindow;
+
+   GFXWindowTarget* mWindowTarget;
 
    struct DrawCallState
    {
@@ -340,6 +344,8 @@ public:
 
       DrawCallStateQueue() : canRender(false) {}
    };
+
+   DrawCallState mLastDrawCallState;
 
    DrawCallStateQueue mDrawCallStateQueue[2];
 

@@ -199,6 +199,8 @@ GFXDevice::GFXDevice()
 
    mStereoTargets[0] = NULL;
    mStereoTargets[1] = NULL;
+
+   mRenderThread = NULL;
 }
 
 GFXDrawUtil* GFXDevice::getDrawUtil()
@@ -807,40 +809,81 @@ void GFXDevice::setCubeTexture( U32 stage, GFXCubemap *texture )
 }
 
 //------------------------------------------------------------------------------
-int handleRenderThread(void* data)
+void handleRenderThread(void* data)
 {
    GFXDevice* gfx = static_cast<GFXDevice*>(data);
 
-   //bool beginSceneRes = gfx->beginScene();
+   if (!gfx->allowRender() || gfx->canCurrentlyRender())
+      return;
+
+   gfx->setActiveRenderTarget(gfx->mWindowTarget);
+
+   GFXTarget* renderTarget = gfx->getActiveRenderTarget();
+   if (renderTarget == NULL)
+   {
+      return;
+   }
+
+   Point2I size = renderTarget->getSize();
+
+   if (size.x == 0 || size.y == 0)
+   {
+      return;
+   }
+
+   bool beginSceneRes = gfx->beginScene();
+
+   //SDL_mutexP(gfx->mMutex);
 
    GFXDevice::DrawCallStateQueue* DCSQueue = gfx->getRenderableDCSQueue();
 
    if (DCSQueue)
    {
-      for (Uint32 i = 0; i < DCSQueue->mDrawCallStates.size(); ++i)
+      for (uint32_t i = 0; i < DCSQueue->mDrawCallStates.size(); ++i)
       {
          GFXDevice::DrawCallState *DCS = &DCSQueue->mDrawCallStates[i];
 
-         gfx->setClipRect(DCS->updateUnion);
-         gfx->setStateBlock(DCS->stateBlock);
+         //if(gfx->mLastDrawCallState.updateUnion != DCS->updateUnion)
+            gfx->setClipRect(DCS->updateUnion);
 
-         gfx->clear(GFXClearTarget, DCS->canvasColor, 1.0f, 0);
+         //if(gfx->mLastDrawCallState.stateBlock != DCS->stateBlock)
+           gfx->setStateBlock(DCS->stateBlock);
+
+         //if (gfx->mLastDrawCallState.canvasColor != DCS->canvasColor)
+            gfx->clear(GFXClearTarget, DCS->canvasColor, 1.0f, 0);
 
          gfx->getDrawUtil()->clearBitmapModulation();
+
+         //gfx->mLastDrawCallState = *DCS;
       }
 
       DCSQueue->canRender = false;
       DCSQueue->mDrawCallStates.clear();
    }
 
-   //gfx->endScene();
+   //SDL_mutexV(gfx->mMutex);
 
-   return 1;
+   gfx->endScene();
+
+   //AssertISV(mPlatformWindow, "GuiCanvas::swapBuffers - no window present!");
+   if (!gfx->mPlatformWindow->isVisible())
+      return;
+
+   //swap buffers
+   gfx->mWindowTarget->present();
+
+   return;
 }
 
 void GFXDevice::setupRenderThread()
 {
-   mRenderThread = SDL_CreateThread(handleRenderThread, "RenderThread", this);
+   if (!mRenderThread)
+   {
+      mRenderThread = new Thread(handleRenderThread, this, false, false);
+      mRenderThread->start();
+   }
+
+   mRenderThread->run(this);
 }
 //------------------------------------------------------------------------------
 inline bool GFXDevice::beginScene()
