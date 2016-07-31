@@ -336,6 +336,8 @@ public:
 
       bool canRender;
 
+      uint8_t id;
+
       DrawCallStateQueue() : canRender(false) {}
    };
 

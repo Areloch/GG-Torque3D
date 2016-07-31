@@ -226,8 +226,8 @@ void GFXDevice::deviceInited()
    temp.fill( ColorI( 128, 128, 255 ) );
    GFXTexHandle::ZUP.set( &temp, &GFXDefaultStaticNormalMapProfile, false, "GFXTexHandle::ZUP" ); 
 
-   mDrawCallStateQueue[0] = DrawCallStateQueue();
-   mDrawCallStateQueue[1] = DrawCallStateQueue();
+   mDrawCallStateQueue[0].id = 0;
+   mDrawCallStateQueue[1].id = 1;
 }
 
 bool GFXDevice::destroy()
@@ -830,6 +830,7 @@ int handleRenderThread(void* data)
       }
 
       DCSQueue->canRender = false;
+      DCSQueue->mDrawCallStates.clear();
    }
 
    //gfx->endScene();
