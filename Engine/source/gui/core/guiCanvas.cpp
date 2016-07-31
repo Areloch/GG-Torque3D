@@ -1668,6 +1668,8 @@ void GuiCanvas::setupFences()
    mNextFenceIdx = 0;
 }
 
+U32 lastCanvasChangeTime = 0;
+
 void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
 {
    AssertISV(mPlatformWindow, "GuiCanvas::renderFrame - no window present!");
@@ -1798,7 +1800,7 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
    PROFILE_END();
 
    // Render all offscreen canvas objects here since we may need them in the render loop
-   if (GuiOffscreenCanvas::sList.size() != 0)
+   /*if (GuiOffscreenCanvas::sList.size() != 0)
    {
       // Reset the entire state since oculus shit will have barfed it.
       GFX->disableShaders(true);
@@ -1924,12 +1926,42 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
    //DynamicTexture::updateEndOfFrameTextures();
    // mPending is set when the console function "screenShot()" is called
    // this situation is necessary because it needs to take the screenshot
-   // before the buffers swap
+   // before the buffers swap*/
 
    PROFILE_END();
 
+   //RENDER THREAD
+   //The thread that will be used
+
+   if (mLastRenderMs - lastCanvasChangeTime > 1000)
+   {
+      RectI updateUnion;
+      buildUpdateUnion(&updateUnion);
+      if (updateUnion.intersect(screenRect))
+      {
+         GFXDevice::DrawCallState DCS;
+
+         DCS.stateBlock = mDefaultGuiSB;
+         DCS.updateUnion = updateUnion;
+         DCS.canvasColor = ColorI(mRandI(0, 255), mRandI(0, 255), mRandI(0, 255), mRandI(0, 255));
+
+         GFXDevice::DrawCallStateQueue* DCSQueue = GFX->getWritableDCSQueue();
+         if (DCSQueue)
+         {
+            DCSQueue->mDrawCallStates.push_back(DCS);
+
+            DCSQueue->canRender = true;
+
+            lastCanvasChangeTime = Platform::getRealMilliseconds();
+         }
+      }
+   }
+
+   GFX->setupRenderThread();
+   //RENDER THREAD
+
    // Fence logic here, because this is where endScene is called.
-   if( mNumFences > 0 )
+   /*if( mNumFences > 0 )
    {
       // Issue next fence
       mFences[mNextFenceIdx]->issue();
@@ -1942,7 +1974,7 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
 
       // Block on previous fence
       mFences[mNextFenceIdx]->block();
-   }
+   }*/
 
    PROFILE_START(GFXEndScene);
    GFX->endScene();

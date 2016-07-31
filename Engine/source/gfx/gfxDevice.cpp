@@ -210,6 +210,8 @@ GFXDrawUtil* GFXDevice::getDrawUtil()
    return mDrawer;
 }
 
+//-----------------------------------------------------------------------------
+
 void GFXDevice::deviceInited()
 {
    getDeviceEventSignal().trigger(deInit);
@@ -223,6 +225,9 @@ void GFXDevice::deviceInited()
    GFXTexHandle::ZERO.set( &temp, &GFXDefaultStaticDiffuseProfile, false, "GFXTexHandle::ZERO" ); 
    temp.fill( ColorI( 128, 128, 255 ) );
    GFXTexHandle::ZUP.set( &temp, &GFXDefaultStaticNormalMapProfile, false, "GFXTexHandle::ZUP" ); 
+
+   mDrawCallStateQueue[0] = DrawCallStateQueue();
+   mDrawCallStateQueue[1] = DrawCallStateQueue();
 }
 
 bool GFXDevice::destroy()
@@ -802,7 +807,41 @@ void GFXDevice::setCubeTexture( U32 stage, GFXCubemap *texture )
 }
 
 //------------------------------------------------------------------------------
+int handleRenderThread(void* data)
+{
+   GFXDevice* gfx = static_cast<GFXDevice*>(data);
 
+   //bool beginSceneRes = gfx->beginScene();
+
+   GFXDevice::DrawCallStateQueue* DCSQueue = gfx->getRenderableDCSQueue();
+
+   if (DCSQueue)
+   {
+      for (Uint32 i = 0; i < DCSQueue->mDrawCallStates.size(); ++i)
+      {
+         GFXDevice::DrawCallState *DCS = &DCSQueue->mDrawCallStates[i];
+
+         gfx->setClipRect(DCS->updateUnion);
+         gfx->setStateBlock(DCS->stateBlock);
+
+         gfx->clear(GFXClearTarget, DCS->canvasColor, 1.0f, 0);
+
+         gfx->getDrawUtil()->clearBitmapModulation();
+      }
+
+      DCSQueue->canRender = false;
+   }
+
+   //gfx->endScene();
+
+   return 1;
+}
+
+void GFXDevice::setupRenderThread()
+{
+   mRenderThread = SDL_CreateThread(handleRenderThread, "RenderThread", this);
+}
+//------------------------------------------------------------------------------
 inline bool GFXDevice::beginScene()
 {
    AssertFatal( mCanCurrentlyRender == false, "GFXDevice::beginScene() - The scene has already begun!" );

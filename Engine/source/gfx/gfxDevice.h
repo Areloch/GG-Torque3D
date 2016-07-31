@@ -58,6 +58,9 @@
 #include "platform/platformTimer.h"
 #endif
 
+#include "SDL.h"
+#include "SDL_thread.h"
+
 class FontRenderBatcher;
 class GFont;
 class GFXCardProfiler;
@@ -316,6 +319,47 @@ protected:
 public:
    GFXDevice();
    virtual ~GFXDevice();
+
+   SDL_Thread* mRenderThread;
+   void setupRenderThread();
+
+   struct DrawCallState
+   {
+      GFXStateBlockRef stateBlock;
+      RectI updateUnion;
+      ColorI canvasColor;
+   };
+
+   struct DrawCallStateQueue
+   {
+      Vector<DrawCallState> mDrawCallStates;
+
+      bool canRender;
+
+      DrawCallStateQueue() : canRender(false) {}
+   };
+
+   DrawCallStateQueue mDrawCallStateQueue[2];
+
+   DrawCallStateQueue* getWritableDCSQueue()
+   {
+      if (!mDrawCallStateQueue[0].canRender)
+         return &mDrawCallStateQueue[0];
+      else if (!mDrawCallStateQueue[1].canRender)
+         return &mDrawCallStateQueue[1];
+
+      return NULL;
+   }
+
+   DrawCallStateQueue* getRenderableDCSQueue()
+   {
+      if (mDrawCallStateQueue[0].canRender)
+         return &mDrawCallStateQueue[0];
+      else if (mDrawCallStateQueue[1].canRender)
+         return &mDrawCallStateQueue[1];
+
+      return NULL;
+   }
 
    /// Initialize this GFXDevice, optionally specifying a platform window to
    /// bind to.
