@@ -1671,6 +1671,44 @@ void GuiCanvas::setupFences()
 U32 lastCanvasChangeTime = 0;
 U32 lastRenderThreadTime = 0;
 
+void drawRect(GFXDevice::DrawCallState *DCS, const Point2F &upperLeft, const Point2F &lowerRight, const ColorI &color)
+{
+   Point2F nw(-0.5f, -0.5f); /*  \  */
+   Point2F ne(0.5f, -0.5f); /*  /  */
+
+   GFXVertexBufferHandle<GFXVertexPCT> verts(GFX, 10, GFXBufferTypeVolatile);
+   verts.lock();
+
+   F32 ulOffset = 0.5f - GFX->getFillConventionOffset();
+
+   verts[0].point.set(upperLeft.x + ulOffset + nw.x, upperLeft.y + ulOffset + nw.y, 0.0f);
+   verts[1].point.set(upperLeft.x + ulOffset - nw.x, upperLeft.y + ulOffset - nw.y, 0.0f);
+   verts[2].point.set(lowerRight.x + ulOffset + ne.x, upperLeft.y + ulOffset + ne.y, 0.0f);
+   verts[3].point.set(lowerRight.x + ulOffset - ne.x, upperLeft.y + ulOffset - ne.y, 0.0f);
+   verts[4].point.set(lowerRight.x + ulOffset - nw.x, lowerRight.y + ulOffset - nw.y, 0.0f);
+   verts[5].point.set(lowerRight.x + ulOffset + nw.x, lowerRight.y + ulOffset + nw.y, 0.0f);
+   verts[6].point.set(upperLeft.x + ulOffset - ne.x, lowerRight.y + ulOffset - ne.y, 0.0f);
+   verts[7].point.set(upperLeft.x + ulOffset + ne.x, lowerRight.y + ulOffset + ne.y, 0.0f);
+   verts[8].point.set(upperLeft.x + ulOffset + nw.x, upperLeft.y + ulOffset + nw.y, 0.0f); // same as 0
+   verts[9].point.set(upperLeft.x + ulOffset - nw.x, upperLeft.y + ulOffset - nw.y, 0.0f); // same as 1
+
+   for (S32 i = 0; i<10; i++)
+      verts[i].color = color;
+
+   verts.unlock();
+
+   DCS->vertBuffer = verts;
+   DCS->vertexCount = 10;
+
+   DCS->primCount = 8;
+
+   //GFX->setVertexBuffer(verts);
+
+   //GFX->setStateBlock(mRectFillSB);
+   //GFX->setupGenericShaders();
+   //GFX->drawPrimitive(GFXTriangleStrip, 0, 8);
+}
+
 void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
 {
    AssertISV(mPlatformWindow, "GuiCanvas::renderFrame - no window present!");
@@ -1688,9 +1726,9 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
       return;
    }*/
 
-#ifdef TORQUE_GFX_STATE_DEBUG
+/*#ifdef TORQUE_GFX_STATE_DEBUG
    GFX->getDebugStateManager()->startFrame();
-#endif
+#endif*/
 
    /*GFXTarget* renderTarget = GFX->getActiveRenderTarget();
    if (renderTarget == NULL)
@@ -1966,9 +2004,20 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
       {
          GFXDevice::DrawCallState DCS;
 
-         DCS.stateBlock = mDefaultGuiSB;
-         DCS.updateUnion = updateUnion;
-         DCS.canvasColor = ColorI(mRandI(0, 255), mRandI(0, 255), mRandI(0, 255), mRandI(0, 255));
+         drawRect(&DCS, Point2F(0, 0), Point2F(1024, 768), ColorI(mRandI(0, 255), mRandI(0, 255), mRandI(0, 255)));
+
+         GFXStateBlockDesc rectFill;
+         rectFill.setCullMode(GFXCullNone);
+         rectFill.setZReadWrite(false);
+         rectFill.setBlend(true, GFXBlendSrcAlpha, GFXBlendInvSrcAlpha);
+         GFXStateBlockRef mRectFillSB = GFX->createStateBlock(rectFill);
+
+         //DCS.stateBlock = mDefaultGuiSB;
+         DCS.stateBlock = mRectFillSB;
+         //DCS.vertBuffer = verts;
+         //DCS.vertBuffer
+         //DCS.updateUnion = updateUnion;
+         //DCS.canvasColor = ColorI(mRandI(0, 255), mRandI(0, 255), mRandI(0, 255), mRandI(0, 255));
 
          //SDL_mutexP(GFX->mMutex);
 
@@ -2022,9 +2071,9 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
 
    //GuiCanvas::getGuiCanvasFrameSignal().trigger(false);
 
-#ifdef TORQUE_GFX_STATE_DEBUG
+/*#ifdef TORQUE_GFX_STATE_DEBUG
    GFX->getDebugStateManager()->endFrame();
-#endif
+#endif*/
 
    // Keep track of the last time we rendered.
    mLastRenderMs = Platform::getRealMilliseconds();

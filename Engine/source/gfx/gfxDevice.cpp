@@ -833,7 +833,15 @@ void handleRenderThread(void* data)
 
    bool beginSceneRes = gfx->beginScene();
 
+#ifdef TORQUE_GFX_STATE_DEBUG
+   gfx->getDebugStateManager()->startFrame();
+#endif
+
    //SDL_mutexP(gfx->mMutex);
+
+   gfx->setWorldMatrix(MatrixF::Identity);
+   gfx->setViewMatrix(MatrixF::Identity);
+   gfx->setProjectionMatrix(MatrixF::Identity);
 
    GFXDevice::DrawCallStateQueue* DCSQueue = gfx->getRenderableDCSQueue();
 
@@ -844,15 +852,41 @@ void handleRenderThread(void* data)
          GFXDevice::DrawCallState *DCS = &DCSQueue->mDrawCallStates[i];
 
          //if(gfx->mLastDrawCallState.updateUnion != DCS->updateUnion)
-            gfx->setClipRect(DCS->updateUnion);
+            //gfx->setClipRect(DCS->updateUnion);
 
          //if(gfx->mLastDrawCallState.stateBlock != DCS->stateBlock)
-           gfx->setStateBlock(DCS->stateBlock);
+            gfx->setStateBlock(DCS->stateBlock);
+
+         if (DCS->vertBuffer.isValid())
+            gfx->setVertexBuffer(DCS->vertBuffer);
+
+         if (DCS->primBuffer.isValid())
+         {
+            gfx->setPrimitiveBuffer(DCS->primBuffer);
+         }
+         else
+         {
+            if (DCS->primCount != 0)
+               gfx->drawPrimitive(GFXTriangleStrip, 0, DCS->primCount);
+            else
+               return; //something's wrong, we have no primitives
+         }
+
+         //set up the shaders
+         if (DCS->shaderV && DCS->shaderP)
+         {
+            gfx->setShader(DCS->shaderV);
+            gfx->setShader(DCS->shaderP);
+         }
+         else
+         {
+            gfx->setupGenericShaders();
+         }
 
          //if (gfx->mLastDrawCallState.canvasColor != DCS->canvasColor)
-            gfx->clear(GFXClearTarget, DCS->canvasColor, 1.0f, 0);
+            //gfx->clear(GFXClearTarget, DCS->canvasColor, 1.0f, 0);
 
-         gfx->getDrawUtil()->clearBitmapModulation();
+         //gfx->getDrawUtil()->clearBitmapModulation();
 
          //gfx->mLastDrawCallState = *DCS;
       }
@@ -871,6 +905,10 @@ void handleRenderThread(void* data)
 
    //swap buffers
    gfx->mWindowTarget->present();
+
+#ifdef TORQUE_GFX_STATE_DEBUG
+   gfx->getDebugStateManager()->endFrame();
+#endif
 
    return;
 }

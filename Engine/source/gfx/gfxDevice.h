@@ -32,6 +32,9 @@
 #ifndef _GFXVERTEXBUFFER_H_
 #include "gfx/gfxVertexBuffer.h"
 #endif
+#ifndef _GFXPRIMITIVEBUFFER_H_
+#include "gfx/gfxPrimitiveBuffer.h"
+#endif
 #ifndef _GFXSTATEBLOCK_H_
 #include "gfx/gfxStateBlock.h"
 #endif
@@ -72,6 +75,7 @@ class GFXShader;
 class GFXStateBlock;
 class GFXShaderConstBuffer;
 class GFXTextureManager;
+class GFXPrimitiveBufferHandle;
 
 // Global macro
 #define GFX GFXDevice::get()
@@ -330,8 +334,23 @@ public:
    struct DrawCallState
    {
       GFXStateBlockRef stateBlock;
-      RectI updateUnion;
-      ColorI canvasColor;
+      GFXSamplerStateDesc samplerState;
+      GFXShaderConstDesc constBuffer;
+      GFXShaderRef shaderV;
+      GFXShaderRef shaderP;
+      GFXVertexBufferHandleBase vertBuffer;
+      GFXPrimitiveBufferHandle primBuffer;
+
+      uint16_t vertexCount;
+      uint16_t primCount;
+
+      DrawCallState()
+      {
+         shaderV = NULL;
+         shaderP = NULL;
+         vertexCount = 0;
+         primCount = 0;
+      }
    };
 
    struct DrawCallStateQueue
