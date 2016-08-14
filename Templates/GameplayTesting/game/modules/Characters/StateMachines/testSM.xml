@@ -1,0 +1,34 @@
+<StateMachine>
+    <Fields>
+        <Field name="forwardVector" defaultValue="0" />
+        <Field name="isCrouched" defaultValue="0" />
+    </Fields>
+    <States>
+        <State name="StandingRoot" scriptFunction="onStandingRoot" pos="-48 -87" />
+        <State name="ForwardRun" scriptFunction="onForwardRun" pos="-139 40" />
+        <State name="CrouchRoot" scriptFunction="onCrouchRoot" pos="145 -2" />
+        <State name="CrouchForward" scriptFunction="onCrouchForward" pos="15 125" />
+    </States>
+    <Transitions>
+        <Transition ownerState="0" stateTarget="1">
+            <Rule fieldId="1" comparitor="GreaterThan" value="0" />
+        </Transition>
+        <Transition ownerState="1" stateTarget="0">
+            <Rule fieldId="1" comparitor="Equals" value="0" />
+        </Transition>
+        <Transition ownerState="1" stateTarget="3">
+            <Rule fieldId="2" comparitor="Equals" value="1" />
+            <Rule fieldId="1" comparitor="GreaterThan" value="0" />
+        </Transition>
+        <Transition ownerState="3" stateTarget="2">
+            <Rule fieldId="2" comparitor="Equals" value="0" />
+        </Transition>
+        <Transition ownerState="2" stateTarget="0">
+            <Rule fieldId="2" comparitor="Equals" value="0" />
+            <Rule fieldId="1" comparitor="Equals" value="0" />
+        </Transition>
+        <Transition ownerState="0" stateTarget="2">
+            <Rule fieldId="2" comparitor="Equals" value="1" />
+        </Transition>
+    </Transitions>
+</StateMachine>

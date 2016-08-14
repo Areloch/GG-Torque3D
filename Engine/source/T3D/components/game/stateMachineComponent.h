@@ -68,7 +68,7 @@ public:
 
    virtual void loadStateMachineFile();
 
-   void setStateMachineFile(const char* fileName) { mStateMachineFile = StringTable->insert(fileName); }
+   void setStateMachineFile(const char* fileName);
 
    static bool _setSMFile(void *object, const char *index, const char *data);
 

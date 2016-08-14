@@ -322,7 +322,7 @@ void RigidBodyComponent::processTick()
    }
 
    //Check if any collisions occured
-   findContact();
+   //findContact();
 
    // If we haven't been sleeping then update our transform
    // and set ourselves as dirty for the next client update.
@@ -351,7 +351,7 @@ void RigidBodyComponent::findContact()
 
    Vector<SceneObject*> overlapObjects;
 
-   mPhysicsRep->findContact(&contactObject, contactNormal, &overlapObjects);
+   //mPhysicsRep->findContact(&contactObject, contactNormal, &overlapObjects);
 
    if (!overlapObjects.empty())
    {

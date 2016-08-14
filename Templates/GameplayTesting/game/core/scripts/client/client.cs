@@ -30,6 +30,13 @@ function initBaseClient()
    exec( "./renderManager.cs" );
    exec( "./lighting.cs" );
    
+   exec( "./shadergen/Shadergen.cs" );
+   exec( "./shadergen/DeferredMaterialNode.cs" );
+   exec( "./shadergen/floatNode.cs" );
+   exec( "./shadergen/multiplyNode.cs" );
+   exec( "./shadergen/texture2DNode.cs" );
+   ShaderGen::init();
+   
    initRenderManager();
    initLightingSystems();   
 }

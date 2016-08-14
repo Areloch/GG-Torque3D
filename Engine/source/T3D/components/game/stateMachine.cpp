@@ -47,6 +47,7 @@ void StateMachine::loadStateMachineFile()
    }
 
    bool hasStartState = false;
+   U32 startingState = 0;
 
    if (!dStrIsEmpty(mStateMachineFile))
    {
@@ -58,124 +59,161 @@ void StateMachine::loadStateMachineFile()
       if (!reader->pushFirstChildElement("StateMachine"))
          return;
 
-      //find our starting state
-      if (reader->pushFirstChildElement("StartingState"))
+      //Add a dummy field for the stateTime, since we special-case handle that, but need to hold the slot
+      //because stateTime will always exist in the SM.
+      StateField stateTimeField;
+      stateTimeField.name = "stateTime";
+      mFields.push_back(stateTimeField);
+
+      if (reader->pushFirstChildElement("Fields"))
       {
-         mStartingState = reader->getData();
+         S32 fieldsCount = 0;
+         while (reader->pushChildElement(fieldsCount))
+         {
+            StateField newField;
+
+            newField.name = reader->attribute("name");
+            const char* defaultVal = reader->attribute("defaultValue");
+
+            setField(&newField, defaultVal);
+
+            mFields.push_back(newField);
+
+            ++fieldsCount;
+            reader->popElement();
+         }
+
          reader->popElement();
-         hasStartState = true;
       }
 
-      readStates();
+      if (reader->pushFirstChildElement("States"))
+      {
+         S32 statesCount = 0;
+         while (reader->pushChildElement(statesCount))
+         {
+            State newState;
+            newState.stateName = reader->attribute("name");
+            newState.callbackName = reader->attribute("scriptFunction");
+
+            String starting = reader->attribute("starting");
+            if (starting.isNotEmpty())
+            {
+               startingState = statesCount;
+               hasStartState = true;
+            }
+
+            mStates.push_back(newState);
+
+            ++statesCount;
+            reader->popElement();
+         }
+
+         reader->popElement();
+      }
+
+      if (reader->pushFirstChildElement("Transitions"))
+      {
+         S32 transitionsCount = 0;
+         while (reader->pushChildElement(transitionsCount))
+         {
+            StateTransition newTransition;
+
+            U32 ownerStateId = dAtoi(reader->attribute("ownerState"));
+            U32 targetStateId = dAtoi(reader->attribute("stateTarget"));
+
+            newTransition.mStateTarget = targetStateId;
+
+            //
+            U32 ruleCount = 0;
+            while (reader->pushChildElement(ruleCount))
+            {
+               StateTransition::Condition newCondition;
+               StateField newField;
+
+               newCondition.targetFieldIdx = dAtoi(reader->attribute("fieldId"));
+               const char* comparitor = reader->attribute("comparitor");
+
+               newCondition.triggerComparitor = (StateTransition::Condition::ComparitorType)parseComparitor(comparitor);
+
+               const char* value = reader->attribute("value");
+
+               setField(&newField, value);
+
+               newCondition.triggerValue = newField.data;
+
+               newTransition.mTransitionRules.push_back(newCondition);
+
+               ++ruleCount;
+               reader->popElement();
+            }
+            //
+
+            State* ownerState = &mStates[ownerStateId];
+
+            ownerState->mTransitions.push_back(newTransition);
+
+            ++transitionsCount;
+            reader->popElement();
+         }
+
+         reader->popElement();
+      }
    }
 
    if (hasStartState)
-      mCurrentState = getStateByName(mStartingState);
+      setState(startingState);
+   else
+      setState(0);
 
    mStateStartTime = -1;
    mStateTime = 0;
 }
 
-void StateMachine::readStates()
+void StateMachine::setField(StateField *newField, const char* fieldValue)
 {
-   SimXMLDocument *reader = mXMLReader.getObject();
+   S32 type = -1;
 
-   //iterate through our states now!
-   if (reader->pushFirstChildElement("State"))
+   Point3F vector;
+   F32 number;
+
+   //bail pre-emptively if it's nothing
+   if (!fieldValue || !fieldValue[0])
+      return;
+
+   String fieldVal = String::ToLower(fieldValue);
+
+   if (dSscanf(fieldVal, "%g %g %g", &vector.x, &vector.y, &vector.z) == 3)
    {
-      //get our first state
-      State firstState;
-
-      readStateName(&firstState, reader);
-      readStateScriptFunction(&firstState, reader);
-
-      readTransitions(firstState);
-
-      mStates.push_back(firstState);
-
-      //now, iterate the siblings
-      while (reader->nextSiblingElement("State"))
+      newField->data.fieldType = Field::VectorType;
+      newField->data.vectorVal = vector;
+   }
+   else
+   {
+      if (dSscanf(fieldVal, "%g", &number))
       {
-         State newState;
-         readStateName(&newState, reader);
-         readStateScriptFunction(&newState, reader);
-
-         readTransitions(newState);
-
-         mStates.push_back(newState);
+         newField->data.fieldType = Field::NumberType;
+         newField->data.numVal = number;
+      }
+      else
+      {
+         newField->data.fieldType = Field::StringType;
+         newField->data.stringVal = fieldValue;
       }
    }
-}
 
-void StateMachine::readTransitions(State &currentState)
-{
-   SimXMLDocument *reader = mXMLReader.getObject();
-
-   //iterate through our states now!
-   if (reader->pushFirstChildElement("Transition"))
+   //final check if it's a string: see if it's actually a boolean!
+   if (newField->data.fieldType == Field::StringType)
    {
-      //get our first state
-      StateTransition firstTransition;
-
-      readTransitonTarget(&firstTransition, reader);
-
-      readConditions(firstTransition);
-
-      currentState.mTransitions.push_back(firstTransition);
-
-      //now, iterate the siblings
-      while (reader->nextSiblingElement("Transition"))
+      if (!dStrcmp("false", fieldVal))
       {
-         StateTransition newTransition;
-         readTransitonTarget(&newTransition, reader);
-
-         readConditions(newTransition);
-
-         currentState.mTransitions.push_back(newTransition);
+         newField->data.fieldType = Field::BooleanType;
+         newField->data.boolVal = false;
       }
-
-      reader->popElement();
-   }
-}
-
-void StateMachine::readConditions(StateTransition &currentTransition)
-{
-   SimXMLDocument *reader = mXMLReader.getObject();
-
-   //iterate through our states now!
-   if (reader->pushFirstChildElement("Rule"))
-   {
-      //get our first state
-      StateTransition::Condition firstCondition;
-      StateField firstField;
-      bool fieldRead = false;
-      
-      readFieldName(&firstField, reader);
-      firstCondition.field = firstField;
-
-      readFieldComparitor(&firstCondition, reader);
-
-      readFieldValue(&firstCondition.field, reader);
-
-      currentTransition.mTransitionRules.push_back(firstCondition);
-
-      //now, iterate the siblings
-      while (reader->nextSiblingElement("Transition"))
+      else if (!dStrcmp("true", fieldVal))
       {
-         StateTransition::Condition newCondition;
-         StateField newField;
-
-         readFieldName(&newField, reader);
-         newCondition.field = newField;
-
-         readFieldComparitor(&newCondition, reader);
-
-         readFieldValue(&newCondition.field, reader);
-
-         currentTransition.mTransitionRules.push_back(newCondition);
+         newField->data.fieldType = Field::BooleanType;
+         newField->data.boolVal = true;
       }
-
-      reader->popElement();
    }
 }
 
@@ -184,7 +222,7 @@ S32 StateMachine::parseComparitor(const char* comparitorName)
    S32 targetType = -1;
 
    if (!dStrcmp("GreaterThan", comparitorName))
-      targetType = StateMachine::StateTransition::Condition::GeaterThan;
+      targetType = StateMachine::StateTransition::Condition::GreaterThan;
    else if (!dStrcmp("GreaterOrEqual", comparitorName))
       targetType = StateMachine::StateTransition::Condition::GreaterOrEqual;
    else if (!dStrcmp("LessThan", comparitorName))
@@ -220,10 +258,12 @@ void StateMachine::update()
    char buffer[64];
    dSprintf(buffer, sizeof(buffer), "%g", mStateTime);
 
-   checkTransitions("stateTime", buffer);
+   setField("stateTime", buffer);
+
+   checkTransitions();
 }
 
-void StateMachine::checkTransitions(const char* slotName, const char* newValue)
+void StateMachine::checkTransitions()
 {
    //because we use our current state's fields as dynamic fields on the instance
    //we'll want to catch any fields being set so we can treat changes as transition triggers if
@@ -247,52 +287,73 @@ void StateMachine::checkTransitions(const char* slotName, const char* newValue)
    //now that we have the type, check our transitions!
    for (U32 t = 0; t < mCurrentState.mTransitions.size(); t++)
    {
-      //if (!dStrcmp(mCurrentState.mTransitions[t]., slotName))
+      //found a transition looking for this variable, so do work
+      //first, figure out what data type thie field is
+      //S32 type = getVariableType(newValue);
+
+      StateTransition trnsn = mCurrentState.mTransitions[t];
+
+      bool fail = false;
+      bool match = true;
+      S32 ruleCount = mCurrentState.mTransitions[t].mTransitionRules.size();
+
+      //Every rule needs to succeed in order to actually trigger the transiton
+      for (U32 r = 0; r < ruleCount; r++)
       {
-         //found a transition looking for this variable, so do work
-         //first, figure out what data type thie field is
-         //S32 type = getVariableType(newValue);
-
-         bool fail = false;
-         bool match = false;
-         S32 ruleCount = mCurrentState.mTransitions[t].mTransitionRules.size();
-
-         for (U32 r = 0; r < ruleCount; r++)
+         StateTransition::Condition rl = mCurrentState.mTransitions[t].mTransitionRules[r];
+         /*const char* fieldName = findFieldByIndex(mCurrentState.mTransitions[t].mTransitionRules[r].targetFieldIdx);
+         if (!dStrcmp(fieldName, slotName))
          {
-            const char* fieldName = mCurrentState.mTransitions[t].mTransitionRules[r].field.name;
-            if (!dStrcmp(fieldName, slotName))
+            //now, check the value with the comparitor and see if we do the transition.
+            if (!passComparitorCheck(newValue, mCurrentState.mTransitions[t].mTransitionRules[r]))
             {
-               match = true;
-               //now, check the value with the comparitor and see if we do the transition.
-               if (!passComparitorCheck(newValue, mCurrentState.mTransitions[t].mTransitionRules[r]))
+               fail = true;
+               break;
+            }
+         }
+         else
+         {*/
+            //check our owner object for if it has the rule's field, and if so, check that
+            if (mOwnerObject)
+            {
+               if (!passComparitorCheck(mCurrentState.mTransitions[t].mTransitionRules[r]))
                {
                   fail = true;
                   break;
                }
             }
-         }
 
-         //If we do have a transition rule for this field, and we didn't fail on the condition, go ahead and switch states
-         if (match && !fail)
-         {
-            setState(mCurrentState.mTransitions[t].mStateTarget);
+            //we have to match all conditions
+            //match = false;
+            //break;
+        // }
+      }
 
-            return;
-         }
+      //If we do have a transition rule for this field, and we didn't fail on the condition, go ahead and switch states
+      if (/*match &&*/ !fail)
+      {
+         setState(mCurrentState.mTransitions[t].mStateTarget);
+
+         return;
       }
    }
 }
 
-bool StateMachine::passComparitorCheck(const char* var, StateTransition::Condition transitionRule)
+bool StateMachine::passComparitorCheck(StateTransition::Condition transitionRule)
 {
-   F32 num = dAtof(var);
-   switch (transitionRule.field.fieldType)
+   StateField* field = &mFields[transitionRule.targetFieldIdx];
+
+   //if the field and rule don't match, bail
+   if (field->data.fieldType != transitionRule.triggerValue.fieldType)
+      return false;
+
+   switch (transitionRule.triggerValue.fieldType)
    {
-   case StateField::Type::VectorType:
+   case Field::VectorType:
       switch (transitionRule.triggerComparitor)
       {
       case StateTransition::Condition::Equals:
-      case StateTransition::Condition::GeaterThan:
+      case StateTransition::Condition::GreaterThan:
       case StateTransition::Condition::GreaterOrEqual:
       case StateTransition::Condition::LessThan:
       case StateTransition::Condition::LessOrEqual:
@@ -302,78 +363,78 @@ bool StateMachine::passComparitorCheck(const char* var, StateTransition::Conditi
       default:
          return false;
       };
-   case StateField::Type::StringType:
+   case Field::StringType:
       switch (transitionRule.triggerComparitor)
       {
       case StateTransition::Condition::Equals:
-         if (!dStrcmp(var, transitionRule.field.triggerStringVal))
+         if (!dStrcmp(field->data.stringVal, transitionRule.triggerValue.stringVal))
             return true;
          else
             return false;
       case StateTransition::Condition::DoesNotEqual:
-         if (dStrcmp(var, transitionRule.field.triggerStringVal))
+         if (dStrcmp(field->data.stringVal, transitionRule.triggerValue.stringVal))
             return true;
          else
             return false;
       default:
          return false;
       };
-   case StateField::Type::BooleanType:
+   case Field::BooleanType:
       switch (transitionRule.triggerComparitor)
       {
-      case StateTransition::Condition::TriggerValueTarget::True:
-         if (dAtob(var))
+      case StateTransition::Condition::True:
+         if (field->data.boolVal)
             return true;
          else
             return false;
-      case StateTransition::Condition::TriggerValueTarget::False:
-         if (dAtob(var))
-            return false;
-         else
+      case StateTransition::Condition::False:
+         if (!field->data.boolVal)
             return true;
+         else
+            return false;
       default:
          return false;
       };
-   case StateField::Type::NumberType:
+   case Field::NumberType:
       switch (transitionRule.triggerComparitor)
       {
-      case StateTransition::Condition::TriggerValueTarget::Equals:
-         if (num == transitionRule.field.triggerNumVal)
+      case StateTransition::Condition::Equals:
+         if (field->data.numVal == transitionRule.triggerValue.numVal)
             return true;
          else
             return false;
-      case StateTransition::Condition::TriggerValueTarget::GeaterThan:
-         if (num > transitionRule.field.triggerNumVal)
+      case StateTransition::Condition::GreaterThan:
+         if (field->data.numVal > transitionRule.triggerValue.numVal)
             return true;
          else
             return false;
-      case StateTransition::Condition::TriggerValueTarget::GreaterOrEqual:
-         if (num >= transitionRule.field.triggerNumVal)
+      case StateTransition::Condition::GreaterOrEqual:
+         if (field->data.numVal >= transitionRule.triggerValue.numVal)
             return true;
          else
             return false;
-      case StateTransition::Condition::TriggerValueTarget::LessThan:
-         if (num < transitionRule.field.triggerNumVal)
+      case StateTransition::Condition::LessThan:
+         if (field->data.numVal < transitionRule.triggerValue.numVal)
             return true;
          else
             return false;
-      case StateTransition::Condition::TriggerValueTarget::LessOrEqual:
-         if (num <= transitionRule.field.triggerNumVal)
+      case StateTransition::Condition::LessOrEqual:
+         if (field->data.numVal <= transitionRule.triggerValue.numVal)
             return true;
          else
             return false;
-      case StateTransition::Condition::TriggerValueTarget::DoesNotEqual:
-         if (num != transitionRule.field.triggerNumVal)
+      case StateTransition::Condition::DoesNotEqual:
+         if (field->data.numVal != transitionRule.triggerValue.numVal)
             return true;
          else
             return false;
-      case StateTransition::Condition::TriggerValueTarget::Positive:
-         if (num > 0)
+      case StateTransition::Condition::Positive:
+         if (field->data.numVal > 0)
             return true;
          else
             return false;
-      case StateTransition::Condition::TriggerValueTarget::Negative:
-         if (num < 0)
+      case StateTransition::Condition::Negative:
+         if (field->data.numVal < 0)
             return true;
          else
             return false;
@@ -385,21 +446,14 @@ bool StateMachine::passComparitorCheck(const char* var, StateTransition::Conditi
    };
 }
 
-void StateMachine::setState(const char* stateName, bool clearFields)
+void StateMachine::setState(U32 stateId, bool clearFields)
 {
-   State oldState = mCurrentState;
-   StringTableEntry sName = StringTable->insert(stateName);
-   for (U32 i = 0; i < mStates.size(); i++)
+   if (stateId >= 0 || mStates.size() > stateId)
    {
-      //if(!dStrcmp(mStates[i]->stateName, stateName))
-      if (!dStrcmp(mStates[i].stateName,sName))
-      {
-         mCurrentState = mStates[i];
-         mStateStartTime = Sim::getCurrentTime();
+      mCurrentState = mStates[stateId];
+      mStateStartTime = Sim::getCurrentTime();
 
-         onStateChanged.trigger(this, i);
-         return;
-      }
+      onStateChanged.trigger(this, stateId);
    }
 }
 
@@ -431,4 +485,46 @@ S32 StateMachine::findFieldByName(const char* name)
    }
 
    return -1;
+}
+
+void StateMachine::setField(const char* fieldName, const char* value)
+{
+   S32 fieldIdx = findFieldByName(fieldName);
+
+   if (fieldIdx != -1)
+   {
+      F32 number = 0;
+
+      switch (mFields[fieldIdx].data.fieldType)
+      {
+         case Field::BooleanType:
+            if (dIsalpha(value[0]))
+            {
+               mFields[fieldIdx].data.boolVal = dAtob(value);
+            }
+            else
+            {
+               number = dAtoi(value);
+               mFields[fieldIdx].data.boolVal = number == 0 ? false : true;
+            }
+            break;
+         case Field::NumberType:
+            number = dAtoi(value);
+            mFields[fieldIdx].data.numVal = number;
+            break;
+         default:
+            mFields[fieldIdx].data.stringVal = value;
+            break;
+      }
+   }
+}
+
+StringTableEntry StateMachine::findFieldByIndex(U32 index)
+{
+   if (index >= 0 && index < mFields.size())
+   {
+      return mFields[index].name;
+   }
+
+   return StringTable->EmptyString();
 }

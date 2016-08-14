@@ -39,14 +39,12 @@
 class StateMachine
 {
 public:
-   struct StateField
+   struct Field
    {
-      StringTableEntry name;
-      
-      bool 			 triggerBoolVal;
-      float 		 triggerNumVal;
-      Point3F 		 triggerVectorVal;
-      String 		 triggerStringVal;
+      bool 			 boolVal;
+      float 		 numVal;
+      Point3F 		 vectorVal;
+      String 		 stringVal;
 
       enum Type
       {
@@ -55,6 +53,14 @@ public:
          VectorType,
          StringType
       }fieldType;
+   };
+
+   struct StateField
+   {
+      StringTableEntry name;
+      
+      Field data;
+      //Field defaultData;
    };
 
    struct UniqueReference
@@ -68,10 +74,10 @@ public:
    {
       struct Condition
       {
-         enum TriggerValueTarget
+         enum ComparitorType
          {
             Equals = 0,
-            GeaterThan,
+            GreaterThan,
             LessThan,
             GreaterOrEqual,
             LessOrEqual,
@@ -82,15 +88,17 @@ public:
             DoesNotEqual
          };
 
-         StateField field;
+         U32 targetFieldIdx;
 
-         TriggerValueTarget   triggerComparitor;
+         Field triggerValue;
 
-         UniqueReference      *valUniqueRef;
+         ComparitorType triggerComparitor;
+
+         //UniqueReference      *valUniqueRef;
       };
 
       StringTableEntry	mName;
-      StringTableEntry	mStateTarget;
+      U32	mStateTarget;
       Vector<Condition>	mTransitionRules;
    };
 
@@ -104,6 +112,8 @@ public:
    };
 
    StringTableEntry		mStateMachineFile;
+
+   SimObject* mOwnerObject;
 
 protected:
    Vector<State> mStates;
@@ -131,11 +141,8 @@ public:
    void update();
 
    void loadStateMachineFile();
-   void readStates();
-   void readTransitions(State &currentState);
-   void readConditions(StateTransition &newTransition);
 
-   void setState(const char* stateName, bool clearFields = true);
+   void setState(U32 stateId, bool clearFields = true);
 
    const char* getCurrentStateName() { return mCurrentState.stateName; }
    State& getCurrentState() {
@@ -146,13 +153,18 @@ public:
    const char* getStateByIndex(S32 index);
    State& getStateByName(const char* name);
 
-   void checkTransitions(const char* slotName, const char* newValue);
+   void checkTransitions();
 
-   bool passComparitorCheck(const char* var, StateTransition::Condition transitionRule);
+   bool passComparitorCheck(StateTransition::Condition transitionRule);
 
    S32 findFieldByName(const char* name);
+   StringTableEntry findFieldByIndex(U32 index);
+
+   void setField(const char* fieldName, const char* value);
 
    S32 getFieldsCount() { return mFields.size(); }
+
+   void setField(StateField *newField, const char* fieldValue);
 
    StateField getField(U32 index)
    {
@@ -161,96 +173,6 @@ public:
    }
 
    Signal< void(StateMachine*, S32 stateIdx) > onStateChanged;
-
-   //
-   inline bool readStateName(State* state, SimXMLDocument* reader)
-   {
-      if (reader->pushFirstChildElement("Name"))
-      {
-         state->stateName = reader->getData();
-         reader->popElement();
-
-         return true;
-      }
-
-      return false;
-   }
-   inline bool readStateScriptFunction(State* state, SimXMLDocument* reader)
-   {
-      if (reader->pushFirstChildElement("ScriptFunction"))
-      {
-         state->callbackName = reader->getData();
-         reader->popElement();
-
-         return true;
-      }
-
-      return false;
-   }
-   inline bool readTransitonTarget(StateTransition* transition, SimXMLDocument* reader)
-   {
-      if (reader->pushFirstChildElement("StateTarget"))
-      {
-         transition->mStateTarget = reader->getData();
-         reader->popElement();
-
-         return true;
-      }
-
-      return false;
-   }
-   //
-   inline bool readFieldName(StateField* newField, SimXMLDocument* reader)
-   {
-      if (reader->pushFirstChildElement("FieldName"))
-      {
-         newField->name = reader->getData();
-         reader->popElement();
-
-         return true;
-      }
-
-      return false;
-   }
-   inline bool readFieldComparitor(StateTransition::Condition* condition, SimXMLDocument* reader)
-   {
-      if (reader->pushFirstChildElement("Comparitor"))
-      {
-         S32 compIdx = parseComparitor(reader->getData());
-         condition->triggerComparitor = static_cast<StateTransition::Condition::TriggerValueTarget>(compIdx);
-         reader->popElement();
-
-         return true;
-      }
-
-      return false;
-   }
-   inline bool readFieldValue(StateField* field, SimXMLDocument* reader)
-   {
-      if (reader->pushFirstChildElement("NumValue"))
-      {
-         field->fieldType = StateField::NumberType;
-         field->triggerNumVal = dAtof(reader->getData());
-         reader->popElement();
-         return true;
-      }
-      else if (reader->pushFirstChildElement("StringValue"))
-      {
-         field->fieldType = StateField::StringType;
-         field->triggerStringVal = reader->getData();
-         reader->popElement();
-         return true;
-      }
-      else if (reader->pushFirstChildElement("BoolValue"))
-      {
-         field->fieldType = StateField::BooleanType;
-         field->triggerBoolVal = dAtob(reader->getData());
-         reader->popElement();
-         return true;
-      }
-
-      return false;
-   }
 
 private:
    S32 parseComparitor(const char* comparitorName);

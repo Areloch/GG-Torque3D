@@ -49,7 +49,8 @@ GuiInspectorField::GuiInspectorField( GuiInspector* inspector,
    mParent( parent ), 
    mField( field ), 
    mFieldArrayIndex( NULL ), 
-   mEdit( NULL )
+   mEdit( NULL ),
+   mTargetObject(NULL)
 {
    if( field != NULL )
       mCaption    = field->pFieldname;
@@ -72,7 +73,8 @@ GuiInspectorField::GuiInspectorField()
    mField( NULL ), 
    mFieldArrayIndex( NULL ),
    mCaption( StringTable->EmptyString() ),
-   mHighlighted( false )
+   mHighlighted(false),
+   mTargetObject(NULL)
 {
    setCanSave( false );
 }
@@ -257,7 +259,19 @@ void GuiInspectorField::setData( const char* data, bool callbacks )
             
       for( U32 i = 0; i < numTargets; ++ i )
       {
-         SimObject* target = mInspector->getInspectObject( i );
+         //For now, for simplicity's sake, you can only edit the components in a simple edit
+         SimObject* target = NULL;
+         if (numTargets == 1)
+         {
+            target = mTargetObject;
+
+            if (!target)
+               target = mInspector->getInspectObject(i);
+         }
+         else
+         {
+            target = mInspector->getInspectObject(i);
+         }
          
          String oldValue = target->getDataField( mField->pFieldname, mFieldArrayIndex);
          
@@ -349,6 +363,9 @@ const char* GuiInspectorField::getData( U32 inspectObjectIndex )
 {
    if( mField == NULL )
       return "";
+
+   if (mTargetObject)
+      return mTargetObject->getDataField(mField->pFieldname, mFieldArrayIndex);
 
    return mInspector->getInspectObject( inspectObjectIndex )->getDataField( mField->pFieldname, mFieldArrayIndex );
 }

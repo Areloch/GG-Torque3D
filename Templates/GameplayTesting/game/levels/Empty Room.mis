@@ -16,6 +16,7 @@ new SimGroup(MissionGroup) {
       canvasClearColor = "0 0 0 255";
       ambientLightBlendPhase = "1";
       ambientLightBlendCurve = "0 0 -1 -1";
+      LevelEnvMap = "DesertSkyCubemap";
       soundAmbience = "AudioAmbienceDefault";
       soundDistanceModel = "Linear";
       canSave = "1";
@@ -25,7 +26,7 @@ new SimGroup(MissionGroup) {
          levelName = "Empty Room";
    };
    new SkyBox(theSky) {
-      Material = "NightSkyMat";
+      Material = "DesertSkyMat";
       drawBottom = "0";
       fogBandHeight = "0";
       position = "0 0 0";
@@ -37,8 +38,8 @@ new SimGroup(MissionGroup) {
    new Sun(theSun) {
       azimuth = "230.396";
       elevation = "46";
-      color = "0.968628 0.901961 0.901961 1";
-      ambient = "0.078431 0.113725 0.156863 1";
+      color = "0.996078 0.992157 0.992157 1";
+      ambient = "0.258824 0.360784 0.501961 1";
       brightness = "1";
       castShadows = "1";
       staticRefreshFreq = "250";
@@ -93,6 +94,7 @@ new SimGroup(MissionGroup) {
          friendlyName = "Player Spawner";
          networked = "0";
          Enabled = "1";
+         internalName = "PlayerSpawner";
          class = "PlayerSpawner";
          gameObjectName = "FoxPlayer";
       };
@@ -112,12 +114,14 @@ new SimGroup(MissionGroup) {
          description = "Causes the object to render a non-animating 3d shape using the file provided.";
          networked = "1";
          Enabled = "1";
+         internalName = "MeshComponent";
          MeshAsset = "Placeholder:cube";
       };
       new CollisionComponent() {
          friendlyName = "Collision(Component)";
          networked = "0";
          Enabled = "1";
+         internalName = "CollisionComponent";
          CollisionType = "Bounds";
          LineOfSightType = "Collision Mesh";
          DecalType = "Collision Mesh";
@@ -127,11 +131,13 @@ new SimGroup(MissionGroup) {
       new Component() {
          networked = "0";
          Enabled = "1";
+         internalName = "ItemComponent";
          class = "ItemComponent";
       };
       new Component() {
          networked = "0";
          Enabled = "1";
+         internalName = "InteractableComponent";
          class = "InteractableComponent";
       };
    };
@@ -171,6 +177,7 @@ new SimGroup(MissionGroup) {
          friendlyName = "Collision(Component)";
          networked = "0";
          Enabled = "1";
+         internalName = "CollisionComponent";
          CollisionType = "Bounds";
          LineOfSightType = "Collision Mesh";
          DecalType = "Collision Mesh";
@@ -180,11 +187,13 @@ new SimGroup(MissionGroup) {
       new Component() {
          networked = "0";
          Enabled = "1";
+         internalName = "InteractableComponent";
          class = "InteractableComponent";
       };
       new Component() {
          networked = "0";
          Enabled = "1";
+         internalName = "CandleItemComponent";
          class = "CandleItemComponent";
       };
       new MeshComponent() {
@@ -193,6 +202,7 @@ new SimGroup(MissionGroup) {
          description = "Causes the object to render a non-animating 3d shape using the file provided.";
          networked = "1";
          Enabled = "1";
+         internalName = "MeshComponent";
       };
       new PointLight() {
          radius = "5";
@@ -247,12 +257,14 @@ new SimGroup(MissionGroup) {
          description = "Causes the object to render a non-animating 3d shape using the file provided.";
          networked = "1";
          Enabled = "1";
+         internalName = "MeshComponent";
          MeshAsset = "Placeholder:cube";
       };
       new CollisionComponent() {
          friendlyName = "Collision(Component)";
          networked = "0";
          Enabled = "1";
+         internalName = "CollisionComponent";
          CollisionType = "Bounds";
          LineOfSightType = "Collision Mesh";
          DecalType = "Collision Mesh";
@@ -262,11 +274,13 @@ new SimGroup(MissionGroup) {
       new Component() {
          networked = "0";
          Enabled = "1";
+         internalName = "InteractableComponent";
          class = "InteractableComponent";
       };
       new Component() {
          networked = "0";
          Enabled = "1";
+         internalName = "SwitchComponent";
          class = "SwitchComponent";
          targetEntity = "20085";
       };
@@ -284,6 +298,7 @@ new SimGroup(MissionGroup) {
       new Component() {
          networked = "0";
          Enabled = "1";
+         internalName = "CandleItemComponent";
          class = "CandleItemComponent";
       };
       new PointLight() {
@@ -440,11 +455,12 @@ new SimGroup(MissionGroup) {
       new Component() {
          networked = "0";
          Enabled = "1";
+         internalName = "GameInfoComponent";
          class = "GameInfoComponent";
       };
    };
    new ConvexShape() {
-      Material = "Grid512_OrangeLines_Mat";
+      Material = "wood15";
       position = "-9.00059 -9.99912 2.98443";
       Rotation = "0.0206418 0.706956 -0.706956 177.635";
       scale = "1 1 1";
@@ -452,48 +468,39 @@ new SimGroup(MissionGroup) {
       canSaveDynamicFields = "1";
 
       surface = "0 0 0 1 0 6.16637 11.3751";
-      surface = "0 1 0 0 0 -1.78814e-006 0";
-      surface = "-0.511579 -6.70175e-009 1.12561e-008 0.859236 4.70764e-015 0.068676 5.68755";
-      surface = "0.5 -0.5 -0.5 -0.5 -1.91093 3.08319 5.68755";
-      surface = "1.12561e-008 0.859236 0.511579 6.70175e-009 -7.71409e-008 6.09769 5.68755";
-      surface = "0.5 0.5 0.5 -0.5 1.91093 3.08319 5.68755";
+      surface = "0 1 0 0 0 -4.52995e-006 0";
+      surface = "-0.511579 -6.70175e-009 1.12561e-008 0.859236 2.53492e-014 0.0686756 5.68755";
+      surface = "0.5 -0.5 -0.5 -0.5 -1.91093 3.08318 5.68755";
+      surface = "1.12561e-008 0.859236 0.511579 6.70175e-009 -5.14272e-008 6.09769 5.68755";
+      surface = "0.5 0.5 0.5 -0.5 1.91093 3.08318 5.68755";
    };
-   new Entity() {
-      scale = "1 1 1";
-      class = "grass";
+   new TSStatic() {
+      shapeName = "art/radarMesh/Radar.dae";
+      playAmbient = "1";
+      meshCulling = "0";
+      originSort = "0";
+      CollisionType = "Bounds";
+      DecalType = "Collision Mesh";
+      allowPlayerStep = "0";
+      alphaFadeEnable = "0";
+      alphaFadeStart = "100";
+      alphaFadeEnd = "150";
+      alphaFadeInverse = "0";
+      renderNormals = "0";
+      forceDetail = "-1";
+      position = "0 -99.7346 0.215523";
+      Rotation = "1 0 0 0";
+      scale = "0.015 0.015 0.015";
       canSave = "1";
       canSaveDynamicFields = "1";
-      position = "3.45397 0.0840976 0.229193";
-      Rotation = "0 -0 -0";
-      LocalPosition = "0 0 0";
-      LocalRotation = "1 0 0 0";
-         GameObjectAsset = "grass";
-
-      new MeshComponent() {
-         componentType = "Render";
-         friendlyName = "Mesh Component";
-         description = "Causes the object to render a non-animating 3d shape using the file provided.";
-         networked = "1";
-         Enabled = "1";
-         MeshAsset = "Characters:Red_Guy";
-      };
-      new CollisionComponent() {
-         friendlyName = "Collision(Component)";
-         networked = "0";
-         Enabled = "1";
-         CollisionType = "Bounds";
-         LineOfSightType = "Collision Mesh";
-         DecalType = "Collision Mesh";
-         CollisionMeshPrefix = "Collision";
-         BlockCollisions = "0";
-      };
-      new AnimationComponent() {
-         componentType = "Render";
-         friendlyName = "Animation(Component)";
-         description = "Allows a rendered mesh to be animated";
-         networked = "1";
-         Enabled = "1";
-      };
+   };
+   new EnvVolume() {
+      AreaEnvMap = "DesertSkyCubemap";
+      position = "4.01067 -70.7197 1.41769";
+      Rotation = "1 0 0 0";
+      scale = "20.2674 20.2674 20.2674";
+      canSave = "1";
+      canSaveDynamicFields = "1";
    };
 };
 //--- OBJECT WRITE END ---

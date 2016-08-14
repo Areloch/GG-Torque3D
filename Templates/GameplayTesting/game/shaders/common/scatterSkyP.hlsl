@@ -39,10 +39,18 @@ uniform float useCubemap;
 uniform float3 lightDir;
 uniform float3 sunDir;
 
+float3 ScreenSpaceDither(float3 vScreenPos, float seed)
+{
+    // lestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR
+    float3 vDither = float3(dot(vec2(131.0, 312.0), vScreenPos.xy + seed));
+    vDither.rgb = frac(vDither.rgb / float3(103.0, 71.0, 97.0)) - float3(0.5, 0.5, 0.5);
+    return (vDither.rgb) * 0.375;
+}
+
 float4 main( Conn In ) : TORQUE_TARGET0
 { 
-
-   float fCos = dot( lightDir, In.v3Direction ) / length(In.v3Direction);
+   float3 dir = ScreenSpaceDither(In.v3Direction, In.v3Direction.x);
+   float fCos = dot( lightDir, dir ) / length(dir);
    float fCos2 = fCos*fCos;
     
    float g = -0.991;

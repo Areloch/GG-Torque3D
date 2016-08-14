@@ -87,4 +87,7 @@
         networked="false"
         Enabled="true"
         class="InteractComponent" />
+    <StateMachineComponent
+        Enabled="true"
+        stateMachineFile="modules/Characters/StateMachines/testSM.xml" />
 </Entity>

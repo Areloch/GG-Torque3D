@@ -308,6 +308,8 @@ bool GuiInspectorComponentGroup::inspectGroup()
                StringTableEntry caption = StringTable->insert(String::ToString("   [%i]", nI));
                fieldGui->setInspectorField(field, caption, intToStr);
 
+               fieldGui->setTargetObject(mTargetComponent);
+
                if (fieldGui->registerObject())
                {
                   mChildren.push_back(fieldGui);
@@ -339,6 +341,8 @@ bool GuiInspectorComponentGroup::inspectGroup()
 
             fieldGui->init(mParent, this);
             fieldGui->setInspectorField(field);
+
+            fieldGui->setTargetObject(mTargetComponent);
 
             if (fieldGui->registerObject())
             {
@@ -378,6 +382,8 @@ bool GuiInspectorComponentGroup::inspectGroup()
          fieldGui = new GuiInspectorField();
 
       fieldGui->init(mParent, this);
+
+      fieldGui->setTargetObject(mTargetComponent);
 
       AbstractClassRep::Field *refField = NULL;
 

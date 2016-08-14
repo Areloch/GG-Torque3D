@@ -346,3 +346,55 @@ DefineConsoleStaticMethod(Rotation, LookAt, RotationF, (Point3F origin, Point3F 
    result.lookAt(origin, target, up);
    return result;
 }
+
+DefineConsoleStaticMethod(Rotation, setRightVector, RotationF, (RotationF a, VectorF rightVec), ,
+   "Subtracts two rotations.\n"
+   "@param a Rotation one."
+   "@param b Rotation two."
+   "@returns v difference of both rotations."
+   "@ingroup Math")
+{
+   a.asMatrixF().setColumn(0, rightVec);
+   return a;
+}
+
+DefineConsoleStaticMethod(Rotation, setUpVector, RotationF, (RotationF a, VectorF upVec), ,
+   "Subtracts two rotations.\n"
+   "@param a Rotation one."
+   "@param b Rotation two."
+   "@returns v difference of both rotations."
+   "@ingroup Math")
+{
+   a.asMatrixF().setColumn(2, upVec);
+   return a;
+}
+
+DefineConsoleStaticMethod(Rotation, getForwardVector, VectorF, (RotationF a), ,
+   "Subtracts two rotations.\n"
+   "@param a Rotation one."
+   "@param b Rotation two."
+   "@returns v difference of both rotations."
+   "@ingroup Math")
+{
+   return a.asMatrixF().getForwardVector();
+}
+
+DefineConsoleStaticMethod(Rotation, getRightVector, VectorF, (RotationF a), ,
+   "Subtracts two rotations.\n"
+   "@param a Rotation one."
+   "@param b Rotation two."
+   "@returns v difference of both rotations."
+   "@ingroup Math")
+{
+   return a.asMatrixF().getRightVector();
+}
+
+DefineConsoleStaticMethod(Rotation, getUpVector, VectorF, (RotationF a), ,
+   "Subtracts two rotations.\n"
+   "@param a Rotation one."
+   "@param b Rotation two."
+   "@returns v difference of both rotations."
+   "@ingroup Math")
+{
+   return a.asMatrixF().getUpVector();
+}

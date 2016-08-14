@@ -46,6 +46,16 @@
 #include "core/strings/findMatch.h"
 #include "T3D/components/render/meshComponent_ScriptBinding.h"
 
+ImplementEnumType(BatchingMode,
+   "Type of mesh data available in a shape.\n"
+   "@ingroup gameObjects")
+{
+   MeshComponent::Ad_Hoc, "Ad-Hoc", "This mesh is rendered indivudally, wthout batching or instancing."
+},
+{ MeshComponent::StaticBatch, "Static Batching", "Statically batches this mesh together with others to reduce drawcalls." },
+{ MeshComponent::Instanced, "Instanced", "This mesh is rendered as an instance, reducing draw overhead with others that share the same mesh and material." },
+EndImplementEnumType;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor/Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -141,6 +151,12 @@ void MeshComponent::initPersistFields()
    addProtectedField("MeshAsset", TypeShapeAssetPtr, Offset(mShapeAsset, MeshComponent), &_setMesh, &defaultProtectedGetFn,
       "The asset Id used for the mesh.", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
    endGroup("Model");
+   /*addGroup("Rendering");
+   addProtectedField("RenderingMode", TypeBatchingMode, Offset(mBatchMode, MeshComponent), &_setMesh, &defaultProtectedGetFn,
+      "The asset Id used for the mesh.", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
+   addProtectedField("BatchName", TypeString, Offset(mBatchName, MeshComponent), &_setMesh, &defaultProtectedGetFn,
+      "The asset Id used for the mesh.", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
+   endGroup("Rendering");*/
 }
 
 bool MeshComponent::_setMesh(void *object, const char *index, const char *data)
@@ -362,6 +378,20 @@ void MeshComponent::updateShape()
          if(materialCount > 0)
             mComponentGroup = "";
       }
+      else
+      {
+         /*if (mRenderMode == StaticBatch)
+         {
+            RenderMeshMgr *MeshBinManager;
+            Sim::findObject("MeshBin", MeshBinManager);
+            if (MeshBinManager)
+            {
+               OptimizedPolyList geom;
+               mShapeInstance->buildPolyList(PolyListContext::PLC_Export, &geom, mOwner->getWorldBox(), mOwner->getWorldSphere());
+               MeshBinManager->addElement(this, &geom, mBatchName);
+            }
+         }*/
+      }
 
       if(mOwner != NULL)
       {
@@ -417,6 +447,56 @@ void MeshComponent::updateMaterials()
 
    // Initialize the material instances
    mShapeInstance->initMaterialList();
+}
+
+bool MeshComponent::buildPolyList(PolyListContext context, AbstractPolyList* polyList, const Box3F &box, const SphereF &)
+{
+   if (!mShapeInstance)
+      return false;
+
+   // This is safe to set even if we're not outputing 
+/*   polyList->setTransform(&mOwner->mObjToWorld, mOwner->mObjScale);
+   polyList->setObject(mOwner);
+
+   if (context == PLC_Export)
+   {
+      // Use highest detail level
+      S32 dl = 0;
+
+      // Try to call on the client so we can export materials
+      if (isServerObject() && getClientObject())
+         dynamic_cast<TSStatic*>(getClientObject())->mShapeInstance->buildPolyList(polyList, dl);
+      else
+         mShapeInstance->buildPolyList(polyList, dl);
+   }
+   else if (context == PLC_Selection)
+   {
+      // Use the last rendered detail level
+      S32 dl = mShapeInstance->getCurrentDetail();
+      mShapeInstance->buildPolyListOpcode(dl, polyList, box);
+   }
+   else
+   {
+      // Figure out the mesh type we're looking for.
+      MeshType meshType = (context == PLC_Decal) ? mDecalType : mCollisionType;
+
+      if (meshType == None)
+         return false;
+      else if (meshType == Bounds)
+         polyList->addBox(mObjBox);
+      else if (meshType == VisibleMesh)
+         mShapeInstance->buildPolyList(polyList, 0);
+      else
+      {
+         // Everything else is done from the collision meshes
+         // which may be built from either the visual mesh or
+         // special collision geometry.
+         for (U32 i = 0; i < mCollisionDetails.size(); i++)
+            mShapeInstance->buildPolyListOpcode(mCollisionDetails[i], polyList, box);
+      }
+   }*/
+
+   return true;
 }
 
 MatrixF MeshComponent::getNodeTransform(S32 nodeIdx)

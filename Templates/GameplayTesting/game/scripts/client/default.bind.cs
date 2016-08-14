@@ -398,10 +398,10 @@ function resetCurrentFOV()
 
 function turnOffZoom()
 {
-   ServerConnection.zoomed = false;
-   setFov(ServerConnection.getControlCameraDefaultFov());
-   Reticle.setVisible(true);
-   zoomReticle.setVisible(false);
+   //ServerConnection.zoomed = false;
+   //setFov(ServerConnection.getControlCameraDefaultFov());
+   //Reticle.setVisible(true);
+   //zoomReticle.setVisible(false);
 
    // Rather than just disable the DOF effect, we want to set it to the level's
    // preset values.
@@ -417,26 +417,26 @@ function setZoomFOV(%val)
 
 function toggleZoom(%val)
 {
-   /*if (%val)
+   if (%val)
    {
       ServerConnection.zoomed = true;
-      setFov($Player::CurrentFOV);
-      Reticle.setVisible(false);
-      zoomReticle.setVisible(true);
+      //setFov($Player::CurrentFOV);
+      //Reticle.setVisible(false);
+      //zoomReticle.setVisible(true);
 
-      DOFPostEffect.setAutoFocus( true );
-      DOFPostEffect.setFocusParams( 0.5, 0.5, 50, 500, -5, 5 );
+      DOFPostEffect.setAutoFocus( false );
+      DOFPostEffect.setFocusParams( 1, 0, 1, 500, -5, 5 );
       DOFPostEffect.enable();
    }
    else
    {
       turnOffZoom();
-   }*/
+   }
 }
 
 function mouseButtonZoom(%val)
 {
-   //toggleZoom(%val);
+   toggleZoom(%val);
    $mvTriggerCount1++;
 }
 

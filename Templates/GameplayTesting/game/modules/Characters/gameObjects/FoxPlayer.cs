@@ -12,6 +12,7 @@ function FoxPlayer::onAdd(%this)
    %this.interact = %this.getComponent("InteractComponent");
 
    %this.stateMachine.forwardVector = 0;
+   %this.stateMachine.isCrouched = false;
 
    %this.crouch = false;
    
@@ -33,7 +34,8 @@ function FoxPlayer::onAdd(%this)
    %this.aimedMaxPitch = 90;
    %this.aimedMinPitch = -90;
    
-   %this.setThreadAnimation(0, "StandIdle");
+   //Set our initial pose
+   %this.animation.playThread(0, "ReadyIdle");
 }
 
 function FoxPlayer::onRemove(%this)
@@ -195,6 +197,7 @@ function FoxPlayer::moveTriggerEvent(%this, %triggerNum, %triggerValue)
 	else if(%triggerNum == 4)
 	{
       %this.crouch = %triggerValue;
+      %this.stateMachine.isCrouched = %triggerValue;
 	}
 	else if(%triggerNum == 1)
 	{
@@ -235,27 +238,10 @@ function FoxPlayer::onCollisionEvent(%this, %colObject, %colNormal, %colPoint, %
 function FoxPlayer::processTick(%this)
 {
    %moveVec = %this.getMoveVector();
-   //%bestFit = "";
    
-   if(%this.crouch)
-   {
-      /*if(%moveVec.x != 0 || %moveVec.y != 0)
-         %bestFit = "Crouch_Forward";
-      else
-         %bestFit = "Crouch_Root";*/
-      %bestFit = "CrouchIdle";
-   }
-   else
-   {
-      /*if(%moveVec.x != 0 || %moveVec.y != 0)
-         %bestFit = "Run";
-      else
-         %bestFit = "Root";*/
-      %bestFit = "ReadyIdle";
-   }
-   //%bestFit = "ReadyIdle";
-      
-   if(!%this.collision.hasContact() && !%this.falling)
+   //make sure we're actually falling and not merely having jumped by seeing if we're
+   //moving downward   
+   if(!%this.collision.hasContact() && !%this.falling && %this.phys.velocity.z < 0)
    {
       //we lost contact, but we're not yet falling, do a raycast down and see how far down the nearest thing is
       %searchResult = containerRayCast(%this.position, VectorAdd(%this.position, "0 0 -10"), 
@@ -281,36 +267,75 @@ function FoxPlayer::processTick(%this)
          {
             //long fall  
             %this.falling = true;
-            %bestFit = "ReadySword";
          }
          else
          {
             //mid-range fall
             %this.falling = true; 
-            %bestFit = "ReadySword"; 
          }
       }
       else
       {
          //hookay, there's nothing even 10 meters down, so yes, we're absolutely falling  
          %this.falling = true;
-         %bestFit = "ReadySword";
       }
    }
    else if(%this.collision.hasContact() && %this.falling)
    {
       //landed
       %this.falling = false;
-      %bestFit = "ReadyIdle";
    }
    
-   //%bestFit = "ReadySword";
+   %actionAnim = %this.findBestActionAnimation();
    
-   //if(%this.animation.getThreadAnimation(0) !$= %bestFit)
-   //   %this.animation.playThread(0, %bestFit);
-   
-   /*if(%this.phys.getCollisionCount() <= 0)
+   /*if(%this.animation.getThreadAnimation(0) !$= %actionAnim)
    {
-      echo("FREEE FAAAAALIIIIN'");  
+      //echo("FoxPlayer is changing it's action anim to: " @ %actionAnim);
+      %this.animation.playThread(0, %actionAnim);
    }*/
+}
+
+function FoxPlayer::findBestActionAnimation(%this)
+{
+   /*if(%this.falling)
+   {
+      %bestFit = "ReadySword";
+   }
+   else
+   {
+      if(%this.crouch)
+      {
+         %bestFit = "CrouchIdle";
+      }
+      else
+      {
+         %bestFit = "ReadyIdle";
+      }  
+   }
+   
+   return %bestFit;*/
+   return "";
+}
+
+//State Machine bits
+function FoxPlayer::onStandingRoot(%this)
+{
+   echo("Switched to onStandingRoot state!");
+   %this.animation.playThread(0, "ReadyIdle");
+}
+
+function FoxPlayer::onForwardRun(%this)
+{
+   echo("Switched to onForwardRun state!");
+   %this.animation.playThread(0, "JogF");
+}
+
+function FoxPlayer::onCrouchRoot(%this)
+{
+   %this.animation.playThread(0, "CrouchIdle");
+}
+
+function FoxPlayer::onCrouchForward(%this)
+{
+   //%this.animation.playThread(0, "JogF");
 }

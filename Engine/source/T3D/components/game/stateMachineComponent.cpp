@@ -143,11 +143,18 @@ void StateMachineComponent::_onResourceChanged(const Torque::Path &path)
    loadStateMachineFile();
 }
 
+void StateMachineComponent::setStateMachineFile(const char* fileName)
+{ 
+   mStateMachineFile = StringTable->insert(fileName); 
+   //ResourceManager::get().load(mStateMachineFile);
+}
+
 void StateMachineComponent::loadStateMachineFile()
 {
    if (!dStrIsEmpty(mStateMachineFile))
    {
       mStateMachine.mStateMachineFile = mStateMachineFile;
+      mStateMachine.mOwnerObject = this;
       mStateMachine.loadStateMachineFile();
 
       //now that it's loaded, we need to parse the SM's fields and set them as script vars on ourselves
@@ -159,19 +166,19 @@ void StateMachineComponent::loadStateMachineFile()
 
          char buffer[128];
 
-         if (field.fieldType == StateMachine::StateField::BooleanType)
+         if (field.data.fieldType == StateMachine::Field::BooleanType)
          {
-            dSprintf(buffer, sizeof(buffer), "%b", field.triggerBoolVal);
+            dSprintf(buffer, sizeof(buffer), "%b", field.data.boolVal);
             setDataField(field.name, NULL, buffer);
          }
-         else if (field.fieldType == StateMachine::StateField::NumberType)
+         else if (field.data.fieldType == StateMachine::Field::NumberType)
          {
-            dSprintf(buffer, sizeof(buffer), "%g", field.triggerNumVal);
+            dSprintf(buffer, sizeof(buffer), "%g", field.data.numVal);
             setDataField(field.name, NULL, buffer);
          }
-         else if (field.fieldType == StateMachine::StateField::StringType)
+         else if (field.data.fieldType == StateMachine::Field::StringType)
          {
-            setDataField(field.name, NULL, field.triggerStringVal);
+            setDataField(field.name, NULL, field.data.stringVal);
          }
       }
    }
@@ -190,7 +197,9 @@ void StateMachineComponent::onDynamicModified( const char* slotName, const char*
    Parent::onDynamicModified(slotName, newValue);
 
    StringTableEntry fieldName = StringTable->insert(slotName);
-   mStateMachine.checkTransitions(fieldName, newValue);
+
+   mStateMachine.setField(fieldName, newValue);
+   mStateMachine.checkTransitions();
 }
 
 void StateMachineComponent::onStaticModified( const char* slotName, const char* newValue )
@@ -198,7 +207,9 @@ void StateMachineComponent::onStaticModified( const char* slotName, const char* 
    Parent::onStaticModified(slotName, newValue);
 
    StringTableEntry fieldName = StringTable->insert(slotName);
-   mStateMachine.checkTransitions(fieldName, newValue);
+
+   mStateMachine.setField(fieldName, newValue);
+   mStateMachine.checkTransitions();
 }
 
 void StateMachineComponent::onStateChanged(StateMachine* sm, S32 stateIdx)

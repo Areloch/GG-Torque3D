@@ -22,20 +22,26 @@ function spectatorObject::moveVectorEvent(%this)
 {
    %moveVector = %this.getMoveVector();
    
-   %ForwardVec = %this.getForwardVector();
+   %forwardVec = %this.getForwardVector();
 
-   %RightVec = %this.getRightVector();
+   %rightVec = %this.getRightVector();
 
    %moveVec = VectorAdd(VectorScale(%RightVec, %moveVector.x), VectorScale(%ForwardVec, %moveVector.y));
    
    if(%moveVec.x)
    {
-      %this.position.x += %moveVec.x + 10;
+      %rv = VectorNormalize(%rightVec);
+      %rightMove = VectorScale(%rv, (%moveVector.x));
+      %this.position = VectorAdd(%this.position, %rightMove);
+      //%this.position.x += %rightMove.x + 10;
    }
    
    if(%moveVector.y)
    {
-      %this.position.y += %moveVec.y + 10;
+      %fv = VectorNormalize(%forwardVec);
+      %forwardMove = VectorScale(%fv, (%moveVector.y));
+      %this.position = VectorAdd(%this.position, %forwardMove);
+      //%this.position.y += %moveVec.y + 10;
    }
 }
 
@@ -43,16 +49,24 @@ function spectatorObject::moveYawEvent(%this)
 {
    %moveRotation = %this.getMoveRotation();
    
-   if(%moveRotation.z != 0)
-      %this.rotation.z += mRadToDeg(%moveRotation.z);
+   //if(%moveRotation.z != 0)
+   //   %this.rotation.z += mRadToDeg(%moveRotation.z);
+   
+   %newRot = Rotation::add(%this.rotation, %moveRotation);
+   
+   %this.rotation = %newRot;
 }
 
 function spectatorObject::movePitchEvent(%this)
 {
    %moveRotation = %this.getMoveRotation();
    
-   if(%moveRotation.x != 0)
-      %this.rotation.x += mRadToDeg(%moveRotation.x);
+   //if(%moveRotation.x != 0)
+   //   %this.rotation.x += mRadToDeg(%moveRotation.x);
+   
+   %newRot = Rotation::add(%this.rotation, %moveRotation);
+   
+   %this.rotation = %newRot;
 }
 
 function spectatorObject::Update(%this)

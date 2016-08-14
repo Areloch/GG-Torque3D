@@ -58,6 +58,8 @@
 #include "util/sampler.h"
 #include "platform/threads/threadPool.h"
 
+#include "cinterface/c-interface.h"
+
 // For the TickMs define... fix this for T2D...
 #include "T3D/gameBase/processList.h"
 
@@ -427,6 +429,11 @@ bool StandardMainLoop::handleCommandLine( S32 argc, const char **argv )
       Torque::FS::Mount( "game", Platform::FS::createNativeFS( playerPath ) );
    }
 #endif
+
+   bool externalMain = false;
+   CInterface::CallMain(&externalMain);
+   if (externalMain)
+      return true;
 
    // Executes an entry script file. This is "main.cs"
    // by default, but any file name (with no whitespace

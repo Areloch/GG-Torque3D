@@ -224,6 +224,7 @@ void PlayerControllerComponent::initPersistFields()
 {
    Parent::initPersistFields();
 
+   addField("velocity", TypePoint3F, Offset(mVelocity, PlayerControllerComponent), "");
    addField("inputVelocity", TypePoint3F, Offset(mInputVelocity, PlayerControllerComponent), "");
    addField("useDirectMoveInput", TypeBool, Offset(mUseDirectMoveInput, PlayerControllerComponent), "");
 }

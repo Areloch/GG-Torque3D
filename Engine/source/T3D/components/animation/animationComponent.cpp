@@ -225,26 +225,36 @@ U32 AnimationComponent::packUpdate(NetConnection *con, U32 mask, BitStream *stre
 
    //early test if we lack an owner, ghost-wise
    //no point in trying, just re-queue the mask and go
-   if (!mOwner || con->getGhostIndex(mOwner) == -1)
+   if (!mOwner || !mOwnerRenderInst)
    {
+      //we have no owner, or shape, so no point in continuing
       stream->writeFlag(false);
-      return retMask |= ThreadMask;
+      return retMask;
    }
    else
    {
-      stream->writeFlag(true);
-
-      for (int i = 0; i < MaxScriptThreads; i++) 
+      Component* comp = dynamic_cast<Component*>(mOwnerRenderInst);
+      if (con->getGhostIndex(mOwner) == -1 || con->getGhostIndex(comp) == -1)
       {
-         Thread& st = mAnimationThreads[i];
-         if (stream->writeFlag( (st.sequence != -1 || st.state == Thread::Destroy) && (mask & (ThreadMaskN << i)) ) ) 
+         stream->writeFlag(false);
+         return retMask |= ThreadMask;
+      }
+      else
+      {
+         stream->writeFlag(true);
+
+         for (int i = 0; i < MaxScriptThreads; i++)
          {
-            stream->writeInt(st.sequence,ThreadSequenceBits);
-            stream->writeInt(st.state,2);
-            stream->write(st.timescale);
-            stream->write(st.position);
-            stream->writeFlag(st.atEnd);
-            stream->writeFlag(st.transition);
+            Thread& st = mAnimationThreads[i];
+            if (stream->writeFlag((st.sequence != -1 || st.state == Thread::Destroy) && (mask & (ThreadMaskN << i))))
+            {
+               stream->writeInt(st.sequence, ThreadSequenceBits);
+               stream->writeInt(st.state, 2);
+               stream->write(st.timescale);
+               stream->write(st.position);
+               stream->writeFlag(st.atEnd);
+               stream->writeFlag(st.transition);
+            }
          }
       }
    }
@@ -279,6 +289,7 @@ void AnimationComponent::unpackUpdate(NetConnection *con, BitStream *stream)
       }
    }
 }
+
 void AnimationComponent::processTick()
 {
    Parent::processTick();
@@ -327,9 +338,6 @@ const char *AnimationComponent::getThreadSequenceName(U32 slot)
 
 bool AnimationComponent::setThreadSequence(U32 slot, S32 seq, bool reset, bool transition, F32 transTime)
 {
-   if (!mOwnerShapeInstance)
-      return false;
-
    Thread& st = mAnimationThreads[slot];
    if (st.thread && st.sequence == seq && st.state == Thread::Play && !reset)
       return true;

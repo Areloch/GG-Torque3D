@@ -29,6 +29,8 @@ static float M_HALFPI_F   = 1.57079632679489661923f;
 static float M_PI_F       = 3.14159265358979323846f;
 static float M_2PI_F      = 6.28318530717958647692f;
 
+uniform float globalTime;
+
 
 /// Calculate fog based on a start and end positions in worldSpace.
 float computeSceneFog(  float3 startPos,
@@ -285,6 +287,13 @@ bool getFlag(float flags, int num)
    return (fmod(process, pow(2, squareNum)) >= squareNum); 
 }
 
+/*float3 ScreenSpaceDither(float2 vScreenPos)
+{
+    // lestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR
+    float3 vDither = float3(dot(vec2(131.0, 312.0), vScreenPos.xy + globalTime));
+    vDither.rgb = frac(vDither.rgb / float3(103.0, 71.0, 97.0)) - float3(0.5, 0.5, 0.5);
+    return (vDither.rgb / colorDepth) * 0.375;
+}*/
 
 // #define TORQUE_STOCK_GAMMA
 #ifdef TORQUE_STOCK_GAMMA

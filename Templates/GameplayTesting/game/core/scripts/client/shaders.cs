@@ -138,3 +138,18 @@ singleton ShaderData( VolumetricFogReflectionShader )
 	
    pixVersion = 3.0;
 };
+
+new ShaderData( MeshAssetShader )
+{
+   DXVertexShaderFile   = "modules/Placeholder/shaders/MeshAssetV.hlsl";
+   DXPixelShaderFile    = "modules/Placeholder/shaders/MeshAssetP.hlsl";
+   
+   //OGLVertexShaderFile   = "shaders/common/ribbons/gl/texRibbonShaderV.glsl";
+   //OGLPixelShaderFile    = "shaders/common/ribbons/gl/texRibbonShaderP.glsl";
+   
+   samplerNames[0] = "$diffuseMap";
+   samplerNames[1] = "$specularMap";
+   samplerNames[2] = "$bumpMap";
+   
+   pixVersion = 3.0;
+};

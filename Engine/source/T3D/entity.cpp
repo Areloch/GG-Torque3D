@@ -1897,6 +1897,15 @@ DefineConsoleMethod(Entity, getMoveTrigger, bool, (S32 triggerNum), (0),
    return false;
 }
 
+DefineEngineMethod(Entity, getForwardVector, VectorF, (), ,
+   "Get the direction this object is facing.\n"
+   "@return a vector indicating the direction this object is facing.\n"
+   "@note This is the object's y axis.")
+{
+   VectorF forVec = object->getTransform().getForwardVector();
+   return forVec;
+}
+
 DefineConsoleMethod(Entity, setForwardVector, void, (VectorF newForward), (VectorF(0,0,0)),
    "Get the number of static fields on the object.\n"
    "@return The number of static fields defined on the object.")

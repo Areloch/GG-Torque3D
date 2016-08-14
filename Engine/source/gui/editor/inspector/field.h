@@ -62,6 +62,10 @@ class GuiInspectorField : public GuiControl
       
       /// The GuiInspector that the group is in to which this field belongs.
       GuiInspector* mInspector;
+
+      //An override to make sure this field is associated to an object that isn't expressly
+      //the one the inspector is inspecting. Such as an entity's component.
+      SimObject* mTargetObject;
       
       ///
       AbstractClassRep::Field* mField;
@@ -186,6 +190,9 @@ class GuiInspectorField : public GuiControl
       virtual void setFirstResponder( GuiControl *firstResponder );
       virtual void onMouseDown( const GuiEvent &event );
       virtual void onRightMouseUp( const GuiEvent &event );
+
+      void setTargetObject(SimObject* obj) { mTargetObject = obj; }
+      SimObject* getTargetObject() { return mTargetObject; }
 
       DECLARE_CONOBJECT( GuiInspectorField );
       DECLARE_CATEGORY( "Gui Editor" );
