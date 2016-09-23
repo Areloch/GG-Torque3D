@@ -53,6 +53,20 @@ function GameConnection::initialControlSet(%this)
    // first check if the editor is active
    if (!isToolBuild() || !Editor::checkActiveLoadDone())
    {
+      // The first control object has been set by the server
+      // and we are now ready to go.
+      if ( $Video::VREnabled )
+      {
+         enableOpenVRDisplay(%this, true);
+         setStandardOpenVRControlScheme(%this);
+      }
+      else
+      {
+         disableOpenVRDisplay(%this);
+         ServerConnection.setControlSchemeParameters(false, false, false);
+      }
+      
+      
       if (Canvas.getContent() != PlayGui.getId())
       {
          Canvas.setContent(PlayGui);

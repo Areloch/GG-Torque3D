@@ -481,6 +481,7 @@ datablock DebrisData( PlayerDebris )
 
 datablock PlayerData(DefaultPlayerData)
 {
+   cameraCanBank = true;
    renderFirstPerson = false;
    firstPersonShadows = true;
    computeCRC = false;
@@ -494,6 +495,7 @@ datablock PlayerData(DefaultPlayerData)
    imageAnimPrefixFP = "soldier";
    shapeNameFP[0] = "art/shapes/actors/Soldier/FP/FP_SoldierArms.DAE";
 
+   canObserve = 1;
    cmdCategory = "Clients";
 
    cameraDefaultFov = 55.0;
@@ -648,6 +650,7 @@ datablock PlayerData(DefaultPlayerData)
 
    //exitingWater         = ExitingWaterLightSound;
 
+   observeParameters = "0.5 4.5 4.5";
 
    cameraMinDist = "0";
    DecalData = "PlayerFootprint";

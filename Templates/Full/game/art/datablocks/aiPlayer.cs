@@ -27,4 +27,5 @@
 datablock PlayerData(DemoPlayer : DefaultPlayerData)
 {
    shootingDelay = 2000;
+   cameraCanBank = true;
 };

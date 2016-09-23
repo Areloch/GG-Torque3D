@@ -29,12 +29,22 @@ $defaultGame = "scripts";
 // Set profile directory
 $Pref::Video::ProfilePath = "core/profile";
 
+$Pref::Video::VREnabled = 0;
+
 function createCanvas(%windowTitle)
 {
    if ($isDedicated)
    {
       GFXInit::createNullDevice();
       return true;
+   }
+
+   if ($Pref::Video::VREnabled)
+   {
+      echo("Created canvas with VR enabled");
+      OpenVR::setEnabled(1);
+      pointCanvasToVRDisplay();
+      $Video::VREnabled = OpenVR::isDeviceActive();
    }
 
    // Create the Canvas

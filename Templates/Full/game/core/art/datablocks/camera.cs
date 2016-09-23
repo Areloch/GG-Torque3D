@@ -27,4 +27,5 @@
 datablock CameraData(Observer)
 {
    mode = "Observer";
+   cameraCanBank = true;
 };

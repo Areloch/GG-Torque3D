@@ -56,6 +56,7 @@ function initializeCore()
 
    // Input devices
    exec("~/scripts/client/oculusVR.cs");
+   exec("~/scripts/client/openVR.cs");
 
    // Seed the random number generator.
    setRandomSeed();
