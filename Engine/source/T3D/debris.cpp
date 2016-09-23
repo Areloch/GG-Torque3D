@@ -121,23 +121,6 @@ bool DebrisData::onAdd()
    if(!Parent::onAdd())
       return false;
 
-   for( S32 i=0; i<DDC_NUM_EMITTERS; i++ )
-   {
-      if( !emitterList[i] && emitterIDList[i] != 0 )
-      {
-         if( Sim::findObject( emitterIDList[i], emitterList[i] ) == false)
-         {
-            Con::errorf( ConsoleLogEntry::General, "DebrisData::onAdd: Invalid packet, bad datablockId(emitter): 0x%x", emitterIDList[i]);
-         }
-      }
-   }
-
-   if (!explosion && explosionId != 0)
-   {
-      if (!Sim::findObject( SimObjectId( explosionId ), explosion ))
-            Con::errorf( ConsoleLogEntry::General, "DebrisData::onAdd: Invalid packet, bad datablockId(particle emitter): 0x%x", explosionId);
-   }
-
    // validate data
 
    if( velocityVariance > velocity )
@@ -193,6 +176,25 @@ bool DebrisData::preload(bool server, String &errorStr)
 {
    if (Parent::preload(server, errorStr) == false)
       return false;
+
+   if (explosion)
+   {
+      U32 datablockId = explosion->getId();
+      SimDataBlock* pd = static_cast<SimDataBlock*>(explosion);
+      PRELOAD_DB(datablockId, &pd, server,
+         "Error, unable to load explosion for DebrisData", "Error, unable to load explosion for DebrisData");
+   }
+
+   for (S32 i = 0; i<DDC_NUM_EMITTERS; i++)
+   {
+      if (emitterList[i])
+      {
+         U32 datablockId = emitterList[i]->getId();
+         SimDataBlock* pd = static_cast<SimDataBlock*>(emitterList[i]);
+         PRELOAD_DB(datablockId, &pd, server,
+            "Error, unable to load emitter for DebrisData", "Error, unable to load emitter for DebrisData");
+      }
+   }
 
    if( server ) return true;
 
@@ -306,14 +308,13 @@ void DebrisData::packData(BitStream* stream)
    {
       if( stream->writeFlag( emitterList[i] != NULL ) )
       {
-         stream->writeRangedU32( emitterList[i]->getId(), DataBlockObjectIdFirst,  DataBlockObjectIdLast );
+         PACK_DB_ID(stream, emitterList[i]->getId());
       }
    }
 
    if( stream->writeFlag( explosion ) )
    {
-      stream->writeRangedU32(packed? SimObjectId((uintptr_t)explosion):
-         explosion->getId(),DataBlockObjectIdFirst,DataBlockObjectIdLast);
+      PACK_DB_ID(stream, explosion->getId());
    }
 
 }
@@ -349,19 +350,20 @@ void DebrisData::unpackData(BitStream* stream)
    {
       if( stream->readFlag() )
       {
-         emitterIDList[i] = stream->readRangedU32( DataBlockObjectIdFirst, DataBlockObjectIdLast );
+         U32 dbId;
+         UNPACK_DB_ID(stream, dbId);
+
+         Sim::findObject(dbId, emitterList[i]);
       }
    }
 
    if(stream->readFlag())
    {
-      explosionId = (S32)stream->readRangedU32(DataBlockObjectIdFirst, DataBlockObjectIdLast);
-   }
-   else
-   {
-      explosionId = 0;
-   }
+      U32 dbId;
+      UNPACK_DB_ID(stream, dbId);
 
+      Sim::findObject(dbId, explosion);
+   }
 }
 
 

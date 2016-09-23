@@ -236,37 +236,33 @@ bool ShapeBaseData::preload(bool server, String &errorStr)
       return false;
    bool shapeError = false;
 
+   if (explosion)
+   {
+      U32 datablockId = explosion->getId();
+      SimDataBlock* pd = static_cast<SimDataBlock*>(explosion);
+      PRELOAD_DB(datablockId, &pd, server,
+         "Error, unable to load explosion for ShapeBaseData", "Error, unable to load explosion for ShapeBaseData");
+   }
+
+   if (underwaterExplosion)
+   {
+      U32 datablockId = underwaterExplosion->getId();
+      SimDataBlock* pd = static_cast<SimDataBlock*>(underwaterExplosion);
+      PRELOAD_DB(datablockId, &pd, server,
+         "Error, unable to load underwaterExplosion for ShapeBaseData", "Error, unable to load underwaterExplosion for ShapeBaseData");
+   }
+
+   if (debris)
+   {
+      U32 datablockId = debris->getId();
+      SimDataBlock* pd = static_cast<SimDataBlock*>(debris);
+      PRELOAD_DB(datablockId, &pd, server,
+         "Error, unable to load debris for ShapeBaseData", "Error, unable to load debris for ShapeBaseData");
+   }
+
    // Resolve objects transmitted from server
-   if (!server) {
-
-      if( !explosion && explosionID != 0 )
-      {
-         if( Sim::findObject( explosionID, explosion ) == false)
-         {
-            Con::errorf( ConsoleLogEntry::General, "ShapeBaseData::preload: Invalid packet, bad datablockId(explosion): 0x%x", explosionID );
-         }
-         AssertFatal(!(explosion && ((explosionID < DataBlockObjectIdFirst) || (explosionID > DataBlockObjectIdLast))),
-            "ShapeBaseData::preload: invalid explosion data");
-      }
-
-      if( !underwaterExplosion && underwaterExplosionID != 0 )
-      {
-         if( Sim::findObject( underwaterExplosionID, underwaterExplosion ) == false)
-         {
-            Con::errorf( ConsoleLogEntry::General, "ShapeBaseData::preload: Invalid packet, bad datablockId(underwaterExplosion): 0x%x", underwaterExplosionID );
-         }
-         AssertFatal(!(underwaterExplosion && ((underwaterExplosionID < DataBlockObjectIdFirst) || (underwaterExplosionID > DataBlockObjectIdLast))),
-            "ShapeBaseData::preload: invalid underwaterExplosion data");
-      }
-
-      if( !debris && debrisID != 0 )
-      {
-         Sim::findObject( debrisID, debris );
-         AssertFatal(!(debris && ((debrisID < DataBlockObjectIdFirst) || (debrisID > DataBlockObjectIdLast))),
-            "ShapeBaseData::preload: invalid debris data");
-      }
-
-
+   if (!server) 
+   {
       if( debrisShapeName && debrisShapeName[0] != '\0' && !bool(debrisShape) )
       {
          debrisShape = ResourceManager::get().load(debrisShapeName);
@@ -287,7 +283,8 @@ bool ShapeBaseData::preload(bool server, String &errorStr)
    }
 
    //
-   if (shapeName && shapeName[0]) {
+   if (shapeName && shapeName[0]) 
+   {
       S32 i;
 
       // Resolve shapename
@@ -707,8 +704,7 @@ void ShapeBaseData::packData(BitStream* stream)
 
    if( stream->writeFlag( debris != NULL ) )
    {
-      stream->writeRangedU32(packed? SimObjectId((uintptr_t)debris):
-                             debris->getId(),DataBlockObjectIdFirst,DataBlockObjectIdLast);
+      PACK_DB_ID(stream, debris->getId());
    }
 
    stream->writeFlag(isInvincible);
@@ -716,12 +712,12 @@ void ShapeBaseData::packData(BitStream* stream)
 
    if( stream->writeFlag( explosion != NULL ) )
    {
-      stream->writeRangedU32( explosion->getId(), DataBlockObjectIdFirst,  DataBlockObjectIdLast );
+      PACK_DB_ID(stream, explosion->getId());
    }
 
    if( stream->writeFlag( underwaterExplosion != NULL ) )
    {
-      stream->writeRangedU32( underwaterExplosion->getId(), DataBlockObjectIdFirst,  DataBlockObjectIdLast );
+      PACK_DB_ID(stream, underwaterExplosion->getId());
    }
 
    stream->writeFlag(inheritEnergyFromMount);
@@ -809,7 +805,10 @@ void ShapeBaseData::unpackData(BitStream* stream)
 
    if( stream->readFlag() )
    {
-      debrisID = stream->readRangedU32( DataBlockObjectIdFirst, DataBlockObjectIdLast );
+      U32 dbId;
+      UNPACK_DB_ID(stream, dbId);
+
+      Sim::findObject(dbId, debris);
    }
 
    isInvincible = stream->readFlag();
@@ -817,12 +816,18 @@ void ShapeBaseData::unpackData(BitStream* stream)
 
    if( stream->readFlag() )
    {
-      explosionID = stream->readRangedU32( DataBlockObjectIdFirst, DataBlockObjectIdLast );
+      U32 dbId;
+      UNPACK_DB_ID(stream, dbId);
+
+      Sim::findObject(dbId, explosion);
    }
 
    if( stream->readFlag() )
    {
-      underwaterExplosionID = stream->readRangedU32( DataBlockObjectIdFirst, DataBlockObjectIdLast );
+      U32 dbId;
+      UNPACK_DB_ID(stream, dbId);
+
+      Sim::findObject(dbId, underwaterExplosion);
    }
 
    inheritEnergyFromMount = stream->readFlag();

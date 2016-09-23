@@ -553,9 +553,17 @@ bool PlayerData::preload(bool server, String &errorStr)
       if (!Sim::findObject(footPuffID, footPuffEmitter))
          Con::errorf(ConsoleLogEntry::General, "PlayerData::preload - Invalid packet, bad datablockId(footPuffEmitter): 0x%x", footPuffID);
 
-   if (!decalData && decalID != 0 )
-      if (!Sim::findObject(decalID, decalData))
-         Con::errorf(ConsoleLogEntry::General, "PlayerData::preload Invalid packet, bad datablockId(decalData): 0x%x", decalID);
+   if (decalData)
+   {
+      U32 datablockId = decalData->getId();
+      SimDataBlock* pd = static_cast<SimDataBlock*>(decalData);
+      PRELOAD_DB(datablockId, &pd, server,
+         "Error, unable to load decal for playerData", "Error, unable to load decal for playerData");
+   }
+
+   //if (!decalData && decalID != 0 )
+   //   if (!Sim::findObject(decalID, decalData))
+   //      Con::errorf(ConsoleLogEntry::General, "PlayerData::preload Invalid packet, bad datablockId(decalData): 0x%x", decalID);
 
    if (!dustEmitter && dustID != 0 )
       if (!Sim::findObject(dustID, dustEmitter))
@@ -1304,7 +1312,8 @@ void PlayerData::packData(BitStream* stream)
 
    if( stream->writeFlag( decalData ) )
    {
-      stream->writeRangedU32( decalData->getId(), DataBlockObjectIdFirst,  DataBlockObjectIdLast );
+      PACK_DB_ID(stream, decalData->getId());
+      //stream->writeRangedU32( decalData->getId(), DataBlockObjectIdFirst,  DataBlockObjectIdLast );
    }
    stream->write(decalOffset);
 
@@ -1485,7 +1494,11 @@ void PlayerData::unpackData(BitStream* stream)
 
    if( stream->readFlag() )
    {
-      decalID = (S32) stream->readRangedU32(DataBlockObjectIdFirst, DataBlockObjectIdLast);
+      //decalID = (S32) stream->readRangedU32(DataBlockObjectIdFirst, DataBlockObjectIdLast);
+      U32 dbId;
+      UNPACK_DB_ID(stream, dbId);
+
+      Sim::findObject(dbId, decalData);
    }
    stream->read(&decalOffset);
 

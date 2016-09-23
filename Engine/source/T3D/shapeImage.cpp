@@ -406,20 +406,37 @@ bool ShapeBaseImageData::preload(bool server, String &errorStr)
    if (!Parent::preload(server, errorStr))
       return false;
 
-   // Resolve objects transmitted from server
-   if (!server) {
-      if (projectile)
-         if (Sim::findObject(SimObjectId((uintptr_t)projectile), projectile) == false)
-            Con::errorf(ConsoleLogEntry::General, "Error, unable to load projectile for shapebaseimagedata");
+   if (projectile)
+   {
+      U32 datablockId = projectile->getId();
+      SimDataBlock* pd = static_cast<SimDataBlock*>(projectile);
+      PRELOAD_DB(datablockId, &pd, server,
+         "Error, unable to load projectile for shapebaseimagedata", "Error, unable to load projectile for shapebaseimagedata");
+   }
 
-      for (U32 i = 0; i < MaxStates; i++) {
-         if (state[i].emitter)
-            if (!Sim::findObject(SimObjectId((uintptr_t)state[i].emitter), state[i].emitter))
-               Con::errorf(ConsoleLogEntry::General, "Error, unable to load emitter for image datablock");
-               
+   if (casing)
+   {
+      U32 datablockId = casing->getId();
+      SimDataBlock* pd = static_cast<SimDataBlock*>(casing);
+      PRELOAD_DB(datablockId, &pd, server,
+         "Error, unable to load casing for shapebaseimagedata", "Error, unable to load casing for shapebaseimagedata");
+   }
+
+   for (U32 i = 0; i < MaxStates; i++) 
+   {
+      if (state[i].emitter)
+      {
+         U32 datablockId = state[i].emitter->getId();
+         SimDataBlock* pd = static_cast<SimDataBlock*>(state[i].emitter);
+         PRELOAD_DB(datablockId, &pd, server,
+            "Error, unable to load state emitter for shapebaseimagedata", "Error, unable to load state emitter for shapebaseimagedata");
+      }
+
+      if (!server)
+      {
          String str;
-         if( !sfxResolve( &state[ i ].sound, str ) )
-            Con::errorf( ConsoleLogEntry::General, str.c_str() );
+         if (!sfxResolve(&state[i].sound, str))
+            Con::errorf(ConsoleLogEntry::General, str.c_str());
       }
    }
 
@@ -550,15 +567,6 @@ bool ShapeBaseImageData::preload(bool server, String &errorStr)
          return false;
       }
    }
-
-   if( !casing && casingID != 0 )
-   {
-      if( !Sim::findObject( SimObjectId( casingID ), casing ) )
-      {
-         Con::errorf( ConsoleLogEntry::General, "ShapeBaseImageData::preload: Invalid packet, bad datablockId(casing): 0x%x", casingID );
-      }
-   }
-
 
    // Preload the shapes
    for( U32 i=0; i<MaxShapes; ++i)
@@ -1019,8 +1027,9 @@ void ShapeBaseImageData::packData(BitStream* stream)
 
    // Write the projectile datablock
    if (stream->writeFlag(projectile))
-      stream->writeRangedU32(packed? SimObjectId((uintptr_t)projectile):
-                             projectile->getId(),DataBlockObjectIdFirst,DataBlockObjectIdLast);
+   {
+      PACK_DB_ID(stream, projectile->getId());
+   }
 
    stream->writeFlag(cloakable);
    stream->writeRangedU32(lightType, 0, NumLightTypes-1);
@@ -1050,12 +1059,13 @@ void ShapeBaseImageData::packData(BitStream* stream)
 
    if( stream->writeFlag( casing ) )
    {
-      stream->writeRangedU32(packed? SimObjectId((uintptr_t)casing):
-         casing->getId(),DataBlockObjectIdFirst,DataBlockObjectIdLast);
+      PACK_DB_ID(stream, casing->getId());
    }
 
    for (U32 i = 0; i < MaxStates; i++)
-      if (stream->writeFlag(state[i].name && state[i].name[0])) {
+   {
+      if (stream->writeFlag(state[i].name && state[i].name[0]))
+      {
          StateData& s = state[i];
          // States info not needed on the client:
          //    s.allowImageChange
@@ -1063,40 +1073,40 @@ void ShapeBaseImageData::packData(BitStream* stream)
          // Transitions are inc. one to account for -1 values
          stream->writeString(state[i].name);
 
-         stream->writeInt(s.transition.loaded[0]+1,NumStateBits);
-         stream->writeInt(s.transition.loaded[1]+1,NumStateBits);
-         stream->writeInt(s.transition.ammo[0]+1,NumStateBits);
-         stream->writeInt(s.transition.ammo[1]+1,NumStateBits);
-         stream->writeInt(s.transition.target[0]+1,NumStateBits);
-         stream->writeInt(s.transition.target[1]+1,NumStateBits);
-         stream->writeInt(s.transition.wet[0]+1,NumStateBits);
-         stream->writeInt(s.transition.wet[1]+1,NumStateBits);
-         stream->writeInt(s.transition.trigger[0]+1,NumStateBits);
-         stream->writeInt(s.transition.trigger[1]+1,NumStateBits);
-         stream->writeInt(s.transition.altTrigger[0]+1,NumStateBits);
-         stream->writeInt(s.transition.altTrigger[1]+1,NumStateBits);
-         stream->writeInt(s.transition.timeout+1,NumStateBits);
+         stream->writeInt(s.transition.loaded[0] + 1, NumStateBits);
+         stream->writeInt(s.transition.loaded[1] + 1, NumStateBits);
+         stream->writeInt(s.transition.ammo[0] + 1, NumStateBits);
+         stream->writeInt(s.transition.ammo[1] + 1, NumStateBits);
+         stream->writeInt(s.transition.target[0] + 1, NumStateBits);
+         stream->writeInt(s.transition.target[1] + 1, NumStateBits);
+         stream->writeInt(s.transition.wet[0] + 1, NumStateBits);
+         stream->writeInt(s.transition.wet[1] + 1, NumStateBits);
+         stream->writeInt(s.transition.trigger[0] + 1, NumStateBits);
+         stream->writeInt(s.transition.trigger[1] + 1, NumStateBits);
+         stream->writeInt(s.transition.altTrigger[0] + 1, NumStateBits);
+         stream->writeInt(s.transition.altTrigger[1] + 1, NumStateBits);
+         stream->writeInt(s.transition.timeout + 1, NumStateBits);
 
          // Most states don't make use of the motion transition.
          if (stream->writeFlag(s.transition.motion[0] != -1 || s.transition.motion[1] != -1))
          {
             // This state does
-            stream->writeInt(s.transition.motion[0]+1,NumStateBits);
-            stream->writeInt(s.transition.motion[1]+1,NumStateBits);
+            stream->writeInt(s.transition.motion[0] + 1, NumStateBits);
+            stream->writeInt(s.transition.motion[1] + 1, NumStateBits);
          }
 
          // Most states don't make use of the generic trigger transitions.  Don't transmit
          // if that is the case here.
-         for (U32 j=0; j<MaxGenericTriggers; ++j)
+         for (U32 j = 0; j < MaxGenericTriggers; ++j)
          {
             if (stream->writeFlag(s.transition.genericTrigger[j][0] != -1 || s.transition.genericTrigger[j][1] != -1))
             {
-               stream->writeInt(s.transition.genericTrigger[j][0]+1,NumStateBits);
-               stream->writeInt(s.transition.genericTrigger[j][1]+1,NumStateBits);
+               stream->writeInt(s.transition.genericTrigger[j][0] + 1, NumStateBits);
+               stream->writeInt(s.transition.genericTrigger[j][1] + 1, NumStateBits);
             }
          }
 
-         if(stream->writeFlag(s.timeoutValue != gDefaultStateData.timeoutValue))
+         if (stream->writeFlag(s.timeoutValue != gDefaultStateData.timeoutValue))
             stream->write(s.timeoutValue);
 
          stream->writeFlag(s.waitForTimeout);
@@ -1111,26 +1121,26 @@ void ShapeBaseImageData::packData(BitStream* stream)
          stream->writeFlag(s.sequenceTransitionIn);
          stream->writeFlag(s.sequenceTransitionOut);
          stream->writeFlag(s.sequenceNeverTransition);
-         if(stream->writeFlag(s.sequenceTransitionTime != gDefaultStateData.sequenceTransitionTime))
+         if (stream->writeFlag(s.sequenceTransitionTime != gDefaultStateData.sequenceTransitionTime))
             stream->write(s.sequenceTransitionTime);
 
          stream->writeString(s.shapeSequence);
          stream->writeFlag(s.shapeSequenceScale);
 
-         if(stream->writeFlag(s.energyDrain != gDefaultStateData.energyDrain))
+         if (stream->writeFlag(s.energyDrain != gDefaultStateData.energyDrain))
             stream->write(s.energyDrain);
 
-         stream->writeInt(s.loaded,StateData::NumLoadedBits);
-         stream->writeInt(s.spin,StateData::NumSpinBits);
-         stream->writeInt(s.recoil,StateData::NumRecoilBits);
+         stream->writeInt(s.loaded, StateData::NumLoadedBits);
+         stream->writeInt(s.spin, StateData::NumSpinBits);
+         stream->writeInt(s.recoil, StateData::NumRecoilBits);
 
-         for( U32 j=0; j<MaxShapes; ++j )
+         for (U32 j = 0; j < MaxShapes; ++j)
          {
-            if(stream->writeFlag(s.sequence[j] != gDefaultStateData.sequence[j]))
+            if (stream->writeFlag(s.sequence[j] != gDefaultStateData.sequence[j]))
                stream->writeSignedInt(s.sequence[j], 16);
 
-            if(stream->writeFlag(s.sequenceVis[j] != gDefaultStateData.sequenceVis[j]))
-               stream->writeSignedInt(s.sequenceVis[j],16);
+            if (stream->writeFlag(s.sequenceVis[j] != gDefaultStateData.sequenceVis[j]))
+               stream->writeSignedInt(s.sequenceVis[j], 16);
 
             stream->writeFlag(s.flashSequence[j]);
          }
@@ -1139,18 +1149,19 @@ void ShapeBaseImageData::packData(BitStream* stream)
 
          if (stream->writeFlag(s.emitter))
          {
-            stream->writeRangedU32(packed? SimObjectId((uintptr_t)s.emitter):
-                                   s.emitter->getId(),DataBlockObjectIdFirst,DataBlockObjectIdLast);
+            PACK_DB_ID(stream, s.emitter->getId());
             stream->write(s.emitterTime);
 
-            for( U32 j=0; j<MaxShapes; ++j )
+            for (U32 j = 0; j < MaxShapes; ++j)
             {
                stream->write(s.emitterNode[j]);
             }
          }
 
-         sfxWrite( stream, s.sound );
+         sfxWrite(stream, s.sound);
       }
+   }
+
    stream->write(maxConcurrentSounds);
    stream->writeFlag(useRemainderDT);
 }
@@ -1201,9 +1212,13 @@ void ShapeBaseImageData::unpackData(BitStream* stream)
       hasFlash[j] = stream->readFlag();
    }
 
-   projectile = (stream->readFlag() ?
-                 (ProjectileData*)stream->readRangedU32(DataBlockObjectIdFirst,
-                                                        DataBlockObjectIdLast) : 0);
+   if (stream->readFlag())
+   {
+      U32 dbId;
+      UNPACK_DB_ID(stream, dbId);
+
+      Sim::findObject(dbId, projectile);
+   }
 
    cloakable = stream->readFlag();
    lightType = stream->readRangedU32(0, NumLightTypes-1);
@@ -1234,11 +1249,16 @@ void ShapeBaseImageData::unpackData(BitStream* stream)
 
    if(stream->readFlag())
    {
-      casingID = stream->readRangedU32(DataBlockObjectIdFirst, DataBlockObjectIdLast);
+      U32 dbId;
+      UNPACK_DB_ID(stream, dbId);
+
+      Sim::findObject(dbId, casing);
    }
 
-   for (U32 i = 0; i < MaxStates; i++) {
-      if (stream->readFlag()) {
+   for (U32 i = 0; i < MaxStates; i++) 
+   {
+      if (stream->readFlag()) 
+      {
          StateData& s = state[i];
          // States info not needed on the client:
          //    s.allowImageChange
@@ -1340,8 +1360,11 @@ void ShapeBaseImageData::unpackData(BitStream* stream)
 
          if (stream->readFlag())
          {
-            s.emitter = (ParticleEmitterData*) stream->readRangedU32(DataBlockObjectIdFirst,
-                                                                     DataBlockObjectIdLast);
+            U32 dbId;
+            UNPACK_DB_ID(stream, dbId);
+
+            Sim::findObject(dbId, s.emitter);
+
             stream->read(&s.emitterTime);
 
             for( U32 j=0; j<MaxShapes; ++j )

@@ -131,14 +131,29 @@ bool FlyingVehicleData::preload(bool server, String &errorStr)
    TSShapeInstance* si = new TSShapeInstance(mShape, false);
 
    // Resolve objects transmitted from server
-   if (!server) {
+   if (!server)
+   {
       for (S32 i = 0; i < MaxSounds; i++)
+      {
          if (sound[i])
-            Sim::findObject(SimObjectId((uintptr_t)sound[i]),sound[i]);
+         {
+            U32 datablockId = sound[i]->getId();
+            SimDataBlock* pd = static_cast<SimDataBlock*>(sound[i]);
+            PRELOAD_DB(datablockId, &pd, server,
+               "Error, unable to load sound for FlyingVehicleData", "Error, unable to load sound for FlyingVehicleData");
+         }
+      }
 
       for (S32 j = 0; j < MaxJetEmitters; j++)
+      {
          if (jetEmitter[j])
-            Sim::findObject(SimObjectId((uintptr_t)jetEmitter[j]),jetEmitter[j]);
+         {
+            U32 datablockId = jetEmitter[j]->getId();
+            SimDataBlock* pd = static_cast<SimDataBlock*>(jetEmitter[j]);
+            PRELOAD_DB(datablockId, &pd, server,
+               "Error, unable to load jetEmitter for FlyingVehicleData", "Error, unable to load jetEmitter for FlyingVehicleData");
+         }
+      }
    }
 
    // Extract collision planes from shape collision detail level
@@ -244,8 +259,7 @@ void FlyingVehicleData::packData(BitStream* stream)
    {
       if (stream->writeFlag(sound[i]))
       {
-         SimObjectId writtenId = packed ? SimObjectId((uintptr_t)sound[i]) : sound[i]->getId();
-         stream->writeRangedU32(writtenId, DataBlockObjectIdFirst, DataBlockObjectIdLast);
+         PACK_DB_ID(stream, sound[i]->getId());
       }
    }
 
@@ -253,8 +267,7 @@ void FlyingVehicleData::packData(BitStream* stream)
    {
       if (stream->writeFlag(jetEmitter[j]))
       {
-         SimObjectId writtenId = packed ? SimObjectId((uintptr_t)jetEmitter[j]) : jetEmitter[j]->getId();
-         stream->writeRangedU32(writtenId, DataBlockObjectIdFirst,DataBlockObjectIdLast);
+         PACK_DB_ID(stream, jetEmitter[j]->getId());
       }
    }
 
@@ -279,18 +292,28 @@ void FlyingVehicleData::unpackData(BitStream* stream)
 {
    Parent::unpackData(stream);
 
-   for (S32 i = 0; i < MaxSounds; i++) {
+   for (S32 i = 0; i < MaxSounds; i++) 
+   {
       sound[i] = NULL;
       if (stream->readFlag())
-         sound[i] = (SFXProfile*)stream->readRangedU32(DataBlockObjectIdFirst,
-                                                         DataBlockObjectIdLast);
+      {
+         U32 dbId;
+         UNPACK_DB_ID(stream, dbId);
+
+         Sim::findObject(dbId, sound[i]);
+      }
    }
 
-   for (S32 j = 0; j < MaxJetEmitters; j++) {
+   for (S32 j = 0; j < MaxJetEmitters; j++) 
+   {
       jetEmitter[j] = NULL;
       if (stream->readFlag())
-         jetEmitter[j] = (ParticleEmitterData*)stream->readRangedU32(DataBlockObjectIdFirst,
-                                                                     DataBlockObjectIdLast);
+      {
+         U32 pdbId;
+         UNPACK_DB_ID(stream, pdbId);
+
+         Sim::findObject(pdbId, jetEmitter[j]);
+      }
    }
 
    stream->read(&maneuveringForce);

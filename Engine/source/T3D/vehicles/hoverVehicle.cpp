@@ -312,13 +312,31 @@ bool HoverVehicleData::preload(bool server, String &errorStr)
    massCenter = Point3F(0, 0, 0);
 
    // Resolve objects transmitted from server
-   if (!server) {
-      for (S32 i = 0; i < MaxSounds; i++)
-         if (sound[i])
-            Sim::findObject(SimObjectId((uintptr_t)sound[i]),sound[i]);
-      for (S32 j = 0; j < MaxJetEmitters; j++)
-         if (jetEmitter[j])
-            Sim::findObject(SimObjectId((uintptr_t)jetEmitter[j]),jetEmitter[j]);
+   if (!server) 
+   {
+      
+   }
+
+   for (S32 i = 0; i < MaxSounds; i++)
+   {
+      if (sound[i])
+      {
+         U32 datablockId = sound[i]->getId();
+         SimDataBlock* pd = static_cast<SimDataBlock*>(sound[i]);
+         PRELOAD_DB(datablockId, &pd, server,
+            "Error, unable to load sound for HoverVehicleData", "Error, unable to load sound for HoverVehicleData");
+      }
+   }
+
+   for (S32 j = 0; j < MaxJetEmitters; j++)
+   {
+      if (jetEmitter[j])
+      {
+         U32 datablockId = jetEmitter[j]->getId();
+         SimDataBlock* pd = static_cast<SimDataBlock*>(jetEmitter[j]);
+         PRELOAD_DB(datablockId, &pd, server,
+            "Error, unable to load jet emitter for HoverVehicleData", "Error, unable to load jet emitter for HoverVehicleData");
+      }
    }
 
    if( !dustTrailEmitter && dustTrailID != 0 )
@@ -327,7 +345,15 @@ bool HoverVehicleData::preload(bool server, String &errorStr)
       {
          Con::errorf( ConsoleLogEntry::General, "HoverVehicleData::preload Invalid packet, bad datablockId(dustTrailEmitter): 0x%x", dustTrailID );
       }
+      else
+      {
+         U32 datablockId = dustTrailEmitter->getId();
+         SimDataBlock* pd = static_cast<SimDataBlock*>(dustTrailEmitter);
+         PRELOAD_DB(datablockId, &pd, server,
+            "Error, unable to load dustTrailEmitter for HoverVehicleData", "Error, unable to load dustTrailEmitter for HoverVehicleData");
+      }
    }
+
    // Resolve jet nodes
    for (S32 j = 0; j < MaxJetNodes; j++)
       jetNode[j] = mShape->findNode(sJetNode[j]);
@@ -363,23 +389,26 @@ void HoverVehicleData::packData(BitStream* stream)
    stream->write(dustTrailFreqMod);
 
    for (S32 i = 0; i < MaxSounds; i++)
+   {
       if (stream->writeFlag(sound[i]))
-         stream->writeRangedU32(packed? SimObjectId((uintptr_t)sound[i]):
-                                sound[i]->getId(),DataBlockObjectIdFirst,DataBlockObjectIdLast);
+      {
+         PACK_DB_ID(stream, sound[i]->getId());
+      }
+   }
 
    for (S32 j = 0; j < MaxJetEmitters; j++)
    {
       if (stream->writeFlag(jetEmitter[j]))
       {
-         SimObjectId writtenId = packed ? SimObjectId((uintptr_t)jetEmitter[j]) : jetEmitter[j]->getId();
-         stream->writeRangedU32(writtenId, DataBlockObjectIdFirst,DataBlockObjectIdLast);
+         PACK_DB_ID(stream, jetEmitter[j]->getId());
       }
    }
 
    if (stream->writeFlag( dustTrailEmitter ))
    {
-      stream->writeRangedU32( dustTrailEmitter->getId(), DataBlockObjectIdFirst,  DataBlockObjectIdLast );
+      PACK_DB_ID(stream, dustTrailEmitter->getId());
    }
+
    stream->write(floatingGravMag);
    stream->write(brakingForce);
    stream->write(brakingActivationSpeed);
@@ -412,21 +441,32 @@ void HoverVehicleData::unpackData(BitStream* stream)
    stream->read(&dustTrailFreqMod);
 
    for (S32 i = 0; i < MaxSounds; i++)
-      sound[i] = stream->readFlag()?
-         (SFXProfile*) stream->readRangedU32(DataBlockObjectIdFirst,
-                                               DataBlockObjectIdLast): 0;
+   {
+      sound[i] = NULL;
 
-   for (S32 j = 0; j < MaxJetEmitters; j++) {
+      U32 dbId;
+      UNPACK_DB_ID(stream, dbId);
+
+      Sim::findObject(dbId, sound[i]);
+   }
+
+   for (S32 j = 0; j < MaxJetEmitters; j++) 
+   {
       jetEmitter[j] = NULL;
-      if (stream->readFlag())
-         jetEmitter[j] = (ParticleEmitterData*)stream->readRangedU32(DataBlockObjectIdFirst,
-                                                                     DataBlockObjectIdLast);
+      U32 dbId;
+      UNPACK_DB_ID(stream, dbId);
+
+      Sim::findObject(dbId, jetEmitter[j]);
    }
 
    if( stream->readFlag() )
    {
-      dustTrailID = (S32) stream->readRangedU32(DataBlockObjectIdFirst, DataBlockObjectIdLast);
+      U32 dbId;
+      UNPACK_DB_ID(stream, dbId);
+
+      Sim::findObject(dbId, dustTrailEmitter);
    }
+
    stream->read(&floatingGravMag);
    stream->read(&brakingForce);
    stream->read(&brakingActivationSpeed);
