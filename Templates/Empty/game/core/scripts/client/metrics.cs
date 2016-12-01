@@ -28,13 +28,47 @@ exec("~/art/gui/FrameOverlayGui.gui");
 // XXXXMetricsCallback which can be enabled via
 // metrics( XXXX )
 
+$MAX_SAMPLES = 75;
+$fpsTickIndex = 0;
+$fpsTickSum = 0;
+$mspfTickIndex = 0;
+$mspfTickSum = 0;
+
+function calcAverageFPS(%newFPSTick)
+{
+   $fpsTickSum -= $fpsTickList[$fpsTickIndex] == "" ? 0 : $fpsTickList[$fpsTickIndex];
+   $fpsTickSum += %newFPSTick;
+   $fpsTickList[$fpsTickIndex] = %newFPSTick;
+   $fpsTickIndex++;
+   
+   if($fpsTickIndex == $MAX_SAMPLES)
+      $fpsTickIndex = 0;
+      
+   return ($fpsTickSum / $MAX_SAMPLES);
+}
+
+function calcAverageMSPF(%newMSPFTick)
+{
+   $mspfTickSum -= $mspfTickList[$mspfTickIndex] == "" ? 0 : $mspfTickList[$mspfTickIndex];
+   $mspfTickSum += %newMSPFTick;
+   $mspfTickList[$mspfTickIndex] = %newMSPFTick;
+   $mspfTickIndex++;
+   
+   if($mspfTickIndex == $MAX_SAMPLES)
+      $mspfTickIndex = 0;
+      
+   return ($mspfTickSum / $MAX_SAMPLES);
+}
+
 function fpsMetricsCallback()
 {
    return "  | FPS |" @ 
           "  " @ $fps::real @ 
           "  max: " @ $fps::realMax @
           "  min: " @ $fps::realMin @
-          "  mspf: " @ 1000 / $fps::real;
+          "  avg: " @ calcAverageFPS($fps::real) @
+          "  |  mspf: " @ 1000 / $fps::real @
+          "  avg mspf: " @ calcAverageMSPF(1000 / $fps::real);
 }
 
 function gfxMetricsCallback()
