@@ -29,7 +29,9 @@
 #include "platform/profiler.h"
 #include "console/engineAPI.h"
 #include "math/util/frustum.h"
-
+//Material physical profile returns for raycasts in script
+#include "materials/materialDefinition.h"
+#include "materials/baseMatInstance.h"
 
 // [rene, 02-Mar-11]
 //  - *Loads* of copy&paste sin in this file (among its many other sins); all the findObjectXXX methods
@@ -1620,6 +1622,7 @@ DefineEngineFunction( containerRayCast, const char*,
    "<li>The x, y, z position that it was struck.</li>"
    "<li>The x, y, z of the normal of the face that was struck.</li>"
    "<li>The distance between the start point and the position we hit.</li></ul>" 
+   "<li>And the ID of the material physical profile of the face that was struck</li></ul>"
 
    "@ingroup Game")
 {
@@ -1633,6 +1636,15 @@ DefineEngineFunction( containerRayCast, const char*,
    if (pContainer->castRay(start, end, mask, &rinfo) == true)
       ret = rinfo.object->getId();
 
+   //material physical profile
+   S32 physMatIdx = -1;
+   if (rinfo.material != NULL)
+   {
+      Material* mat = dynamic_cast<Material*>(rinfo.material->getMaterial());
+      materialPhysicalProfile* physProfile = mat->getPhysicalProfile(mat->mPhysicalProfile);
+      physMatIdx = physProfile->index;
+   }
+
    if (pExempt)
       pExempt->enableCollision();
 
@@ -1643,7 +1655,7 @@ DefineEngineFunction( containerRayCast, const char*,
    {
       dSprintf(returnBuffer, bufSize, "%d %g %g %g %g %g %g %g",
                ret, rinfo.point.x, rinfo.point.y, rinfo.point.z,
-               rinfo.normal.x, rinfo.normal.y, rinfo.normal.z, rinfo.distance);
+               rinfo.normal.x, rinfo.normal.y, rinfo.normal.z, rinfo.distance, physMatIdx);
    }
    else
    {

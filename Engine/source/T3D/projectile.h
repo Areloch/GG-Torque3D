@@ -38,7 +38,9 @@
 #ifndef _LIGHTINFO_H_
 #include "lighting/lightInfo.h"
 #endif
-
+#ifndef _MATERIALDEFINITION_H_
+#include "materials/materialPhysicalProfile.h"
+#endif
 
 class ExplosionData;
 class SplashData;
@@ -143,7 +145,7 @@ public:
 
    
    DECLARE_CALLBACK( void, onExplode, ( Projectile* proj, Point3F pos, F32 fade ) );
-   DECLARE_CALLBACK( void, onCollision, ( Projectile* proj, SceneObject* col, F32 fade, Point3F pos, Point3F normal ) );
+   DECLARE_CALLBACK( void, onCollision, ( Projectile* proj, SceneObject* col, F32 fade, Point3F pos, Point3F normal, materialPhysicalProfile* physMat) );
 };
 
 
@@ -204,7 +206,7 @@ public:
    void simulate( F32 dt );
 
    /// What to do once this projectile collides with something
-   virtual void onCollision(const Point3F& p, const Point3F& n, SceneObject*);
+   virtual void onCollision(const Point3F& p, const Point3F& n, SceneObject*, materialPhysicalProfile* physMat);
 
    /// What to do when this projectile explodes
    virtual void explode(const Point3F& p, const Point3F& n, const U32 collideType );

@@ -3424,7 +3424,7 @@
                         HorizSizing = "width";
                         VertSizing = "bottom";
                         Position = "0 122";
-                        Extent = "212 80";
+                        Extent = "212 100";
 
                         new GuiBitmapCtrl(){
                            position="2 2";
@@ -3583,6 +3583,40 @@
                            hovertime = "1000";
                            isContainer = "0";
                            internalName = "impactSoundPopUp";
+                        };
+                        new GuiTextCtrl() {
+                           text = "Physical Profile";
+                           position = "1 83";
+                           extent = "64 15";
+                           profile = "GuiDefaultProfile";
+                        };
+                        new GuiPopUpMenuCtrl() {
+                           maxPopupHeight = "200";
+                           sbUsesNAColor = "0";
+                           reverseTextList = "0";
+                           bitmapBounds = "16 16";
+                           text = "None";
+                           maxLength = "1024";
+                           margin = "0 0 0 0";
+                           padding = "0 0 0 0";
+                           anchorTop = "1";
+                           anchorBottom = "0";
+                           anchorLeft = "1";
+                           anchorRight = "0";
+                           position = "80 82";
+                           extent = "105 18";
+                           minExtent = "8 2";
+                           horizSizing = "width";
+                           vertSizing = "bottom";
+                           profile = "GuiPopUpMenuProfile";
+                           visible = "1";
+                           active = "1";
+                           command = "MaterialEditorGui.updatePhysicalProfile($ThisControl.getText());";
+                           tooltipProfile = "GuiToolTipProfile";
+                           tooltip = "Determines the physical profile to use with this Material.";
+                           hovertime = "1000";
+                           isContainer = "0";
+                           internalName = "physicalProfilePopUp";
                         };
                      };
                   };

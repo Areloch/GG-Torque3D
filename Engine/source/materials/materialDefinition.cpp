@@ -210,6 +210,8 @@ Material::Material()
    
    mDirectSoundOcclusion = 1.f;
    mReverbSoundOcclusion = 1.0;
+
+   mPhysicalProfile = 0;	//a default material
 }
 
 void Material::initPersistFields()
@@ -479,6 +481,8 @@ void Material::initPersistFields()
 
    endGroup( "Behavioral" );
 
+   addField("physicalProfile", TypeS32, Offset(mPhysicalProfile, Material));
+
    Parent::initPersistFields();
 }
 
@@ -623,6 +627,15 @@ void Material::StageData::getFeatureSet( FeatureSet *outFeatures ) const
       if ( iter->value.isValid() )
          outFeatures->addFeature( *iter->key );
    }
+}
+
+materialPhysicalProfile* Material::getPhysicalProfile(U32 i)
+{
+   matPhysProfileManager* mngr = matPhysProfileManager::getServerObject();
+   if (mngr && i < mngr->mPhysicalProfiles.size())
+      return mngr->mPhysicalProfiles[i];
+   else
+      return NULL;
 }
 
 DefineConsoleMethod( Material, flush, void, (),, 

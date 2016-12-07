@@ -40,7 +40,9 @@
 #ifndef _DYNAMIC_CONSOLETYPES_H_
    #include "console/dynamicTypes.h"
 #endif
-
+#ifndef _MATERIALPHYSICALPROFILE_H_
+   #include "materials/materialPhysicalProfile.h"
+#endif
 
 class CubemapData;
 class SFXTrack;
@@ -319,6 +321,12 @@ public:
 
    bool mShowFootprints;            ///< If true, show footprints when walking on surface with this material.  Defaults to false.
    bool mShowDust;                  ///< If true, show dust emitters (footpuffs, hover trails, etc) when on surface with this material.  Defaults to false.
+
+   U32 mPhysicalProfile;
+
+   U32 getPhysicalProfile() { return mPhysicalProfile; }
+
+   materialPhysicalProfile* getPhysicalProfile(U32 i);
 
    /// Color to use for particle effects and such when located on this material.
    ColorF mEffectColor[ NUM_EFFECT_COLOR_STAGES ];

@@ -90,6 +90,8 @@ function MaterialEditorGui::open(%this)
    //Sounds
    MaterialEditorPropertiesWindow-->footstepSoundPopup.clear();
    MaterialEditorPropertiesWindow-->impactSoundPopup.clear();
+   
+   MaterialEditorPropertiesWindow-->physicalProfilePopup.clear(); 
 
    %sounds = "<None>" TAB "<Soft>" TAB "<Hard>" TAB "<Metal>" TAB "<Snow>";    // Default sounds
 
@@ -106,6 +108,13 @@ function MaterialEditorGui::open(%this)
       %name = getField(%sounds, %i);
       MaterialEditorPropertiesWindow-->footstepSoundPopup.add(%name);
       MaterialEditorPropertiesWindow-->impactSoundPopup.add(%name);
+   }
+   
+   %count = getPhysicalProfileCount();
+   for(%i=0; %i<%count; %i++)
+   {
+      %name = getPhysicalProfile(%i);
+      MaterialEditorPropertiesWindow-->physicalProfilePopup.add(%name);
    }
 
    //Preview Models
@@ -795,6 +804,8 @@ function MaterialEditorGui::guiSync( %this, %material )
    MaterialEditorPropertiesWindow-->showDustCheckbox.setValue((%material).showDust);
    MaterialEditorGui.updateSoundPopup("Footstep", (%material).footstepSoundId, (%material).customFootstepSound);
    MaterialEditorGui.updateSoundPopup("Impact", (%material).impactSoundId, (%material).customImpactSound);
+   
+   MaterialEditorGui.updatePhysicalProfilePopup((%material).physicalProfile);
 
    //layer specific controls are located here
    %layer = MaterialEditorGui.currentLayer;
@@ -1460,6 +1471,48 @@ function MaterialEditorGui::updateAmbientColor(%this,%color)
 {
    matEd_previewObjectView.setAmbientLightColor(%color);
    matEd_ambientLightColorPicker.color = %color;
+}
+
+function MaterialEditorGui::updatePhysicalProfile(%this, %profile)
+{
+   %defaultId = 0;
+   
+   %profileCount = getPhysicalProfileCount();
+   
+   for(%i=0; %i<%profileCount; %i++)
+   {
+      %profileName = getPhysicalProfile(%i);
+      if(%profileName $= %profile)
+         %defaultId = %i;
+   }
+
+   %this.updateActiveMaterial("physicalProfile", %defaultId);
+}
+
+function MaterialEditorGui::updatePhysicalProfilePopup(%this, %defaultId)
+{
+   %ctrl = MaterialEditorPropertiesWindow.findObjectByInternalName( physicalProfilePopUp, true );
+
+   switch (%defaultId)
+   {
+      case 0:        %name = "<Soft>";
+      case 1:        %name = "<Hard>";
+      case 2:        %name = "<Metal>";
+      case 3:        %name = "<Snow>";
+      default:
+         if (%customName $= "")
+            %name = "<None>";
+         else
+            %name = %customName;
+   }
+   
+   %name = getPhysicalProfile(%defaultId);
+   
+   %r = %ctrl.findText(%name);
+   if (%r != -1)
+      %ctrl.setSelected(%r, false);
+   else
+      %ctrl.setText(%name);
 }
 
 //==============================================================================

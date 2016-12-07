@@ -51,6 +51,7 @@
 #include "T3D/decal/decalData.h"
 #include "T3D/lightDescription.h"
 #include "console/engineAPI.h"
+#include "materials/baseMatInstance.h"
 
 
 IMPLEMENT_CO_DATABLOCK_V1(ProjectileData);
@@ -114,7 +115,7 @@ IMPLEMENT_CALLBACK( ProjectileData, onExplode, void, ( Projectile* proj, Point3F
 				   "@see Projectile\n"
 				  );
 
-IMPLEMENT_CALLBACK( ProjectileData, onCollision, void, ( Projectile* proj, SceneObject* col, F32 fade, Point3F pos, Point3F normal ),
+IMPLEMENT_CALLBACK( ProjectileData, onCollision, void, ( Projectile* proj, SceneObject* col, F32 fade, Point3F pos, Point3F normal, materialPhysicalProfile* physMat),
                    ( proj, col, fade, pos, normal ),
 				   "@brief Called when a projectile collides with another object.\n\n"
                    "This function is only called on server objects."
@@ -1144,7 +1145,32 @@ void Projectile::simulate( F32 dt )
       // during the next packet update, due to the ExplosionMask network bit being set.
       // onCollision will remain uncalled on the client however, therefore no client
       // specific code should be placed inside the function!
-      onCollision( rInfo.point, rInfo.normal, rInfo.object );
+
+      if (rInfo.material) 
+      {
+         Material* mat = dynamic_cast<Material*>(rInfo.material->getMaterial());
+         materialPhysicalProfile* physProfile = mat->getPhysicalProfile(mat->mPhysicalProfile);
+         if (physProfile) 
+         {
+            /*ExplosionData* expl = NULL;
+            DecalData* decal = NULL;
+
+            if(physProfile->mExplosion && physProfile->mShowImpact)
+            expl = physProfile->mExplosion;
+            if(physProfile->mDecal && physProfile->mShowImpactDecals)
+            decal = physProfile->mDecal;*/
+
+            //explode( rInfo.point, rInfo.normal, decal, expl, objectType );
+
+            onCollision(rInfo.point, rInfo.normal, rInfo.object, physProfile);
+         }
+         else
+            //explode( rInfo.point, rInfo.normal, NULL, NULL, objectType );
+            onCollision(rInfo.point, rInfo.normal, rInfo.object, NULL);
+      }
+      else
+         onCollision(rInfo.point, rInfo.normal, rInfo.object, NULL);
+
       // Next order of business: do we explode on this hit?
       if ( mCurrTick > mDataBlock->armingDelay || mDataBlock->armingDelay == 0 )
       {
@@ -1263,7 +1289,7 @@ void Projectile::interpolateTick(F32 delta)
 
 
 //--------------------------------------------------------------------------
-void Projectile::onCollision(const Point3F& hitPosition, const Point3F& hitNormal, SceneObject* hitObject)
+void Projectile::onCollision(const Point3F& hitPosition, const Point3F& hitNormal, SceneObject* hitObject, materialPhysicalProfile *physMat)
 {
    // No client specific code should be placed or branched from this function
    if(isClientObject())
@@ -1271,7 +1297,7 @@ void Projectile::onCollision(const Point3F& hitPosition, const Point3F& hitNorma
 
    if (hitObject != NULL && isServerObject())
    {
-	   mDataBlock->onCollision_callback( this, hitObject, mFadeValue, hitPosition, hitNormal );
+	   mDataBlock->onCollision_callback( this, hitObject, mFadeValue, hitPosition, hitNormal, physMat);
    }
 }
 
