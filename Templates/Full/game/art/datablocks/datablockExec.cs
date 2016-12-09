@@ -29,6 +29,8 @@ exec("./audioProfiles.cs");
 // LightFlareData and LightAnimData(s)
 exec("./lights.cs");
 
+exec( "art/decals/managedDecalData.cs" );
+
 // Do the various effects next -- later scripts/datablocks may need them
 exec("./particles.cs");
 exec("./environment.cs");
@@ -37,6 +39,9 @@ exec("./triggers.cs");
 
 // Add a rigid example
 exec("./rigidShape.cs");
+
+// Load our physics shapes datablocks
+exec("./physicsShape.cs");
 
 exec("./health.cs");
 
@@ -62,3 +67,11 @@ exec("./aiPlayer.cs");
 
 // Load the vehicle datablocks
 exec("./vehicles/cheetahCar.cs");
+
+// Miscellanious datablocks...
+exec("./misc.cs");
+
+// Other stuff specific to the Pacific Demo project.
+exec( "./forest.cs" );
+
+exec("./benchmark.cs");

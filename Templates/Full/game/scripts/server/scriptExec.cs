@@ -78,3 +78,7 @@ if(isFile("./gameObjects/GameObjectManager.cs"))
    exec("./gameObjects/GameObjectManager.cs");
    execGameObjects();  
 }
+
+//benchmarking
+if(isFile("./benchmark.cs"))
+   exec("./benchmark.cs");
