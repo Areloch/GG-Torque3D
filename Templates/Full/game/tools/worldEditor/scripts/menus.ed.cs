@@ -263,6 +263,7 @@ function EditorGui::buildMenus(%this)
          
       item[0] = "Network Graph" TAB "n" TAB "toggleNetGraph();";
       item[1] = "Profiler" TAB "ctrl F2" TAB "showMetrics(true);";
+      item[2] = "Run Benchmark" TAB "ctrl F2" TAB "Canvas.pushDialog(BenchmarkSelectorGui);";
    };
    %this.menuBar.insert(%toolsMenu, %this.menuBar.getCount());
       

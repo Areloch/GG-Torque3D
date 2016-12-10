@@ -35,4 +35,6 @@ exec("./GuiEaseEditDlg.ed.cs");
 exec("./guiObjectInspector.ed.cs");
 exec("./uvEditor.ed.gui");
 exec("./objectSelection.ed.cs");
+exec("./benchmarkSelectorGui.gui");
+exec("./benchmarkSelectorGui.cs");
 exec("./guiPlatformGenericMenubar.ed.cs");
