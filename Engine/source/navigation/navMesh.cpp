@@ -850,8 +850,9 @@ void NavMesh::buildNextTile()
 static void buildCallback(SceneObject* object,void *key)
 {
    SceneContainer::CallbackInfo* info = reinterpret_cast<SceneContainer::CallbackInfo*>(key);
-   if (!object->mPathfindingIgnore)
-   object->buildPolyList(info->context,info->polyList,info->boundingBox,info->boundingSphere);
+
+   if (!gEditingMission || !object->mPathfindingIgnore)
+      object->buildPolyList(info->context,info->polyList,info->boundingBox,info->boundingSphere);
 }
 
 unsigned char *NavMesh::buildTileData(const Tile &tile, TileData &data, U32 &dataSize)
@@ -873,7 +874,11 @@ unsigned char *NavMesh::buildTileData(const Tile &tile, TileData &data, U32 &dat
    data.geom.clear();
    info.polyList = &data.geom;
    info.key = this;
-   getContainer()->findObjects(box, StaticObjectType | DynamicShapeObjectType, buildCallback, &info);
+
+   if(gEditingMission)
+      getContainer()->findObjects(box, StaticObjectType, buildCallback, &info);
+   else
+      getContainer()->findObjects(box, StaticObjectType | DynamicShapeObjectType, buildCallback, &info);
 
    // Parse water objects into the same list, but remember how much geometry was /not/ water.
    U32 nonWaterVertCount = data.geom.getVertCount();
