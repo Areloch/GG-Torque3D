@@ -163,6 +163,10 @@ public:
    void onMount(SceneObject *obj, S32 node);
    void onUnmount(SceneObject *obj, S32 node);
 
+   /// Sets the client controlling this object
+   /// @param  client   Client that is now controlling this object
+   virtual void setControllingClient(GameConnection *client);
+
    // NetObject
    U32 packUpdate(NetConnection *conn, U32 mask, BitStream *stream);
    void unpackUpdate(NetConnection *conn, BitStream *stream);

@@ -51,6 +51,7 @@
 //
 #include "gfx/sim/debugDraw.h"
 //
+#include "T3D/sfx/sfx3DWorld.h"
 
 extern bool gEditingMission;
 
@@ -1040,6 +1041,28 @@ void Entity::onUnmount(SceneObject *obj, S32 node)
       //TODO implement this callback
       //onUnmount_callback( this, obj, node );
    }
+}
+
+void Entity::setControllingClient(GameConnection* client)
+{
+   if (isGhost() && gSFX3DWorld)
+   {
+      if (gSFX3DWorld->getListener() == this && !client && getControllingClient() && getControllingClient()->isConnectionToServer())
+      {
+         // We are the current listener and are no longer a controller object on the
+         // connection, so clear our listener status.
+
+         gSFX3DWorld->setListener(NULL);
+      }
+      else if (client && client->isConnectionToServer() && !getControllingObject())
+      {
+         // We're on the local client and not controlled by another object, so make
+         // us the current SFX listener.
+
+         gSFX3DWorld->setListener(this);
+      }
+   }
+   Parent::setControllingClient(client);
 }
 
 //Heirarchy stuff

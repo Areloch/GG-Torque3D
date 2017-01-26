@@ -27,6 +27,9 @@
 #ifndef COMPONENT_H
 #include "T3D/components/component.h"
 #endif
+#ifndef RENDER_COMPONENT_INTERFACE_H
+#include "T3D/components/render/renderComponentInterface.h"
+#endif
 
 class SFXSource;
 
@@ -34,7 +37,7 @@ class SFXSource;
 //A basic example of the various functions you can utilize to make your own component!
 //This example doesn't really DO anything, persay, but you can readily copy it as a base
 //and use it as a starting point for your own.
-class SoundComponent : public Component, public EditorInspectInterface
+class SoundComponent : public Component, public RenderComponentInterface, public EditorInspectInterface
 {
    typedef Component Parent;
 
@@ -64,10 +67,18 @@ public:
       SimTime timeout;              ///< Time until we stop playing this sound.
       SFXTrack* profile;            ///< Profile on server
       SFXSource* sound;             ///< Sound on client
+      Sound::Sound()
+      {
+         play = false;
+         timeout = 0;
+         profile = NULL;
+         sound = NULL;
+      }
    };
    Sound mSoundThread[MaxSoundThreads];
    SFXTrack* mSoundFile[MaxSoundThreads];
    bool mPreviewSound[MaxSoundThreads];
+   bool mPlay[MaxSoundThreads];
    /// @}
 
    SoundComponent();
@@ -78,6 +89,7 @@ public:
    virtual void onRemove();
    static void initPersistFields();
    static bool _previewSound(void *object, const char *index, const char *data);
+   static bool _autoplay(void *object, const char *index, const char *data);
 
    virtual U32 packUpdate(NetConnection *con, U32 mask, BitStream *stream);
    virtual void unpackUpdate(NetConnection *con, BitStream *stream);
@@ -95,11 +107,23 @@ public:
    virtual void advanceTime(F32 dt);
    virtual void interpolateTick(F32 delta);
 
+   void prepRenderImage(SceneRenderState* state);
+   void _renderObject(ObjectRenderInst *ri, SceneRenderState *state, BaseMatInstance *overrideMat);
+
    virtual void playAudio(U32 slotNum, SFXTrack* profile = NULL);
    virtual void stopAudio(U32 slot);
    virtual void updateServerAudio();
    virtual void updateAudioState(Sound& st);
    virtual void updateAudioPos();
+
+   //why god why
+   virtual TSShape* getShape() { return NULL; };
+   Signal< void(RenderComponentInterface*) > onShapeChanged;
+   virtual TSShapeInstance* getShapeInstance() { return NULL; };
+   Signal< void(RenderComponentInterface*) > onShapeInstanceChanged;
+   virtual MatrixF getNodeTransform(S32 nodeIdx) { return MatrixF::Identity; };
+   virtual Vector<MatrixF> getNodeTransforms() { return NULL; };
+   virtual void setNodeTransforms(Vector<MatrixF> transforms) {};
 };
 
 #endif
