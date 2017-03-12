@@ -1,0 +1,8 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="grid"
+    imageFile="data/Placeholder/Images/grid.dds"
+    useMips="true"
+    isHDRImage="false"
+    VersionId="1" />

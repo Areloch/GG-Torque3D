@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="leaves"
+    imageFile="data/Pacific/Images/leaves.png"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\environment\leaves.png"
+    VersionId="1" />

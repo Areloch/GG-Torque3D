@@ -86,21 +86,6 @@ MeshComponent::~MeshComponent(){}
 
 IMPLEMENT_CO_NETOBJECT_V1(MeshComponent);
 
-void MeshComponent::consoleInit()
-{
-   //create our asset so we can be properly registered and managed by the asset/tools system
-   /*ComponentAsset* meshCompAsset = new ComponentAsset();
-
-   meshCompAsset->setAssetName("MeshComponentAsset");
-   meshCompAsset->setComponentClass("MeshComponent");
-   meshCompAsset->setFriendlyName("Mesh");
-   meshCompAsset->setComponentType("Render");
-   meshCompAsset->setDescription("Enables an entity to render a shape.");
-
-   meshCompAsset->registerObject();*/
-
-}
-
 //==========================================================================================
 void MeshComponent::boneObject::addObject(SimObject* object)
 {
@@ -348,8 +333,15 @@ void MeshComponent::prepRenderImage( SceneRenderState *state )
    rdata.setLightQuery(&query);
 
    MatrixF mat = mOwner->getRenderTransform();
-   Point3F renderPos = mat.getPosition();
-   EulerF renderRot = mat.toEuler();
+
+   if (mOwner->isMounted())
+   {
+      Point3F mntPs = mat.getPosition();
+      EulerF mntRt = RotationF(mat).asEulerF();
+
+      bool tr = true;
+   }
+
    mat.scale(objScale);
    GFX->setWorldMatrix(mat);
 
@@ -458,6 +450,8 @@ void MeshComponent::updateShape()
          mShapeBounds.set(min, max);
 
          mOwner->setObjectBox(Box3F(min, max));
+
+         mOwner->resetWorldBox();
 
          if( mOwner->getSceneManager() != NULL )
             mOwner->getSceneManager()->notifyObjectDirty( mOwner );

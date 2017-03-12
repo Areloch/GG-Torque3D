@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="grayrock_normal_specular"
+    imageFile="data/Pacific/Images/grayrock_normal_specular.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\terrains\grayrock\grayrock_normal_specular.dds"
+    VersionId="1" />

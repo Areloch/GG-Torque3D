@@ -469,7 +469,7 @@ DefineEngineMethod(guiNodeGraphNode, setNodeError, void, (bool error), (true),
    object->setNodeError(error);
 }
 
-DefineEngineMethod(guiNodeGraphNode, setSocketError, void, (int socketType, int socketIdx, bool error), (true),
+DefineEngineMethod(guiNodeGraphNode, setSocketError, void, (int socketType, int socketIdx, bool error), (0, 0, true),
    "Set the pattern by which to filter items in the tree.  Only items in the tree whose text "
    "matches this pattern are displayed.\n\n"
    "@param pattern New pattern based on which visible items in the tree should be filtered.  If empty, all items become visible.\n\n"
@@ -479,7 +479,7 @@ DefineEngineMethod(guiNodeGraphNode, setSocketError, void, (int socketType, int 
    object->setSocketError(socketType, socketIdx, error);
 }
 
-DefineEngineMethod(guiNodeGraphNode, setNodeReferenceFile, void, (String refFilePath), (0, ""),
+DefineEngineMethod(guiNodeGraphNode, setNodeReferenceFile, void, (String refFilePath), (""),
    "Set the pattern by which to filter items in the tree.  Only items in the tree whose text "
    "matches this pattern are displayed.\n\n"
    "@param pattern New pattern based on which visible items in the tree should be filtered.  If empty, all items become visible.\n\n"

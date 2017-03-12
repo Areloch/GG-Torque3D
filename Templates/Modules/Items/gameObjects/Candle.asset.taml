@@ -1,0 +1,9 @@
+<GameObjectAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="candle"
+    gameObjectName="candle"
+    scriptFilePath="data/Items/gameObjects/Candle.cs"
+    TAMLFilePath="data/Items/gameObjects/Candle.taml"
+    assetId="CandleAsset"
+    VersionId="1" />

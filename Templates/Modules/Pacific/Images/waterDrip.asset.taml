@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="waterDrip"
+    imageFile="data/Pacific/Images/waterDrip.png"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\particles\waterDrip.png"
+    VersionId="1" />

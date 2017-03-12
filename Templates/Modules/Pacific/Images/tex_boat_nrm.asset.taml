@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="tex_boat_nrm"
+    imageFile="data/Pacific/Images/tex_boat_nrm.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\physicsShapes\tex_boat_nrm.dds"
+    VersionId="1" />

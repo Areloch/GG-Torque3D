@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="corona"
+    imageFile="data/Pacific/Images/corona.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\special\corona.dds"
+    VersionId="1" />

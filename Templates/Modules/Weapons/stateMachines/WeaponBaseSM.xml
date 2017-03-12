@@ -1,0 +1,37 @@
+<StateMachine>
+    <Fields>
+        <Field name="triggerDown" defaultValue="0" />
+    </Fields>
+    <States>
+        <State name="Ready" scriptFunction="onReady" pos="4 -5" />
+        <State name="NoAmmo" scriptFunction="onNoAmmo" pos="-228 -11" />
+        <State name="Fire" scriptFunction="onFire" pos="59 -124" />
+        <State name="SemiAutoCycle" scriptFunction="onSemiAutoCycle" pos="312 -77" />
+        <State name="FullAutoCycle" scriptFunction="onFullAutoCycle" pos="328 0" />
+        <State name="DryFire" scriptFunction="onDryFire" pos="197 -143" />
+        <State name="SemiFire" scriptFunction="onSemiFire" pos="137 -67" />
+        <State name="BoltFire" scriptFunction="onBoltFire" pos="134 60" />
+        <State name="BoltBack" scriptFunction="onBoltBack" pos="222 103" />
+        <State name="BoltForward" scriptFunction="onBoltForward" pos="283 150" />
+        <State name="AutoFire" scriptFunction="onAutoFire" pos="153 -3" />
+        <State name="LastShot" scriptFunction="onLastShot" pos="44 144" />
+        <State name="Reload" scriptFunction="onStartReload" pos="-266 146" />
+    </States>
+    <Transitions>
+        <Transition ownerState="1" stateTarget="5">
+            <Rule fieldId="triggerDown" comparitor="Equals" value="1" />
+        </Transition>
+        <Transition ownerState="5" stateTarget="1">
+            <Rule fieldId="stateTime" comparitor="GreaterOrEqual" value="10" />
+        </Transition>
+        <Transition ownerState="6" stateTarget="3">
+            <Rule fieldId="stateTime" comparitor="GreaterOrEqual" value="150" />
+        </Transition>
+        <Transition ownerState="10" stateTarget="4">
+            <Rule fieldId="stateTime" comparitor="GreaterOrEqual" value="10" />
+        </Transition>
+        <Transition ownerState="11" stateTarget="1">
+            <Rule fieldId="stateTime" comparitor="GreaterOrEqual" value="150" />
+        </Transition>
+    </Transitions>
+</StateMachine>

@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="dryground_normal"
+    imageFile="data/Pacific/Images/dryground_normal.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\terrains\dry ground\dryground_normal.dds"
+    VersionId="1" />

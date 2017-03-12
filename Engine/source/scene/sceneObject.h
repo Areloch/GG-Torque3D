@@ -112,7 +112,7 @@ class SceneObject : public NetObject, private SceneContainer::Link, public Proce
          MaxObjectZones = 128,
 
          NumMountPoints = 32,
-         NumMountPointBits = 5,
+         NumMountPointBits = 10,
       };
       
       /// Networking dirty mask.

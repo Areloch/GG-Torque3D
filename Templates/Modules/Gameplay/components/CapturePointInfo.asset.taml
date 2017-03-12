@@ -1,0 +1,11 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="CapturePointInfo"
+    componentName="CapturePointInfo"
+    componentClass="Component"
+    friendlyName="Capture Point Info"
+    componentType="Gameplay"
+    description="Makes the entity act as a capture point objective."
+    scriptFile="data/Gameplay/components/CapturePointInfo.cs"
+    VersionId="1" />

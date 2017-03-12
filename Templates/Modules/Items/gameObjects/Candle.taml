@@ -1,0 +1,72 @@
+<Entity
+    scale="1 1 1"
+    class="candle"
+    canSave="true"
+    canSaveDynamicFields="true"
+    persistentId="2cae8e1e-391d-11e6-a29f-f9abd89016af"
+    position="-4.00742 -2.9268 0.659383"
+    Rotation="0 -0 -0"
+    LocalPosition="0 0 0"
+    LocalRotation="1 0 0 0"
+    GameObjectAsset="Candle">
+    <CollisionComponent
+        friendlyName="Collision(Component)"
+        networked="false"
+        Enabled="true"
+        CollisionType="Bounds"
+        LineOfSightType="Collision Mesh"
+        DecalType="Collision Mesh"
+        CollisionMeshPrefix="Collision"
+        BlockCollisions="true" />
+    <Component
+        networked="false"
+        Enabled="true"
+        class="InteractableComponent" />
+    <Component
+        networked="false"
+        Enabled="true"
+        class="CandleItemComponent" />
+    <MeshComponent
+        componentType="Render"
+        friendlyName="Mesh Component"
+        description="Causes the object to render a non-animating 3d shape using the file provided."
+        networked="true"
+        Enabled="true"
+        MeshAsset="@asset=Items:candle" />
+    <PointLight
+        radius="5"
+        isEnabled="true"
+        color="0.996078 0.988235 0.254902 1"
+        brightness="1"
+        castShadows="false"
+        staticRefreshFreq="250"
+        dynamicRefreshFreq="8"
+        priority="1"
+        animate="false"
+        animationType="FireLightAnim"
+        animationPeriod="1"
+        animationPhase="1"
+        flareScale="1"
+        attenuationRatio="0 1 1"
+        shadowType="DualParaboloidSinglePass"
+        texSize="512"
+        overDarkFactor="2000 1000 500 100"
+        shadowDistance="400"
+        shadowSoftness="0.15"
+        numSplits="1"
+        logWeight="0.91"
+        fadeStartDistance="0"
+        lastSplitTerrainOnly="false"
+        representedInLightmap="false"
+        shadowDarkenColor="0 0 0 -1"
+        includeLightmappedGeometryInShadow="false"
+        position="-4.00742 -2.9268 0.959383"
+        Rotation="1 0 0 0"
+        mountPID="2cae8e1e-391d-11e6-a29f-f9abd89016af"
+        mountNode="-1"
+        mountPos="0 0 0.3"
+        mountRot="1 0 0 0"
+        canSave="true"
+        canSaveDynamicFields="true"
+        persistentId="2cae8e1d-391d-11e6-a29f-f9abd89016af" />
+</Entity>

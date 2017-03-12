@@ -180,8 +180,8 @@ bool GFXD3D11TextureObject::copyToBmp(GBitmap* bmp)
    // check format limitations
    // at the moment we only support RGBA for the source (other 4 byte formats should
    // be easy to add though)
-   AssertFatal(mFormat == GFXFormatR8G8B8A8 || mFormat == GFXFormatR8G8B8A8_LINEAR_FORCE, "copyToBmp: invalid format");
-   if (mFormat != GFXFormatR8G8B8A8 && mFormat != GFXFormatR8G8B8A8_LINEAR_FORCE)
+   AssertFatal(mFormat == GFXFormatR8G8B8 || mFormat == GFXFormatR8G8B8A8 || mFormat == GFXFormatR8G8B8A8_LINEAR_FORCE, "copyToBmp: invalid format");
+   if (mFormat != GFXFormatR8G8B8 && mFormat != GFXFormatR8G8B8A8 && mFormat != GFXFormatR8G8B8A8_LINEAR_FORCE)
       return false;
 
    PROFILE_START(GFXD3D11TextureObject_copyToBmp);

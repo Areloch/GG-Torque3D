@@ -1,0 +1,875 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>Joe Espinoza</author>
+      <authoring_tool>OpenCOLLADA for 3ds Max;  Version: 1.3.0;  Revision: 788M;  Platform: x64;  Configuration: Release_Max2011_static</authoring_tool>
+      <source_data>file:///D:/Projects/TorqueCrysis/11_Structures/Bridge/bridge_10_2011.max</source_data>
+    </contributor>
+    <created>2011-05-10T17:53:06</created>
+    <modified>2011-05-10T17:53:06</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="ColorEffectR184G155B229">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <ambient>
+              <color>0.7215686 0.6078432 0.8980392 1</color>
+            </ambient>
+            <diffuse>
+              <color>0.7215686 0.6078432 0.8980392 1</color>
+            </diffuse>
+            <specular>
+              <color>1 1 1 1</color>
+            </specular>
+            <shininess>
+              <float>10</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent>
+              <color>1 1 1 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="tex_bridge">
+      <profile_COMMON>
+        <newparam sid="tex_bridge_dif_png-surface">
+          <surface type="2D">
+            <init_from>tex_bridge_dif_png</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="tex_bridge_dif_png-sampler">
+          <sampler2D>
+            <source>tex_bridge_dif_png-surface</source>
+          </sampler2D>
+        </newparam>
+        <newparam sid="tex_bridge_nrm_png-surface">
+          <surface type="2D">
+            <init_from>tex_bridge_nrm_png</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="tex_bridge_nrm_png-sampler">
+          <sampler2D>
+            <source>tex_bridge_nrm_png-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <blinn>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0.588 0.588 0.588 1</color>
+            </ambient>
+            <diffuse>
+              <texture texture="tex_bridge_dif_png-sampler" texcoord="CHANNEL1"/>
+            </diffuse>
+            <specular>
+              <color>0.9 0.9 0.9 1</color>
+            </specular>
+            <shininess>
+              <float>10</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent opaque="A_ONE">
+              <texture texture="tex_bridge_dif_png-sampler" texcoord="CHANNEL1"/>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </blinn>
+          <extra>
+            <technique profile="OpenCOLLADA3dsMax">
+              <bump bumptype="HEIGHTFIELD">
+                <texture texture="tex_bridge_nrm_png-sampler" texcoord="CHANNEL1"/>
+              </bump>
+            </technique>
+          </extra>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="OpenCOLLADA3dsMax">
+          <extended_shader>
+            <apply_reflection_dimming>0</apply_reflection_dimming>
+            <dim_level>0</dim_level>
+            <falloff_type>0</falloff_type>
+            <index_of_refraction>1.5</index_of_refraction>
+            <opacity_type>0</opacity_type>
+            <reflection_level>3</reflection_level>
+            <wire_size>1</wire_size>
+            <wire_units>0</wire_units>
+          </extended_shader>
+          <shader>
+            <ambient_diffuse_lock>1</ambient_diffuse_lock>
+            <ambient_diffuse_texture_lock>1</ambient_diffuse_texture_lock>
+            <diffuse_specular_lock>0</diffuse_specular_lock>
+            <soften>0.1</soften>
+            <use_self_illum_color>0</use_self_illum_color>
+          </shader>
+        </technique>
+      </extra>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="ColorEffectR184G155B229-material" name="ColorEffectR184G155B229-material">
+      <instance_effect url="#ColorEffectR184G155B229"/>
+    </material>
+    <material id="tex_bridge-material" name="tex_bridge">
+      <instance_effect url="#tex_bridge"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="geom-bounds_3" name="bounds">
+      <mesh>
+        <source id="geom-bounds_3-positions">
+          <float_array id="geom-bounds_3-positions-array" count="24">-3.067466 -0.2543669 0 3.067466 -0.2543669 0 -3.067466 0.2543669 0 3.067466 0.2543669 0 -3.067466 -0.2543669 1.487952 3.067466 -0.2543669 1.487952 -3.067466 0.2543669 1.487952 3.067466 0.2543669 1.487952</float_array>
+          <technique_common>
+            <accessor source="#geom-bounds_3-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-bounds_3-normals">
+          <float_array id="geom-bounds_3-normals-array" count="72">0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 1 0 0 1 0 0 1 0 0 1 0 -1 0 0 -1 0 0 -1 0 0 -1 0 1 0 0 1 0 0 1 0 0 1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#geom-bounds_3-normals-array" count="24" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-bounds_3-vertices">
+          <input semantic="POSITION" source="#geom-bounds_3-positions"/>
+        </vertices>
+        <triangles material="ColorMaterial" count="12">
+          <input semantic="VERTEX" source="#geom-bounds_3-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-bounds_3-normals" offset="1"/>
+          <p>0 0 2 1 3 2 3 2 1 3 0 0 4 4 5 5 7 6 7 6 6 7 4 4 0 8 1 9 5 10 5 10 4 11 0 8 1 12 3 13 7 14 7 14 5 15 1 12 3 16 2 17 6 18 6 18 7 19 3 16 2 20 0 21 4 22 4 22 6 23 2 20</p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="OpenCOLLADA3dsMax">
+          <max_box>
+            <generateuvs>0</generateuvs>
+            <height>1.487952</height>
+            <heightsegments>1</heightsegments>
+            <length>0.5087338</length>
+            <lengthsegments>1</lengthsegments>
+            <width>6.134932</width>
+            <widthsegments>1</widthsegments>
+          </max_box>
+        </technique>
+      </extra>
+    </geometry>
+    <geometry id="geom-rope_seg_1C" name="rope_seg_1C">
+      <mesh>
+        <source id="geom-rope_seg_1C-positions">
+          <float_array id="geom-rope_seg_1C-positions-array" count="60">-6.195929 0.1417618 3.459185 -6.196465 0.1637038 3.474301 -6.200874 0.1593558 3.504008 -6.203059 0.1347245 3.507248 -6.2 0.1238501 3.479544 -4.478789 -0.0127179 3.751559 -4.481229 0.007972613 3.769388 -4.485182 2.2744e-4 3.798234 -4.485182 -0.02524842 3.798232 -4.48123 -0.03324979 3.769387 -5.338847 0.08583818 3.621845 -5.337358 0.06452197 3.605372 -5.343028 0.07979161 3.651121 -5.344121 0.05473802 3.65274 -5.340615 0.04530016 3.624465 -3.321 -0.06018774 4.112715 -3.324338 -0.0385099 4.130412 -3.329745 -0.0466434 4.158737 -3.329746 -0.07334222 4.158532 -3.324341 -0.08171598 4.130082</float_array>
+          <technique_common>
+            <accessor source="#geom-rope_seg_1C-positions-array" count="20" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-rope_seg_1C-normals">
+          <float_array id="geom-rope_seg_1C-normals-array" count="60">-0.6269327 0.6145204 0.4788738 -0.4911425 0.7742398 -0.3991638 -0.4619739 -0.0565694 -0.8850876 -0.6397666 -0.7325147 -0.2326386 -0.7195653 -0.3577682 0.5951704 0.1427187 0.932981 -0.3304206 0.1628526 -0.06651802 -0.9844056 -0.0663522 0.6578256 0.7502418 -0.1878475 -0.5529997 0.8117293 -0.04731956 -0.9701524 -0.2378343 0.1353551 0.945144 -0.297291 0.1154483 0.9625606 -0.2452524 0.2965983 -0.01364312 -0.9549049 0.2284868 -0.01476319 -0.973435 -0.1459413 0.6167032 0.7735491 -0.2235694 0.5695829 0.7909438 -0.2242257 -0.6208596 0.7511699 -0.2628323 -0.5889196 0.7642596 0.01243628 -0.9515005 -0.3073956 0.03861291 -0.9666333 -0.2532369</float_array>
+          <technique_common>
+            <accessor source="#geom-rope_seg_1C-normals-array" count="20" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-rope_seg_1C-map-1">
+          <float_array id="geom-rope_seg_1C-map-1-array" count="60">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</float_array>
+          <technique_common>
+            <accessor source="#geom-rope_seg_1C-map-1-array" count="20" stride="3">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-rope_seg_1C-map0">
+          <float_array id="geom-rope_seg_1C-map0-array" count="60">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</float_array>
+          <technique_common>
+            <accessor source="#geom-rope_seg_1C-map0-array" count="20" stride="3">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-rope_seg_1C-map1">
+          <float_array id="geom-rope_seg_1C-map1-array" count="96">0.6389788 0.9587184 1 0.6389788 0.9485197 1 0.6389788 0.9893143 0.9999999 0.6389788 0.9791157 1 0.6389788 0.968917 0.9999999 0.9997702 0.9587184 1 0.9997702 0.9485197 1 0.9997702 0.9893143 0.9999999 0.9997702 0.9791157 1 0.9997702 0.968917 0.9999999 0.6389788 0.9995129 1 0.6389788 0.9995129 1 0.9997702 0.9995129 1 0.6390219 0.9995129 1 0.6390219 0.9587184 1 0.6390219 0.9485197 1 0.6390219 0.9893143 0.9999999 0.6390219 0.9791157 1 0.6390219 0.968917 0.9999999 0.6389788 0.9709526 -0.3819513 0.8193744 0.9485197 1 0.8193744 0.9995129 1 0.8193744 0.9587184 1 0.8193744 0.9893143 0.9999999 0.8193744 0.9791157 1 0.8193744 0.968917 0.9999999 0.8576296 0.9587184 1 0.8576296 0.9485197 1 0.8576296 0.9995129 1 0.8576296 0.9893143 0.9999999 0.8576296 0.9791157 1 0.8576296 0.968917 0.9999999</float_array>
+          <technique_common>
+            <accessor source="#geom-rope_seg_1C-map1-array" count="32" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-rope_seg_1C-vertices">
+          <input semantic="POSITION" source="#geom-rope_seg_1C-positions"/>
+        </vertices>
+        <triangles material="tex_bridge" count="33">
+          <input semantic="VERTEX" source="#geom-rope_seg_1C-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-rope_seg_1C-normals" offset="1"/>
+          <input semantic="COLOR" source="#geom-rope_seg_1C-map-1" offset="2"/>
+          <input semantic="COLOR" source="#geom-rope_seg_1C-map0" offset="3" set="0"/>
+          <input semantic="TEXCOORD" source="#geom-rope_seg_1C-map1" offset="4" set="0"/>
+          <p>2 0 2 2 2 1 1 1 1 10 0 2 0 0 19 0 2 0 0 19 4 3 4 4 4 3 4 3 3 3 2 0 2 2 2 0 2 0 0 19 3 4 3 3 3 1 1 1 1 1 10 5 10 10 20 11 6 11 11 22 11 6 11 11 22 0 2 0 0 0 1 1 1 1 1 2 0 2 2 2 12 7 12 12 23 10 5 10 10 21 10 5 10 10 21 1 1 1 1 11 2 0 2 2 2 3 4 3 3 3 13 8 13 13 24 12 7 12 12 23 12 7 12 12 23 2 0 2 2 2 3 4 3 3 3 4 3 4 4 4 14 9 14 14 25 13 8 13 13 24 13 8 13 13 24 3 4 3 3 3 4 3 4 4 4 0 2 0 0 0 11 6 11 11 22 14 9 14 14 25 14 9 14 14 25 4 3 4 4 4 0 2 0 0 0 6 10 6 6 15 16 11 16 16 27 15 12 15 15 26 15 12 15 15 26 5 13 5 5 14 6 10 6 6 15 7 14 7 7 16 17 15 17 17 29 16 11 16 16 28 16 11 16 16 28 6 10 6 6 13 7 14 7 7 16 8 16 8 8 17 18 17 18 18 30 17 15 17 17 29 17 15 17 17 29 7 14 7 7 16 8 16 8 8 17 8 16 8 8 17 9 18 9 9 18 19 19 19 19 31 19 19 19 19 31 18 17 18 18 30 8 16 8 8 17 9 18 9 9 18 5 13 5 5 14 15 12 15 15 26 15 12 15 15 26 19 19 19 19 31 9 18 9 9 18 6 10 6 6 6 5 13 5 5 5 11 6 11 11 22 11 6 11 11 22 10 5 10 10 20 6 10 6 6 6 7 14 7 7 7 6 10 6 6 12 10 5 10 10 21 10 5 10 10 21 12 7 12 12 23 7 14 7 7 7 8 16 8 8 8 7 14 7 7 7 12 7 12 12 23 12 7 12 12 23 13 8 13 13 24 8 16 8 8 8 9 18 9 9 9 8 16 8 8 8 13 8 13 13 24 13 8 13 13 24 14 9 14 14 25 9 18 9 9 9 5 13 5 5 5 9 18 9 9 9 14 9 14 14 25 14 9 14 14 25 11 6 11 11 22 5 13 5 5 5</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_controllers>
+    <controller id="geom-rope_seg_1C-skin1">
+      <skin source="#geom-rope_seg_1C">
+        <bind_shape_matrix>2.13 0 0 0 0 2.13 0 0 0 0 2.13 0 0 0 0 1</bind_shape_matrix>
+        <source id="geom-rope_seg_1C-skin1-joints">
+          <Name_array id="geom-rope_seg_1C-skin1-joints-array" count="7">joint0 joint1 joint2 joint3 joint4 joint5 joint6</Name_array>
+          <technique_common>
+            <accessor source="#geom-rope_seg_1C-skin1-joints-array" count="7" stride="1">
+              <param name="JOINT" type="name"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-rope_seg_1C-skin1-bind_poses">
+          <float_array id="geom-rope_seg_1C-skin1-bind_poses-array" count="112">-0.1028994 -9.81325e-8 0.9946918 -8.417986 -0.9946918 2.46475e-6 -0.1028994 -9.057827 -2.44156e-6 -1 -3.51233e-7 -2.18244e-5 0 0 0 1 0.9580458 -0.05341852 0.2815934 7.281123 -0.2819958 4.63694e-6 0.9594157 -10.38516 -0.05125188 -0.9985722 -0.01505936 -0.3895516 0 0 0 1 0.9464684 -0.02701778 0.321664 5.225903 -0.3217235 0.002233456 0.9468311 -10.6121 -0.0262997 -0.9996324 -0.00657836 -0.2518157 0 0 0 1 0.9464684 -0.02701778 0.321664 3.901453 -0.3217235 0.002233456 0.9468311 -10.6121 -0.0262997 -0.9996324 -0.00657836 -0.2518157 0 0 0 1 -0.9835971 0.0944605 -0.1536662 -8.546283 0.1543578 1.56369e-5 -0.9880146 9.344606 -0.09332602 -0.9955286 -0.01459611 -0.8107663 0 0 0 1 -0.984244 0.0944596 -0.1494681 -10.30267 0.1501785 4.16871e-4 -0.9886585 9.300929 -0.09332602 -0.9955286 -0.01459611 -0.8107665 0 0 0 1 -0.984244 0.09445961 -0.1494683 -11.69312 0.1501787 4.16854e-4 -0.9886585 9.300932 -0.09332602 -0.9955287 -0.01459611 -0.8107668 0 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#geom-rope_seg_1C-skin1-bind_poses-array" count="7" stride="16">
+              <param name="TRANSFORM" type="float4x4"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-rope_seg_1C-skin1-weights">
+          <float_array id="geom-rope_seg_1C-skin1-weights-array" count="31">1 0.07532518 0.9246748 0.07469367 0.9253063 0.06310005 0.9369 0.06114954 0.9388505 0.072492 0.9275081 0.9670033 0.03299665 0.9616838 0.03831626 0.9816337 0.01836631 0.984346 0.01565405 0.9737031 0.02629685 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5</float_array>
+          <technique_common>
+            <accessor source="#geom-rope_seg_1C-skin1-weights-array" count="31" stride="1">
+              <param name="WEIGHT" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <joints>
+          <input semantic="JOINT" source="#geom-rope_seg_1C-skin1-joints"/>
+          <input semantic="INV_BIND_MATRIX" source="#geom-rope_seg_1C-skin1-bind_poses"/>
+        </joints>
+        <vertex_weights count="20">
+          <input semantic="JOINT" source="#geom-rope_seg_1C-skin1-joints" offset="0"/>
+          <input semantic="WEIGHT" source="#geom-rope_seg_1C-skin1-weights" offset="1"/>
+          <vcount>2 2 2 2 2 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2</vcount>
+          <v>5 1 6 2 5 3 6 4 5 5 6 6 5 7 6 8 5 9 6 10 1 0 1 0 1 0 1 0 1 0 4 11 5 12 4 13 5 14 4 15 5 16 4 17 5 18 4 19 5 20 2 21 3 22 2 23 3 24 2 25 3 26 2 27 3 28 2 29 3 30</v>
+        </vertex_weights>
+      </skin>
+    </controller>
+  </library_controllers>
+  <library_lights>
+    <light id="EnvironmentAmbientLight" name="EnvironmentAmbientLight">
+      <technique_common>
+        <ambient>
+          <color>0 0 0</color>
+        </ambient>
+      </technique_common>
+    </light>
+  </library_lights>
+  <library_images>
+    <image id="tex_bridge_dif_png">
+      <init_from>file:///D:/Projects/TorqueCrysis/11_Structures/Bridge/Textures/tex_bridge_dif.png</init_from>
+    </image>
+    <image id="tex_bridge_nrm_png">
+      <init_from>file:///D:/Projects/TorqueCrysis/11_Structures/Bridge/Textures/tex_bridge_nrm.png</init_from>
+    </image>
+  </library_images>
+  <library_visual_scenes>
+    <visual_scene id="MaxScene">
+      <node name="EnvironmentAmbientLight">
+        <instance_light url="#EnvironmentAmbientLight"/>
+      </node>
+      <node id="node-IK_Chain006" name="IK_Chain006">
+        <matrix>0.0427822 0 0 -4.412054 0 0.0427822 0 -0.08850653 0 0 0.0427822 5.449498 0 0 0 1</matrix>
+      </node>
+      <node id="node-IK_Chain007" name="IK_Chain007">
+        <matrix>0.0427822 0 0 -8.050386 0 0.0427822 0 0.1695116 0 0 0.0427822 4.608983 0 0 0 1</matrix>
+      </node>
+      <node id="node-bounds_3" name="bounds">
+        <translate>-0.001583342 -0.01247187 -0.001180406</translate>
+        <scale>0.6200319 0.6200319 0.6200319</scale>
+        <node>
+          <matrix>1 0 0 -10.15659 0 1 0 0.07988531 0 0 1 7.365578 0 0 0 1</matrix>
+          <instance_geometry url="#geom-bounds_3">
+            <bind_material>
+              <technique_common>
+                <instance_material symbol="ColorMaterial" target="#ColorEffectR184G155B229-material"/>
+              </technique_common>
+            </bind_material>
+          </instance_geometry>
+        </node>
+      </node>
+      <node id="node-base_3" name="base">
+        <translate>-0.001583342 -0.01247187 -0.001180406</translate>
+        <scale>0.6200319 0.6200319 0.6200319</scale>
+        <node id="node-detail100_3" name="detail100"/>
+        <node id="node-start_3" name="start">
+          <node id="node-rope_seg_1C" name="rope_seg_1C">
+            <instance_controller url="#geom-rope_seg_1C-skin1">
+              <skeleton>#node-Bone_Seg_3-07</skeleton>
+              <bind_material>
+                <technique_common>
+                  <instance_material symbol="tex_bridge" target="#tex_bridge-material">
+                    <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="0"/>
+                    <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="0"/>
+                  </instance_material>
+                </technique_common>
+              </bind_material>
+            </instance_controller>
+          </node>
+        </node>
+        <node id="node-Bone_Seg_3-07" name="Bone_Seg_3-07" sid="joint0" type="JOINT">
+          <translate sid="translation">-9.875952 -0.08536696 7.441257</translate>
+          <rotate sid="rotationZ">0 0 1 -179.9999</rotate>
+          <rotate sid="rotationY">0 1 0 -84.09381</rotate>
+          <rotate sid="rotationX">1 0 0 -90.00027</rotate>
+          <rotate sid="InverseScaleAxisRotation">0 0 0 0</rotate>
+          <scale sid="scale">1 1 1</scale>
+          <rotate sid="ScaleAxisRotation">0 0 0 0</rotate>
+          <node id="node-Bone_Seg_3-06" name="Bone_Seg_3-06" sid="joint1" type="JOINT">
+            <matrix sid="matrix">0.1816411 0.9833571 -0.003919584 0.4687395 -0.9830593 0.1816825 0.02419709 1.90735e-6 0.0245065 -5.42001e-4 0.9996995 -2.23517e-8 0 0 0 1</matrix>
+            <node id="node-Bone_Seg_3-05" name="Bone_Seg_3-05" sid="joint2" type="JOINT">
+              <matrix>0.9987816 -0.04172382 0.02635016 1.625445 0.0417093 0.9991292 0.001100387 0 -0.02637312 0 0.9996522 5.96046e-8 0 0 0 1</matrix>
+              <node id="node-Bone_Seg_3-04" name="Bone_Seg_3-04" sid="joint3" type="JOINT">
+                <matrix>1 0 -5.82077e-11 1.32445 0 1 0 9.53674e-7 0 0 1 1.49012e-8 0 0 0 1</matrix>
+              </node>
+            </node>
+          </node>
+          <node id="node-Bone_Seg_3-03" name="Bone_Seg_3-03" sid="joint4" type="JOINT">
+            <matrix sid="matrix">-0.0516535 -0.9986424 -0.006761591 0.4687366 0.9912383 -0.05209237 0.121381 1.90735e-6 -0.1215684 -4.32597e-4 0.9925829 -2.23517e-8 0 0 0 1</matrix>
+            <node id="node-Bone_Seg_3-02" name="Bone_Seg_3-02" sid="joint5" type="JOINT">
+              <matrix>0.9999909 0.004247665 1.49012e-8 1.716782 -0.004247636 0.9999909 1.86265e-9 9.53674e-7 -7.91624e-9 1.86265e-9 0.9999999 0 0 0 0 1</matrix>
+              <node id="node-Bone_Seg_3-01" name="Bone_Seg_3-01" sid="joint6" type="JOINT">
+                <matrix>0.9999999 -1.63913e-7 5.82077e-9 1.390449 1.78814e-7 1 0 9.53674e-7 2.56114e-9 1.86265e-9 0.9999999 0 0 0 0 1</matrix>
+              </node>
+            </node>
+          </node>
+        </node>
+      </node>
+      <node id="node-ambient_2" name="ambient">
+        <translate>-0.001583342 -0.01247187 -0.001180406</translate>
+        <scale>0.6200319 0.6200319 0.6200319</scale>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <library_animations>
+    <animation>
+      <source id="node-Bone_Seg_3-07_translation.X-input">
+        <float_array id="node-Bone_Seg_3-07_translation.X-input-array" count="5">0 0.8333334 1.666667 2.5 3.333333</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_translation.X-input-array" count="5" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_translation.X-output">
+        <float_array id="node-Bone_Seg_3-07_translation.X-output-array" count="5">-9.875952 -9.875952 -9.875952 -9.875952 -9.875952</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_translation.X-output-array" count="5" stride="1">
+            <param name="X" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_translation.X-intangent">
+        <float_array id="node-Bone_Seg_3-07_translation.X-intangent-array" count="10">-0.333 -9.875952 0.5558333 -9.875952 1.389167 -9.875952 2.2225 -9.875952 3.055833 -9.875952</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_translation.X-intangent-array" count="5" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_translation.X-outtangent">
+        <float_array id="node-Bone_Seg_3-07_translation.X-outtangent-array" count="10">0.2775 -9.875952 1.110833 -9.875952 1.944167 -9.875952 2.7775 -9.875952 3.666333 -9.875952</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_translation.X-outtangent-array" count="5" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_translation.X-interpolation">
+        <Name_array id="node-Bone_Seg_3-07_translation.X-interpolation-array" count="5">BEZIER BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_translation.X-interpolation-array" count="5" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_translation.Y-input">
+        <float_array id="node-Bone_Seg_3-07_translation.Y-input-array" count="5">0 0.8333334 1.666667 2.5 3.333333</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_translation.Y-input-array" count="5" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_translation.Y-output">
+        <float_array id="node-Bone_Seg_3-07_translation.Y-output-array" count="5">-0.08536696 0.1199993 0.2072691 0.12 -0.08536696</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_translation.Y-output-array" count="5" stride="1">
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_translation.Y-intangent">
+        <float_array id="node-Bone_Seg_3-07_translation.Y-intangent-array" count="10">-0.5215588 -0.08180051 0.5155858 0.03344351 1.388917 0.2066056 2.287592 0.178782 2.898701 -0.08239492</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_translation.Y-intangent-array" count="5" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_translation.Y-outtangent">
+        <float_array id="node-Bone_Seg_3-07_translation.Y-outtangent-array" count="10">0.5908396 -0.08486315 1.096851 0.1942012 1.921355 0.2078775 2.805702 0.02662116 4.042341 -0.08476239</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_translation.Y-outtangent-array" count="5" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_translation.Y-interpolation">
+        <Name_array id="node-Bone_Seg_3-07_translation.Y-interpolation-array" count="5">BEZIER BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_translation.Y-interpolation-array" count="5" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_translation.Z-input">
+        <float_array id="node-Bone_Seg_3-07_translation.Z-input-array" count="5">0 0.8333334 1.666667 2.5 3.333333</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_translation.Z-input-array" count="5" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_translation.Z-output">
+        <float_array id="node-Bone_Seg_3-07_translation.Z-output-array" count="5">7.441256 7.441256 7.441256 7.441256 7.441256</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_translation.Z-output-array" count="5" stride="1">
+            <param name="Z" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_translation.Z-intangent">
+        <float_array id="node-Bone_Seg_3-07_translation.Z-intangent-array" count="10">-0.333 7.441256 0.5558333 7.441256 1.389167 7.441256 2.2225 7.441256 3.055833 7.441256</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_translation.Z-intangent-array" count="5" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_translation.Z-outtangent">
+        <float_array id="node-Bone_Seg_3-07_translation.Z-outtangent-array" count="10">0.2775 7.441256 1.110833 7.441256 1.944167 7.441256 2.7775 7.441256 3.666333 7.441256</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_translation.Z-outtangent-array" count="5" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_translation.Z-interpolation">
+        <Name_array id="node-Bone_Seg_3-07_translation.Z-interpolation-array" count="5">BEZIER BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_translation.Z-interpolation-array" count="5" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_rotationZ.ANGLE-input">
+        <float_array id="node-Bone_Seg_3-07_rotationZ.ANGLE-input-array" count="5">0 0.8333334 1.666667 2.5 3.333333</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_rotationZ.ANGLE-input-array" count="5" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_rotationZ.ANGLE-output">
+        <float_array id="node-Bone_Seg_3-07_rotationZ.ANGLE-output-array" count="5">5.46415e-5 5.46415e-5 5.46415e-5 5.46415e-5 5.46415e-5</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_rotationZ.ANGLE-output-array" count="5" stride="1">
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_rotationZ.ANGLE-intangent">
+        <float_array id="node-Bone_Seg_3-07_rotationZ.ANGLE-intangent-array" count="10">-0.333 5.46415e-5 0.5558333 5.46415e-5 1.389167 5.46415e-5 2.2225 5.46415e-5 3.055833 5.46415e-5</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_rotationZ.ANGLE-intangent-array" count="5" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_rotationZ.ANGLE-outtangent">
+        <float_array id="node-Bone_Seg_3-07_rotationZ.ANGLE-outtangent-array" count="10">0.2775 5.46415e-5 1.110833 5.46415e-5 1.944167 5.46415e-5 2.7775 5.46415e-5 3.666333 5.46415e-5</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_rotationZ.ANGLE-outtangent-array" count="5" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_rotationZ.ANGLE-interpolation">
+        <Name_array id="node-Bone_Seg_3-07_rotationZ.ANGLE-interpolation-array" count="5">BEZIER BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_rotationZ.ANGLE-interpolation-array" count="5" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_rotationY.ANGLE-input">
+        <float_array id="node-Bone_Seg_3-07_rotationY.ANGLE-input-array" count="5">0 0.8333334 1.666667 2.5 3.333333</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_rotationY.ANGLE-input-array" count="5" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_rotationY.ANGLE-output">
+        <float_array id="node-Bone_Seg_3-07_rotationY.ANGLE-output-array" count="5">-95.90618 -95.90618 -95.90618 -95.90618 -95.90618</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_rotationY.ANGLE-output-array" count="5" stride="1">
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_rotationY.ANGLE-intangent">
+        <float_array id="node-Bone_Seg_3-07_rotationY.ANGLE-intangent-array" count="10">-0.333 -95.90618 0.5558333 -95.90618 1.389167 -95.90618 2.2225 -95.90618 3.055833 -95.90618</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_rotationY.ANGLE-intangent-array" count="5" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_rotationY.ANGLE-outtangent">
+        <float_array id="node-Bone_Seg_3-07_rotationY.ANGLE-outtangent-array" count="10">0.2775 -95.90618 1.110833 -95.90618 1.944167 -95.90618 2.7775 -95.90618 3.666333 -95.90618</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_rotationY.ANGLE-outtangent-array" count="5" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_rotationY.ANGLE-interpolation">
+        <Name_array id="node-Bone_Seg_3-07_rotationY.ANGLE-interpolation-array" count="5">BEZIER BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_rotationY.ANGLE-interpolation-array" count="5" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_rotationX.ANGLE-input">
+        <float_array id="node-Bone_Seg_3-07_rotationX.ANGLE-input-array" count="5">0 0.8333334 1.666667 2.5 3.333333</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_rotationX.ANGLE-input-array" count="5" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_rotationX.ANGLE-output">
+        <float_array id="node-Bone_Seg_3-07_rotationX.ANGLE-output-array" count="5">89.9998 89.9998 89.9998 89.9998 89.9998</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_rotationX.ANGLE-output-array" count="5" stride="1">
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_rotationX.ANGLE-intangent">
+        <float_array id="node-Bone_Seg_3-07_rotationX.ANGLE-intangent-array" count="10">-0.333 89.9998 0.5558333 89.9998 1.389167 89.9998 2.2225 89.9998 3.055833 89.9998</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_rotationX.ANGLE-intangent-array" count="5" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_rotationX.ANGLE-outtangent">
+        <float_array id="node-Bone_Seg_3-07_rotationX.ANGLE-outtangent-array" count="10">0.2775 89.9998 1.110833 89.9998 1.944167 89.9998 2.7775 89.9998 3.666333 89.9998</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_rotationX.ANGLE-outtangent-array" count="5" stride="2">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_rotationX.ANGLE-interpolation">
+        <Name_array id="node-Bone_Seg_3-07_rotationX.ANGLE-interpolation-array" count="5">BEZIER BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_rotationX.ANGLE-interpolation-array" count="5" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_scale-input">
+        <float_array id="node-Bone_Seg_3-07_scale-input-array" count="5">0 0.8333334 1.666667 2.5 3.333333</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_scale-input-array" count="5" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_scale-output">
+        <float_array id="node-Bone_Seg_3-07_scale-output-array" count="15">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_scale-output-array" count="5" stride="3">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+            <param name="Z" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_scale-intangent">
+        <float_array id="node-Bone_Seg_3-07_scale-intangent-array" count="30">-0.333 1 -0.333 1 -0.333 1 0.5558333 1 0.5558333 1 0.5558333 1 1.389167 1 1.389167 1 1.389167 1 2.2225 1 2.2225 1 2.2225 1 3.055833 1 3.055833 1 3.055833 1</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_scale-intangent-array" count="5" stride="6">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_scale-outtangent">
+        <float_array id="node-Bone_Seg_3-07_scale-outtangent-array" count="30">0.2775 1 0.2775 1 0.2775 1 1.110833 1 1.110833 1 1.110833 1 1.944167 1 1.944167 1 1.944167 1 2.7775 1 2.7775 1 2.7775 1 3.666333 1 3.666333 1 3.666333 1</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_scale-outtangent-array" count="5" stride="6">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_scale-interpolation">
+        <Name_array id="node-Bone_Seg_3-07_scale-interpolation-array" count="5">BEZIER BEZIER BEZIER BEZIER BEZIER</Name_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_scale-interpolation-array" count="5" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_InverseScaleAxisRotation-input">
+        <float_array id="node-Bone_Seg_3-07_InverseScaleAxisRotation-input-array" count="5">0 0.8333334 1.666667 2.5 3.333333</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_InverseScaleAxisRotation-input-array" count="5" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_InverseScaleAxisRotation-output">
+        <float_array id="node-Bone_Seg_3-07_InverseScaleAxisRotation-output-array" count="20">0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_InverseScaleAxisRotation-output-array" count="5" stride="4">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+            <param name="Z" type="float"/>
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_InverseScaleAxisRotation-interpolation">
+        <Name_array id="node-Bone_Seg_3-07_InverseScaleAxisRotation-interpolation-array" count="5">LINEAR LINEAR LINEAR LINEAR LINEAR</Name_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_InverseScaleAxisRotation-interpolation-array" count="5" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_ScaleAxisRotation-input">
+        <float_array id="node-Bone_Seg_3-07_ScaleAxisRotation-input-array" count="5">0 0.8333334 1.666667 2.5 3.333333</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_ScaleAxisRotation-input-array" count="5" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_ScaleAxisRotation-output">
+        <float_array id="node-Bone_Seg_3-07_ScaleAxisRotation-output-array" count="20">0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_ScaleAxisRotation-output-array" count="5" stride="4">
+            <param name="X" type="float"/>
+            <param name="Y" type="float"/>
+            <param name="Z" type="float"/>
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-07_ScaleAxisRotation-interpolation">
+        <Name_array id="node-Bone_Seg_3-07_ScaleAxisRotation-interpolation-array" count="5">LINEAR LINEAR LINEAR LINEAR LINEAR</Name_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-07_ScaleAxisRotation-interpolation-array" count="5" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-06_matrix-input">
+        <float_array id="node-Bone_Seg_3-06_matrix-input-array" count="101">0 0.03333334 0.06666667 0.1 0.1333333 0.1666667 0.2 0.2333333 0.2666667 0.3 0.3333333 0.3666667 0.4 0.4333333 0.4666667 0.5 0.5333334 0.5666667 0.6 0.6333333 0.6666667 0.7 0.7333333 0.7666667 0.8 0.8333333 0.8666667 0.9 0.9333333 0.9666666 1 1.033333 1.066667 1.1 1.133333 1.166667 1.2 1.233333 1.266667 1.3 1.333333 1.366667 1.4 1.433333 1.466667 1.5 1.533333 1.566667 1.6 1.633333 1.666667 1.7 1.733333 1.766667 1.8 1.833333 1.866667 1.9 1.933333 1.966667 2 2.033333 2.066667 2.1 2.133333 2.166667 2.2 2.233333 2.266667 2.3 2.333333 2.366667 2.4 2.433333 2.466667 2.5 2.533333 2.566667 2.6 2.633333 2.666667 2.7 2.733333 2.766667 2.8 2.833333 2.866667 2.9 2.933333 2.966667 3 3.033333 3.066667 3.1 3.133333 3.166667 3.2 3.233333 3.266667 3.3 3.333333</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-06_matrix-input-array" count="101" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-06_matrix-output">
+        <float_array id="node-Bone_Seg_3-06_matrix-output-array" count="1616">0.1816411 0.9833571 -0.003919541 0.4687395 -0.9830594 0.1816825 0.02419704 1.90735e-6 0.02450644 -5.42001e-4 0.9996995 0 0 0 0 1 0.181645 0.9833576 -0.003591001 0.4687395 -0.9830572 0.1816783 0.02431303 1.90735e-6 0.0245608 -8.86173e-4 0.9996979 0 0 0 0 1 0.1816401 0.9833571 -0.003959655 0.4687395 -0.9830546 0.1816825 0.02439326 1.90735e-6 0.02470666 -5.38185e-4 0.9996946 0 0 0 0 1 0.181639 0.9833571 -0.004009902 0.4687395 -0.9830484 0.1816825 0.02463895 1.90735e-6 0.02495741 -5.33415e-4 0.9996883 0 0 0 0 1 0.1816368 0.9833571 -0.004084646 0.4687395 -0.9830392 0.1816819 0.02500665 1.90735e-6 0.02533257 -5.26736e-4 0.9996789 0 0 0 0 1 0.1816349 0.9833571 -0.004186451 0.4687395 -0.9830264 0.1816824 0.02550506 1.90735e-6 0.02584117 -5.17195e-4 0.9996659 0 0 0 0 1 0.181635 0.9833579 -0.003980934 0.4687395 -0.9830085 0.1816766 0.02622407 1.90735e-6 0.02651089 -8.49902e-4 0.999648 0 0 0 0 1 0.1816304 0.9833581 -0.004149794 0.4687395 -0.9829863 0.1816759 0.02705132 1.90735e-6 0.02735507 -8.34153e-4 0.9996253 0 0 0 0 1 0.1816246 0.9833582 -0.004359483 0.4687395 -0.9829577 0.1816751 0.02807611 1.90735e-6 0.02840083 -8.14109e-4 0.9995961 0 0 0 0 1 0.1816169 0.9833585 -0.004616737 0.4687395 -0.9829211 0.1816738 0.02933728 1.90735e-6 0.02968776 -7.90247e-4 0.9995589 0 0 0 0 1 0.181604 0.9833576 -0.005269527 0.4687395 -0.9828749 0.18168 0.03080832 1.90735e-6 0.03125298 -4.15599e-4 0.9995113 0 0 0 0 1 0.1815909 0.9833579 -0.00565195 0.4687395 -0.9828147 0.1816785 0.03268164 1.90735e-6 0.03316456 -3.7983e-4 0.9994497 0 0 0 0 1 0.1815751 0.983358 -0.006115674 0.4687395 -0.9827367 0.1816777 0.0349527 1.90735e-6 0.0354821 -3.36435e-4 0.9993702 0 0 0 0 1 0.1815544 0.9833581 -0.00667715 0.4687395 -0.9826352 0.1816769 0.03770065 1.90735e-6 0.03828632 -2.8351e-4 0.9992667 0 0 0 0 1 0.1815274 0.9833583 -0.007354199 0.4687395 -0.9825026 0.1816762 0.04101663 1.90735e-6 0.04167014 -2.20107e-4 0.9991314 0 0 0 0 1 0.1814919 0.9833584 -0.008166432 0.4687395 -0.9823285 0.1816755 0.04499357 1.90735e-6 0.04572844 -1.43854e-4 0.9989539 0 0 0 0 1 0.1814458 0.9833585 -0.009123325 0.4687395 -0.9821029 0.181675 0.04968053 1.90735e-6 0.0505113 -5.429e-5 0.9987235 0 0 0 0 1 0.181389 0.9833585 -0.01019227 0.4687395 -0.9818241 0.1816751 0.05491459 1.90735e-6 0.05585241 4.61228e-5 0.998439 0 0 0 0 1 0.1813239 0.9833616 -0.01102709 0.4687395 -0.9814847 0.1816588 0.06072789 1.90735e-6 0.06172066 -1.88468e-4 0.9980934 0 0 0 0 1 0.1812435 0.9833582 -0.01254165 0.4687395 -0.9811127 0.1816768 0.0664193 1.90735e-6 0.0675925 2.66697e-4 0.9977129 0 0 0 0 1 0.1811643 0.9833579 -0.01366186 0.4687395 -0.9807256 0.1816783 0.07190507 1.90735e-6 0.07319051 3.7194e-4 0.9973177 0 0 0 0 1 0.1810905 0.9833616 -0.0143513 0.4687395 -0.9803419 0.1816582 0.07700639 1.90735e-6 0.07833218 1.24089e-4 0.9969273 0 0 0 0 1 0.1810119 0.983357 -0.01560902 0.4687395 -0.9799789 0.1816828 0.08144009 1.90735e-6 0.08292055 5.54912e-4 0.9965559 0 0 0 0 1 0.1809421 0.9833565 -0.01642727 0.4687395 -0.9796373 0.1816851 0.08544695 1.90735e-6 0.08700937 6.31824e-4 0.9962072 0 0 0 0 1 0.1808817 0.983361 -0.01681512 0.4687395 -0.9793189 0.1816613 0.08907157 1.90735e-6 0.09064418 3.55981e-4 0.9958832 0 0 0 0 1 0.1808213 0.9833609 -0.01746129 0.4687395 -0.9790258 0.181662 0.09223598 1.90735e-6 0.09387332 4.16852e-4 0.995584 0 0 0 0 1 0.1807649 0.9833629 -0.01792645 0.4687395 -0.9787412 0.1816513 0.09522867 1.90735e-6 0.09690076 3.31383e-4 0.995294 0 0 0 0 1 0.1807102 0.9833626 -0.01848477 0.4687395 -0.9784709 0.1816527 0.09796249 1.90735e-6 0.09969049 3.83984e-4 0.9950183 0 0 0 0 1 0.1806582 0.9833624 -0.01899844 0.4687395 -0.9782156 0.1816539 0.100478 1.90735e-6 0.1022574 4.32424e-4 0.9947577 0 0 0 0 1 0.1806112 0.9833657 -0.01927226 0.4687395 -0.9779744 0.1816363 0.1028317 1.90735e-6 0.1046217 2.75239e-4 0.9945119 0 0 0 0 1 0.1805643 0.9833638 -0.01979595 0.4687395 -0.9777493 0.1816458 0.1049337 1.90735e-6 0.1067839 4.0821e-4 0.9942821 0 0 0 0 1 0.1805212 0.9833638 -0.02019208 0.4687395 -0.977539 0.1816465 0.1068738 1.90735e-6 0.1087636 4.45615e-4 0.9940674 0 0 0 0 1 0.1804826 0.9833652 -0.02046298 0.4687395 -0.9773432 0.1816385 0.1086624 1.90735e-6 0.1105718 3.87687e-4 0.9938679 0 0 0 0 1 0.1804472 0.9833679 -0.02064019 0.4687395 -0.9771621 0.1816236 0.1103048 1.90735e-6 0.1122189 2.64645e-4 0.9936833 0 0 0 0 1 0.1804127 0.9833665 -0.02101123 0.4687395 -0.9769961 0.1816318 0.1117525 1.90735e-6 0.1137099 3.66364e-4 0.9935138 0 0 0 0 1 0.1803817 0.9833678 -0.02120828 0.4687395 -0.9768438 0.1816239 0.113087 1.90735e-6 0.1150581 3.18389e-4 0.9933586 0 0 0 0 1 0.1803556 0.9833703 -0.02132296 0.4687395 -0.9767048 0.1816115 0.1143013 1.90735e-6 0.116273 2.1138e-4 0.9932172 0 0 0 0 1 0.1803296 0.9833704 -0.02154028 0.4687395 -0.9765798 0.1816114 0.1153654 1.90735e-6 0.1173589 2.32007e-4 0.9930895 0 0 0 0 1 0.180307 0.9833702 -0.02173322 0.4687395 -0.9764677 0.1816118 0.1163101 1.90735e-6 0.118323 2.50265e-4 0.9929751 0 0 0 0 1 0.180287 0.9833714 -0.02184581 0.4687395 -0.9763672 0.1816056 0.1171594 1.90735e-6 0.1191785 2.07227e-4 0.9928728 0 0 0 0 1 0.1802675 0.9833688 -0.02211552 0.4687395 -0.9762796 0.1816186 0.1178678 1.90735e-6 0.1199241 3.43204e-4 0.992783 0 0 0 0 1 0.1802531 0.9833714 -0.02212542 0.4687395 -0.9762019 0.1816058 0.1185289 1.90735e-6 0.120576 2.33721e-4 0.992704 0 0 0 0 1 0.1802393 0.9833713 -0.02223736 0.4687395 -0.9761352 0.1816058 0.1190772 1.90735e-6 0.1211355 2.44323e-4 0.9926358 0 0 0 0 1 0.1802279 0.9833711 -0.02233201 0.4687395 -0.9760784 0.181606 0.1195405 1.90735e-6 0.1216083 2.53268e-4 0.992578 0 0 0 0 1 0.1802182 0.9833711 -0.02241092 0.4687395 -0.976031 0.1816061 0.1199268 1.90735e-6 0.1220026 2.60755e-4 0.9925296 0 0 0 0 1 0.1802119 0.9833734 -0.02236813 0.4687395 -0.9759918 0.1815947 0.1202629 1.90735e-6 0.1223253 1.58329e-4 0.9924899 0 0 0 0 1 0.1802048 0.9833725 -0.0224716 0.4687395 -0.9759613 0.1816004 0.1205028 1.90735e-6 0.1225799 2.16253e-4 0.9924586 0 0 0 0 1 0.1802 0.9833723 -0.02251011 0.4687395 -0.9759379 0.1816004 0.1206915 1.90735e-6 0.1227725 2.19896e-4 0.9924347 0 0 0 0 1 0.1801978 0.9833732 -0.02248585 0.4687395 -0.9759204 0.1815952 0.1208394 1.90735e-6 0.1229135 1.69449e-4 0.9924174 0 0 0 0 1 0.1801944 0.9833724 -0.022556 0.4687395 -0.9759101 0.1816005 0.120916 1.90735e-6 0.1230016 2.24259e-4 0.9924064 0 0 0 0 1 0.1801929 0.9833723 -0.02256524 0.4687395 -0.9759045 0.1816002 0.1209614 1.90735e-6 0.123048 2.25142e-4 0.9924007 0 0 0 0 1 0.180194 0.9833723 -0.02255922 0.4687395 -0.9759081 0.1816006 0.1209317 1.90735e-6 0.1230177 2.24564e-4 0.9924044 0 0 0 0 1 0.1801979 0.9833735 -0.02248084 0.4687395 -0.9759238 0.1815947 0.1208148 1.90735e-6 0.1228885 1.69024e-4 0.9924204 0 0 0 0 1 0.1802034 0.9833722 -0.02248799 0.4687395 -0.9759511 0.1816011 0.1205829 1.90735e-6 0.1226618 2.17758e-4 0.9924485 0 0 0 0 1 0.180211 0.9833723 -0.02242529 0.4687395 -0.9759892 0.1816008 0.120276 1.90735e-6 0.1223486 2.1182e-4 0.9924871 0 0 0 0 1 0.1802203 0.9833722 -0.02234512 0.4687395 -0.9760375 0.1816002 0.1198836 1.90735e-6 0.1219481 2.04235e-4 0.9925364 0 0 0 0 1 0.1802319 0.9833725 -0.02224957 0.4687395 -0.9760949 0.1816 0.1194157 1.90735e-6 0.1214706 1.95194e-4 0.9925949 0 0 0 0 1 0.1802443 0.9833701 -0.02225071 0.4687395 -0.9761623 0.1816123 0.1188446 1.90735e-6 0.1209092 2.9929e-4 0.9926634 0 0 0 0 1 0.1802607 0.9833713 -0.02206498 0.4687395 -0.9762378 0.181606 0.1182329 1.90735e-6 0.120274 2.27951e-4 0.9927406 0 0 0 0 1 0.1802777 0.9833714 -0.02192211 0.4687395 -0.9763223 0.1816056 0.1175333 1.90735e-6 0.1195601 2.14446e-4 0.9928269 0 0 0 0 1 0.1802969 0.9833714 -0.02176356 0.4687395 -0.9764155 0.1816056 0.1167567 1.90735e-6 0.1187676 1.99441e-4 0.992922 0 0 0 0 1 0.1803171 0.9833704 -0.02164757 0.4687395 -0.9765176 0.1816118 0.1158907 1.90735e-6 0.1178949 2.42151e-4 0.993026 0 0 0 0 1 0.1803394 0.9833704 -0.02145701 0.4687395 -0.9766279 0.1816113 0.114958 1.90735e-6 0.1169431 2.24095e-4 0.9931386 0 0 0 0 1 0.1803629 0.9833691 -0.0213111 0.4687395 -0.9767473 0.1816174 0.1139287 1.90735e-6 0.1159045 2.67047e-4 0.9932603 0 0 0 0 1 0.1803886 0.9833679 -0.02115225 0.4687395 -0.9768757 0.1816242 0.1128122 1.90735e-6 0.1147777 3.13088e-4 0.9933911 0 0 0 0 1 0.1804159 0.9833665 -0.02098107 0.4687395 -0.977013 0.1816314 0.1116048 1.90735e-6 0.1135593 3.63518e-4 0.993531 0 0 0 0 1 0.1804457 0.9833666 -0.02071797 0.4687395 -0.9771593 0.1816309 0.1103164 1.90735e-6 0.1122446 3.38677e-4 0.9936804 0 0 0 0 1 0.1804776 0.9833667 -0.0204333 0.4687395 -0.9773158 0.1816303 0.1089224 1.90735e-6 0.110822 3.11784e-4 0.99384 0 0 0 0 1 0.1805108 0.9833654 -0.02020597 0.4687395 -0.9774825 0.1816378 0.1074038 1.90735e-6 0.1092874 3.63436e-4 0.99401 0 0 0 0 1 0.1805469 0.9833655 -0.01987373 0.4687395 -0.9776599 0.1816371 0.105777 1.90735e-6 0.1076273 3.32061e-4 0.9941911 0 0 0 0 1 0.1805848 0.9833639 -0.01960396 0.4687395 -0.9778497 0.1816454 0.1039938 1.90735e-6 0.1058248 3.90068e-4 0.9943845 0 0 0 0 1 0.1806254 0.9833642 -0.01921319 0.4687395 -0.9780516 0.1816442 0.1020802 1.90735e-6 0.103872 3.53225e-4 0.9945905 0 0 0 0 1 0.1806703 0.9833642 -0.01878577 0.4687395 -0.9782678 0.181644 0.0999872 1.90735e-6 0.1017361 3.12854e-4 0.9948112 0 0 0 0 1 0.1807176 0.9833644 -0.01831567 0.4687395 -0.9785005 0.1816432 0.09768491 1.90735e-6 0.09938681 2.68497e-4 0.9950487 0 0 0 0 1 0.1807687 0.9833646 -0.01779603 0.4687395 -0.9787515 0.1816425 0.09514033 1.90735e-6 0.09679013 2.19502e-4 0.9953048 0 0 0 0 1 0.1808213 0.9833609 -0.01746129 0.4687395 -0.9790258 0.181662 0.09223598 1.90735e-6 0.09387332 4.16849e-4 0.995584 0 0 0 0 1 0.1808866 0.9833611 -0.0167557 0.4687395 -0.9793454 0.1816607 0.08878076 1.90735e-6 0.0903474 3.50401e-4 0.9959102 0 0 0 0 1 0.1809495 0.9833565 -0.01634454 0.4687395 -0.9796725 0.1816852 0.08504194 1.90735e-6 0.08659613 6.24027e-4 0.9962432 0 0 0 0 1 0.1810167 0.9833569 -0.01555156 0.4687395 -0.9800023 0.1816827 0.08115881 1.90735e-6 0.08263355 5.49518e-4 0.9965798 0 0 0 0 1 0.1810842 0.9833574 -0.01472002 0.4687395 -0.9803314 0.1816809 0.07708668 1.90735e-6 0.07847809 4.71335e-4 0.9969156 0 0 0 0 1 0.181156 0.9833633 -0.0133748 0.4687395 -0.9806545 0.181649 0.07294023 1.90735e-6 0.07415628 -9.74825e-5 0.9972465 0 0 0 0 1 0.1812145 0.983358 -0.01296097 0.4687395 -0.9809713 0.1816772 0.0684728 1.90735e-6 0.06968802 3.06103e-4 0.9975687 0 0 0 0 1 0.1812761 0.9833583 -0.01205664 0.4687395 -0.9812706 0.1816765 0.06404423 1.90735e-6 0.06516885 2.21148e-4 0.9978742 0 0 0 0 1 0.1813327 0.9833586 -0.0111503 0.4687395 -0.9815503 0.1816751 0.05960601 1.90735e-6 0.06063979 1.36068e-4 0.9981596 0 0 0 0 1 0.1813887 0.9833613 -0.009921789 0.4687395 -0.9818044 0.1816596 0.05531555 1.90735e-6 0.05619758 -2.92315e-4 0.9984195 0 0 0 0 1 0.1814311 0.9833585 -0.009411156 0.4687395 -0.9820305 0.181675 0.0510894 1.90735e-6 0.05194896 -2.7143e-5 0.9986497 0 0 0 0 1 0.1814701 0.9833586 -0.008623003 0.4687395 -0.9822238 0.1816748 0.04722934 1.90735e-6 0.04800999 -1.00973e-4 0.9988468 0 0 0 0 1 0.1815048 0.9833583 -0.007885217 0.4687395 -0.9823905 0.1816759 0.04361844 1.90735e-6 0.04432511 -1.7054e-4 0.9990171 0 0 0 0 1 0.1815331 0.9833583 -0.007215499 0.4687395 -0.9825307 0.1816763 0.04033684 1.90735e-6 0.04097646 -2.32978e-4 0.9991601 0 0 0 0 1 0.1815568 0.9833581 -0.006619155 0.4687395 -0.9826461 0.1816772 0.03741824 1.90735e-6 0.03799808 -2.89231e-4 0.9992777 0 0 0 0 1 0.1815758 0.983358 -0.006093859 0.4687395 -0.9827404 0.1816777 0.03484523 1.90735e-6 0.03537249 -3.38343e-4 0.999374 0 0 0 0 1 0.1815918 0.9833577 -0.005637824 0.4687395 -0.9828168 0.1816789 0.03261297 1.90735e-6 0.03309452 -3.81261e-4 0.9994521 0 0 0 0 1 0.1816083 0.9833586 -0.004909694 0.4687395 -0.9828773 0.1816731 0.03077059 1.90735e-6 0.03115051 -7.62569e-4 0.9995144 0 0 0 0 1 0.1816198 0.9833588 -0.004438936 0.4687395 -0.9829261 0.1816716 0.02918058 1.90735e-6 0.02950143 -9.36577e-4 0.9995644 0 0 0 0 1 0.1816218 0.9833575 -0.004643738 0.4687395 -0.9829661 0.1816806 0.02774387 1.90735e-6 0.02812582 -4.74265e-4 0.9996042 0 0 0 0 1 0.1816284 0.9833573 -0.004419744 0.4687395 -0.9829963 0.1816815 0.02664715 1.90735e-6 0.02700662 -4.95253e-4 0.9996351 0 0 0 0 1 0.1816331 0.9833571 -0.004242539 0.4687395 -0.9830192 0.1816819 0.02577972 1.90735e-6 0.02612149 -5.11948e-4 0.9996585 0 0 0 0 1 0.1816368 0.9833571 -0.00410825 0.4687395 -0.9830362 0.1816824 0.02512103 1.90735e-6 0.02544933 -5.24351e-4 0.9996759 0 0 0 0 1 0.181639 0.9833571 -0.004010975 0.4687395 -0.9830483 0.1816825 0.02464455 1.90735e-6 0.02496314 -5.33414e-4 0.9996882 0 0 0 0 1 0.1816441 0.9833577 -0.003611147 0.4687395 -0.9830549 0.1816778 0.02441161 1.90735e-6 0.02466142 -8.84264e-4 0.9996954 0 0 0 0 1 0.1816411 0.9833571 -0.003919541 0.4687395 -0.9830594 0.1816825 0.02419704 1.90735e-6 0.02450644 -5.42001e-4 0.9996995 0 0 0 0 1</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-06_matrix-output-array" count="101" stride="16">
+            <param name="TRANSFORM" type="float4x4"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-06_matrix-interpolation">
+        <Name_array id="node-Bone_Seg_3-06_matrix-interpolation-array" count="101">LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR</Name_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-06_matrix-interpolation-array" count="101" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-03_matrix-input">
+        <float_array id="node-Bone_Seg_3-03_matrix-input-array" count="101">0 0.03333334 0.06666667 0.1 0.1333333 0.1666667 0.2 0.2333333 0.2666667 0.3 0.3333333 0.3666667 0.4 0.4333333 0.4666667 0.5 0.5333334 0.5666667 0.6 0.6333333 0.6666667 0.7 0.7333333 0.7666667 0.8 0.8333333 0.8666667 0.9 0.9333333 0.9666666 1 1.033333 1.066667 1.1 1.133333 1.166667 1.2 1.233333 1.266667 1.3 1.333333 1.366667 1.4 1.433333 1.466667 1.5 1.533333 1.566667 1.6 1.633333 1.666667 1.7 1.733333 1.766667 1.8 1.833333 1.866667 1.9 1.933333 1.966667 2 2.033333 2.066667 2.1 2.133333 2.166667 2.2 2.233333 2.266667 2.3 2.333333 2.366667 2.4 2.433333 2.466667 2.5 2.533333 2.566667 2.6 2.633333 2.666667 2.7 2.733333 2.766667 2.8 2.833333 2.866667 2.9 2.933333 2.966667 3 3.033333 3.066667 3.1 3.133333 3.166667 3.2 3.233333 3.266667 3.3 3.333333</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-03_matrix-input-array" count="101" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-03_matrix-output">
+        <float_array id="node-Bone_Seg_3-03_matrix-output-array" count="1616">-0.0516535 -0.9986424 -0.00676155 0.4687367 0.9912383 -0.05209237 0.121381 1.90735e-6 -0.1215684 -4.32597e-4 0.9925829 0 0 0 0 1 -0.0516538 -0.9986424 -0.006759107 0.4687367 0.9912441 -0.05209231 0.1213334 1.90735e-6 -0.1215208 -4.32599e-4 0.9925887 0 0 0 0 1 -0.05165469 -0.9986424 -0.006752192 0.4687367 0.9912614 -0.05209231 0.1211923 1.90735e-6 -0.1213794 -4.3308e-4 0.992606 0 0 0 0 1 -0.05165618 -0.9986424 -0.006740391 0.4687367 0.9912903 -0.05209231 0.1209558 1.90735e-6 -0.1211428 -4.33566e-4 0.9926349 0 0 0 0 1 -0.05165791 -0.9986432 -0.006579756 0.4687367 0.9913328 -0.05207443 0.1206148 1.90735e-6 -0.1207938 -2.92054e-4 0.9926775 0 0 0 0 1 -0.05166137 -0.9986433 -0.006556212 0.4687367 0.9913901 -0.0520749 0.1201429 1.90735e-6 -0.1203213 -2.93018e-4 0.9927349 0 0 0 0 1 -0.05166435 -0.9986424 -0.006668031 0.4687367 0.9914651 -0.052091 0.1195155 1.90735e-6 -0.1197006 -4.36483e-4 0.9928099 0 0 0 0 1 -0.05166923 -0.9986455 -0.006140887 0.4687367 0.9915592 -0.05203288 0.1187576 1.90735e-6 -0.1189163 4.70542e-5 0.9929043 0 0 0 0 1 -0.05167531 -0.9986456 -0.006091892 0.4687367 0.9916756 -0.05203312 0.1177818 1.90735e-6 -0.1179393 4.51841e-5 0.9930208 0 0 0 0 1 -0.05168271 -0.9986433 -0.006376147 0.4687367 0.9918175 -0.05207365 0.1165621 1.90735e-6 -0.116736 -2.99774e-4 0.9931629 0 0 0 0 1 -0.05169111 -0.9986454 -0.005958378 0.4687367 0.991988 -0.05203336 0.1151202 1.90735e-6 -0.1152743 4.00469e-5 0.9933336 0 0 0 0 1 -0.05170136 -0.9986426 -0.006356358 0.4687367 0.9921938 -0.05208867 0.1133073 1.90735e-6 -0.1134846 -4.48648e-4 0.9935396 0 0 0 0 1 -0.0517137 -0.9986454 -0.005759656 0.4687367 0.9924393 -0.05203342 0.1111616 1.90735e-6 -0.1113107 3.24361e-5 0.9937855 0 0 0 0 1 -0.0517283 -0.9986455 -0.005628168 0.4687367 0.9927293 -0.0520336 0.1085419 1.90735e-6 -0.1086878 2.74032e-5 0.9940759 0 0 0 0 1 -0.05174523 -0.9986435 -0.00581336 0.4687367 0.9930716 -0.05206978 0.1053463 1.90735e-6 -0.1055061 -3.21965e-4 0.9944185 0 0 0 0 1 -0.05176538 -0.9986454 -0.005277752 0.4687367 0.9934678 -0.05203372 0.10156 1.90735e-6 -0.101697 1.3981e-5 0.9948153 0 0 0 0 1 -0.05178725 -0.9986456 -0.005053043 0.4687367 0.9939154 -0.05203318 0.09708333 1.90735e-6 -0.09721475 5.36442e-6 0.9952635 0 0 0 0 1 -0.05181181 -0.9986436 -0.005144834 0.4687367 0.9943947 -0.05206543 0.09202527 1.90735e-6 -0.09216833 -3.48034e-4 0.9957434 0 0 0 0 1 -0.05183666 -0.9986455 -0.004522442 0.4687367 0.994891 -0.0520336 0.08651435 1.90735e-6 -0.08663249 -1.47264e-5 0.9962403 0 0 0 0 1 -0.05186015 -0.9986454 -0.004243254 0.4687367 0.9953593 -0.05203342 0.08094698 1.90735e-6 -0.08105814 -2.56645e-5 0.9967092 0 0 0 0 1 -0.05188143 -0.9986456 -0.003976464 0.4687367 0.9957773 -0.0520336 0.07563441 1.90735e-6 -0.07573884 -3.56601e-5 0.9971276 0 0 0 0 1 -0.05189913 -0.9986442 -0.004076778 0.4687367 0.9961354 -0.05205756 0.07074332 1.90735e-6 -0.07085967 -3.89548e-4 0.9974861 0 0 0 0 1 -0.05191439 -0.9986442 -0.00385642 0.4687367 0.9964371 -0.05205589 0.06635862 1.90735e-6 -0.06646943 -3.97754e-4 0.9977883 0 0 0 0 1 -0.05192703 -0.9986438 -0.003803849 0.4687367 0.9966892 -0.05206328 0.06245386 1.90735e-6 -0.06256723 -5.4824e-4 0.9980404 0 0 0 0 1 -0.05193758 -0.9986456 -0.003142237 0.4687367 0.9969003 -0.05203247 0.05901175 1.90735e-6 -0.05909532 -6.75926e-5 0.9982522 0 0 0 0 1 -0.05194634 -0.9986456 -0.002986907 0.4687367 0.9970787 -0.05203211 0.05592149 1.90735e-6 -0.05600118 -7.33177e-5 0.9984307 0 0 0 0 1 -0.05195462 -0.9986456 -0.002841532 0.4687367 0.9972372 -0.05203223 0.05302077 1.90735e-6 -0.05309683 -7.90433e-5 0.9985893 0 0 0 0 1 -0.05196136 -0.9986445 -0.003052234 0.4687367 0.9973757 -0.05204916 0.05032867 1.90735e-6 -0.05041933 -4.29084e-4 0.998728 0 0 0 0 1 -0.05196774 -0.9986456 -0.002583742 0.4687367 0.997497 -0.05203181 0.04788011 1.90735e-6 -0.04794973 -8.9066e-5 0.9988498 0 0 0 0 1 -0.0519728 -0.9986456 -0.002469837 0.4687367 0.9976034 -0.05203133 0.04561185 1.90735e-6 -0.04567861 -9.33625e-5 0.9989562 0 0 0 0 1 -0.05197763 -0.9986443 -0.002852797 0.4687367 0.9976965 -0.05205255 0.04350388 1.90735e-6 -0.0435934 -5.84999e-4 0.9990491 0 0 0 0 1 -0.05198138 -0.9986456 -0.002269506 0.4687367 0.9977779 -0.0520308 0.04162067 1.90735e-6 -0.04168236 -1.01002e-4 0.9991309 0 0 0 0 1 -0.05198508 -0.9986456 -0.002182126 0.4687367 0.9978491 -0.05203074 0.0398789 1.90735e-6 -0.03993844 -1.04344e-4 0.9992021 0 0 0 0 1 -0.0519883 -0.9986456 -0.002102255 0.4687367 0.9979112 -0.05203068 0.03829133 1.90735e-6 -0.03834885 -1.07209e-4 0.9992644 0 0 0 0 1 -0.05199068 -0.9986449 -0.002374947 0.4687367 0.9979655 -0.0520429 0.03683513 1.90735e-6 -0.0369088 -4.55069e-4 0.9993184 0 0 0 0 1 -0.05199313 -0.9986457 -0.001964688 0.4687367 0.9980127 -0.05203008 0.03555017 1.90735e-6 -0.03560423 -1.12462e-4 0.9993659 0 0 0 0 1 -0.05199527 -0.9986457 -0.001905977 0.4687367 0.9980538 -0.05203008 0.03437757 1.90735e-6 -0.0344302 -1.1485e-4 0.9994071 0 0 0 0 1 -0.05199712 -0.9986457 -0.001853287 0.4687367 0.9980894 -0.05203002 0.03332859 1.90735e-6 -0.03337985 -1.1676e-4 0.9994426 0 0 0 0 1 -0.05199873 -0.9986451 -0.00215131 0.4687367 0.9981201 -0.05204111 0.03237712 1.90735e-6 -0.03244519 -4.63718e-4 0.9994733 0 0 0 0 1 -0.0520001 -0.998645 -0.002109646 0.4687367 0.9981465 -0.05204081 0.03155052 1.90735e-6 -0.03161758 -4.6516e-4 0.9994998 0 0 0 0 1 -0.05200129 -0.998645 -0.002073466 0.4687367 0.9981692 -0.05204051 0.03082776 1.90735e-6 -0.03089392 -4.66601e-4 0.9995225 0 0 0 0 1 -0.05200231 -0.9986447 -0.00218451 0.4687367 0.9981884 -0.05204457 0.03019154 1.90735e-6 -0.03026431 -6.10549e-4 0.9995416 0 0 0 0 1 -0.05200314 -0.9986457 -0.001669645 0.4687367 0.9982047 -0.05202978 0.02967566 1.90735e-6 -0.02972239 -1.23446e-4 0.9995581 0 0 0 0 1 -0.05200386 -0.9986451 -0.001991391 0.4687367 0.9982182 -0.0520398 0.02919781 1.90735e-6 -0.02926182 -4.69484e-4 0.9995716 0 0 0 0 1 -0.05200392 -0.998645 -0.001972436 0.4687367 0.9982293 -0.0520392 0.0288152 1.90735e-6 -0.02887886 -4.70442e-4 0.9995828 0 0 0 0 1 -0.05200487 -0.9986451 -0.001956701 0.4687367 0.9982383 -0.05203956 0.02850449 1.90735e-6 -0.02856773 -4.70923e-4 0.9995917 0 0 0 0 1 -0.05200523 -0.9986451 -0.001944422 0.4687367 0.9982452 -0.05203944 0.02825897 1.90735e-6 -0.02832186 -4.71403e-4 0.9995986 0 0 0 0 1 -0.05200552 -0.9986457 -0.001590251 0.4687367 0.9982506 -0.05202966 0.02808731 1.90735e-6 -0.02813202 -1.26789e-4 0.9996041 0 0 0 0 1 -0.0520057 -0.9986457 -0.001583218 0.4687367 0.9982544 -0.05202966 0.02795308 1.90735e-6 -0.02799761 -1.26789e-4 0.9996079 0 0 0 0 1 -0.05200588 -0.9986457 -0.001579225 0.4687367 0.9982568 -0.05202966 0.02786648 1.90735e-6 -0.02791088 -1.27266e-4 0.9996103 0 0 0 0 1 -0.05200594 -0.9986448 -0.002064585 0.4687367 0.9982579 -0.05204325 0.02779781 1.90735e-6 -0.02786761 -6.15358e-4 0.9996113 0 0 0 0 1 -0.05200588 -0.9986451 -0.001923084 0.4687367 0.9982573 -0.05203926 0.02783179 1.90735e-6 -0.02789419 -4.72362e-4 0.9996107 0 0 0 0 1 -0.0520057 -0.9986457 -0.00158447 0.4687367 0.9982537 -0.05202966 0.02797693 1.90735e-6 -0.02802145 -1.26789e-4 0.9996072 0 0 0 0 1 -0.05200535 -0.9986448 -0.002083063 0.4687367 0.9982475 -0.05204343 0.0281713 1.90735e-6 -0.02824151 -6.14398e-4 0.9996008 0 0 0 0 1 -0.05200445 -0.998645 -0.001955568 0.4687367 0.9982389 -0.05203908 0.02848279 1.90735e-6 -0.02854597 -4.70923e-4 0.9995923 0 0 0 0 1 -0.05200386 -0.998645 -0.001975238 0.4687367 0.9982277 -0.0520392 0.02886897 1.90735e-6 -0.02893269 -4.70441e-4 0.9995812 0 0 0 0 1 -0.05200314 -0.9986451 -0.001998424 0.4687367 0.9982142 -0.05203938 0.02933293 1.90735e-6 -0.02939718 -4.69482e-4 0.9995676 0 0 0 0 1 -0.05200278 -0.9986448 -0.002168595 0.4687367 0.9981982 -0.05204439 0.02986764 1.90735e-6 -0.02994006 -6.11508e-4 0.9995514 0 0 0 0 1 -0.05200183 -0.998645 -0.002056479 0.4687367 0.9981794 -0.05204033 0.03049284 1.90735e-6 -0.03055852 -4.67082e-4 0.9995328 0 0 0 0 1 -0.0520007 -0.9986457 -0.001746177 0.4687367 0.9981582 -0.0520299 0.03119957 1.90735e-6 -0.03124821 -1.20581e-4 0.9995115 0 0 0 0 1 -0.05199944 -0.998645 -0.002129495 0.4687367 0.9981338 -0.05204093 0.03194928 1.90735e-6 -0.03201681 -4.64201e-4 0.9994871 0 0 0 0 1 -0.05199801 -0.9986451 -0.002171993 0.4687367 0.9981065 -0.05204129 0.03279244 1.90735e-6 -0.03286105 -4.62759e-4 0.9994598 0 0 0 0 1 -0.0519964 -0.998645 -0.002218067 0.4687367 0.9980758 -0.05204164 0.03371393 1.90735e-6 -0.03378373 -4.60838e-4 0.999429 0 0 0 0 1 -0.05199509 -0.9986449 -0.002268493 0.4687367 0.9980413 -0.05204254 0.03471815 1.90735e-6 -0.03478914 -4.58916e-4 0.9993945 0 0 0 0 1 -0.05199259 -0.998645 -0.00232315 0.4687367 0.998003 -0.05204248 0.03580373 1.90735e-6 -0.03587615 -4.56993e-4 0.9993561 0 0 0 0 1 -0.05199038 -0.9986457 -0.002037167 0.4687367 0.9979602 -0.0520302 0.03699594 1.90735e-6 -0.03705179 -1.09597e-4 0.9993132 0 0 0 0 1 -0.05198836 -0.9986456 -0.002101004 0.4687367 0.9979122 -0.05203068 0.03826665 1.90735e-6 -0.03832417 -1.0721e-4 0.9992653 0 0 0 0 1 -0.05198556 -0.9986448 -0.002514779 0.4687367 0.9978587 -0.05204439 0.03961926 1.90735e-6 -0.03969645 -4.4978e-4 0.9992117 0 0 0 0 1 -0.05198293 -0.9986456 -0.002244234 0.4687367 0.9977988 -0.05203127 0.04111647 1.90735e-6 -0.04117757 -1.01957e-4 0.9991518 0 0 0 0 1 -0.05197942 -0.9986447 -0.002669095 0.4687367 0.9977315 -0.052046 0.0427004 1.90735e-6 -0.04278147 -4.43529e-4 0.9990843 0 0 0 0 1 -0.05197548 -0.9986442 -0.002898871 0.4687367 0.9976558 -0.05205303 0.04442596 1.90735e-6 -0.04451662 -5.8307e-4 0.9990085 0 0 0 0 1 -0.05197101 -0.9986446 -0.002850711 0.4687367 0.9975702 -0.05204731 0.04631453 1.90735e-6 -0.04640018 -4.36789e-4 0.9989228 0 0 0 0 1 -0.05196595 -0.9986445 -0.002953827 0.4687367 0.9974727 -0.05204802 0.0483675 1.90735e-6 -0.04845565 -4.32936e-4 0.9988251 0 0 0 0 1 -0.05196058 -0.9986445 -0.003066956 0.4687367 0.9973609 -0.05204927 0.05062031 1.90735e-6 -0.05071139 -4.28601e-4 0.9987133 0 0 0 0 1 -0.05195432 -0.9986456 -0.002847313 0.4687367 0.9972313 -0.05203223 0.05313104 1.90735e-6 -0.05320721 -7.90429e-5 0.9985834 0 0 0 0 1 -0.05194634 -0.9986456 -0.002986907 0.4687367 0.9970787 -0.05203211 0.05592149 1.90735e-6 -0.05600118 -7.33177e-5 0.9984307 0 0 0 0 1 -0.05193668 -0.9986444 -0.003501296 0.4687367 0.9968835 -0.05205297 0.05927735 1.90735e-6 -0.05937927 -4.11736e-4 0.9982353 0 0 0 0 1 -0.05192571 -0.9986444 -0.003680765 0.4687367 0.9966641 -0.05205446 0.06285899 1.90735e-6 -0.06296533 -4.04507e-4 0.9980156 0 0 0 0 1 -0.05191344 -0.9986454 -0.003525435 0.4687367 0.9964188 -0.052033 0.06665027 1.90735e-6 -0.06674343 -5.28109e-5 0.9977701 0 0 0 0 1 -0.05189967 -0.9986442 -0.00406897 0.4687367 0.996146 -0.0520575 0.07059305 1.90735e-6 -0.07070916 -3.89552e-4 0.9974967 0 0 0 0 1 -0.05188453 -0.9986454 -0.003930926 0.4687367 0.9958458 -0.05203324 0.07472503 1.90735e-6 -0.07482838 -3.75645e-5 0.9971963 0 0 0 0 1 -0.05186843 -0.9986433 -0.004631161 0.4687367 0.995519 -0.05207222 0.07893425 1.90735e-6 -0.0790683 -5.16224e-4 0.996869 0 0 0 0 1 -0.05185067 -0.9986433 -0.004846632 0.4687367 0.9951694 -0.05207425 0.08322542 1.90735e-6 -0.0833649 -5.07965e-4 0.9965189 0 0 0 0 1 -0.05183261 -0.9986454 -0.004572153 0.4687367 0.9948044 -0.0520339 0.0875051 1.90735e-6 -0.08762449 -1.28251e-5 0.9961535 0 0 0 0 1 -0.05181354 -0.998643 -0.005269467 0.4687367 0.9944287 -0.05207848 0.09164983 1.90735e-6 -0.09179991 -4.91443e-4 0.9957774 0 0 0 0 1 -0.0517944 -0.9986454 -0.004982173 0.4687367 0.9940522 -0.05203348 0.09567195 1.90735e-6 -0.09580159 2.67476e-6 0.9954004 0 0 0 0 1 -0.05177623 -0.9986436 -0.005514681 0.4687367 0.9936849 -0.05206799 0.09939616 1.90735e-6 -0.09954845 -3.33551e-4 0.9950325 0 0 0 0 1 -0.05175876 -0.9986436 -0.005688846 0.4687367 0.9933317 -0.05206942 0.1028651 1.90735e-6 -0.1030218 -3.26793e-4 0.9946789 0 0 0 0 1 -0.05174207 -0.9986434 -0.005846142 0.4687367 0.9930018 -0.05207026 0.1060013 1.90735e-6 -0.1061619 -3.2052e-4 0.9943487 0 0 0 0 1 -0.05172681 -0.9986454 -0.005641579 0.4687367 0.9927 -0.05203354 0.1088091 1.90735e-6 -0.1089553 2.79136e-5 0.9940466 0 0 0 0 1 -0.05171352 -0.9986426 -0.006252467 0.4687367 0.9924278 -0.0520882 0.1112397 1.90735e-6 -0.1114144 -4.52544e-4 0.9937739 0 0 0 0 1 -0.051701 -0.9986434 -0.006216287 0.4687367 0.9921867 -0.05207246 0.1133768 1.90735e-6 -0.1135467 -3.06045e-4 0.9935325 0 0 0 0 1 -0.05169004 -0.9986456 -0.005963265 0.4687367 0.9919767 -0.05203288 0.1152184 1.90735e-6 -0.1153726 4.02108e-5 0.9933221 0 0 0 0 1 -0.05168163 -0.9986454 -0.006040453 0.4687367 0.9917969 -0.05203342 0.1167562 1.90735e-6 -0.1169123 4.32134e-5 0.9931422 0 0 0 0 1 -0.05167376 -0.9986456 -0.006104469 0.4687367 0.9916458 -0.05203306 0.1180316 1.90735e-6 -0.1181894 4.56572e-5 0.992991 0 0 0 0 1 -0.05166727 -0.9986424 -0.006644189 0.4687367 0.9915212 -0.05209088 0.119048 1.90735e-6 -0.1192325 -4.36981e-4 0.9928662 0 0 0 0 1 -0.05166256 -0.9986432 -0.00654304 0.4687367 0.9914216 -0.05207443 0.1198822 1.90735e-6 -0.1200603 -2.93501e-4 0.9927664 0 0 0 0 1 -0.05165857 -0.9986423 -0.006717145 0.4687367 0.9913455 -0.05209165 0.1205019 1.90735e-6 -0.1206882 -4.34064e-4 0.9926903 0 0 0 0 1 -0.05165618 -0.9986456 -0.006252348 0.4687367 0.9912909 -0.05203318 0.1209774 1.90735e-6 -0.1211388 5.13345e-5 0.9926356 0 0 0 0 1 -0.05165433 -0.9986456 -0.006266832 0.4687367 0.9912555 -0.05203312 0.1212663 1.90735e-6 -0.1214281 5.18784e-5 0.9926002 0 0 0 0 1 -0.0516535 -0.9986424 -0.00676155 0.4687367 0.9912383 -0.05209237 0.121381 1.90735e-6 -0.1215684 -4.32597e-4 0.9925829 0 0 0 0 1</float_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-03_matrix-output-array" count="101" stride="16">
+            <param name="TRANSFORM" type="float4x4"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="node-Bone_Seg_3-03_matrix-interpolation">
+        <Name_array id="node-Bone_Seg_3-03_matrix-interpolation-array" count="101">LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR LINEAR</Name_array>
+        <technique_common>
+          <accessor source="#node-Bone_Seg_3-03_matrix-interpolation-array" count="101" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="node-Bone_Seg_3-07_translation.X-sampler">
+        <input semantic="INPUT" source="#node-Bone_Seg_3-07_translation.X-input"/>
+        <input semantic="OUTPUT" source="#node-Bone_Seg_3-07_translation.X-output"/>
+        <input semantic="IN_TANGENT" source="#node-Bone_Seg_3-07_translation.X-intangent"/>
+        <input semantic="OUT_TANGENT" source="#node-Bone_Seg_3-07_translation.X-outtangent"/>
+        <input semantic="INTERPOLATION" source="#node-Bone_Seg_3-07_translation.X-interpolation"/>
+      </sampler>
+      <sampler id="node-Bone_Seg_3-07_translation.Y-sampler">
+        <input semantic="INPUT" source="#node-Bone_Seg_3-07_translation.Y-input"/>
+        <input semantic="OUTPUT" source="#node-Bone_Seg_3-07_translation.Y-output"/>
+        <input semantic="IN_TANGENT" source="#node-Bone_Seg_3-07_translation.Y-intangent"/>
+        <input semantic="OUT_TANGENT" source="#node-Bone_Seg_3-07_translation.Y-outtangent"/>
+        <input semantic="INTERPOLATION" source="#node-Bone_Seg_3-07_translation.Y-interpolation"/>
+      </sampler>
+      <sampler id="node-Bone_Seg_3-07_translation.Z-sampler">
+        <input semantic="INPUT" source="#node-Bone_Seg_3-07_translation.Z-input"/>
+        <input semantic="OUTPUT" source="#node-Bone_Seg_3-07_translation.Z-output"/>
+        <input semantic="IN_TANGENT" source="#node-Bone_Seg_3-07_translation.Z-intangent"/>
+        <input semantic="OUT_TANGENT" source="#node-Bone_Seg_3-07_translation.Z-outtangent"/>
+        <input semantic="INTERPOLATION" source="#node-Bone_Seg_3-07_translation.Z-interpolation"/>
+      </sampler>
+      <sampler id="node-Bone_Seg_3-07_rotationZ.ANGLE-sampler">
+        <input semantic="INPUT" source="#node-Bone_Seg_3-07_rotationZ.ANGLE-input"/>
+        <input semantic="OUTPUT" source="#node-Bone_Seg_3-07_rotationZ.ANGLE-output"/>
+        <input semantic="IN_TANGENT" source="#node-Bone_Seg_3-07_rotationZ.ANGLE-intangent"/>
+        <input semantic="OUT_TANGENT" source="#node-Bone_Seg_3-07_rotationZ.ANGLE-outtangent"/>
+        <input semantic="INTERPOLATION" source="#node-Bone_Seg_3-07_rotationZ.ANGLE-interpolation"/>
+      </sampler>
+      <sampler id="node-Bone_Seg_3-07_rotationY.ANGLE-sampler">
+        <input semantic="INPUT" source="#node-Bone_Seg_3-07_rotationY.ANGLE-input"/>
+        <input semantic="OUTPUT" source="#node-Bone_Seg_3-07_rotationY.ANGLE-output"/>
+        <input semantic="IN_TANGENT" source="#node-Bone_Seg_3-07_rotationY.ANGLE-intangent"/>
+        <input semantic="OUT_TANGENT" source="#node-Bone_Seg_3-07_rotationY.ANGLE-outtangent"/>
+        <input semantic="INTERPOLATION" source="#node-Bone_Seg_3-07_rotationY.ANGLE-interpolation"/>
+      </sampler>
+      <sampler id="node-Bone_Seg_3-07_rotationX.ANGLE-sampler">
+        <input semantic="INPUT" source="#node-Bone_Seg_3-07_rotationX.ANGLE-input"/>
+        <input semantic="OUTPUT" source="#node-Bone_Seg_3-07_rotationX.ANGLE-output"/>
+        <input semantic="IN_TANGENT" source="#node-Bone_Seg_3-07_rotationX.ANGLE-intangent"/>
+        <input semantic="OUT_TANGENT" source="#node-Bone_Seg_3-07_rotationX.ANGLE-outtangent"/>
+        <input semantic="INTERPOLATION" source="#node-Bone_Seg_3-07_rotationX.ANGLE-interpolation"/>
+      </sampler>
+      <sampler id="node-Bone_Seg_3-07_scale-sampler">
+        <input semantic="INPUT" source="#node-Bone_Seg_3-07_scale-input"/>
+        <input semantic="OUTPUT" source="#node-Bone_Seg_3-07_scale-output"/>
+        <input semantic="IN_TANGENT" source="#node-Bone_Seg_3-07_scale-intangent"/>
+        <input semantic="OUT_TANGENT" source="#node-Bone_Seg_3-07_scale-outtangent"/>
+        <input semantic="INTERPOLATION" source="#node-Bone_Seg_3-07_scale-interpolation"/>
+      </sampler>
+      <sampler id="node-Bone_Seg_3-07_InverseScaleAxisRotation-sampler">
+        <input semantic="INPUT" source="#node-Bone_Seg_3-07_InverseScaleAxisRotation-input"/>
+        <input semantic="OUTPUT" source="#node-Bone_Seg_3-07_InverseScaleAxisRotation-output"/>
+        <input semantic="INTERPOLATION" source="#node-Bone_Seg_3-07_InverseScaleAxisRotation-interpolation"/>
+      </sampler>
+      <sampler id="node-Bone_Seg_3-07_ScaleAxisRotation-sampler">
+        <input semantic="INPUT" source="#node-Bone_Seg_3-07_ScaleAxisRotation-input"/>
+        <input semantic="OUTPUT" source="#node-Bone_Seg_3-07_ScaleAxisRotation-output"/>
+        <input semantic="INTERPOLATION" source="#node-Bone_Seg_3-07_ScaleAxisRotation-interpolation"/>
+      </sampler>
+      <sampler id="node-Bone_Seg_3-06_matrix-sampler">
+        <input semantic="INPUT" source="#node-Bone_Seg_3-06_matrix-input"/>
+        <input semantic="OUTPUT" source="#node-Bone_Seg_3-06_matrix-output"/>
+        <input semantic="INTERPOLATION" source="#node-Bone_Seg_3-06_matrix-interpolation"/>
+      </sampler>
+      <sampler id="node-Bone_Seg_3-03_matrix-sampler">
+        <input semantic="INPUT" source="#node-Bone_Seg_3-03_matrix-input"/>
+        <input semantic="OUTPUT" source="#node-Bone_Seg_3-03_matrix-output"/>
+        <input semantic="INTERPOLATION" source="#node-Bone_Seg_3-03_matrix-interpolation"/>
+      </sampler>
+      <channel source="#node-Bone_Seg_3-07_translation.X-sampler" target="node-Bone_Seg_3-07/translation.X"/>
+      <channel source="#node-Bone_Seg_3-07_translation.Y-sampler" target="node-Bone_Seg_3-07/translation.Y"/>
+      <channel source="#node-Bone_Seg_3-07_translation.Z-sampler" target="node-Bone_Seg_3-07/translation.Z"/>
+      <channel source="#node-Bone_Seg_3-07_rotationZ.ANGLE-sampler" target="node-Bone_Seg_3-07/rotationZ.ANGLE"/>
+      <channel source="#node-Bone_Seg_3-07_rotationY.ANGLE-sampler" target="node-Bone_Seg_3-07/rotationY.ANGLE"/>
+      <channel source="#node-Bone_Seg_3-07_rotationX.ANGLE-sampler" target="node-Bone_Seg_3-07/rotationX.ANGLE"/>
+      <channel source="#node-Bone_Seg_3-07_scale-sampler" target="node-Bone_Seg_3-07/scale"/>
+      <channel source="#node-Bone_Seg_3-07_InverseScaleAxisRotation-sampler" target="node-Bone_Seg_3-07/InverseScaleAxisRotation"/>
+      <channel source="#node-Bone_Seg_3-07_ScaleAxisRotation-sampler" target="node-Bone_Seg_3-07/ScaleAxisRotation"/>
+      <channel source="#node-Bone_Seg_3-06_matrix-sampler" target="node-Bone_Seg_3-06/matrix"/>
+      <channel source="#node-Bone_Seg_3-03_matrix-sampler" target="node-Bone_Seg_3-03/matrix"/>
+    </animation>
+  </library_animations>
+  <scene>
+    <instance_visual_scene url="#MaxScene"/>
+  </scene>
+</COLLADA>

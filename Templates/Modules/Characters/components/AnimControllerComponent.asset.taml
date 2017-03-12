@@ -1,0 +1,11 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="AnimControllerComponent"
+    componentName="AnimControllerComponent"
+    componentClass="StateMachineComponent"
+    friendlyName="Animation Controller"
+    componentType="animation"
+    description="State machine that controls animations."
+    scriptFile="data/Characters/components/AnimControllerComponent.cs"
+    VersionId="1" />

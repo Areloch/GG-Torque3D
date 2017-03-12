@@ -9,10 +9,10 @@
 <Folder>art</Folder>
 <Folder>levels</Folder>
 <Folder>shaders</Folder>
-<Folder>modules</Folder>
+<Folder>data</Folder>
 <Folder>tools</Folder>
 </Mods>
-<ScannerExts>cs; gui; taml; module</ScannerExts>
+<ScannerExts>cs; gui; taml; module;</ScannerExts>
 <Configs>
 <Config>
 <Name>Release</Name>
@@ -25,7 +25,7 @@
 </Config>
 <Config>
 <Name>Debug</Name>
-<Executable>@TORQUE_APP_NAME@.exe</Executable>
+<Executable>@TORQUE_APP_NAME@_Debug.exe</Executable>
 <Arguments/>
 <HasExports>true</HasExports>
 <Precompile>true</Precompile>

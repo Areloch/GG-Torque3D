@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="rivergrass_diffuse_transparency"
+    imageFile="data/Pacific/Images/rivergrass_diffuse_transparency.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\vegetation\smallplants\rivergrass\rivergrass_diffuse_transparency.dds"
+    VersionId="1" />

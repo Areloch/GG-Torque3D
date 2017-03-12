@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="roof_normal_parallax"
+    imageFile="data/Pacific/Images/roof_normal_parallax.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\structures\coveredstructure\roof_normal_parallax.dds"
+    VersionId="1" />

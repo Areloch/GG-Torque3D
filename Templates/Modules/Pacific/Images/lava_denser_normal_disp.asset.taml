@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="lava_denser_normal_disp"
+    imageFile="data/Pacific/Images/lava_denser_normal_disp.png"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\volcano\lava_denser_normal_disp.png"
+    VersionId="1" />

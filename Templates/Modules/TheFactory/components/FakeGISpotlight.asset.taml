@@ -1,0 +1,10 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="FakeGISpotlight"
+    componentName="FakeGISpotlight"
+    componentClass="Component"
+    friendlyName="FakeGISpotlight"
+    componentType="Lighting"
+    scriptFile="data/TheFactory/components/FakeGISpotlight.cs"
+    VersionId="1" />

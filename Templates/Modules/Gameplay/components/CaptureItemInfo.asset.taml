@@ -1,0 +1,11 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="CaptureItemInfo"
+    componentName="CaptureItemInfo"
+    componentClass="Component"
+    friendlyName="Capture Item Info"
+    componentType="Gameplay"
+    description="Makes the entity act as an objective item to be captured and brought back to an exfil point."
+    scriptFile="data/Gameplay/components/CaptureItemInfo.cs"
+    VersionId="1" />

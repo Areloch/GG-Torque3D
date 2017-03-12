@@ -1,0 +1,117 @@
+<Entity
+    scale="1 1 1"
+    class="FoxPlayer"
+    canSave="true"
+    canSaveDynamicFields="true"
+    position="0 0 -0.02"
+    Rotation="0 -0 -0"
+    LocalPosition="0 0 0"
+    LocalRotation="1 0 0 0"
+    aimedMaxPitch="90"
+    aimedMinPitch="-90"
+    aiming="0"
+    aimOrbitDist="1"
+    animation="21740"
+    cam="21738"
+    camArm="21739"
+    Collision="21735"
+    crouch="0"
+    crouchSpeedMod="0.5"
+    falling="0"
+    firstPerson="0"
+    GameObjectAsset="FoxPlayer"
+    interact="21742"
+    mesh="21736"
+    phys="21741"
+    regularOrbitDist="2"
+    regularOrbitMaxPitch="70"
+    regularOrbitMinPitch="-10"
+    runSpeed="3.5"
+    stateMachine="21744"
+    turnRate="0.3">
+    <Component
+        networked="false"
+        Enabled="true"
+        internalName="ControlObjectComponent"
+        class="ControlObjectComponent" />
+    <CollisionComponent
+        friendlyName="Collision(Component)"
+        networked="false"
+        Enabled="true"
+        internalName="CollisionComponent"
+        CollisionType="Bounds"
+        LineOfSightType="Collision Mesh"
+        DecalType="Collision Mesh"
+        CollisionMeshPrefix="Collision"
+        BlockCollisions="true" />
+    <MeshComponent
+        componentType="Render"
+        friendlyName="Mesh Component"
+        description="Causes the object to render a non-animating 3d shape using the file provided."
+        networked="true"
+        Enabled="true"
+        internalName="MeshComponent"
+        MeshAsset="@asset=Characters:Red_Guy" />
+    <Component
+        networked="false"
+        Enabled="true"
+        internalName="FPSControls"
+        class="FPSControls" />
+    <CameraComponent
+        friendlyName="Camera(Component)"
+        networked="false"
+        Enabled="true"
+        internalName="CameraComponent"
+        FOV="80"
+        MinFOV="5"
+        MaxFOV="175"
+        ScreenAspect="1024 768"
+        targetNode="Eye"
+        positionOffset="-8.74228e-008 -2 0"
+        rotationOffset="0 0 0"
+        useParentTransform="false" />
+    <CameraOrbiterComponent
+        networked="false"
+        Enabled="true"
+        internalName="CameraOrbiterComponent"
+        orbitDistance="2"
+        Rotation="0 0 0"
+        maxPitchAngle="70"
+        minPitchAngle="-70"
+        positionOffset="0 0 0" />
+    <AnimationComponent
+        componentType="Render"
+        friendlyName="Animation Component"
+        description="An animation component"
+        networked="true"
+        Enabled="true"
+        internalName="AnimationComponent" />
+    <PlayerControllerComponent
+        componentType="Physics"
+        friendlyName="Player Controller"
+        description="A general-purpose physics player controller."
+        networked="false"
+        Enabled="true"
+        internalName="PlayerControllerComponent"
+        velocity="0 0 0.00999999"
+        inputVelocity="0 0 0"
+        useDirectMoveInput="false" />
+    <Component
+        networked="false"
+        Enabled="true"
+        internalName="InteractComponent"
+        class="InteractComponent" />
+    <StateMachineComponent
+        componentType="Game"
+        friendlyName="State Machine"
+        description="A generic state machine."
+        networked="false"
+        Enabled="true"
+        internalName="StateMachineComponent"
+        StateMachineAsset="Weapons:TestSM" />
+    <Component
+        networked="false"
+        Enabled="true"
+        internalName="InventoryController"
+        class="InventoryController" />
+</Entity>

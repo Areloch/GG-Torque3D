@@ -164,7 +164,7 @@ ReflectionProbe::ReflectionProbe()
    mOverrideColor = false;
    mSkyColor = ColorF(0.5f, 0.5f, 1.0f, 1.0f);
    mGroundColor = ColorF(0.8f, 0.7f, 0.5f, 1.0f);
-   mIntensity = 0.1f;
+   mIntensity = 1.0f;
 
    mUseCubemap = false;
    mCubemap = NULL;
@@ -218,7 +218,7 @@ void ReflectionProbe::initPersistFields()
 
    addGroup("Baking");
    addProtectedField("Bake", TypeBool, Offset(mBake, ReflectionProbe),
-      &_doBake, &defaultProtectedGetFn, "Regenerate Voxel Grid", AbstractClassRep::FieldFlags::FIELD_ButtonInInspectors);
+      &_doBake, &defaultProtectedGetFn, "Regenerate Voxel Grid", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
    endGroup("Baking");
 
    // SceneObject already handles exposing the transform
@@ -644,7 +644,7 @@ void ReflectionProbe::updateMaterial()
                mProbeUniqueID.c_str(), i);
 
             if (Platform::isFile(faceFile))
-               mCubemap->mCubeFaceFile[i] = faceFile;
+               mCubemap->setCubeFaceFile(i, FileName(faceFile));
             else
                validCubemap = false;
          }
@@ -916,7 +916,7 @@ void ReflectionProbe::bake(String outputPath, S32 resolution)
       bitmap.writeBitmap("png", stream);
 
       if (Platform::isFile(fileName) && mCubemap)
-         mCubemap->mCubeFaceFile[i] = fileName;
+         mCubemap->setCubeFaceFile(i, FileName(fileName));
       else
          validCubemap = false;
    }

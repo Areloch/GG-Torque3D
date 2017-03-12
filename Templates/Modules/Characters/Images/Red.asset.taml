@@ -1,0 +1,8 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="Red"
+    imageFile="data/Characters/Images/Red.png"
+    useMips="true"
+    isHDRImage="false"
+    VersionId="1" />

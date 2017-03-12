@@ -1,0 +1,8 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="SkinComposite"
+    imageFile="data/Characters/Images/SkinComposite.png"
+    useMips="true"
+    isHDRImage="false"
+    VersionId="1" />

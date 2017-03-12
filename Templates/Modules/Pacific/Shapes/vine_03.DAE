@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>Joe Espinoza</author>
+      <authoring_tool>OpenCOLLADA for 3ds Max;  Version: 1.3.0;  Revision: 788M;  Platform: x64;  Configuration: Release_Max2011_static</authoring_tool>
+      <source_data>file:///D:/Projects/TorqueCrysis/11_Structures/Ruins/Workfiles/Vines2.max</source_data>
+    </contributor>
+    <created>2011-04-18T11:25:06</created>
+    <modified>2011-04-18T11:25:06</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="tex_shrine">
+      <profile_COMMON>
+        <newparam sid="tex_temple_ruins_dif_png-surface">
+          <surface type="2D">
+            <init_from>tex_temple_ruins_dif_png</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="tex_temple_ruins_dif_png-sampler">
+          <sampler2D>
+            <source>tex_temple_ruins_dif_png-surface</source>
+          </sampler2D>
+        </newparam>
+        <newparam sid="tex_temple_ruins_nrm_png-surface">
+          <surface type="2D">
+            <init_from>tex_temple_ruins_nrm_png</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="tex_temple_ruins_nrm_png-sampler">
+          <sampler2D>
+            <source>tex_temple_ruins_nrm_png-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <blinn>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0.588 0.588 0.588 1</color>
+            </ambient>
+            <diffuse>
+              <texture texture="tex_temple_ruins_dif_png-sampler" texcoord="CHANNEL1"/>
+            </diffuse>
+            <specular>
+              <color>0.9 0.9 0.9 1</color>
+            </specular>
+            <shininess>
+              <float>10</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent opaque="A_ONE">
+              <texture texture="tex_temple_ruins_dif_png-sampler" texcoord="CHANNEL1"/>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </blinn>
+          <extra>
+            <technique profile="OpenCOLLADA3dsMax">
+              <bump bumptype="HEIGHTFIELD">
+                <texture texture="tex_temple_ruins_nrm_png-sampler" texcoord="CHANNEL1"/>
+              </bump>
+            </technique>
+          </extra>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="OpenCOLLADA3dsMax">
+          <extended_shader>
+            <apply_reflection_dimming>0</apply_reflection_dimming>
+            <dim_level>0</dim_level>
+            <falloff_type>0</falloff_type>
+            <index_of_refraction>1.5</index_of_refraction>
+            <opacity_type>0</opacity_type>
+            <reflection_level>3</reflection_level>
+            <wire_size>1</wire_size>
+            <wire_units>0</wire_units>
+          </extended_shader>
+          <shader>
+            <ambient_diffuse_lock>1</ambient_diffuse_lock>
+            <ambient_diffuse_texture_lock>1</ambient_diffuse_texture_lock>
+            <diffuse_specular_lock>0</diffuse_specular_lock>
+            <soften>0.1</soften>
+            <use_self_illum_color>0</use_self_illum_color>
+          </shader>
+        </technique>
+      </extra>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="tex_shrine-material" name="tex_shrine">
+      <instance_effect url="#tex_shrine"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="geom-bounds" name="bounds">
+      <mesh>
+        <source id="geom-bounds-positions">
+          <float_array id="geom-bounds-positions-array" count="24">-0.577418 -0.5635507 0 0.577418 -0.5635507 0 -0.577418 0.5635507 0 0.577418 0.5635507 0 -0.577418 -0.5635507 5.920154 0.577418 -0.5635507 5.920154 -0.577418 0.5635507 5.920154 0.577418 0.5635507 5.920154</float_array>
+          <technique_common>
+            <accessor source="#geom-bounds-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-bounds-normals">
+          <float_array id="geom-bounds-normals-array" count="72">0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 1 0 0 1 0 0 1 0 0 1 0 -1 0 0 -1 0 0 -1 0 0 -1 0 1 0 0 1 0 0 1 0 0 1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#geom-bounds-normals-array" count="24" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-bounds-vertices">
+          <input semantic="POSITION" source="#geom-bounds-positions"/>
+        </vertices>
+        <triangles material="tex_shrine" count="12">
+          <input semantic="VERTEX" source="#geom-bounds-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-bounds-normals" offset="1"/>
+          <p>0 0 2 1 3 2 3 2 1 3 0 0 4 4 5 5 7 6 7 6 6 7 4 4 0 8 1 9 5 10 5 10 4 11 0 8 1 12 3 13 7 14 7 14 5 15 1 12 3 16 2 17 6 18 6 18 7 19 3 16 2 20 0 21 4 22 4 22 6 23 2 20</p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="OpenCOLLADA3dsMax">
+          <max_box>
+            <generateuvs>0</generateuvs>
+            <height>5.920154</height>
+            <heightsegments>1</heightsegments>
+            <length>1.127101</length>
+            <lengthsegments>1</lengthsegments>
+            <width>1.154836</width>
+            <widthsegments>1</widthsegments>
+          </max_box>
+        </technique>
+      </extra>
+    </geometry>
+    <geometry id="geom-vinethree100" name="vinethree100">
+      <mesh>
+        <source id="geom-vinethree100-positions">
+          <float_array id="geom-vinethree100-positions-array" count="90">15.14655 0.00406327 10.89993 15.30789 0.0040632 4.97978 15.54426 -0.1866717 4.97978 15.38292 -0.1866716 10.89993 15.77774 0.004063155 4.97978 15.6164 0.004063223 10.89993 15.14655 -5.74626e-7 10.89993 15.38292 -0.1907355 10.89993 15.54426 -0.1907355 4.97978 15.30789 -6.44941e-7 4.97978 15.6164 -6.21192e-7 10.89993 15.77774 -6.9011e-7 4.97978 15.03802 0.004063226 7.939857 15.27438 -0.1866716 7.939857 15.50786 0.004063182 7.939857 15.27438 -0.1907355 7.939857 15.03802 -6.10948e-7 7.939857 15.50786 -6.63102e-7 7.939857 15.00981 0.004063249 9.419895 15.24617 -0.1907355 9.419895 15.47966 -6.4075e-7 9.419895 15.24617 -0.1866716 9.419895 15.47966 0.004063204 9.419895 15.00981 -5.92321e-7 9.419895 15.54426 -0.1866716 6.459818 15.77774 0.004063169 6.459818 15.30789 -6.27711e-7 6.459818 15.30789 0.00406321 6.459818 15.54426 -0.1907355 6.459818 15.77774 -6.7614e-7 6.459818</float_array>
+          <technique_common>
+            <accessor source="#geom-vinethree100-positions-array" count="30" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-vinethree100-normals">
+          <float_array id="geom-vinethree100-normals-array" count="90">0.03991347 -0.9991964 -0.003687632 -0.6269389 -0.7769121 0.05792367 -0.6278366 -0.7780244 0.0223411 -0.01928628 -0.9998129 0.001522702 0.6315711 -0.773119 -0.05835162 0.6324704 -0.7742195 -0.02377861 0.6278366 0.7780244 -0.02234109 0.626939 0.7769121 -0.05792367 -0.03991349 0.9991964 0.003687644 0.01928628 0.9998128 -0.001522699 -0.6315712 0.773119 0.05835162 -0.6324703 0.7742195 0.0237786 -0.0291575 -0.9995557 -0.006188006 -0.6268494 -0.7768011 -0.06033222 -0.6268842 -0.7768443 -0.05940719 0.03894697 -0.999218 0.00682756 0.6312766 -0.7727585 0.0658343 0.6317009 -0.7732779 0.05472936 0.6268494 0.776801 0.06033222 0.0291576 0.9995557 0.006188021 -0.03894688 0.999218 -0.006827552 0.6268842 0.7768443 0.0594072 -0.6312766 0.7727585 -0.06583429 -0.6317009 0.7732779 -0.05472936 -0.6279933 -0.7782187 7.51968e-9 0.002998562 -0.9999955 9.79434e-9 0.6326491 -0.7744386 7.3098e-9 -0.002998562 0.9999955 -1.07549e-8 0.6279933 0.7782187 -9.05942e-9 -0.6326491 0.7744386 -7.73478e-9</float_array>
+          <technique_common>
+            <accessor source="#geom-vinethree100-normals-array" count="30" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-vinethree100-map1">
+          <float_array id="geom-vinethree100-map1-array" count="90">0.01460564 0.951896 0 0.6597673 0.9518958 0 0.6597673 0.9750633 0 0.01460564 0.9750634 0 0.6597673 0.9982701 0 0.01460564 0.9982702 0 0.01460564 0.9518962 0 0.01460564 0.9750636 0 0.6597673 0.9750635 0 0.6597673 0.9518961 0 0.01460564 0.9982705 0 0.6597673 0.9982705 0 0.3371865 0.9518959 0 0.3371865 0.9750633 0 0.3371865 0.9982702 0 0.3371865 0.9750635 0 0.3371865 0.9518962 0 0.3371865 0.9982705 0 0.175896 0.951896 0 0.175896 0.9750636 0 0.1758961 0.9982705 0 0.175896 0.9750633 0 0.1758961 0.9982702 0 0.175896 0.9518962 0 0.4984769 0.9750633 0 0.4984769 0.9982702 0 0.4984769 0.9518962 0 0.4984769 0.9518958 0 0.4984769 0.9750635 0 0.4984769 0.9982705 0</float_array>
+          <technique_common>
+            <accessor source="#geom-vinethree100-map1-array" count="30" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-vinethree100-vertices">
+          <input semantic="POSITION" source="#geom-vinethree100-positions"/>
+        </vertices>
+        <triangles material="tex_shrine" count="32">
+          <input semantic="VERTEX" source="#geom-vinethree100-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-vinethree100-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-vinethree100-map1" offset="2" set="0"/>
+          <p>3 0 3 0 1 0 18 2 18 18 2 18 21 3 21 3 0 3 5 4 5 3 0 3 21 3 21 21 3 21 22 5 22 5 4 5 23 6 23 6 7 6 7 8 7 7 8 7 19 9 19 23 6 23 19 9 19 7 8 7 10 10 10 10 10 10 20 11 20 19 9 19 13 12 13 12 13 12 27 14 27 27 14 27 24 15 24 13 12 13 14 16 14 13 12 13 24 15 24 24 15 24 25 17 25 14 16 14 16 18 16 15 19 15 28 20 28 28 20 28 26 21 26 16 18 16 15 19 15 17 22 17 29 23 29 29 23 29 28 20 28 15 19 15 21 3 21 18 2 18 12 13 12 12 13 12 13 12 13 21 3 21 22 5 22 21 3 21 13 12 13 13 12 13 14 16 14 22 5 22 23 6 23 19 9 19 15 19 15 15 19 15 16 18 16 23 6 23 19 9 19 20 11 20 17 22 17 17 22 17 15 19 15 19 9 19 24 15 24 27 14 27 1 24 1 1 24 1 2 25 2 24 15 24 25 17 25 24 15 24 2 25 2 2 25 2 4 26 4 25 17 25 26 21 26 28 20 28 8 27 8 8 27 8 9 28 9 26 21 26 28 20 28 29 23 29 11 29 11 11 29 11 8 27 8 28 20 28</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_lights>
+    <light id="EnvironmentAmbientLight" name="EnvironmentAmbientLight">
+      <technique_common>
+        <ambient>
+          <color>0 0 0</color>
+        </ambient>
+      </technique_common>
+    </light>
+  </library_lights>
+  <library_images>
+    <image id="tex_temple_ruins_dif_png">
+      <init_from>file:///D:/Projects/TorqueCrysis/11_Structures/Ruins/tex_temple_ruins_dif.png</init_from>
+    </image>
+    <image id="tex_temple_ruins_nrm_png">
+      <init_from>file:///D:/Projects/TorqueCrysis/11_Structures/Ruins/tex_temple_ruins_nrm.png</init_from>
+    </image>
+  </library_images>
+  <library_visual_scenes>
+    <visual_scene id="MaxScene">
+      <node name="EnvironmentAmbientLight">
+        <instance_light url="#EnvironmentAmbientLight"/>
+      </node>
+      <node id="node-bounds" name="bounds">
+        <node>
+          <matrix>1 0 0 0 0 1 0 0 0 0 1 -2.960077 0 0 0 1</matrix>
+          <instance_geometry url="#geom-bounds">
+            <bind_material>
+              <technique_common>
+                <instance_material symbol="tex_shrine" target="#tex_shrine-material">
+                  <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="0"/>
+                  <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="0"/>
+                  <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="0"/>
+                </instance_material>
+              </technique_common>
+            </bind_material>
+          </instance_geometry>
+        </node>
+      </node>
+      <node id="node-base00" name="base00">
+        <node id="node-detail100" name="detail100"/>
+        <node id="node-start00" name="start00">
+          <node id="node-vinethree100" name="vinethree100">
+            <node>
+              <matrix>1 0 0 -15.35544 0 1 0 0.04713251 0 0 1 -7.939857 0 0 0 1</matrix>
+              <instance_geometry url="#geom-vinethree100">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="tex_shrine" target="#tex_shrine-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="0"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="0"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="0"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+        </node>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#MaxScene"/>
+  </scene>
+</COLLADA>

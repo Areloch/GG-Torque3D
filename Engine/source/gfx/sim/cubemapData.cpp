@@ -164,6 +164,14 @@ void CubemapData::updateFaces()
 	}
 }
 
+void CubemapData::setCubeFaceFile(U32 index, FileName newFaceFile)
+{
+   if (index >= 6)
+      return;
+
+   mCubeFaceFile[index] = newFaceFile;
+}
+
 DefineEngineMethod( CubemapData, updateFaces, void, (),,
    "Update the assigned cubemaps faces." )
 {

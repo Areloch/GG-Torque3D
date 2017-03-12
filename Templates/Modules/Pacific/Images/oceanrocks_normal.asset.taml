@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="oceanrocks_normal"
+    imageFile="data/Pacific/Images/oceanrocks_normal.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\terrains\ocean rocks\oceanrocks_normal.dds"
+    VersionId="1" />

@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="sandroadend_specular"
+    imageFile="data/Pacific/Images/sandroadend_specular.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\decals\sandroad_end\sandroadend_specular.dds"
+    VersionId="1" />

@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="beachdebris_01_diffuse_transparency"
+    imageFile="data/Pacific/Images/beachdebris_01_diffuse_transparency.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\decals\beach_debris\beachdebris_01_diffuse_transparency.dds"
+    VersionId="1" />

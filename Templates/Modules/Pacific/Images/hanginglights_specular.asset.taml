@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="hanginglights_specular"
+    imageFile="data/Pacific/Images/hanginglights_specular.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\structures\hanginglights\hanginglights_specular.dds"
+    VersionId="1" />

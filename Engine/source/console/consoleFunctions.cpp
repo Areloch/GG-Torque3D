@@ -43,6 +43,11 @@
 #include "math/mPoint3.h"
 #include "math/mathTypes.h"
 
+#include "module/moduleManager.h"
+#include "module/moduleDefinition.h"
+#include "T3D/components/Component.h"
+#include "T3D/assets/ComponentAsset.h"
+
 // This is a temporary hack to get tools using the library to
 // link in this module which contains no other references.
 bool LinkConsoleFunctions = false;
@@ -2141,13 +2146,18 @@ DefineEngineFunction( gotoWebPage, void, ( const char* address ),,
 
 //-----------------------------------------------------------------------------
 
-DefineEngineFunction( displaySplashWindow, bool, (const char* path), ("art/gui/splash.bmp"),
+DefineEngineFunction( displaySplashWindow, bool, (const char* path), (""),
    "Display a startup splash window suitable for showing while the engine still starts up.\n\n"
    "@note This is currently only implemented on Windows.\n\n"
    "@param path	relative path to splash screen image to display.\n"
    "@return True if the splash window could be successfully initialized.\n\n"
    "@ingroup Platform" )
 {
+   if (path == "")
+   {
+      path = Con::getVariable("$Core::splashWindowImage");
+   }
+
    return Platform::displaySplashWindow(path);
 }
 

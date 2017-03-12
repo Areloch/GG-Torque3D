@@ -24,6 +24,7 @@
 #include "gfx/gfxDevice.h"
 #include "core/util/journal/process.h"
 #include "core/strings/unicode.h"
+#include "gfx/bitmap/gBitmap.h"
 
 #include "SDL.h"
 
@@ -165,8 +166,58 @@ PlatformWindow *PlatformWindowManagerSDL::createWindow(GFXDevice *device, const 
    window->mOwningManager = this;
    mWindowMap[ window->mWindowId ] = window;
 
-   //SDL_Surface *IMG_Load(const char *file);
-   //SDL_SetWindowIcon(window->mWindowHandle, SDL_Surface* icon)
+   //Now, fetch our window icon, if any
+   Torque::Path iconPath = Torque::Path(Con::getVariable( "$Core::windowIcon" ));
+
+   if (iconPath.getExtension() == String("bmp"))
+   {
+      Con::errorf("Unable to use bmp format images for the window icon. Please use a different format.");
+   }
+   else
+   {
+      Resource<GBitmap> img = GBitmap::load(iconPath);
+      if (img != NULL)
+      {
+         U32 pitch;
+         U32 width = img->getWidth();
+         bool hasAlpha = img->getHasTransparency();
+         U32 depth;
+
+         if (hasAlpha)
+         {
+            pitch = 4 * width;
+            depth = 32;
+         }
+         else
+         {
+            pitch = 3 * width;
+            depth = 24;
+         }
+
+         Uint32 rmask, gmask, bmask, amask;
+         if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+         {
+            S32 shift = hasAlpha ? 8 : 0;
+            rmask = 0xff000000 >> shift;
+            gmask = 0x00ff0000 >> shift;
+            bmask = 0x0000ff00 >> shift;
+            amask = 0x000000ff >> shift;
+         }
+         else
+         {
+            rmask = 0x000000ff;
+            gmask = 0x0000ff00;
+            bmask = 0x00ff0000;
+            amask = hasAlpha ? 0xff000000 : 0;
+         }
+
+         SDL_Surface* iconSurface = SDL_CreateRGBSurfaceFrom(img->getAddress(0, 0), img->getWidth(), img->getHeight(), depth, pitch, rmask, gmask, bmask, amask);
+
+         SDL_SetWindowIcon(window->mWindowHandle, iconSurface);
+
+         SDL_FreeSurface(iconSurface);
+      }
+   }
 
    if(device)
    {
@@ -181,7 +232,9 @@ PlatformWindow *PlatformWindowManagerSDL::createWindow(GFXDevice *device, const 
 
    //Set it up for drag-n-drop events 
 #ifdef TORQUE_TOOLS
+   SDL_EventState(SDL_DROPBEGIN, SDL_ENABLE);
    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+   SDL_EventState(SDL_DROPCOMPLETE, SDL_ENABLE);
 #endif
 
    linkWindow(window);
@@ -267,15 +320,18 @@ void PlatformWindowManagerSDL::_process()
             break;
          }
 
-         /*case(SDL_DROPBEGIN):
+         case(SDL_DROPBEGIN):
          {
+            if (!Con::isFunction("onDropBegin"))
+               break;
 
-         }*/
+            Con::executef("onDropBegin");
+         }
 
          case (SDL_DROPFILE): 
          {      
             // In case if dropped file
-            if (!Con::isFunction("onDropBegin") || !Con::isFunction("onDropFile") || !Con::isFunction("onDropEnd"))
+            if (!Con::isFunction("onDropFile"))
                break;
 
             char* fileName = evt.drop.file;
@@ -283,21 +339,19 @@ void PlatformWindowManagerSDL::_process()
             if (!Platform::isFile(fileName))
                break;
 
-            int fileCount = 1;
-            Con::executef("onDropBegin", Con::getIntArg(fileCount));
-
             Con::executef("onDropFile", StringTable->insert(fileName));
-
-            Con::executef("onDropEnd", Con::getIntArg(fileCount));
             
             SDL_free(fileName);    // Free dropped_filedir memory
             break;
          }
 
-         /*case(SDL_DROPCOMPLETE):
+         case(SDL_DROPCOMPLETE):
          {
+            if (!Con::isFunction("onDropEnd"))
+               break;
 
-         }*/
+            Con::executef("onDropEnd");
+         }
 
          default:
          {

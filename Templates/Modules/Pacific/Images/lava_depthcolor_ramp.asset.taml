@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="lava_depthcolor_ramp"
+    imageFile="data/Pacific/Images/lava_depthcolor_ramp.png"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\water\lava_depthcolor_ramp.png"
+    VersionId="1" />

@@ -1,0 +1,6 @@
+<StateMachineAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="WeaponBaseSM"
+    stateMachineFile="data/Weapons/stateMachines/WeaponBaseSM.xml"
+    VersionId="1" />

@@ -1,0 +1,11 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="PhysicalSoundEmitter"
+    componentName="PhysicalSoundEmitter"
+    componentClass="Component"
+    friendlyName="Physical Sound Emitter"
+    componentType="sound"
+    description="A component that acts as an sound emitter for the physical approximation system.."
+    scriptFile="data/TheFactory/components/PhysicalSoundEmitter.cs"
+    VersionId="1" />

@@ -1,0 +1,8 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="SkinAlbedo"
+    imageFile="data/Characters/Images/SkinAlbedo.png"
+    useMips="true"
+    isHDRImage="false"
+    VersionId="1" />

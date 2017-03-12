@@ -1,0 +1,11 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="InventoryController"
+    componentName="InventoryController"
+    componentClass="Component"
+    friendlyName="Inventory Controller"
+    componentType="Inventory"
+    description="Lets and entity contain and manage an inventory of items. Used for players, chests, etc."
+    scriptFile="data/Items/components/InventoryController.cs"
+    VersionId="1" />

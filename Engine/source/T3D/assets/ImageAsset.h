@@ -40,6 +40,7 @@
 #endif
 
 #include "gfx/bitmap/gBitmap.h"
+#include "gfx/gfxTextureHandle.h"
 
 //-----------------------------------------------------------------------------
 class ImageAsset : public AssetBase
@@ -53,8 +54,9 @@ class ImageAsset : public AssetBase
 
    StringTableEntry mImageFileName;
 
-   GBitmap* mImage;
+   GFXTexHandle mImage;
 
+   bool mIsValidImage;
    bool mUseMips;
    bool mIsHDRImage;
 
@@ -70,6 +72,10 @@ public:
    DECLARE_CONOBJECT(ImageAsset);
 
    StringTableEntry getImageFileName() { return mImageFileName; }
+
+   bool isValid() { return mIsValidImage; }
+
+   GFXTexHandle* getImage() { return &mImage; }
 
 protected:
    virtual void            initializeAsset(void);

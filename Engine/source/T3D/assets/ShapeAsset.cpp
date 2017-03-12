@@ -97,7 +97,7 @@ ShapeAsset::~ShapeAsset()
 {
    // If the asset manager does not own the asset then we own the
    // asset definition so delete it.
-   if (!getOwned())
+   if (!getOwned() && mpAssetDefinition)
       delete mpAssetDefinition;
 }
 
@@ -120,6 +120,181 @@ void ShapeAsset::initializeAsset()
       return;
 
    loadShape();
+
+   loadAnimations();
+
+   //If we don't have an associated preview image for this model, make one now
+   //based on the imposter creation code
+   /*
+   GBitmap *imposter = NULL;
+   GBitmap *normalmap = NULL;
+   GBitmap destBmp( texSize.x, texSize.y, true, format );
+   GBitmap destNormal( texSize.x, texSize.y, true, format );
+
+   U32 mipLevels = destBmp.getNumMipLevels();
+
+   ImposterCapture *imposterCap = new ImposterCapture();
+
+   F32 equatorStepSize = M_2PI_F / (F32)mNumEquatorSteps;
+
+   static const MatrixF topXfm( EulerF( -M_PI_F / 2.0f, 0, 0 ) );
+   static const MatrixF bottomXfm( EulerF( M_PI_F / 2.0f, 0, 0 ) );
+
+   MatrixF angMat;
+
+   F32 polarStepSize = 0.0f;
+   if ( mNumPolarSteps > 0 )
+      polarStepSize = -( 0.5f * M_PI_F - mDegToRad( mPolarAngle ) ) / (F32)mNumPolarSteps;
+
+   PROFILE_START(TSLastDetail_snapshots);
+
+   S32 currDim = mDim;
+   for ( S32 mip = 0; mip < mipLevels; mip++ )
+   {
+      if ( currDim < 1 )
+         currDim = 1;
+      
+      dMemset( destBmp.getWritableBits(mip), 0, destBmp.getWidth(mip) * destBmp.getHeight(mip) * GFXFormat_getByteSize( format ) );
+      dMemset( destNormal.getWritableBits(mip), 0, destNormal.getWidth(mip) * destNormal.getHeight(mip) * GFXFormat_getByteSize( format ) );
+
+      bitmaps.clear();
+      normalmaps.clear();
+
+      F32 rotX = 0.0f;
+      if ( mNumPolarSteps > 0 )
+         rotX = -( mDegToRad( mPolarAngle ) - 0.5f * M_PI_F );
+
+      // We capture the images in a particular order which must
+      // match the order expected by the imposter renderer.
+
+      imposterCap->begin( shape, mDl, currDim, mRadius, mCenter );
+
+      for ( U32 j=0; j < (2 * mNumPolarSteps + 1); j++ )
+      {
+         F32 rotZ = -M_PI_F / 2.0f;
+
+         for ( U32 k=0; k < mNumEquatorSteps; k++ )
+         {            
+            angMat.mul( MatrixF( EulerF( rotX, 0, 0 ) ),
+                        MatrixF( EulerF( 0, 0, rotZ ) ) );
+
+            imposterCap->capture( angMat, &imposter, &normalmap );
+
+            bitmaps.push_back( imposter );
+            normalmaps.push_back( normalmap );
+
+            rotZ += equatorStepSize;
+         }
+
+         rotX += polarStepSize;
+
+         if ( mIncludePoles )
+         {
+            imposterCap->capture( topXfm, &imposter, &normalmap );
+
+            bitmaps.push_back(imposter);
+            normalmaps.push_back( normalmap );
+
+            imposterCap->capture( bottomXfm, &imposter, &normalmap );
+
+            bitmaps.push_back( imposter );
+            normalmaps.push_back( normalmap );
+         }         
+      }
+
+      imposterCap->end();
+
+      Point2I texSize( destBmp.getWidth(mip), destBmp.getHeight(mip) );
+
+      // Ok... pack in bitmaps till we run out.
+      for ( S32 y=0; y+currDim <= texSize.y; )
+      {
+         for ( S32 x=0; x+currDim <= texSize.x; )
+         {
+            // Copy the next bitmap to the dest texture.
+            GBitmap* bmp = bitmaps.first();
+            bitmaps.pop_front();
+            destBmp.copyRect( bmp, RectI( 0, 0, currDim, currDim ), Point2I( x, y ), 0, mip );
+            delete bmp;
+
+            // Copy the next normal to the dest texture.
+            GBitmap* normalmap = normalmaps.first();
+            normalmaps.pop_front();
+            destNormal.copyRect( normalmap, RectI( 0, 0, currDim, currDim ), Point2I( x, y ), 0, mip );
+            delete normalmap;
+
+            // Did we finish?
+            if ( bitmaps.empty() )
+               break;
+
+            x += currDim;
+         }
+
+         // Did we finish?
+         if ( bitmaps.empty() )
+            break;
+
+         y += currDim;
+      }
+
+      // Next mip...
+      currDim /= 2;
+   }
+
+   PROFILE_END(); // TSLastDetail_snapshots
+
+   delete imposterCap;
+   delete shape;   
+   
+   
+   // Should we dump the images?
+   if ( Con::getBoolVariable( "$TSLastDetail::dumpImposters", false ) )
+   {
+      String imposterPath = mCachePath + ".imposter.png";
+      String normalsPath = mCachePath + ".imposter_normals.png";
+
+      FileStream stream;
+      if ( stream.open( imposterPath, Torque::FS::File::Write  ) )
+         destBmp.writeBitmap( "png", stream );
+      stream.close();
+
+      if ( stream.open( normalsPath, Torque::FS::File::Write ) )
+         destNormal.writeBitmap( "png", stream );
+      stream.close();
+   }
+
+   // DEBUG: Some code to force usage of a test image.
+   //GBitmap* tempMap = GBitmap::load( "./forest/data/test1234.png" );
+   //tempMap->extrudeMipLevels();
+   //mTexture.set( tempMap, &GFXDefaultStaticDiffuseProfile, false );
+   //delete tempMap;
+
+   DDSFile *ddsDest = DDSFile::createDDSFileFromGBitmap( &destBmp );
+   ImageUtil::ddsCompress( ddsDest, GFXFormatBC2 );
+
+   DDSFile *ddsNormals = DDSFile::createDDSFileFromGBitmap( &destNormal );
+   ImageUtil::ddsCompress( ddsNormals, GFXFormatBC3 );
+
+   // Finally save the imposters to disk.
+   FileStream fs;
+   if ( fs.open( _getDiffuseMapPath(), Torque::FS::File::Write ) )
+   {
+      ddsDest->write( fs );
+      fs.close();
+   }
+   if ( fs.open( _getNormalMapPath(), Torque::FS::File::Write ) )
+   {
+      ddsNormals->write( fs );
+      fs.close();
+   }
+
+   delete ddsDest;
+   delete ddsNormals;
+
+   // If we did a begin then end it now.
+   if ( !sceneBegun )
+      GFX->endScene();
+   */
 }
 
 bool ShapeAsset::loadShape()

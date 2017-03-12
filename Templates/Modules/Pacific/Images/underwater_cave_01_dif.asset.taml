@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="underwater_cave_01_dif"
+    imageFile="data/Pacific/Images/underwater_cave_01_dif.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\underwaterCave\underwater_cave_01_dif.dds"
+    VersionId="1" />

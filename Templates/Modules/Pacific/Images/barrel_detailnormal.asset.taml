@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="barrel_detailnormal"
+    imageFile="data/Pacific/Images/barrel_detailnormal.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\props\barrels\barrel_detailnormal.dds"
+    VersionId="1" />

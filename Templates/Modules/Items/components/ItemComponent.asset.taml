@@ -1,0 +1,11 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="ItemComponent"
+    componentName="ItemComponent"
+    componentClass="Component"
+    friendlyName="Item Component"
+    componentType="Inventory"
+    description="Lets the entity act as an item so it can be tracked with inventory."
+    scriptFile="data/Items/components/ItemComponent.cs"
+    VersionId="1" />

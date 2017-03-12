@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="groundcover_specular"
+    imageFile="data/Pacific/Images/groundcover_specular.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\vegetation\grass_mesh\groundcover_specular.dds"
+    VersionId="1" />

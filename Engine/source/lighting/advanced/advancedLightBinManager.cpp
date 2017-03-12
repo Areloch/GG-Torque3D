@@ -660,11 +660,12 @@ AdvancedLightBinManager::ReflectProbeMaterialInfo* AdvancedLightBinManager::_get
 
    //ReflectProbeMaterialInfo *info = NULL;
 
-   if (!mReflectProbeDiffuseMaterial)
-
+   /*if (!mReflectProbeDiffuseMaterial)
+   {
       // Now create the material info object.
       mReflectProbeDiffuseMaterial = new ReflectProbeMaterialInfo("ReflectionProbeDiffuseMaterial",
-      getGFXVertexFormat<AdvancedLightManager::LightVertex>());
+         getGFXVertexFormat<AdvancedLightManager::LightVertex>());
+   }*/
 
    return mReflectProbeDiffuseMaterial;
 }

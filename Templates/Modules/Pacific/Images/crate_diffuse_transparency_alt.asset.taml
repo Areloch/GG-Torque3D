@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="crate_diffuse_transparency_alt"
+    imageFile="data/Pacific/Images/crate_diffuse_transparency_alt.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\props\crates\crate_diffuse_transparency_alt.dds"
+    VersionId="1" />

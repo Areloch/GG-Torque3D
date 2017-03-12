@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>Joe Espinoza</author>
+      <authoring_tool>OpenCOLLADA for 3ds Max;  Version: 1.2.5;  Revision: 673;  Platform: x64;  Configuration: Release Max2010</authoring_tool>
+      <source_data>file:///D:/Projects/TorqueCrysis/11_Structures/Open%20Building/02_Max%20Files/coveredstructure_55_meshonly_newroof.max</source_data>
+    </contributor>
+    <created>2010-06-23T11:06:14</created>
+    <modified>2010-06-23T11:06:14</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="ColorEffectR28G28B177">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <ambient>
+              <color>0.1098039 0.1098039 0.6941177 1</color>
+            </ambient>
+            <diffuse>
+              <color>0.1098039 0.1098039 0.6941177 1</color>
+            </diffuse>
+            <specular>
+              <color>1 1 1 1</color>
+            </specular>
+            <shininess>
+              <float>10</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent>
+              <color>1 1 1 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+    <effect id="tex_covered_structure">
+      <profile_COMMON>
+        <newparam sid="tex_covered_structure_dif_png-surface">
+          <surface type="2D">
+            <init_from>tex_covered_structure_dif_png</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="tex_covered_structure_dif_png-sampler">
+          <sampler2D>
+            <source>tex_covered_structure_dif_png-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <blinn>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0.588 0.588 0.588 1</color>
+            </ambient>
+            <diffuse>
+              <texture texture="tex_covered_structure_dif_png-sampler" texcoord="CHANNEL1"/>
+            </diffuse>
+            <specular>
+              <color>0.9 0.9 0.9 1</color>
+            </specular>
+            <shininess>
+              <float>10</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent opaque="A_ONE">
+              <texture texture="tex_covered_structure_dif_png-sampler" texcoord="CHANNEL1"/>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </blinn>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="OpenCOLLADA3dsMax">
+          <extended_shader>
+            <apply_reflection_dimming>0</apply_reflection_dimming>
+            <dim_level>0</dim_level>
+            <falloff_type>0</falloff_type>
+            <index_of_refraction>1.5</index_of_refraction>
+            <opacity_type>0</opacity_type>
+            <reflection_level>3</reflection_level>
+            <wire_size>1</wire_size>
+            <wire_units>0</wire_units>
+          </extended_shader>
+          <shader>
+            <ambient_diffuse_lock>1</ambient_diffuse_lock>
+            <ambient_diffuse_texture_lock>1</ambient_diffuse_texture_lock>
+            <diffuse_specular_lock>0</diffuse_specular_lock>
+            <soften>0.1</soften>
+            <use_self_illum_color>0</use_self_illum_color>
+          </shader>
+        </technique>
+      </extra>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="ColorEffectR28G28B177-material" name="ColorEffectR28G28B177-material">
+      <instance_effect url="#ColorEffectR28G28B177"/>
+    </material>
+    <material id="tex_covered_structure-material" name="tex_covered_structure">
+      <instance_effect url="#tex_covered_structure"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="geom-bounds_2" name="bounds">
+      <mesh>
+        <source id="geom-bounds_2-positions">
+          <float_array id="geom-bounds_2-positions-array" count="24">-2.56623 -3.189629 0 2.56623 -3.189629 0 -2.56623 3.189629 0 2.56623 3.189629 0 -2.56623 -3.189629 6.19752 2.56623 -3.189629 6.19752 -2.56623 3.189629 6.19752 2.56623 3.189629 6.19752</float_array>
+          <technique_common>
+            <accessor source="#geom-bounds_2-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-bounds_2-normals">
+          <float_array id="geom-bounds_2-normals-array" count="72">0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 1 0 0 1 0 0 1 0 0 1 0 -1 0 0 -1 0 0 -1 0 0 -1 0 1 0 0 1 0 0 1 0 0 1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#geom-bounds_2-normals-array" count="24" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-bounds_2-map1">
+          <float_array id="geom-bounds_2-map1-array" count="36">0 0 0 1 0 0 0 1 0 1 1 0 0 0 0 1 0 0 0 1 0 1 1 0 0 0 0 1 0 0 0 1 0 1 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-bounds_2-map1-array" count="12" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-bounds_2-vertices">
+          <input semantic="POSITION" source="#geom-bounds_2-positions"/>
+        </vertices>
+        <triangles material="ColorMaterial" count="12">
+          <input semantic="VERTEX" source="#geom-bounds_2-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-bounds_2-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-bounds_2-map1" offset="2" set="1"/>
+          <p>0 0 9 2 1 11 3 2 10 3 2 10 1 3 8 0 0 9 4 4 8 5 5 9 7 6 11 7 6 11 6 7 10 4 4 8 0 8 4 1 9 5 5 10 7 5 10 7 4 11 6 0 8 4 1 12 0 3 13 1 7 14 3 7 14 3 5 15 2 1 12 0 3 16 4 2 17 5 6 18 7 6 18 7 7 19 6 3 16 4 2 20 0 0 21 1 4 22 3 4 22 3 6 23 2 2 20 0</p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="OpenCOLLADA3dsMax">
+          <box>
+            <generateuvs>1</generateuvs>
+            <height>6.19752</height>
+            <heightsegments>1</heightsegments>
+            <length>6.379258</length>
+            <lengthsegments>1</lengthsegments>
+            <width>5.132459</width>
+            <widthsegments>1</widthsegments>
+          </box>
+        </technique>
+      </extra>
+    </geometry>
+    <geometry id="geom-bk_shed_base_one100_1" name="bk_shed_base_one100">
+      <mesh>
+        <source id="geom-bk_shed_base_one100_1-positions">
+          <float_array id="geom-bk_shed_base_one100_1-positions-array" count="129">3.770442 -4.040843 0.5204924 3.751507 -4.248709 0.4881008 3.972672 -4.274991 0.5274685 3.991607 -4.067125 0.5598604 4.026181 -4.497056 -0.5526133 4.026181 -4.497056 0.4904054 3.658663 -4.464903 0.4904054 3.658663 -4.464903 -0.5526133 4.137125 -3.894921 -0.5526133 4.137125 -3.894921 0.4904054 4.089062 -4.444293 0.4904054 4.089062 -4.444293 -0.5526133 3.716844 -3.799887 -0.5526133 3.716844 -3.799887 0.4904054 4.084362 -3.83204 0.4904054 4.084362 -3.83204 -0.5526133 3.605899 -4.402022 -0.5526133 3.605899 -4.402022 0.4904054 3.653963 -3.85265 0.4904054 3.653963 -3.85265 -0.5526133 3.756886 -3.866529 0.5561893 3.694005 -3.919292 0.5561893 3.656906 -4.343346 0.5561893 3.709669 -4.406227 0.5561893 3.986138 -4.430415 0.5561893 4.049019 -4.377651 0.5561893 4.086119 -3.953598 0.5561893 4.033356 -3.890717 0.5561893 3.981518 -4.267143 1.41388 3.984152 -4.1652 1.274674 3.985713 -4.058155 1.27062 3.758342 -4.26027 1.362406 3.763509 -4.047525 1.204759 3.980451 -4.164991 1.265982 3.763055 -4.25652 1.350445 3.977916 -4.263137 1.400001 3.981955 -4.061935 1.262078 3.768029 -4.051702 1.198671 3.984152 -4.1652 1.452531 3.758342 -4.26027 1.540262 3.981518 -4.267143 1.591736 3.985713 -4.058155 1.448476 3.763509 -4.047525 1.382615</float_array>
+          <technique_common>
+            <accessor source="#geom-bk_shed_base_one100_1-positions-array" count="43" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-bk_shed_base_one100_1-normals">
+          <float_array id="geom-bk_shed_base_one100_1-normals-array" count="324">-0.1035471 -0.9945835 -0.009045541 -0.03289535 -0.9994167 0.009176042 -0.04489339 -0.9989733 0.006088312 -0.1158484 -0.9931916 -0.01222784 -0.08715562 -0.9961947 0 -0.08295176 -0.9481444 0.3068242 -0.08295189 -0.948144 0.3068256 -0.08715562 -0.9961947 0 0.9961948 -0.08715481 0 0.9722825 -0.08506278 0.2177867 0.9722821 -0.08506296 0.2177882 0.9961948 -0.08715481 0 0.08715568 0.9961947 0 0.08295178 0.948144 0.3068259 0.08295189 0.948144 0.3068256 0.08715568 0.9961947 0 -0.9961947 0.0871561 0 -0.9722814 0.08506396 0.2177908 -0.9722824 0.08506346 0.2177869 -0.9961947 0.0871561 0 -0.4495621 0.03933073 0.8923827 -0.4495564 0.03933118 0.8923856 0 0 1 0 0 1 0.449559 -0.03933126 0.8923844 0.4495606 -0.03933106 0.8923835 0 0 1 0 0 1 -0.06299452 -0.720031 0.6910769 -0.06299485 -0.7200298 0.691078 0.0629945 0.7200305 0.6910773 0.0629947 0.7200298 0.6910779 0.642788 -0.7660442 0 0.6427879 -0.7660442 0 0.5793251 -0.6904122 0.4332589 0.5887438 -0.7016371 0.4013553 0.7660471 0.6427845 0 0.7660471 0.6427845 0 0.7016402 0.5887412 0.4013535 0.6904147 0.579322 0.4332591 -0.642785 0.7660466 0 -0.642785 0.7660466 0 -0.5793228 0.6904147 0.4332583 -0.5887421 0.7016395 0.4013535 -0.7660413 -0.6427913 0 -0.7660413 -0.6427913 0 -0.7016346 -0.5887471 0.4013549 -0.6904106 -0.5793279 0.4332579 0.4181894 -0.4983784 0.7594317 0.4181895 -0.4983784 0.7594317 0.4983811 0.418188 0.7594307 0.4983811 0.418188 0.7594307 -0.4181901 0.4983808 0.7594298 -0.4181914 0.4983807 0.7594292 -0.4983775 -0.41819 0.7594321 -0.4983778 -0.4181884 0.7594327 0.9968642 -0.07884814 -0.006690443 0.9998624 -0.01426359 0.008471005 0.9998623 -0.01426482 0.008470834 0.9991016 -0.04233639 0.001887333 0.9959626 -0.08930238 -0.009149541 0.0630165 0.9979801 -0.008042135 0.05137971 0.998605 -0.01217702 0.1037566 0.9945816 0.006470781 0.1160873 0.9931795 0.01087471 -0.9967979 0.07975955 -0.005697567 -0.9995053 0.0303607 0.008215228 -0.9992486 0.03829333 0.005984048 -0.9957044 0.09213199 -0.009189124 -0.1103999 0.8028564 0.5858612 -0.1103999 0.8028565 0.5858613 -0.1103999 0.8028564 0.5858612 -0.2821661 0.04042262 0.9585136 -0.2821661 0.04042262 0.9585136 -0.2821661 0.04042261 0.9585136 0.0620658 0.593248 0.8026236 0.0620658 0.593248 0.8026236 0.0620658 0.593248 0.8026236 -0.02607634 -0.9994519 -0.02039405 -0.02607634 -0.9994519 -0.02039405 -0.02607634 -0.9994519 -0.02039405 -0.02607628 -0.9994519 -0.02039396 -0.02607629 -0.9994518 -0.02039396 -0.02607628 -0.9994519 -0.02039396 0.9984009 -0.05292334 -0.01986599 0.9984009 -0.05292336 -0.01986599 0.9984009 -0.05292334 -0.01986599 0.998401 -0.05292105 -0.01986527 0.998401 -0.05292106 -0.01986527 0.9984011 -0.05292106 -0.01986527 0.9996854 -0.01533379 -0.01984877 0.9996854 -0.01533379 -0.01984877 0.9996854 -0.01533379 -0.01984877 0.9996853 -0.01533371 -0.01984872 0.9996855 -0.01533371 -0.01984872 0.9996854 -0.01533371 -0.01984872 0.05408188 0.9983085 -0.02133748 0.05408188 0.9983085 -0.02133748 0.05408188 0.9983085 -0.02133748 0.05408024 0.9983086 -0.02133604 0.05408024 0.9983087 -0.02133605 0.05408024 0.9983087 -0.02133605 -0.9996771 0.005974615 -0.02470008 -0.9996771 0.005974616 -0.02470008 -0.999677 0.005974615 -0.02470007 -0.999677 0.00597454 -0.02469959 -0.9996771 0.00597454 -0.02469959 -0.9996771 0.00597454 -0.02469959</float_array>
+          <technique_common>
+            <accessor source="#geom-bk_shed_base_one100_1-normals-array" count="108" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-bk_shed_base_one100_1-map-1">
+          <float_array id="geom-bk_shed_base_one100_1-map-1-array" count="129">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</float_array>
+          <technique_common>
+            <accessor source="#geom-bk_shed_base_one100_1-map-1-array" count="43" stride="3">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-bk_shed_base_one100_1-map0">
+          <float_array id="geom-bk_shed_base_one100_1-map0-array" count="129">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</float_array>
+          <technique_common>
+            <accessor source="#geom-bk_shed_base_one100_1-map0-array" count="43" stride="3">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-bk_shed_base_one100_1-map1">
+          <float_array id="geom-bk_shed_base_one100_1-map1-array" count="210">0.2309481 0.9850468 0 0.191749 0.9850532 0 0.1877245 0.9845615 0 0.141608 0.9840928 0 0.2349571 0.9850424 0 0.1453463 0.9850472 0 0.2528307 0.4998975 0 0.4968606 0.4998975 0 0.4968616 0.6699657 0 0.2528318 0.6699658 0 0.2528265 0.2078417 0 0.496856 0.2078384 0 0.4968588 0.4620524 0 0.2528291 0.4620546 0 0.2528252 -6.13743e-5 0 0.4968547 -6.13743e-5 0 0.496855 0.1699991 0 0.2528255 0.1700004 0 0.2528323 0.70781 0 0.4968622 0.7078099 0 0.496862 0.9620231 0 0.2528323 0.9620231 0 0.4665517 0.5841753 0 0.4583602 0.5524782 0 0.3693722 0.4954711 0 0.3532956 0.5116217 0 0.3344449 0.6260106 0 0.3426363 0.6577078 0 0.4316244 0.7147149 0 0.4477009 0.6985643 0 0.3432507 0.4842007 0 0.3181919 0.6352324 0 0.3263834 0.6668853 0 0.4416693 0.7418565 0 0.4577458 0.7258234 0 0.4828046 0.5737631 0 0.4746131 0.542066 0 0.3593272 0.4682119 0 0.2528322 0.9998628 0 0.4968617 0.9998628 0 0.1455188 0.6827188 0 0.2311206 0.6827184 0 0.2099766 0.7316901 0 0.1876664 0.7386307 0 0.191623 0.6924434 0 0.1415964 0.7521276 0 0.2350546 0.7524512 0 1.005888 0.7430118 0 1.003921 0.7125092 0 1.061136 0.7048059 0 1.061721 0.7804121 0 1.00577 0.7922773 0 0.04242859 -0.1285603 0 0.02225097 -0.0866985 0 0.02329056 -0.07810149 0 0.06251416 -0.1306509 0 0.0630331 -0.146301 0 0.02114944 -0.01433449 0 0.02253092 -0.00671988 0 0.04240938 -0.05913136 0 0.06327225 -0.06130283 0 0.06350987 -0.07624355 0 -2.65312e-4 -0.1152949 0 0.03794755 -0.09547483 0 0.01719622 -0.1033989 0 0.06299213 -0.1324027 0 -0.001398762 -0.0327815 0 0.03829294 -0.01219439 0 0.0166293 -0.01952956 0 0.06419747 -0.04965584 0</float_array>
+          <technique_common>
+            <accessor source="#geom-bk_shed_base_one100_1-map1-array" count="70" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-bk_shed_base_one100_1-vertices">
+          <input semantic="POSITION" source="#geom-bk_shed_base_one100_1-positions"/>
+        </vertices>
+        <triangles material="tex_covered_structure_1" count="60">
+          <input semantic="VERTEX" source="#geom-bk_shed_base_one100_1-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-bk_shed_base_one100_1-normals" offset="1"/>
+          <input semantic="COLOR" source="#geom-bk_shed_base_one100_1-map-1" offset="2"/>
+          <input semantic="COLOR" source="#geom-bk_shed_base_one100_1-map0" offset="3" set="0"/>
+          <input semantic="TEXCOORD" source="#geom-bk_shed_base_one100_1-map1" offset="4" set="1"/>
+          <p>2 0 2 2 5 28 1 28 28 40 31 2 31 31 44 31 2 31 31 44 1 3 1 1 1 2 0 2 2 5 4 4 4 4 6 5 5 5 5 7 6 6 6 6 8 6 6 6 6 8 7 7 7 7 9 4 4 4 4 6 8 8 8 8 10 9 9 9 9 11 10 10 10 10 12 10 10 10 10 12 11 11 11 11 13 8 8 8 8 10 12 12 12 12 14 13 13 13 13 15 14 14 14 14 16 14 14 14 14 16 15 15 15 15 17 12 12 12 12 14 16 16 16 16 18 17 17 17 17 19 18 18 18 18 20 18 18 18 18 20 19 19 19 19 21 16 16 16 16 18 21 20 21 21 23 22 21 22 22 24 23 22 23 23 25 23 22 23 23 25 24 23 24 24 26 25 24 25 25 27 25 24 25 25 27 26 25 26 26 28 27 26 27 27 29 23 22 23 23 25 25 24 25 25 27 27 26 27 27 29 21 20 21 21 23 23 22 23 23 25 27 26 27 27 29 21 20 21 21 23 27 26 27 27 29 20 27 20 20 22 24 28 24 24 26 23 29 23 23 25 6 6 6 6 30 6 6 6 6 30 5 5 5 5 31 24 28 24 24 26 10 10 10 10 32 9 9 9 9 33 26 25 26 26 28 26 25 26 26 28 25 24 25 25 27 10 10 10 10 32 14 14 14 14 34 13 13 13 13 35 20 30 20 20 22 20 30 20 20 22 27 31 27 27 29 14 14 14 14 34 18 18 18 18 36 17 17 17 17 37 22 21 22 22 24 22 21 22 22 24 21 20 21 21 23 18 18 18 18 36 4 32 4 4 6 11 33 11 11 13 10 34 10 10 12 10 34 10 10 12 5 35 5 5 7 4 32 4 4 6 8 36 8 8 10 15 37 15 15 17 14 38 14 14 16 14 38 14 14 16 9 39 9 9 11 8 36 8 8 10 12 40 12 12 38 19 41 19 19 21 18 42 18 18 20 18 42 18 18 20 13 43 13 13 39 12 40 12 12 38 16 44 16 16 18 7 45 7 7 9 6 46 6 6 8 6 46 6 6 8 17 47 17 17 19 16 44 16 16 18 5 35 5 5 31 10 34 10 10 32 25 48 25 25 27 25 48 25 25 27 24 49 24 24 26 5 35 5 5 31 9 39 9 9 33 14 38 14 14 34 27 50 27 27 29 27 50 27 27 29 26 51 26 26 28 9 39 9 9 33 13 43 13 13 35 18 42 18 18 36 21 52 21 21 23 21 52 21 21 23 20 53 20 20 22 13 43 13 13 35 17 47 17 17 37 6 46 6 6 30 23 54 23 23 25 23 54 23 23 25 22 55 22 22 24 17 47 17 17 37 3 56 3 3 2 30 57 30 30 43 29 58 29 29 42 3 56 3 3 2 29 58 29 29 42 28 59 28 28 41 3 56 3 3 2 28 59 28 28 41 2 60 2 2 0 32 61 32 32 45 30 62 30 30 43 3 63 3 3 2 3 63 3 3 2 0 64 0 0 3 32 61 32 32 45 1 65 1 1 1 31 66 31 31 44 32 67 32 32 46 32 67 32 32 46 0 68 0 0 4 1 65 1 1 1 29 69 29 29 47 31 70 31 31 50 28 71 28 28 51 29 72 29 29 47 30 73 30 30 48 32 74 32 32 49 29 75 29 29 47 32 76 32 32 49 31 77 31 31 50 39 78 38 38 66 34 79 34 34 62 35 80 35 35 63 35 81 35 35 63 40 82 39 39 67 39 83 38 38 66 40 84 39 39 58 35 85 35 35 54 33 86 33 33 52 33 87 33 33 52 38 88 40 40 59 40 89 39 39 58 38 90 40 40 59 33 91 33 33 52 36 92 36 36 55 36 93 36 36 55 41 94 41 41 60 38 95 40 40 59 41 96 41 41 68 36 97 36 36 64 37 98 37 37 65 37 99 37 37 65 42 100 42 42 69 41 101 41 41 68 42 102 42 42 61 37 103 37 37 56 34 104 34 34 53 34 105 34 34 53 39 106 38 38 57 42 107 42 42 61</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-colbox-19_2" name="colbox-19">
+      <mesh>
+        <source id="geom-colbox-19_2-positions">
+          <float_array id="geom-colbox-19_2-positions-array" count="24">3.605899 -4.497057 -0.5526133 4.137125 -4.497057 -0.5526133 3.605899 -3.799887 -0.5526133 4.137125 -3.799887 -0.5526133 3.605899 -4.497057 1.41388 4.137125 -4.497057 1.41388 3.605899 -3.799887 1.41388 4.137125 -3.799887 1.41388</float_array>
+          <technique_common>
+            <accessor source="#geom-colbox-19_2-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-colbox-19_2-normals">
+          <float_array id="geom-colbox-19_2-normals-array" count="72">0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 1 0 0 1 0 0 1 0 0 1 0 -1 0 0 -1 0 0 -1 0 0 -1 0 1 0 0 1 0 0 1 0 0 1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#geom-colbox-19_2-normals-array" count="24" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-colbox-19_2-map1">
+          <float_array id="geom-colbox-19_2-map1-array" count="72">0.9995003 4.99576e-4 4.99308e-4 4.99547e-4 0.9995004 0.9995004 4.99547e-4 0.9995004 4.99606e-4 4.99308e-4 0.9995004 0.9995003 0.9995007 4.99725e-4 4.99576e-4 0.9995004 0.9995005 4.99576e-4 4.99308e-4 0.9995003 4.99576e-4 4.99606e-4 4.99547e-4 4.99576e-4 4.99308e-4 4.99725e-4 0.9995004 0.9995004 4.99547e-4 0.9995004 0.9995007 0.9995003 0.9995004 4.99606e-4 0.9995005 0.9995004 4.99308e-4 4.99576e-4 4.99725e-4 0.9995004 4.99576e-4 4.99547e-4 0.9995004 0.9995004 4.99547e-4 4.99308e-4 0.9995004 4.99725e-4 4.99547e-4 4.99576e-4 0.9995004 0.9995003 4.99576e-4 0.9995007 0.9995003 0.9995004 0.9995007 4.99308e-4 4.99576e-4 0.9995003 0.9995004 4.99576e-4 0.9995005 0.9995004 0.9995004 0.9995005 4.99547e-4 4.99576e-4 4.99606e-4 0.9995003 0.9995004 4.99308e-4</float_array>
+          <technique_common>
+            <accessor source="#geom-colbox-19_2-map1-array" count="24" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-colbox-19_2-vertices">
+          <input semantic="POSITION" source="#geom-colbox-19_2-positions"/>
+        </vertices>
+        <triangles material="tex_covered_structure" count="12">
+          <input semantic="VERTEX" source="#geom-colbox-19_2-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-colbox-19_2-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-colbox-19_2-map1" offset="2" set="1"/>
+          <p>0 0 4 2 1 5 3 2 6 3 2 6 1 3 7 0 0 4 4 4 8 5 5 9 7 6 10 7 6 10 6 7 11 4 4 8 0 8 12 1 9 13 5 10 14 5 10 14 4 11 15 0 8 12 1 12 16 3 13 17 7 14 18 7 14 18 5 15 1 1 12 16 3 16 19 2 17 20 6 18 21 6 18 21 7 19 3 3 16 19 2 20 22 0 21 0 4 22 23 4 22 23 6 23 2 2 20 22</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_lights>
+    <light id="EnvironmentAmbientLight" name="EnvironmentAmbientLight">
+      <technique_common>
+        <ambient>
+          <color>0.3647059 0.3647059 0.3647059</color>
+        </ambient>
+      </technique_common>
+    </light>
+  </library_lights>
+  <library_images>
+    <image id="tex_covered_structure_dif_png">
+      <init_from>file:///D:/Projects/TorqueCrysis/11_Structures/Open%20Building/01_Textures/tex_covered_structure_dif.png</init_from>
+    </image>
+  </library_images>
+  <library_visual_scenes>
+    <visual_scene id="MaxScene">
+      <node name="EnvironmentAmbientLight">
+        <instance_light url="#EnvironmentAmbientLight"/>
+      </node>
+      <node id="node-bounds_2" name="bounds">
+        <node>
+          <matrix>1 0 0 2.412734 0 1 0 -3.088181 0 0 1 -0.6341169 0 0 0 1</matrix>
+          <instance_geometry url="#geom-bounds_2">
+            <bind_material>
+              <technique_common>
+                <instance_material symbol="ColorMaterial" target="#ColorEffectR28G28B177-material"/>
+              </technique_common>
+            </bind_material>
+          </instance_geometry>
+        </node>
+      </node>
+      <node id="node-base_2" name="base">
+        <node id="node-start_2" name="start">
+          <node id="node-bk_shed_base_one100_1" name="bk_shed_base_one100">
+            <instance_geometry url="#geom-bk_shed_base_one100_1">
+              <bind_material>
+                <technique_common>
+                  <instance_material symbol="tex_covered_structure_1" target="#tex_covered_structure-material">
+                    <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                  </instance_material>
+                </technique_common>
+              </bind_material>
+            </instance_geometry>
+            <node id="node-colbox-19_2" name="colbox-19">
+              <instance_geometry url="#geom-colbox-19_2">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="tex_covered_structure" target="#tex_covered_structure-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+        </node>
+        <node id="node-detail100_2" name="detail100"/>
+        <node id="node-collision-19_2" name="collision-19"/>
+        <node id="node-detail10_2" name="detail10"/>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#MaxScene"/>
+  </scene>
+</COLLADA>

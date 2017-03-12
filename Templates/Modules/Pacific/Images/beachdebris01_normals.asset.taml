@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="beachdebris01_normals"
+    imageFile="data/Pacific/Images/beachdebris01_normals.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\decals\beach_debris\beachdebris01_normals.dds"
+    VersionId="1" />

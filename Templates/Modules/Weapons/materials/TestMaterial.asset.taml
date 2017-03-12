@@ -1,0 +1,6 @@
+<MaterialAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="TestMaterial"
+    shaderGraph="data/Weapons/materials/TestMaterial.sgf"
+    VersionId="1" />

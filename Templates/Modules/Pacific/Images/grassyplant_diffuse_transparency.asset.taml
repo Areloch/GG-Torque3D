@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="grassyplant_diffuse_transparency"
+    imageFile="data/Pacific/Images/grassyplant_diffuse_transparency.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\vegetation\smallplants\grassyplant\grassyplant_diffuse_transparency.dds"
+    VersionId="1" />

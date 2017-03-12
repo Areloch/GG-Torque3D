@@ -131,7 +131,6 @@ public:
    virtual ~MeshComponent();
    DECLARE_CONOBJECT(MeshComponent);
 
-   static void consoleInit();
 
    virtual bool onAdd();
    virtual void onRemove();

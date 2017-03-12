@@ -4197,7 +4197,7 @@ DefineEngineMethod( WorldEditor, createConvexShapeFrom, ConvexShape*, ( SceneObj
    return shape;
 }
 
-DefineEngineMethod(WorldEditor, setEditorTool, void, (EditorTool* newEditorTool), (NULL),
+DefineEngineMethod(WorldEditor, setEditorTool, void, (EditorTool* newEditorTool), (nullAsType<EditorTool*>()),
    "Create a ConvexShape from the given polyhedral object.")
 {
    object->setEditorTool(newEditorTool);

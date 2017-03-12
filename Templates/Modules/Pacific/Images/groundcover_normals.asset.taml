@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="groundcover_normals"
+    imageFile="data/Pacific/Images/groundcover_normals.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\vegetation\grass_mesh\groundcover_normals.dds"
+    VersionId="1" />

@@ -1,0 +1,53 @@
+<Entity
+    scale="1 1 1"
+    class="BaseWeaponObject"
+    canSave="true"
+    canSaveDynamicFields="true"
+    position="0 0 0"
+    rotation="0 -0 -0"
+    LocalPosition="0 0 0"
+    LocalRotation="1 0 0 0"
+    GameObjectAsset="BaseWeaponObject">
+    <MeshComponent
+        componentType="Render"
+        friendlyName="Mesh Component"
+        description="Causes the object to render a non-animating 3d shape using the file provided."
+        networked="true"
+        enabled="true"
+        BatchingMode="Individual"
+        MeshAsset="@asset=Weapons:M4" />
+    <StateMachineComponent
+        componentType="Game"
+        friendlyName="State Machine"
+        description="A generic state machine."
+        networked="false"
+        enabled="true"
+        class="BaseWeaponComponent"
+        StateMachineAsset="@asset=Weapons:WeaponBaseSM" />
+    <CollisionComponent
+        friendlyName="Collision(Component)"
+        networked="false"
+        enabled="true"
+        CollisionType="Bounds"
+        LineOfSightType="Bounds"
+        DecalType="Bounds"
+        CollisionMeshPrefix="Collision"
+        BlockCollisions="false" />
+    <SoundComponent
+        componentType="Sound"
+        friendlyName="Sound(Component)"
+        description="Stores up to 4 sounds for playback."
+        networked="true"
+        enabled="true">
+        <SoundComponent.Sounds>
+            <Sounds_beginarray
+                mPreviewSound="true" />
+            <Sounds_beginarray
+                mPreviewSound="false" />
+            <Sounds_beginarray
+                mPreviewSound="false" />
+            <Sounds_beginarray
+                mPreviewSound="false" />
+        </SoundComponent.Sounds>
+    </SoundComponent>
+</Entity>

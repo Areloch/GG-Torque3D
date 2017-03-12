@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="broadleaf_normal_specular"
+    imageFile="data/Pacific/Images/broadleaf_normal_specular.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\vegetation\smallplants\broadleaf\broadleaf_normal_specular.dds"
+    VersionId="1" />

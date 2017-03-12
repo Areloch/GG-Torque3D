@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="dirt_trail_nrm"
+    imageFile="data/Pacific/Images/dirt_trail_nrm.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\roads\dirt_trail_nrm.dds"
+    VersionId="1" />

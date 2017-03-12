@@ -1,0 +1,15 @@
+<ModuleDefinition
+    canSave="true"
+    canSaveDynamicFields="true"
+    ModuleId="TheFactory"
+    VersionId="1"
+    scriptFile="TheFactory.cs"
+    CreateFunction="onCreate"
+    DestroyFunction="onDestroy"
+    Group="Game">
+    <DeclaredAssets
+        canSave="true"
+        canSaveDynamicFields="true"
+        Extension="asset.taml"
+        Recurse="true" />
+</ModuleDefinition>

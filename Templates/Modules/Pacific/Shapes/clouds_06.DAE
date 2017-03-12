@@ -1,0 +1,557 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>Russell</author>
+      <authoring_tool>OpenCOLLADA for 3ds Max;  Version: 1.2.5;  Revision: 673;  Platform: Win32;  Configuration: Release Max2010</authoring_tool>
+      <source_data>file:///E:/Projects/Pacific_Art/13_Clouds/03_Particle%20Setup/clouds_particlesetup_05.max</source_data>
+    </contributor>
+    <created>2010-02-28T01:53:12</created>
+    <modified>2010-02-28T01:53:12</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="clouds">
+      <profile_COMMON>
+        <newparam sid="poofalpha_png-surface">
+          <surface type="2D">
+            <init_from>poofalpha_png</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="poofalpha_png-sampler">
+          <sampler2D>
+            <source>poofalpha_png-surface</source>
+          </sampler2D>
+        </newparam>
+        <newparam sid="grass_diffuse_transparency_png-surface">
+          <surface type="2D">
+            <init_from>grass_diffuse_transparency_png</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="grass_diffuse_transparency_png-sampler">
+          <sampler2D>
+            <source>grass_diffuse_transparency_png-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <blinn>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0.5882353 0.5882353 0.5882353 1</color>
+            </ambient>
+            <diffuse>
+              <texture texture="poofalpha_png-sampler" texcoord="CHANNEL1"/>
+            </diffuse>
+            <specular>
+              <color>0.9 0.9 0.9 1</color>
+            </specular>
+            <shininess>
+              <float>9.999999</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent opaque="A_ONE">
+              <texture texture="grass_diffuse_transparency_png-sampler" texcoord="CHANNEL1"/>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </blinn>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="OpenCOLLADA3dsMax">
+          <extended_shader>
+            <apply_reflection_dimming>0</apply_reflection_dimming>
+            <dim_level>0</dim_level>
+            <falloff_type>0</falloff_type>
+            <index_of_refraction>1.5</index_of_refraction>
+            <opacity_type>0</opacity_type>
+            <reflection_level>3</reflection_level>
+            <wire_size>1</wire_size>
+            <wire_units>0</wire_units>
+          </extended_shader>
+          <shader>
+            <ambient_diffuse_lock>1</ambient_diffuse_lock>
+            <ambient_diffuse_texture_lock>1</ambient_diffuse_texture_lock>
+            <diffuse_specular_lock>0</diffuse_specular_lock>
+            <soften>0.1</soften>
+            <use_self_illum_color>0</use_self_illum_color>
+          </shader>
+        </technique>
+      </extra>
+    </effect>
+    <effect id="ColorEffectR57G8B136">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <ambient>
+              <color>0.2235294 0.03137255 0.5333333 1</color>
+            </ambient>
+            <diffuse>
+              <color>0.2235294 0.03137255 0.5333333 1</color>
+            </diffuse>
+            <specular>
+              <color>1 1 1 1</color>
+            </specular>
+            <shininess>
+              <float>10</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent>
+              <color>1 1 1 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </phong>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="OpenCOLLADA3dsMax">
+          <extended_shader>
+            <apply_reflection_dimming>0</apply_reflection_dimming>
+            <dim_level>0</dim_level>
+            <falloff_type>0</falloff_type>
+            <index_of_refraction>1.5</index_of_refraction>
+            <opacity_type>0</opacity_type>
+            <reflection_level>3</reflection_level>
+            <wire_size>1</wire_size>
+            <wire_units>0</wire_units>
+          </extended_shader>
+          <shader>
+            <ambient_diffuse_lock>1</ambient_diffuse_lock>
+            <ambient_diffuse_texture_lock>1</ambient_diffuse_texture_lock>
+            <diffuse_specular_lock>0</diffuse_specular_lock>
+            <soften>0.1</soften>
+            <use_self_illum_color>0</use_self_illum_color>
+          </shader>
+        </technique>
+      </extra>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="ColorEffectR57G8B136-material" name="ColorEffectR57G8B136-material">
+      <instance_effect url="#ColorEffectR57G8B136"/>
+    </material>
+    <material id="clouds-material" name="clouds">
+      <instance_effect url="#clouds"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="geom-grouptwo400_2" name="grouptwo400">
+      <mesh>
+        <source id="geom-grouptwo400_2-positions">
+          <float_array id="geom-grouptwo400_2-positions-array" count="72">7.658279 -7.393177 -3.752739 -4.78962 -7.393179 -3.752739 7.658279 -7.393177 8.695127 -4.78962 -7.393179 8.695127 5.751579 -6.382325 -6.710872 -6.52949 -6.382327 -6.710872 5.751579 -6.382325 5.570166 -6.52949 -6.382327 5.570166 5.922589 -6.78513 -5.727396 -0.387162 -6.78513 -5.727396 5.922589 -6.78513 0.5823197 -0.387162 -6.78513 0.5823197 2.785215 -5.539042 -1.637585 -4.569078 -5.539043 -1.637585 2.785215 -5.539042 5.716676 -4.569078 -5.539043 5.716676 10.96161 -6.969939 -6.242987 -4.536975 -6.969941 -6.242987 10.96161 -6.969939 9.255562 -4.536975 -6.969941 9.255562 7.255086 -8.813581 -7.062157 -7.583455 -8.813585 -7.062157 7.255086 -8.813581 7.776352 -7.583455 -8.813585 7.776352</float_array>
+          <technique_common>
+            <accessor source="#geom-grouptwo400_2-positions-array" count="24" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-grouptwo400_2-normals">
+          <float_array id="geom-grouptwo400_2-normals-array" count="72">-2.2984e-7 1 0 -2.2984e-7 1 0 -2.2984e-7 1 0 -2.2984e-7 1 0 -1.55308e-7 1 0 -1.55308e-7 1 0 -1.55308e-7 1 0 -1.55308e-7 1 0 0 1 0 0 1 0 0 1 0 0 1 0 -1.29676e-7 1 0 -1.29676e-7 1 0 -1.29676e-7 1 0 -1.29676e-7 1 0 -1.23066e-7 1 0 -1.23066e-7 1 0 -1.23066e-7 1 0 -1.23066e-7 1 0 -2.5708e-7 1 0 -2.5708e-7 1 0 -2.5708e-7 1 0 -2.5708e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-grouptwo400_2-normals-array" count="24" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-grouptwo400_2-map1">
+          <float_array id="geom-grouptwo400_2-map1-array" count="72">0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0</float_array>
+          <technique_common>
+            <accessor source="#geom-grouptwo400_2-map1-array" count="24" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-grouptwo400_2-vertices">
+          <input semantic="POSITION" source="#geom-grouptwo400_2-positions"/>
+        </vertices>
+        <triangles material="clouds_1" count="12">
+          <input semantic="VERTEX" source="#geom-grouptwo400_2-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-grouptwo400_2-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-grouptwo400_2-map1" offset="2" set="1"/>
+          <p>2 0 2 0 1 0 3 2 3 1 3 1 3 2 3 0 1 0 6 4 6 4 5 4 7 6 7 5 7 5 7 6 7 4 5 4 10 8 10 8 9 8 11 10 11 9 11 9 11 10 11 8 9 8 14 12 14 12 13 12 15 14 15 13 15 13 15 14 15 12 13 12 18 16 18 16 17 16 19 18 19 17 19 17 19 18 19 16 17 16 22 20 22 20 21 20 23 22 23 21 23 21 23 22 23 20 21 20</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-groupthree400_2" name="groupthree400">
+      <mesh>
+        <source id="geom-groupthree400_2-positions">
+          <float_array id="geom-groupthree400_2-positions-array" count="180">6.424051 -0.01614093 -3.226723 -5.633007 -0.01614275 -3.226723 6.424051 -0.01614093 8.830303 -5.633007 -0.01614275 8.830303 7.33238 -2.971211 -7.119127 -7.805374 -2.971213 -7.119127 7.33238 -2.971211 8.018595 -7.805374 -2.971213 8.018595 4.095329 -3.243551 -4.279817 -5.699602 -3.243552 -4.279817 4.095329 -3.243551 5.515081 -5.699602 -3.243552 5.515081 6.413264 -3.978209 -6.446387 -6.685357 -3.978211 -6.446387 6.413264 -3.978209 6.652201 -6.685357 -3.978211 6.652201 2.417621 -1.366131 -7.209895 -11.87728 -1.366133 -7.209895 2.417621 -1.366131 7.084975 -11.87728 -1.366133 7.084975 8.308586 -0.7603685 -1.718426 1.49008 -0.7603695 -1.718426 8.308586 -0.7603685 5.100047 1.49008 -0.7603695 5.100047 0.8752384 -0.2728495 -9.015001 -14.3427 -0.2728518 -9.015001 0.8752384 -0.2728495 6.202904 -14.3427 -0.2728518 6.202904 -2.409461 -4.464375 -4.371869 -10.14679 -4.464377 -4.371869 -2.409461 -4.464375 3.365425 -10.14679 -4.464377 3.365425 5.153389 -1.201159 -2.257797 0.2183297 -1.201159 -2.257797 5.153389 -1.201159 2.677229 0.2183297 -1.201159 2.677229 -0.7929893 -2.448072 -3.188009 -8.42142 -2.448073 -3.188009 -0.7929893 -2.448072 4.440387 -8.42142 -2.448073 4.440387 0.1764979 -3.804859 -2.270924 -4.825583 -3.804859 -2.270924 0.1764979 -3.804859 2.731123 -4.825583 -3.804859 2.731123 0.7135313 -3.872923 -5.027947 -7.214239 -3.872924 -5.027947 0.7135313 -3.872923 2.899791 -7.214239 -3.872924 2.899791 2.51511 -3.902398 -3.708415 -5.308364 -3.902399 -3.708415 2.51511 -3.902398 4.115026 -5.308364 -3.902399 4.115026 3.97074 -3.332382 -3.438088 -3.11198 -3.332384 -3.438088 3.97074 -3.332382 3.644598 -3.11198 -3.332384 3.644598 6.772046 -2.60391 -5.139452 -3.472337 -2.603912 -5.139452 6.772046 -2.60391 5.104898 -3.472337 -2.603912 5.104898</float_array>
+          <technique_common>
+            <accessor source="#geom-groupthree400_2-positions-array" count="60" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-groupthree400_2-normals">
+          <float_array id="geom-groupthree400_2-normals-array" count="180">-1.50778e-7 1 0 -1.50778e-7 1 0 -1.50778e-7 1 0 -1.50778e-7 1 0 -1.57499e-7 1 0 -1.57499e-7 0.9999999 0 -1.57499e-7 0.9999999 0 -1.57499e-7 1 0 -1.46046e-7 1 0 -1.46046e-7 1 0 -1.46046e-7 1 0 -1.46046e-7 1 0 -1.45614e-7 1 0 -1.45614e-7 0.9999999 0 -1.45614e-7 0.9999999 0 -1.45614e-7 1 0 -1.50107e-7 1 0 -1.50107e-7 0.9999999 0 -1.50107e-7 0.9999999 0 -1.50107e-7 1 0 -1.39866e-7 1 0 -1.39866e-7 1 0 -1.39866e-7 1 0 -1.39866e-7 1 0 -1.48836e-7 1 0 -1.48836e-7 0.9999999 0 -1.48836e-7 0.9999999 0 -1.48836e-7 1 0 -2.46513e-7 1 0 -2.46513e-7 1 0 -2.46513e-7 1 0 -2.46513e-7 1 0 -1.44934e-7 1 0 -1.44934e-7 1 0 -1.44934e-7 1 0 -1.44934e-7 1 0 -1.25016e-7 1 0 -1.25016e-7 1 0 -1.25016e-7 1 0 -1.25016e-7 1 0 -9.53278e-8 1 0 -9.53278e-8 0.9999999 0 -9.53278e-8 0.9999999 0 -9.53278e-8 1 0 -1.20295e-7 1 0 -1.20295e-7 1 0 -1.20295e-7 1 0 -1.20295e-7 1 0 -1.21899e-7 1 0 -1.21899e-7 1 0 -1.21899e-7 1 0 -1.21899e-7 1 0 -2.01972e-7 1 0 -2.01972e-7 1 0 -2.01972e-7 1 0 -2.01972e-7 1 0 -1.86185e-7 1 0 -1.86185e-7 1 0 -1.86185e-7 1 0 -1.86185e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-groupthree400_2-normals-array" count="60" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-groupthree400_2-map1">
+          <float_array id="geom-groupthree400_2-map1-array" count="180">0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0</float_array>
+          <technique_common>
+            <accessor source="#geom-groupthree400_2-map1-array" count="60" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-groupthree400_2-vertices">
+          <input semantic="POSITION" source="#geom-groupthree400_2-positions"/>
+        </vertices>
+        <triangles material="clouds" count="30">
+          <input semantic="VERTEX" source="#geom-groupthree400_2-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-groupthree400_2-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-groupthree400_2-map1" offset="2" set="1"/>
+          <p>2 0 2 0 1 0 3 2 3 1 3 1 3 2 3 0 1 0 6 4 6 4 5 4 7 6 7 5 7 5 7 6 7 4 5 4 10 8 10 8 9 8 11 10 11 9 11 9 11 10 11 8 9 8 14 12 14 12 13 12 15 14 15 13 15 13 15 14 15 12 13 12 18 16 18 16 17 16 19 18 19 17 19 17 19 18 19 16 17 16 22 20 22 20 21 20 23 22 23 21 23 21 23 22 23 20 21 20 26 24 26 24 25 24 27 26 27 25 27 25 27 26 27 24 25 24 30 28 30 28 29 28 31 30 31 29 31 29 31 30 31 28 29 28 34 32 34 32 33 32 35 34 35 33 35 33 35 34 35 32 33 32 38 36 38 36 37 36 39 38 39 37 39 37 39 38 39 36 37 36 42 40 42 40 41 40 43 42 43 41 43 41 43 42 43 40 41 40 46 44 46 44 45 44 47 46 47 45 47 45 47 46 47 44 45 44 50 48 50 48 49 48 51 50 51 49 51 49 51 50 51 48 49 48 54 52 54 52 53 52 55 54 55 53 55 53 55 54 55 52 53 52 58 56 58 56 57 56 59 58 59 57 59 57 59 58 59 56 57 56</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-groupfour400_2" name="groupfour400">
+      <mesh>
+        <source id="geom-groupfour400_2-positions">
+          <float_array id="geom-groupfour400_2-positions-array" count="192">6.167643 2.436651 -4.906098 -2.660841 2.436649 -4.906098 6.167643 2.436651 3.922351 -2.660841 2.436649 3.922351 10.20826 2.077238 -4.967937 0.0917244 2.077236 -4.967937 10.20826 2.077238 5.148561 0.0917244 2.077236 5.148561 10.77633 2.599188 -4.954393 2.265759 2.599187 -4.954393 10.77633 2.599188 3.556146 2.265759 2.599187 3.556146 5.979521 3.835522 -5.082446 -7.893104 3.835521 -5.082446 5.979521 3.835522 8.790148 -7.893104 3.835521 8.790148 7.434659 0.4049986 -3.044772 0.8611922 0.4049976 -3.044772 7.434659 0.4049986 3.528659 0.8611922 0.4049976 3.528659 5.204527 3.838814 -7.750319 -10.66033 3.838812 -7.750319 5.204527 3.838814 8.114506 -10.66033 3.838812 8.114506 1.652761 5.120276 -2.304959 -8.638329 5.120275 -2.304959 1.652761 5.120276 7.986095 -8.638329 5.120275 7.986095 7.156599 2.870271 -0.4651556 0.6811404 2.87027 -0.4651556 7.156599 2.870271 6.010267 0.6811404 2.87027 6.010267 10.55555 2.435623 -8.53196 -2.492197 2.435621 -8.53196 10.55555 2.435623 4.515749 -2.492197 2.435621 4.515749 3.616899 4.239383 -3.869195 -4.83566 4.239381 -3.869195 3.616899 4.239383 4.58333 -4.83566 4.239381 4.58333 1.634021 1.669571 -5.375499 -9.448883 1.669569 -5.375499 1.634021 1.669571 5.70737 -9.448883 1.669569 5.70737 0.8793073 1.187426 -4.830112 -7.769891 1.187424 -4.830112 0.8793073 1.187426 3.819054 -7.769891 1.187424 3.819054 4.916337 4.933989 -6.643909 -4.149041 4.933987 -6.643909 4.916337 4.933989 2.421434 -4.149041 4.933987 2.421434 3.621058 1.798088 -7.425696 -12.37475 1.798086 -7.425696 3.621058 1.798088 8.570081 -12.37475 1.798086 8.570081 1.015668 4.760245 -0.8193204 -6.682079 4.760244 -0.8193204 1.015668 4.760245 6.878392 -6.682079 4.760244 6.878392 5.528676 1.67488 -5.14649 -10.55744 1.674877 -5.14649 5.528676 1.67488 10.93959 -10.55744 1.674877 10.93959</float_array>
+          <technique_common>
+            <accessor source="#geom-groupfour400_2-positions-array" count="64" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-groupfour400_2-normals">
+          <float_array id="geom-groupfour400_2-normals-array" count="192">-1.62034e-7 1 0 -1.62034e-7 1 0 -1.62034e-7 1 0 -1.62034e-7 1 0 -1.41403e-7 1 0 -1.41403e-7 1 0 -1.41403e-7 1 0 -1.41403e-7 1 0 -1.68086e-7 1 0 -1.68086e-7 1 0 -1.68086e-7 1 0 -1.68086e-7 1 0 -1.3749e-7 1 0 -1.3749e-7 1 0 -1.3749e-7 1 0 -1.3749e-7 1 0 -1.54147e-7 1 0 -1.54147e-7 1 0 -1.54147e-7 1 0 -1.54147e-7 1 0 -1.50281e-7 1 0 -1.50281e-7 0.9999999 0 -1.50281e-7 0.9999999 0 -1.50281e-7 1 0 -1.8534e-7 1 0 -1.8534e-7 1 0 -1.8534e-7 1 0 -1.8534e-7 1 0 -2.20913e-7 1 0 -2.20913e-7 1 0 -2.20913e-7 1 0 -2.20913e-7 1 0 -1.82728e-7 1 0 -1.82728e-7 1 0 -1.82728e-7 1 0 -1.82728e-7 1 0 -2.25653e-7 1 0 -2.25653e-7 1 0 -2.25653e-7 1 0 -2.25653e-7 1 0 -1.72098e-7 1 0 -1.72098e-7 1 0 -1.72098e-7 1 0 -1.72098e-7 1 0 -1.65392e-7 1 0 -1.65392e-7 1 0 -1.65392e-7 1 0 -1.65392e-7 1 0 -2.10399e-7 1 0 -2.10399e-7 1 0 -2.10399e-7 1 0 -2.10399e-7 1 0 -1.49051e-7 1 0 -1.49051e-7 1 0 -1.49051e-7 1 0 -1.49051e-7 1 0 -1.2389e-7 1 0 -1.2389e-7 1 0 -1.2389e-7 1 0 -1.2389e-7 1 0 -1.63035e-7 1 0 -1.63035e-7 1 0 -1.63035e-7 1 0 -1.63035e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-groupfour400_2-normals-array" count="64" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-groupfour400_2-map1">
+          <float_array id="geom-groupfour400_2-map1-array" count="192">0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0</float_array>
+          <technique_common>
+            <accessor source="#geom-groupfour400_2-map1-array" count="64" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-groupfour400_2-vertices">
+          <input semantic="POSITION" source="#geom-groupfour400_2-positions"/>
+        </vertices>
+        <triangles material="clouds" count="32">
+          <input semantic="VERTEX" source="#geom-groupfour400_2-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-groupfour400_2-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-groupfour400_2-map1" offset="2" set="1"/>
+          <p>2 0 2 0 1 0 3 2 3 1 3 1 3 2 3 0 1 0 6 4 6 4 5 4 7 6 7 5 7 5 7 6 7 4 5 4 10 8 10 8 9 8 11 10 11 9 11 9 11 10 11 8 9 8 14 12 14 12 13 12 15 14 15 13 15 13 15 14 15 12 13 12 18 16 18 16 17 16 19 18 19 17 19 17 19 18 19 16 17 16 22 20 22 20 21 20 23 22 23 21 23 21 23 22 23 20 21 20 26 24 26 24 25 24 27 26 27 25 27 25 27 26 27 24 25 24 30 28 30 28 29 28 31 30 31 29 31 29 31 30 31 28 29 28 34 32 34 32 33 32 35 34 35 33 35 33 35 34 35 32 33 32 38 36 38 36 37 36 39 38 39 37 39 37 39 38 39 36 37 36 42 40 42 40 41 40 43 42 43 41 43 41 43 42 43 40 41 40 46 44 46 44 45 44 47 46 47 45 47 45 47 46 47 44 45 44 50 48 50 48 49 48 51 50 51 49 51 49 51 50 51 48 49 48 54 52 54 52 53 52 55 54 55 53 55 53 55 54 55 52 53 52 58 56 58 56 57 56 59 58 59 57 59 57 59 58 59 56 57 56 62 60 62 60 61 60 63 62 63 61 63 61 63 62 63 60 61 60</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-groupfive400_2" name="groupfive400">
+      <mesh>
+        <source id="geom-groupfive400_2-positions">
+          <float_array id="geom-groupfive400_2-positions-array" count="120">10.932 5.509624 -1.415043 -4.298664 5.509622 -1.415043 10.932 5.509624 13.81559 -4.298664 5.509622 13.81559 7.105738 6.766413 -7.725457 -5.191391 6.766411 -7.725457 7.105738 6.766413 4.571637 -5.191391 6.766411 4.571637 10.92938 8.325104 1.948799 5.011309 8.325102 1.948799 10.92938 8.325104 7.866838 5.011309 8.325102 7.866838 12.3868 8.608479 -3.192786 0.3456726 8.608475 -3.192786 12.3868 8.608479 8.84831 0.3456726 8.608475 8.84831 12.36582 5.347194 1.882384 2.307434 5.347192 1.882384 12.36582 5.347194 11.94073 2.307434 5.347192 11.94073 8.158949 7.385925 0.2449009 0.9469948 7.385924 0.2449009 8.158949 7.385925 7.45682 0.9469948 7.385924 7.45682 11.1615 3.176301 -0.7166383 6.484033 3.1763 -0.7166383 11.1615 3.176301 3.960797 6.484033 3.1763 3.960797 3.666426 7.018864 -8.726327 -11.36845 7.018862 -8.726327 3.666426 7.018864 6.308513 -11.36845 7.018862 6.308513 14.2719 4.518365 -4.056188 1.17904 4.518362 -4.056188 14.2719 4.518365 9.036645 1.17904 4.518362 9.036645 10.89843 6.175429 3.066429 0.4617729 6.175428 3.066429 10.89843 6.175429 13.50305 0.4617729 6.175428 13.50305</float_array>
+          <technique_common>
+            <accessor source="#geom-groupfive400_2-positions-array" count="40" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-groupfive400_2-normals">
+          <float_array id="geom-groupfive400_2-normals-array" count="120">-1.25231e-7 1 0 -1.25231e-7 1 0 -1.25231e-7 1 0 -1.25231e-7 1 0 -1.55105e-7 1 0 -1.55105e-7 1 0 -1.55105e-7 1 0 -1.55105e-7 1 0 -3.22292e-7 1 0 -3.22292e-7 1 0 -3.22292e-7 1 0 -3.22292e-7 1 0 -3.16806e-7 1 0 -3.16806e-7 0.9999999 0 -3.16806e-7 0.9999999 0 -3.16806e-7 1 0 -1.89628e-7 1 0 -1.89628e-7 0.9999999 0 -1.89628e-7 0.9999999 0 -1.89628e-7 1 0 -1.32235e-7 1 0 -1.32235e-7 1 0 -1.32235e-7 1 0 -1.32235e-7 1 0 -1.01943e-7 1 0 -1.01943e-7 1 0 -1.01943e-7 1 0 -1.01943e-7 1 0 -1.26862e-7 1 0 -1.26862e-7 1 0 -1.26862e-7 1 0 -1.26862e-7 1 0 -2.18518e-7 1 0 -2.18518e-7 0.9999999 0 -2.18518e-7 0.9999999 0 -2.18518e-7 1 0 -9.13774e-8 1 0 -9.13774e-8 1 0 -9.13774e-8 1 0 -9.13774e-8 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-groupfive400_2-normals-array" count="40" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-groupfive400_2-map1">
+          <float_array id="geom-groupfive400_2-map1-array" count="120">0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0</float_array>
+          <technique_common>
+            <accessor source="#geom-groupfive400_2-map1-array" count="40" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-groupfive400_2-vertices">
+          <input semantic="POSITION" source="#geom-groupfive400_2-positions"/>
+        </vertices>
+        <triangles material="clouds" count="20">
+          <input semantic="VERTEX" source="#geom-groupfive400_2-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-groupfive400_2-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-groupfive400_2-map1" offset="2" set="1"/>
+          <p>2 0 2 0 1 0 3 2 3 1 3 1 3 2 3 0 1 0 6 4 6 4 5 4 7 6 7 5 7 5 7 6 7 4 5 4 10 8 10 8 9 8 11 10 11 9 11 9 11 10 11 8 9 8 14 12 14 12 13 12 15 14 15 13 15 13 15 14 15 12 13 12 18 16 18 16 17 16 19 18 19 17 19 17 19 18 19 16 17 16 22 20 22 20 21 20 23 22 23 21 23 21 23 22 23 20 21 20 26 24 26 24 25 24 27 26 27 25 27 25 27 26 27 24 25 24 30 28 30 28 29 28 31 30 31 29 31 29 31 30 31 28 29 28 34 32 34 32 33 32 35 34 35 33 35 33 35 34 35 32 33 32 38 36 38 36 37 36 39 38 39 37 39 37 39 38 39 36 37 36</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-groupsix400_2" name="groupsix400">
+      <mesh>
+        <source id="geom-groupsix400_2-positions">
+          <float_array id="geom-groupsix400_2-positions-array" count="48">5.383457 9.861856 -3.285004 0.6727195 9.861855 -3.285004 5.383457 9.861856 1.425696 0.6727195 9.861855 1.425696 5.763069 10.23449 0.06231403 -3.556989 10.23448 0.06231403 5.763069 10.23449 9.382339 -3.556989 10.23448 9.382339 7.12761 11.9066 -0.372894 -0.8140292 11.9066 -0.372894 7.12761 11.9066 7.568711 -0.8140292 11.9066 7.568711 5.106006 9.35887 -6.142911 -8.099171 9.358868 -6.142911 5.106006 9.35887 7.06223 -8.099171 9.358868 7.06223</float_array>
+          <technique_common>
+            <accessor source="#geom-groupsix400_2-positions-array" count="16" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-groupsix400_2-normals">
+          <float_array id="geom-groupsix400_2-normals-array" count="48">-4.04894e-7 1 0 -4.04894e-7 1 0 -4.04894e-7 1 0 -4.04894e-7 1 0 -2.0465e-7 1 0 -2.0465e-7 0.9999999 0 -2.0465e-7 0.9999999 0 -2.0465e-7 1 0 -2.40171e-7 1 0 -2.40171e-7 1 0 -2.40171e-7 1 0 -2.40171e-7 1 0 -1.44439e-7 1 0 -1.44439e-7 1 0 -1.44439e-7 1 0 -1.44439e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-groupsix400_2-normals-array" count="16" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-groupsix400_2-map1">
+          <float_array id="geom-groupsix400_2-map1-array" count="48">0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0</float_array>
+          <technique_common>
+            <accessor source="#geom-groupsix400_2-map1-array" count="16" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-groupsix400_2-vertices">
+          <input semantic="POSITION" source="#geom-groupsix400_2-positions"/>
+        </vertices>
+        <triangles material="clouds" count="8">
+          <input semantic="VERTEX" source="#geom-groupsix400_2-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-groupsix400_2-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-groupsix400_2-map1" offset="2" set="1"/>
+          <p>2 0 2 0 1 0 3 2 3 1 3 1 3 2 3 0 1 0 6 4 6 4 5 4 7 6 7 5 7 5 7 6 7 4 5 4 10 8 10 8 9 8 11 10 11 9 11 9 11 10 11 8 9 8 14 12 14 12 13 12 15 14 15 13 15 13 15 14 15 12 13 12</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-bounds" name="bounds">
+      <mesh>
+        <source id="geom-bounds-positions">
+          <float_array id="geom-bounds-positions-array" count="24">-19.46054 -17.23069 0 19.46054 -17.23069 0 -19.46054 17.23069 0 19.46054 17.23069 0 -19.46054 -17.23069 24.52839 19.46054 -17.23069 24.52839 -19.46054 17.23069 24.52839 19.46054 17.23069 24.52839</float_array>
+          <technique_common>
+            <accessor source="#geom-bounds-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-bounds-normals">
+          <float_array id="geom-bounds-normals-array" count="72">0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 1 0 0 1 0 0 1 0 0 1 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0.9999999 0 0 1 0 0 0.9999999 0 0 1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 -0.9999999 0 0 -1 0 0 -0.9999999 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#geom-bounds-normals-array" count="24" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-bounds-map1">
+          <float_array id="geom-bounds-map1-array" count="36">0 0 0 1 0 0 0 1 0 1 1 0 0 0 0 1 0 0 0 1 0 1 1 0 0 0 0 1 0 0 0 1 0 1 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-bounds-map1-array" count="12" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-bounds-vertices">
+          <input semantic="POSITION" source="#geom-bounds-positions"/>
+        </vertices>
+        <triangles material="ColorMaterial" count="12">
+          <input semantic="VERTEX" source="#geom-bounds-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-bounds-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-bounds-map1" offset="2" set="1"/>
+          <p>0 0 9 2 1 11 3 2 10 3 2 10 1 3 8 0 0 9 4 4 8 5 5 9 7 6 11 7 6 11 6 7 10 4 4 8 0 8 4 1 9 5 5 10 7 5 10 7 4 11 6 0 8 4 1 12 0 3 13 1 7 14 3 7 14 3 5 15 2 1 12 0 3 16 4 2 17 5 6 18 7 6 18 7 7 19 6 3 16 4 2 20 0 0 21 1 4 22 3 4 22 3 6 23 2 2 20 0</p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="OpenCOLLADA3dsMax">
+          <box>
+            <generateuvs>1</generateuvs>
+            <height>24.52839</height>
+            <heightsegments>1</heightsegments>
+            <length>34.46138</length>
+            <lengthsegments>1</lengthsegments>
+            <width>38.92108</width>
+            <widthsegments>1</widthsegments>
+          </box>
+        </technique>
+      </extra>
+    </geometry>
+  </library_geometries>
+  <library_lights>
+    <light id="EnvironmentAmbientLight" name="EnvironmentAmbientLight">
+      <technique_common>
+        <ambient>
+          <color>0.862745 0.862745 0.862745</color>
+        </ambient>
+      </technique_common>
+    </light>
+  </library_lights>
+  <library_images>
+    <image id="grass_diffuse_transparency_png">
+      <init_from>file:///C:/Projects/ForestKit/scriptsAndAssets/data/shapes/vegetation/grass_mesh/grass_diffuse_transparency.png</init_from>
+    </image>
+    <image id="poofalpha_png">
+      <init_from>file:///E:/Russell/Desktop/poofalpha.png</init_from>
+    </image>
+  </library_images>
+  <library_visual_scenes>
+    <visual_scene id="MaxScene">
+      <node name="EnvironmentAmbientLight">
+        <instance_light url="#EnvironmentAmbientLight"/>
+      </node>
+      <node id="node-Birth_01" name="Birth_01"/>
+      <node id="node-Speed_01" name="Speed_01"/>
+      <node id="node-Rotation_01" name="Rotation_01"/>
+      <node id="node-Render_01" name="Render_01"/>
+      <node id="node-Display_01" name="Display_01"/>
+      <node id="node-Event_01" name="Event_01"/>
+      <node id="node-Particle_View_01" name="Particle_View_01"/>
+      <node id="node-Position_Object_01" name="Position_Object_01"/>
+      <node id="node-Shape_Instance_01" name="Shape_Instance_01"/>
+      <node id="node-Scale_01" name="Scale_01"/>
+      <node id="node-Event_02" name="Event_02"/>
+      <node id="node-Display_02" name="Display_02"/>
+      <node id="node-base00" name="base00">
+        <node id="node-start00" name="start00">
+          <node id="node-grouptwo400_2" name="grouptwo400">
+            <translate>1.612729 -7.176313 0.7738714</translate>
+            <node>
+              <matrix>1 0 0 -1.612729 0 1 0 7.176313 0 0 1 -0.7738714 0 0 0 1</matrix>
+              <instance_geometry url="#geom-grouptwo400_2">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="clouds_1" target="#clouds-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+          <node id="node-groupthree400_2" name="groupthree400">
+            <translate>-2.069464 -2.240259 0.2642498</translate>
+            <node>
+              <matrix>1 0 0 2.069464 0 1 0 2.240259 0 0 1 -0.2642498 0 0 0 1</matrix>
+              <instance_geometry url="#geom-groupthree400_2">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="clouds" target="#clouds-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+          <node id="node-groupfour400_2" name="groupfour400">
+            <translate>0.08203936 2.762637 0.8461027</translate>
+            <node>
+              <matrix>1 0 0 -0.08203936 0 1 0 -2.762637 0 0 1 -0.8461027 0 0 0 1</matrix>
+              <instance_geometry url="#geom-groupfour400_2">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="clouds" target="#clouds-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+          <node id="node-groupfive400_2" name="groupfive400">
+            <translate>1.677707 5.892389 2.923428</translate>
+            <node>
+              <matrix>1 0 0 -1.677707 0 1 0 -5.892389 0 0 1 -2.923428 0 0 0 1</matrix>
+              <instance_geometry url="#geom-groupfive400_2">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="clouds" target="#clouds-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+          <node id="node-groupsix400_2" name="groupsix400">
+            <translate>0.1267047 10.63273 2.071801</translate>
+            <node>
+              <matrix>1 0 0 -0.1267047 0 1 0 -10.63273 0 0 1 -2.071801 0 0 0 1</matrix>
+              <instance_geometry url="#geom-groupsix400_2">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="clouds" target="#clouds-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+        </node>
+        <node id="node-detail400" name="detail400"/>
+      </node>
+      <node id="node-bounds" name="bounds">
+        <scale>1.261225 1.261225 1.418614</scale>
+        <node>
+          <matrix>1 0 0 1.625067 0 1 0 4.229632 0 0 1 -11.00578 0 0 0 1</matrix>
+          <instance_geometry url="#geom-bounds">
+            <bind_material>
+              <technique_common>
+                <instance_material symbol="ColorMaterial" target="#ColorEffectR57G8B136-material"/>
+              </technique_common>
+            </bind_material>
+          </instance_geometry>
+        </node>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#MaxScene"/>
+  </scene>
+</COLLADA>

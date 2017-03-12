@@ -1,0 +1,15 @@
+<ModuleDefinition
+    canSave="true"
+    canSaveDynamicFields="true"
+    ModuleId="TestTool"
+    VersionId="1"
+    scriptFile="TestTool.cs"
+    CreateFunction="onCreate"
+    DestroyFunction="onDestroy"
+    Group="Tool">
+    <DeclaredAssets
+        canSave="true"
+        canSaveDynamicFields="true"
+        Extension="asset.taml"
+        Recurse="true" />
+</ModuleDefinition>

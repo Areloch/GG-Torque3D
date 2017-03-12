@@ -1,0 +1,8 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="FlatNormal"
+    imageFile="data/Characters/Images/FlatNormal.png"
+    useMips="true"
+    isHDRImage="false"
+    VersionId="1" />

@@ -1,0 +1,15 @@
+<ModuleDefinition
+    canSave="true"
+    canSaveDynamicFields="true"
+    ModuleId="Pacific"
+    VersionId="1"
+    Group="Game"
+    ScriptFile="Pacific.cs"
+    CreateFunction="Create"
+    DestroyFunction="destroy">
+    <DeclaredAssets
+        canSave="true"
+        canSaveDynamicFields="true"
+        Extension="asset.taml"
+        Recurse="true" />
+</ModuleDefinition>

@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>Joe Espinoza</author>
+      <authoring_tool>OpenCOLLADA for 3ds Max;  Version: 1.3.0;  Revision: 788M;  Platform: x64;  Configuration: Release_Max2011_static</authoring_tool>
+      <source_data>file:///D:/Projects/TorqueCrysis/11_Structures/Ruins/Workfiles/Vines2.max</source_data>
+    </contributor>
+    <created>2011-04-18T10:58:19</created>
+    <modified>2011-04-18T10:58:19</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="tex_shrine">
+      <profile_COMMON>
+        <newparam sid="tex_temple_ruins_dif_png-surface">
+          <surface type="2D">
+            <init_from>tex_temple_ruins_dif_png</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="tex_temple_ruins_dif_png-sampler">
+          <sampler2D>
+            <source>tex_temple_ruins_dif_png-surface</source>
+          </sampler2D>
+        </newparam>
+        <newparam sid="tex_temple_ruins_nrm_png-surface">
+          <surface type="2D">
+            <init_from>tex_temple_ruins_nrm_png</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="tex_temple_ruins_nrm_png-sampler">
+          <sampler2D>
+            <source>tex_temple_ruins_nrm_png-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <blinn>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0.588 0.588 0.588 1</color>
+            </ambient>
+            <diffuse>
+              <texture texture="tex_temple_ruins_dif_png-sampler" texcoord="CHANNEL1"/>
+            </diffuse>
+            <specular>
+              <color>0.9 0.9 0.9 1</color>
+            </specular>
+            <shininess>
+              <float>10</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent opaque="A_ONE">
+              <texture texture="tex_temple_ruins_dif_png-sampler" texcoord="CHANNEL1"/>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </blinn>
+          <extra>
+            <technique profile="OpenCOLLADA3dsMax">
+              <bump bumptype="HEIGHTFIELD">
+                <texture texture="tex_temple_ruins_nrm_png-sampler" texcoord="CHANNEL1"/>
+              </bump>
+            </technique>
+          </extra>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="OpenCOLLADA3dsMax">
+          <extended_shader>
+            <apply_reflection_dimming>0</apply_reflection_dimming>
+            <dim_level>0</dim_level>
+            <falloff_type>0</falloff_type>
+            <index_of_refraction>1.5</index_of_refraction>
+            <opacity_type>0</opacity_type>
+            <reflection_level>3</reflection_level>
+            <wire_size>1</wire_size>
+            <wire_units>0</wire_units>
+          </extended_shader>
+          <shader>
+            <ambient_diffuse_lock>1</ambient_diffuse_lock>
+            <ambient_diffuse_texture_lock>1</ambient_diffuse_texture_lock>
+            <diffuse_specular_lock>0</diffuse_specular_lock>
+            <soften>0.1</soften>
+            <use_self_illum_color>0</use_self_illum_color>
+          </shader>
+        </technique>
+      </extra>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="tex_shrine-material" name="tex_shrine">
+      <instance_effect url="#tex_shrine"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="geom-bounds" name="bounds">
+      <mesh>
+        <source id="geom-bounds-positions">
+          <float_array id="geom-bounds-positions-array" count="24">-0.577418 -0.5635507 0 0.577418 -0.5635507 0 -0.577418 0.5635507 0 0.577418 0.5635507 0 -0.577418 -0.5635507 5.920154 0.577418 -0.5635507 5.920154 -0.577418 0.5635507 5.920154 0.577418 0.5635507 5.920154</float_array>
+          <technique_common>
+            <accessor source="#geom-bounds-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-bounds-normals">
+          <float_array id="geom-bounds-normals-array" count="72">0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 1 0 0 1 0 0 1 0 0 1 0 -1 0 0 -1 0 0 -1 0 0 -1 0 1 0 0 1 0 0 1 0 0 1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#geom-bounds-normals-array" count="24" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-bounds-vertices">
+          <input semantic="POSITION" source="#geom-bounds-positions"/>
+        </vertices>
+        <triangles material="tex_shrine" count="12">
+          <input semantic="VERTEX" source="#geom-bounds-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-bounds-normals" offset="1"/>
+          <p>0 0 2 1 3 2 3 2 1 3 0 0 4 4 5 5 7 6 7 6 6 7 4 4 0 8 1 9 5 10 5 10 4 11 0 8 1 12 3 13 7 14 7 14 5 15 1 12 3 16 2 17 6 18 6 18 7 19 3 16 2 20 0 21 4 22 4 22 6 23 2 20</p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="OpenCOLLADA3dsMax">
+          <max_box>
+            <generateuvs>0</generateuvs>
+            <height>5.920154</height>
+            <heightsegments>1</heightsegments>
+            <length>1.127101</length>
+            <lengthsegments>1</lengthsegments>
+            <width>1.154836</width>
+            <widthsegments>1</widthsegments>
+          </max_box>
+        </technique>
+      </extra>
+    </geometry>
+    <geometry id="geom-vinefour100" name="vinefour100">
+      <mesh>
+        <source id="geom-vinefour100-positions">
+          <float_array id="geom-vinefour100-positions-array" count="90">13.31357 -7.143039 3.658035 13.80627 -7.461641 7.844703 13.55061 -7.448565 7.844703 13.22992 -6.901093 3.658035 13.38225 -7.259256 7.844703 13.34238 -6.674079 3.658035 14.08097 -6.49657 5.751369 14.28561 -6.650374 5.751369 14.31933 -6.901464 5.751369 13.45809 -6.535882 4.704702 13.66501 -6.38515 4.704702 13.91498 -6.426321 4.704702 14.21343 -7.321409 6.798036 13.98317 -7.42706 6.798036 14.30068 -7.08074 6.798036 13.31357 -7.143039 3.658035 13.80627 -7.461641 7.844703 13.55061 -7.448565 7.844703 13.22992 -6.901093 3.658035 13.38225 -7.259256 7.844703 13.34238 -6.674079 3.658035 14.08097 -6.49657 5.751369 14.28561 -6.650374 5.751369 14.31933 -6.901464 5.751369 13.45809 -6.535882 4.704702 13.66501 -6.38515 4.704702 13.91498 -6.426321 4.704702 14.21343 -7.321409 6.798036 13.98317 -7.42706 6.798036 14.30068 -7.08074 6.798036</float_array>
+          <technique_common>
+            <accessor source="#geom-vinefour100-positions-array" count="30" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-vinefour100-normals">
+          <float_array id="geom-vinefour100-normals-array" count="90">0.9686296 -0.0134203 -0.2481461 0.2308091 -0.9729987 8.11648e-4 0.6369624 -0.7700195 -0.03672965 0.9001316 0.3112095 -0.3048143 0.8448306 -0.5222527 -0.1162465 -0.2220059 -0.9743256 0.03745791 -0.8630002 -0.505203 8.11456e-4 -0.7354428 0.6775863 8.12549e-4 -0.9586552 0.2821899 -0.03672829 -0.5501393 -0.8342647 -0.03673078 -0.9966604 -0.07255974 0.0374585 -0.3607831 0.9318972 0.03745849 0.4623123 0.8508057 0.2497943 -0.0434557 0.9922931 0.1160427 0.7111856 0.6324734 0.306908 -0.9686296 0.0134203 0.2481461 -0.9001316 -0.3112095 0.3048143 -0.6369624 0.7700195 0.03672965 -0.2308091 0.9729987 -8.11642e-4 -0.8448306 0.5222527 0.1162465 0.2220059 0.9743256 -0.03745791 0.8630002 0.505203 -8.11452e-4 0.5501394 0.8342647 0.03673078 0.9586552 -0.2821899 0.03672829 0.7354428 -0.6775863 -8.12549e-4 0.9966604 0.07255974 -0.0374585 0.3607831 -0.9318972 -0.03745849 0.0434557 -0.9922931 -0.1160427 -0.4623122 -0.8508057 -0.2497942 -0.7111856 -0.6324734 -0.306908</float_array>
+          <technique_common>
+            <accessor source="#geom-vinefour100-normals-array" count="30" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-vinefour100-map-1">
+          <float_array id="geom-vinefour100-map-1-array" count="90">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</float_array>
+          <technique_common>
+            <accessor source="#geom-vinefour100-map-1-array" count="30" stride="3">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-vinefour100-map0">
+          <float_array id="geom-vinefour100-map0-array" count="90">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</float_array>
+          <technique_common>
+            <accessor source="#geom-vinefour100-map0-array" count="30" stride="3">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-vinefour100-map1">
+          <float_array id="geom-vinefour100-map1-array" count="90">0.01460564 0.8837879 0 0.6597673 0.8837877 0 0.6597673 0.9172493 0 0.01460564 0.9172494 0 0.6597673 0.9507676 0 0.01460564 0.9507676 0 0.3371865 0.8837878 0 0.3371865 0.9172493 0 0.3371865 0.9507676 0 0.175896 0.8837879 0 0.175896 0.9172494 0 0.1758961 0.9507676 0 0.4984769 0.9172493 0 0.4984769 0.9507676 0 0.4984769 0.8837877 0 0.01460564 0.8837879 0 0.6597673 0.8837877 0 0.6597673 0.9172493 0 0.01460564 0.9172494 0 0.6597673 0.9507676 0 0.01460564 0.9507676 0 0.3371865 0.8837878 0 0.3371865 0.9172493 0 0.3371865 0.9507676 0 0.175896 0.8837879 0 0.175896 0.9172494 0 0.1758961 0.9507676 0 0.4984769 0.9172493 0 0.4984769 0.9507676 0 0.4984769 0.8837877 0</float_array>
+          <technique_common>
+            <accessor source="#geom-vinefour100-map1-array" count="30" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-vinefour100-map2">
+          <float_array id="geom-vinefour100-map2-array" count="90">2.408947 2.388679 6.04021e-9 2.408947 -3.531474 6.04018e-9 2.875775 -3.531474 -0.09832762 2.875775 2.388679 -0.09832764 3.336915 -3.531474 0 3.336915 2.388679 0 2.408947 -0.5713975 6.0402e-9 2.875775 -0.5713975 -0.09832764 3.336915 -0.5713975 0 2.408947 0.9086409 6.0402e-9 2.875775 0.9086409 -0.09832764 3.336915 0.9086409 0 2.875775 -2.051436 -0.09832763 3.336915 -2.051436 0 2.408947 -2.051436 6.04019e-9 2.408947 2.388679 6.04021e-9 2.408947 -3.531474 6.04018e-9 2.875775 -3.531474 -0.09832762 2.875775 2.388679 -0.09832764 3.336915 -3.531474 0 3.336915 2.388679 0 2.408947 -0.5713975 6.0402e-9 2.875775 -0.5713975 -0.09832764 3.336915 -0.5713975 0 2.408947 0.9086409 6.0402e-9 2.875775 0.9086409 -0.09832764 3.336915 0.9086409 0 2.875775 -2.051436 -0.09832763 3.336915 -2.051436 0 2.408947 -2.051436 6.04019e-9</float_array>
+          <technique_common>
+            <accessor source="#geom-vinefour100-map2-array" count="30" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-vinefour100-map3">
+          <float_array id="geom-vinefour100-map3-array" count="90">2.408947 2.388679 6.04021e-9 2.408947 -3.531474 6.04018e-9 2.875775 -3.531474 -0.09832762 2.875775 2.388679 -0.09832764 3.336915 -3.531474 0 3.336915 2.388679 0 2.408947 -0.5713975 6.0402e-9 2.875775 -0.5713975 -0.09832764 3.336915 -0.5713975 0 2.408947 0.9086409 6.0402e-9 2.875775 0.9086409 -0.09832764 3.336915 0.9086409 0 2.875775 -2.051436 -0.09832763 3.336915 -2.051436 0 2.408947 -2.051436 6.04019e-9 2.408947 2.388679 6.04021e-9 2.408947 -3.531474 6.04018e-9 2.875775 -3.531474 -0.09832762 2.875775 2.388679 -0.09832764 3.336915 -3.531474 0 3.336915 2.388679 0 2.408947 -0.5713975 6.0402e-9 2.875775 -0.5713975 -0.09832764 3.336915 -0.5713975 0 2.408947 0.9086409 6.0402e-9 2.875775 0.9086409 -0.09832764 3.336915 0.9086409 0 2.875775 -2.051436 -0.09832763 3.336915 -2.051436 0 2.408947 -2.051436 6.04019e-9</float_array>
+          <technique_common>
+            <accessor source="#geom-vinefour100-map3-array" count="30" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-vinefour100-vertices">
+          <input semantic="POSITION" source="#geom-vinefour100-positions"/>
+        </vertices>
+        <triangles material="tex_shrine" count="32">
+          <input semantic="VERTEX" source="#geom-vinefour100-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-vinefour100-normals" offset="1"/>
+          <input semantic="COLOR" source="#geom-vinefour100-map-1" offset="2"/>
+          <input semantic="COLOR" source="#geom-vinefour100-map0" offset="3" set="0"/>
+          <input semantic="TEXCOORD" source="#geom-vinefour100-map1" offset="4" set="0"/>
+          <input semantic="TEXCOORD" source="#geom-vinefour100-map2" offset="5" set="1"/>
+          <input semantic="TEXCOORD" source="#geom-vinefour100-map3" offset="6" set="2"/>
+          <p>3 0 3 3 3 3 3 10 1 10 10 10 10 10 9 2 9 9 9 9 9 9 2 9 9 9 9 9 0 3 0 0 0 0 0 3 0 3 3 3 3 3 5 4 5 5 5 5 5 11 5 11 11 11 11 11 10 1 10 10 10 10 10 10 1 10 10 10 10 10 3 0 3 3 3 3 3 5 4 5 5 5 5 5 7 6 7 7 7 7 7 12 7 12 12 12 12 12 14 8 14 14 14 14 14 14 8 14 14 14 14 14 6 9 6 6 6 6 6 7 6 7 7 7 7 7 8 10 8 8 8 8 8 13 11 13 13 13 13 13 12 7 12 12 12 12 12 12 7 12 12 12 12 12 7 6 7 7 7 7 7 8 10 8 8 8 8 8 10 1 10 10 10 10 10 7 6 7 7 7 7 7 6 9 6 6 6 6 6 6 9 6 6 6 6 6 9 2 9 9 9 9 9 10 1 10 10 10 10 10 11 5 11 11 11 11 11 8 10 8 8 8 8 8 7 6 7 7 7 7 7 7 6 7 7 7 7 7 10 1 10 10 10 10 10 11 5 11 11 11 11 11 12 7 12 12 12 12 12 2 12 2 2 2 2 2 1 13 1 1 1 1 1 1 13 1 1 1 1 1 14 8 14 14 14 14 14 12 7 12 12 12 12 12 13 11 13 13 13 13 13 4 14 4 4 4 4 4 2 12 2 2 2 2 2 2 12 2 2 2 2 2 12 7 12 12 12 12 12 13 11 13 13 13 13 13 18 15 18 18 18 18 18 15 16 15 15 15 15 15 24 17 24 24 24 24 24 24 17 24 24 24 24 24 25 18 25 25 25 25 25 18 15 18 18 18 18 18 20 19 20 20 20 20 20 18 15 18 18 18 18 18 25 18 25 25 25 25 25 25 18 25 25 25 25 25 26 20 26 26 26 26 26 20 19 20 20 20 20 20 22 21 22 22 22 22 22 21 22 21 21 21 21 21 29 23 29 29 29 29 29 29 23 29 29 29 29 29 27 24 27 27 27 27 27 22 21 22 22 22 22 22 23 25 23 23 23 23 23 22 21 22 22 22 22 22 27 24 27 27 27 27 27 27 24 27 27 27 27 27 28 26 28 28 28 28 28 23 25 23 23 23 23 23 25 18 25 25 25 25 25 24 17 24 24 24 24 24 21 22 21 21 21 21 21 21 22 21 21 21 21 21 22 21 22 22 22 22 22 25 18 25 25 25 25 25 26 20 26 26 26 26 26 25 18 25 25 25 25 25 22 21 22 22 22 22 22 22 21 22 22 22 22 22 23 25 23 23 23 23 23 26 20 26 26 26 26 26 27 24 27 27 27 27 27 29 23 29 29 29 29 29 16 27 16 16 16 16 16 16 27 16 16 16 16 16 17 28 17 17 17 17 17 27 24 27 27 27 27 27 28 26 28 28 28 28 28 27 24 27 27 27 27 27 17 28 17 17 17 17 17 17 28 17 17 17 17 17 19 29 19 19 19 19 19 28 26 28 28 28 28 28</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_lights>
+    <light id="EnvironmentAmbientLight" name="EnvironmentAmbientLight">
+      <technique_common>
+        <ambient>
+          <color>0 0 0</color>
+        </ambient>
+      </technique_common>
+    </light>
+  </library_lights>
+  <library_images>
+    <image id="tex_temple_ruins_dif_png">
+      <init_from>file:///D:/Projects/TorqueCrysis/11_Structures/Ruins/tex_temple_ruins_dif.png</init_from>
+    </image>
+    <image id="tex_temple_ruins_nrm_png">
+      <init_from>file:///D:/Projects/TorqueCrysis/11_Structures/Ruins/tex_temple_ruins_nrm.png</init_from>
+    </image>
+  </library_images>
+  <library_visual_scenes>
+    <visual_scene id="MaxScene">
+      <node name="EnvironmentAmbientLight">
+        <instance_light url="#EnvironmentAmbientLight"/>
+      </node>
+      <node id="node-bounds" name="bounds">
+        <node>
+          <matrix>1 0 0 0 0 1 0 0 0 0 1 -2.960077 0 0 0 1</matrix>
+          <instance_geometry url="#geom-bounds">
+            <bind_material>
+              <technique_common>
+                <instance_material symbol="tex_shrine" target="#tex_shrine-material">
+                  <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="0"/>
+                  <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="0"/>
+                  <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="0"/>
+                </instance_material>
+              </technique_common>
+            </bind_material>
+          </instance_geometry>
+        </node>
+      </node>
+      <node id="node-base00" name="base00">
+        <node id="node-detail100" name="detail100"/>
+        <node id="node-start00" name="start00">
+          <node id="node-vinefour100" name="vinefour100">
+            <node>
+              <matrix>1 0 0 -13.77462 0 1 0 6.923396 0 0 1 -5.751369 0 0 0 1</matrix>
+              <instance_geometry url="#geom-vinefour100">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="tex_shrine" target="#tex_shrine-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="0"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="0"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="0"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+            <extra>
+              <technique profile="OpenCOLLADA">
+                <user_properties>LastPose = undefined
+</user_properties>
+              </technique>
+            </extra>
+          </node>
+        </node>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#MaxScene"/>
+  </scene>
+</COLLADA>

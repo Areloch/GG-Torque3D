@@ -1,0 +1,6 @@
+<StateMachineAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="NewStateMachine"
+    stateMachineFile="data//stateMachines/NewStateMachine.xml"
+    VersionId="1" />

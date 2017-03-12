@@ -1,0 +1,11 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="BaseWeaponComponent"
+    componentName="BaseWeaponComponent"
+    componentClass="StateMachineComponent"
+    friendlyName="Base Weapon Component"
+    componentType="State Machine"
+    description="This is the basic weapon state machine."
+    scriptFile="data/Weapons/components/BaseWeaponComponent.cs"
+    VersionId="1" />

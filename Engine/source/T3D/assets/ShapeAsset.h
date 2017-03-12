@@ -45,6 +45,10 @@
 #include "core/resource.h"
 #endif
 
+#ifndef _ANIMATION_ASSET_H_
+#include "AnimationAsset.h";
+#endif
+
 #include "gui/editor/guiInspectorTypes.h"
 
 //-----------------------------------------------------------------------------
@@ -61,6 +65,9 @@ protected:
    StringTableEntry   mFileName;
    Resource<TSShape>	 mShape;
 
+   //List of animation assets attached to this one
+   Vector<AnimationAsset*> mAnimations;
+
 public:
    ShapeAsset();
    virtual ~ShapeAsset();
@@ -75,6 +82,9 @@ public:
    DECLARE_CONOBJECT(ShapeAsset);
 
    bool loadShape();
+   bool loadAnimations() {
+      return false;
+   }
 
    TSShape* getShape() { return mShape; }
 

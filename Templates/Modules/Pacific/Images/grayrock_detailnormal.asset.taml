@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="grayrock_detailnormal"
+    imageFile="data/Pacific/Images/grayrock_detailnormal.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\rocks\grayrock_detailnormal.dds"
+    VersionId="1" />

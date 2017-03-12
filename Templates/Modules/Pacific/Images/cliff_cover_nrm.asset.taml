@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="cliff_cover_nrm"
+    imageFile="data/Pacific/Images/cliff_cover_nrm.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\decals\cliffcover\cliff_cover_nrm.dds"
+    VersionId="1" />

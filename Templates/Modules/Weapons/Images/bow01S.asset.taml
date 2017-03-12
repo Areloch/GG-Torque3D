@@ -1,0 +1,8 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="bow01S"
+    imageFile="data/Weapons/Images/bow01S.jpg"
+    useMips="true"
+    isHDRImage="false"
+    VersionId="1" />

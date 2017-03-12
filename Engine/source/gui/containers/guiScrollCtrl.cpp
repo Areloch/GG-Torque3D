@@ -805,9 +805,12 @@ void GuiScrollCtrl::onMouseDragged(const GuiEvent &event)
          S32 newHThumbPos = curMousePos.x - mThumbMouseDelta;
          if(newHThumbPos != mHThumbPos)
          {
+            S32 div = (mHTrackRect.extent.x - mHThumbSize);
+            if (div == 0)
+               div = 1;
+
             S32 newHPos = (newHThumbPos - mHTrackRect.point.x) *
-                          (mChildExt.x - mContentExt.x) /
-                          (mHTrackRect.extent.x - mHThumbSize);
+                          (mChildExt.x - mContentExt.x) / div;
 
             scrollTo(newHPos, mChildRelPosAnchor.y);
          }

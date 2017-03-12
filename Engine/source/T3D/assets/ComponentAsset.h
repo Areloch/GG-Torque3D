@@ -80,6 +80,8 @@ public:
    void setComponentType(StringTableEntry typeName) { mComponentType = typeName; }
    void setDescription(StringTableEntry description) { mDescription = description; }
 
+   AssetDefinition* getAssetDefinition() { return mpAssetDefinition; }
+
 protected:
    virtual void            initializeAsset(void){}
    virtual void            onAssetRefresh(void) {}

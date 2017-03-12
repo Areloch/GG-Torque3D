@@ -1,0 +1,11 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="PhysicalSoundListener"
+    componentName="PhysicalSoundListener"
+    componentClass="Component"
+    friendlyName="Physical Sound Listener"
+    componentType="sound"
+    description="A listener component that uses bounces to approximate physical sound propagation."
+    scriptFile="data/TheFactory/components/PhysicalSoundListener.cs"
+    VersionId="1" />

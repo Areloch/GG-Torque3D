@@ -1,0 +1,36 @@
+<Entity
+    scale="1 1 1"
+    class="Arrow"
+    canSave="true"
+    canSaveDynamicFields="true"
+    position="-4.19759 2.57704 2"
+    Rotation="0 -0 -0"
+    LocalPosition="0 0 0"
+    LocalRotation="1 0 0 0"
+    GameObjectAsset="ArrowProjectile">
+    <MeshComponent
+        componentType="Render"
+        friendlyName="Mesh Component"
+        description="Causes the object to render a non-animating 3d shape using the file provided."
+        networked="true"
+        Enabled="true"
+        MeshAsset="@asset=Weapons:arrowModel" />
+    <Component
+        networked="false"
+        Enabled="true"
+        class="ProjectileComponent" />
+    <Component
+        networked="false"
+        Enabled="true"
+        class="InteractableComponent" />
+    <Component
+        networked="false"
+        Enabled="true"
+        itemName="Arrow"
+        class="ItemComponent" />
+    <CollisionComponent
+        networked="false"
+        Enabled="true"
+        CollisionType="Bounds"
+        BlockCollisions="0"/>
+</Entity>

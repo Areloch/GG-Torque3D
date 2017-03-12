@@ -1,0 +1,11 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="GameInfoComponent"
+    componentName="GameInfoComponent"
+    componentClass="Component"
+    friendlyName="Game Info"
+    componentType="Game"
+    description="Containts common game info and rules for gameplay."
+    scriptFile="data/gameplay/components/GameInfoComponent.cs"
+    VersionId="1" />

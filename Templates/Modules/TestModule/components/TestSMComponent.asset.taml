@@ -1,0 +1,11 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="TestSMComponent"
+    componentName="TestSMComponent"
+    componentClass="StateMachineComponent"
+    friendlyName="Test State Machine"
+    componentType="State Machine"
+    description="This is a test state machine."
+    scriptFile="data/TestModule/components/TestSMComponent.cs"
+    VersionId="1" />

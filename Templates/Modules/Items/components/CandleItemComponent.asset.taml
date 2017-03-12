@@ -1,0 +1,11 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="CandleItemComponent"
+    componentName="CandleItemComponent"
+    componentClass="Component"
+    friendlyName="Candle Item"
+    componentType="Interaction"
+    description="Makes the entity interactable as a candle"
+    scriptFile="data/Items/components/CandleItemComponent.cs"
+    VersionId="1" />

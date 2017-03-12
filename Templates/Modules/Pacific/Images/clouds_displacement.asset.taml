@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="clouds_displacement"
+    imageFile="data/Pacific/Images/clouds_displacement.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\skies\clouds\clouds_displacement.dds"
+    VersionId="1" />

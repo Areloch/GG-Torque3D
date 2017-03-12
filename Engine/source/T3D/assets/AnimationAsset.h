@@ -38,6 +38,13 @@
 #include "assets/assetFieldTypes.h"
 #endif
 
+#ifndef _TSSHAPE_H_
+#include "ts/tsShape.h"
+#endif
+#ifndef __RESOURCE_H__
+#include "core/resource.h"
+#endif
+
 //-----------------------------------------------------------------------------
 class AnimationAsset : public AssetBase
 {
@@ -47,6 +54,18 @@ class AnimationAsset : public AssetBase
    bool                    mAssetInitialized;
    AssetDefinition*        mpAssetDefinition;
    U32                     mAcquireReferenceCount;
+
+protected:
+   StringTableEntry   mFileName;
+   Resource<TSShape>	 mShape;
+
+   //
+   const char* source;
+   const char* name;
+   S32 start;
+   S32 end;
+   bool padRot;
+   bool padTrans;
 
 public:
    AnimationAsset();
@@ -62,9 +81,34 @@ public:
 protected:
    virtual void            initializeAsset(void) {}
    virtual void            onAssetRefresh(void) {}
+
+   bool loadShape() {
+      return false;
+   }
+
+   TSShape* getShape() { return mShape; }
+
+   Resource<TSShape> getShapeResource() { return mShape; }
 };
 
 DefineConsoleType(TypeAnimationAssetPtr, AnimationAsset)
+
+//-----------------------------------------------------------------------------
+// TypeAssetId GuiInspectorField Class
+//-----------------------------------------------------------------------------
+/*class GuiInspectorTypeAnimationAssetPtr : public GuiInspectorTypeFileName
+{
+   typedef GuiInspectorTypeFileName Parent;
+public:
+
+   GuiBitmapButtonCtrl  *mShapeEdButton;
+
+   DECLARE_CONOBJECT(GuiInspectorTypeAnimationAssetPtr);
+   static void consoleInit();
+
+   virtual GuiControl* constructEditControl();
+   virtual bool updateRects();
+};*/
 
 #endif // _ASSET_BASE_H_
 

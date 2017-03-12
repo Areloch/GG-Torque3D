@@ -1,0 +1,851 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>Russell</author>
+      <authoring_tool>OpenCOLLADA for 3ds Max;  Version: 1.2.5;  Revision: 673;  Platform: Win32;  Configuration: Release Max2010</authoring_tool>
+      <source_data>file:///E:/Russell/Documents/3dsMax/autoback/AutoBackup03.max</source_data>
+    </contributor>
+    <created>2010-02-27T22:17:26</created>
+    <modified>2010-02-27T22:17:26</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_effects>
+    <effect id="clouds">
+      <profile_COMMON>
+        <newparam sid="poofalpha_png-surface">
+          <surface type="2D">
+            <init_from>poofalpha_png</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="poofalpha_png-sampler">
+          <sampler2D>
+            <source>poofalpha_png-surface</source>
+          </sampler2D>
+        </newparam>
+        <newparam sid="grass_diffuse_transparency_png-surface">
+          <surface type="2D">
+            <init_from>grass_diffuse_transparency_png</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="grass_diffuse_transparency_png-sampler">
+          <sampler2D>
+            <source>grass_diffuse_transparency_png-surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <blinn>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0.5882353 0.5882353 0.5882353 1</color>
+            </ambient>
+            <diffuse>
+              <texture texture="poofalpha_png-sampler" texcoord="CHANNEL1"/>
+            </diffuse>
+            <specular>
+              <color>0.9 0.9 0.9 1</color>
+            </specular>
+            <shininess>
+              <float>9.999999</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent opaque="A_ONE">
+              <texture texture="grass_diffuse_transparency_png-sampler" texcoord="CHANNEL1"/>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </blinn>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="OpenCOLLADA3dsMax">
+          <extended_shader>
+            <apply_reflection_dimming>0</apply_reflection_dimming>
+            <dim_level>0</dim_level>
+            <falloff_type>0</falloff_type>
+            <index_of_refraction>1.5</index_of_refraction>
+            <opacity_type>0</opacity_type>
+            <reflection_level>3</reflection_level>
+            <wire_size>1</wire_size>
+            <wire_units>0</wire_units>
+          </extended_shader>
+          <shader>
+            <ambient_diffuse_lock>1</ambient_diffuse_lock>
+            <ambient_diffuse_texture_lock>1</ambient_diffuse_texture_lock>
+            <diffuse_specular_lock>0</diffuse_specular_lock>
+            <soften>0.1</soften>
+            <use_self_illum_color>0</use_self_illum_color>
+          </shader>
+        </technique>
+      </extra>
+    </effect>
+    <effect id="ColorEffectR87G224B198">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <ambient>
+              <color>0.3411765 0.8784314 0.7764706 1</color>
+            </ambient>
+            <diffuse>
+              <color>0.3411765 0.8784314 0.7764706 1</color>
+            </diffuse>
+            <specular>
+              <color>1 1 1 1</color>
+            </specular>
+            <shininess>
+              <float>10</float>
+            </shininess>
+            <reflective>
+              <color>0 0 0 1</color>
+            </reflective>
+            <transparent>
+              <color>1 1 1 1</color>
+            </transparent>
+            <transparency>
+              <float>1</float>
+            </transparency>
+          </phong>
+        </technique>
+      </profile_COMMON>
+      <extra>
+        <technique profile="OpenCOLLADA3dsMax">
+          <extended_shader>
+            <apply_reflection_dimming>0</apply_reflection_dimming>
+            <dim_level>0</dim_level>
+            <falloff_type>0</falloff_type>
+            <index_of_refraction>1.5</index_of_refraction>
+            <opacity_type>0</opacity_type>
+            <reflection_level>3</reflection_level>
+            <wire_size>1</wire_size>
+            <wire_units>0</wire_units>
+          </extended_shader>
+          <shader>
+            <ambient_diffuse_lock>1</ambient_diffuse_lock>
+            <ambient_diffuse_texture_lock>1</ambient_diffuse_texture_lock>
+            <diffuse_specular_lock>0</diffuse_specular_lock>
+            <soften>0.1</soften>
+            <use_self_illum_color>0</use_self_illum_color>
+          </shader>
+        </technique>
+      </extra>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="ColorEffectR87G224B198-material" name="ColorEffectR87G224B198-material">
+      <instance_effect url="#ColorEffectR87G224B198"/>
+    </material>
+    <material id="clouds-material" name="clouds">
+      <instance_effect url="#clouds"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="geom-poofgroupone400" name="poofgroupone400">
+      <mesh>
+        <source id="geom-poofgroupone400-positions">
+          <float_array id="geom-poofgroupone400-positions-array" count="84">2.217219 -0.8204311 -1.389739 -1.038967 -0.8204306 -1.389739 2.217219 -0.8204311 1.866442 -1.038967 -0.8204306 1.866442 0.8029609 0.9535264 -1.218322 -2.46185 0.9535269 -1.218322 0.8029609 0.9535264 2.046484 -2.46185 0.9535269 2.046484 2.558163 0.6551443 -2.0253 -0.7274492 0.6551448 -2.0253 2.558163 0.6551443 1.260307 -0.7274492 0.6551448 1.260307 0.8088934 1.078107 -1.623376 -1.464351 1.078108 -1.623376 0.8088934 1.078107 0.6498636 -1.464351 1.078108 0.6498636 2.281039 0.2732116 -1.473796 -0.6272807 0.273212 -1.473796 2.281039 0.2732116 1.434519 -0.6272807 0.273212 1.434519 -0.3252754 0.9224834 -0.9477407 -2.688802 0.9224837 -0.9477407 -0.3252754 0.9224834 1.415781 -2.688802 0.9224837 1.415781 1.982967 0.7665668 -1.408664 -0.6069164 0.7665672 -1.408664 1.982967 0.7665668 1.181215 -0.6069164 0.7665672 1.181215</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupone400-positions-array" count="28" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupone400-normals">
+          <float_array id="geom-poofgroupone400-normals-array" count="84">1.64745e-7 1 0 1.64745e-7 1 0 1.64745e-7 1 0 1.64745e-7 1 0 1.46054e-7 1 0 1.46054e-7 1 0 1.46054e-7 1 0 1.46054e-7 1 0 1.45129e-7 1 0 1.45129e-7 0.9999999 0 1.45129e-7 0.9999999 0 1.45129e-7 1 0 1.5732e-7 1 0 1.5732e-7 1 0 1.5732e-7 1 0 1.5732e-7 1 0 1.53709e-7 1 0 1.53709e-7 0.9999999 0 1.53709e-7 0.9999999 0 1.53709e-7 1 0 1.51311e-7 1 0 1.51311e-7 1 0 1.51311e-7 1 0 1.51311e-7 1 0 1.61101e-7 1 0 1.61101e-7 1 0 1.61101e-7 1 0 1.61101e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupone400-normals-array" count="28" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupone400-map1">
+          <float_array id="geom-poofgroupone400-map1-array" count="711">0 0 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupone400-map1-array" count="237" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-poofgroupone400-vertices">
+          <input semantic="POSITION" source="#geom-poofgroupone400-positions"/>
+        </vertices>
+        <triangles material="clouds_1" count="14">
+          <input semantic="VERTEX" source="#geom-poofgroupone400-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-poofgroupone400-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-poofgroupone400-map1" offset="2" set="1"/>
+          <p>2 0 3 0 1 1 3 2 4 1 3 2 3 2 4 0 1 1 6 4 11 4 5 9 7 6 12 5 7 10 7 6 12 4 5 9 10 8 15 8 9 13 11 10 16 9 11 14 11 10 16 8 9 13 14 12 43 12 13 41 15 14 44 13 15 42 15 14 44 12 13 41 18 16 75 16 17 73 19 18 76 17 19 74 19 18 76 16 17 73 22 20 79 20 21 77 23 22 80 21 23 78 23 22 80 20 21 77 26 24 127 24 25 125 27 26 128 25 27 126 27 26 128 24 25 125</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-poofgrouptwo400" name="poofgrouptwo400">
+      <mesh>
+        <source id="geom-poofgrouptwo400-positions">
+          <float_array id="geom-poofgrouptwo400-positions-array" count="36">1.828532 -2.884981 -1.522097 -1.644062 -2.884981 -1.522097 1.828532 -2.884981 1.950492 -1.644062 -2.884981 1.950492 1.940954 -3.172972 -1.662438 -1.549248 -3.172971 -1.662438 1.940954 -3.172972 1.827759 -1.549248 -3.172971 1.827759 0.6671154 -2.497151 -0.9440736 -1.867239 -2.49715 -0.9440736 0.6671154 -2.497151 1.590276 -1.867239 -2.49715 1.590276</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgrouptwo400-positions-array" count="12" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgrouptwo400-normals">
+          <float_array id="geom-poofgrouptwo400-normals-array" count="36">1.37314e-7 1 0 1.37314e-7 1 0 1.37314e-7 1 0 1.37314e-7 1 0 1.36622e-7 1 0 1.36622e-7 1 0 1.36622e-7 1 0 1.36622e-7 1 0 9.40747e-8 1 0 9.40747e-8 0.9999999 0 9.40747e-8 0.9999999 0 9.40747e-8 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgrouptwo400-normals-array" count="12" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgrouptwo400-map1">
+          <float_array id="geom-poofgrouptwo400-map1-array" count="36">0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgrouptwo400-map1-array" count="12" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-poofgrouptwo400-vertices">
+          <input semantic="POSITION" source="#geom-poofgrouptwo400-positions"/>
+        </vertices>
+        <triangles material="clouds" count="6">
+          <input semantic="VERTEX" source="#geom-poofgrouptwo400-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-poofgrouptwo400-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-poofgrouptwo400-map1" offset="2" set="1"/>
+          <p>2 0 2 0 1 0 3 2 3 1 3 1 3 2 3 0 1 0 6 4 6 4 5 4 7 6 7 5 7 5 7 6 7 4 5 4 10 8 10 8 9 8 11 10 11 9 11 9 11 10 11 8 9 8</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-poofgroupthree400" name="poofgroupthree400">
+      <mesh>
+        <source id="geom-poofgroupthree400-positions">
+          <float_array id="geom-poofgroupthree400-positions-array" count="60">2.172222 -1.832132 -1.567224 -1.530656 -1.832131 -1.567224 2.172222 -1.832132 2.135649 -1.530656 -1.832131 2.135649 1.058054 -2.829932 -1.453166 -2.201814 -2.829932 -1.453166 1.058054 -2.829932 1.806697 -2.201814 -2.829932 1.806697 1.788019 -1.502472 -1.455842 -1.968357 -1.502472 -1.455842 1.788019 -1.502472 2.300529 -1.968357 -1.502472 2.300529 2.057653 -2.907073 -1.340535 -0.9618311 -2.907073 -1.340535 2.057653 -2.907073 1.678944 -0.9618311 -2.907073 1.678944 1.372928 -2.03968 -0.6219316 -0.7098632 -2.03968 -0.6219316 1.372928 -2.03968 1.460855 -0.7098632 -2.03968 1.460855</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupthree400-positions-array" count="20" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupthree400-normals">
+          <float_array id="geom-poofgroupthree400-normals-array" count="60">1.60968e-7 1 0 1.60968e-7 1 0 1.60968e-7 1 0 1.60968e-7 1 0 1.46275e-7 1 0 1.46275e-7 1 0 1.46275e-7 1 0 1.46275e-7 1 0 1.26941e-7 1 0 1.26941e-7 1 0 1.26941e-7 1 0 1.26941e-7 1 0 1.5792e-7 1 0 1.5792e-7 1 0 1.5792e-7 1 0 1.5792e-7 1 0 1.14471e-7 1 0 1.14471e-7 1 0 1.14471e-7 1 0 1.14471e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupthree400-normals-array" count="20" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupthree400-map1">
+          <float_array id="geom-poofgroupthree400-map1-array" count="60">0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupthree400-map1-array" count="20" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-poofgroupthree400-vertices">
+          <input semantic="POSITION" source="#geom-poofgroupthree400-positions"/>
+        </vertices>
+        <triangles material="clouds" count="10">
+          <input semantic="VERTEX" source="#geom-poofgroupthree400-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-poofgroupthree400-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-poofgroupthree400-map1" offset="2" set="1"/>
+          <p>2 0 2 0 1 0 3 2 3 1 3 1 3 2 3 0 1 0 6 4 6 4 5 4 7 6 7 5 7 5 7 6 7 4 5 4 10 8 10 8 9 8 11 10 11 9 11 9 11 10 11 8 9 8 14 12 14 12 13 12 15 14 15 13 15 13 15 14 15 12 13 12 18 16 18 16 17 16 19 18 19 17 19 17 19 18 19 16 17 16</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-poofgroupfour400" name="poofgroupfour400">
+      <mesh>
+        <source id="geom-poofgroupfour400-positions">
+          <float_array id="geom-poofgroupfour400-positions-array" count="60">0.468998 -2.009973 -1.083961 -2.114897 -2.009973 -1.083961 0.468998 -2.009973 1.499928 -2.114897 -2.009973 1.499928 2.591605 -0.7147138 -1.284275 -0.8003275 -0.7147132 -1.284275 2.591605 -0.7147138 2.107652 -0.8003275 -0.7147132 2.107652 2.26081 -1.065298 -1.101927 -0.2387862 -1.065297 -1.101927 2.26081 -1.065298 1.397665 -0.2387862 -1.065297 1.397665 2.0812 -1.35428 -1.211498 -1.681738 -1.354279 -1.211498 2.0812 -1.35428 2.551435 -1.681738 -1.354279 2.551435 1.38944 -2.562985 -1.022389 -1.57748 -2.562984 -1.022389 1.38944 -2.562985 1.944525 -1.57748 -2.562984 1.944525</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupfour400-positions-array" count="20" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupfour400-normals">
+          <float_array id="geom-poofgroupfour400-normals-array" count="60">9.2271e-8 1 0 9.2271e-8 1 0 9.2271e-8 1 0 9.2271e-8 1 0 1.58152e-7 1 0 1.58152e-7 1 0 1.58152e-7 1 0 1.58152e-7 1 0 1.43074e-7 1 0 1.43074e-7 1 0 1.43074e-7 1 0 1.43074e-7 1 0 1.58399e-7 1 0 1.58399e-7 1 0 1.58399e-7 1 0 1.58399e-7 1 0 1.60718e-7 1 0 1.60718e-7 1 0 1.60718e-7 1 0 1.60718e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupfour400-normals-array" count="20" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupfour400-map1">
+          <float_array id="geom-poofgroupfour400-map1-array" count="60">0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupfour400-map1-array" count="20" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-poofgroupfour400-vertices">
+          <input semantic="POSITION" source="#geom-poofgroupfour400-positions"/>
+        </vertices>
+        <triangles material="clouds" count="10">
+          <input semantic="VERTEX" source="#geom-poofgroupfour400-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-poofgroupfour400-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-poofgroupfour400-map1" offset="2" set="1"/>
+          <p>2 0 2 0 1 0 3 2 3 1 3 1 3 2 3 0 1 0 6 4 6 4 5 4 7 6 7 5 7 5 7 6 7 4 5 4 10 8 10 8 9 8 11 10 11 9 11 9 11 10 11 8 9 8 14 12 14 12 13 12 15 14 15 13 15 13 15 14 15 12 13 12 18 16 18 16 17 16 19 18 19 17 19 17 19 18 19 16 17 16</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-poofgroupfive400" name="poofgroupfive400">
+      <mesh>
+        <source id="geom-poofgroupfive400-positions">
+          <float_array id="geom-poofgroupfive400-positions-array" count="60">0.5539122 2.244284 -1.199309 -2.152252 2.244284 -1.199309 0.5539122 2.244284 1.50685 -2.152252 2.244284 1.50685 2.005926 2.510094 -1.468757 -1.207307 2.510094 -1.468757 2.005926 2.510094 1.74447 -1.207307 2.510094 1.74447 2.258175 2.307252 -1.218585 -0.4207478 2.307252 -1.218585 2.258175 2.307252 1.460333 -0.4207478 2.307252 1.460333 1.48895 1.562031 -1.541403 -1.108686 1.562031 -1.541403 1.48895 1.562031 1.056227 -1.108686 1.562031 1.056227 0.9564481 1.116523 -1.565508 -2.252983 1.116523 -1.565508 0.9564481 1.116523 1.643918 -2.252983 1.116523 1.643918</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupfive400-positions-array" count="20" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupfive400-normals">
+          <float_array id="geom-poofgroupfive400-normals-array" count="60">8.8102e-8 1 0 8.8102e-8 1 0 8.8102e-8 1 0 8.8102e-8 1 0 1.48398e-7 1 0 1.48398e-7 1 0 1.48398e-7 1 0 1.48398e-7 1 0 8.89979e-8 1 0 8.89979e-8 1 0 8.89979e-8 1 0 8.89979e-8 1 0 1.37674e-7 1 0 1.37674e-7 1 0 1.37674e-7 1 0 1.37674e-7 1 0 1.48574e-7 1 0 1.48574e-7 1 0 1.48574e-7 1 0 1.48574e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupfive400-normals-array" count="20" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupfive400-map1">
+          <float_array id="geom-poofgroupfive400-map1-array" count="60">0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupfive400-map1-array" count="20" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-poofgroupfive400-vertices">
+          <input semantic="POSITION" source="#geom-poofgroupfive400-positions"/>
+        </vertices>
+        <triangles material="clouds" count="10">
+          <input semantic="VERTEX" source="#geom-poofgroupfive400-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-poofgroupfive400-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-poofgroupfive400-map1" offset="2" set="1"/>
+          <p>2 0 2 0 1 0 3 2 3 1 3 1 3 2 3 0 1 0 6 4 6 4 5 4 7 6 7 5 7 5 7 6 7 4 5 4 10 8 10 8 9 8 11 10 11 9 11 9 11 10 11 8 9 8 14 12 14 12 13 12 15 14 15 13 15 13 15 14 15 12 13 12 18 16 18 16 17 16 19 18 19 17 19 17 19 18 19 16 17 16</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-poofgroupsix400" name="poofgroupsix400">
+      <mesh>
+        <source id="geom-poofgroupsix400-positions">
+          <float_array id="geom-poofgroupsix400-positions-array" count="96">0.6084299 2.382892 -0.8748262 -2.187074 2.382893 -0.8748262 0.6084299 2.382892 1.920673 -2.187074 2.382893 1.920673 0.9428585 2.296036 -1.479822 -2.309674 2.296036 -1.479822 0.9428585 2.296036 1.772705 -2.309674 2.296036 1.772705 2.305242 2.5555 -1.510347 -1.123711 2.5555 -1.510347 2.305242 2.5555 1.9186 -1.123711 2.5555 1.9186 2.105155 2.568008 -1.327275 -0.9435554 2.568009 -1.327275 2.105155 2.568008 1.72143 -0.9435554 2.568009 1.72143 1.937147 1.330877 -0.7816706 -0.2052994 1.330877 -0.7816706 1.937147 1.330877 1.360771 -0.2052994 1.330877 1.360771 1.707851 2.534703 -1.168302 -1.034309 2.534703 -1.168302 1.707851 2.534703 1.573852 -1.034309 2.534703 1.573852 1.664817 2.282579 -1.508628 -2.130383 2.28258 -1.508628 1.664817 2.282579 2.286568 -2.130383 2.28258 2.286568 1.476874 1.784391 -1.47584 -1.004025 1.784391 -1.47584 1.476874 1.784391 1.005054 -1.004025 1.784391 1.005054</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupsix400-positions-array" count="32" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupsix400-normals">
+          <float_array id="geom-poofgroupsix400-normals-array" count="96">8.52864e-8 1 0 8.52864e-8 0.9999999 0 8.52864e-8 0.9999999 0 8.52864e-8 1 0 1.46605e-7 1 0 1.46605e-7 0.9999999 0 1.46605e-7 0.9999999 0 1.46605e-7 1 0 1.39062e-7 1 0 1.39062e-7 1 0 1.39062e-7 1 0 1.39062e-7 1 0 1.56406e-7 1 0 1.56406e-7 0.9999999 0 1.56406e-7 0.9999999 0 1.56406e-7 1 0 1.11283e-7 1 0 1.11283e-7 1 0 1.11283e-7 1 0 1.11283e-7 1 0 1.73891e-7 1 0 1.73891e-7 1 0 1.73891e-7 1 0 1.73891e-7 1 0 1.25642e-7 1 0 1.25642e-7 0.9999999 0 1.25642e-7 0.9999999 0 1.25642e-7 1 0 1.44153e-7 1 0 1.44153e-7 1 0 1.44153e-7 1 0 1.44153e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupsix400-normals-array" count="32" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupsix400-map1">
+          <float_array id="geom-poofgroupsix400-map1-array" count="96">0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupsix400-map1-array" count="32" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-poofgroupsix400-vertices">
+          <input semantic="POSITION" source="#geom-poofgroupsix400-positions"/>
+        </vertices>
+        <triangles material="clouds" count="16">
+          <input semantic="VERTEX" source="#geom-poofgroupsix400-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-poofgroupsix400-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-poofgroupsix400-map1" offset="2" set="1"/>
+          <p>2 0 2 0 1 0 3 2 3 1 3 1 3 2 3 0 1 0 6 4 6 4 5 4 7 6 7 5 7 5 7 6 7 4 5 4 10 8 10 8 9 8 11 10 11 9 11 9 11 10 11 8 9 8 14 12 14 12 13 12 15 14 15 13 15 13 15 14 15 12 13 12 18 16 18 16 17 16 19 18 19 17 19 17 19 18 19 16 17 16 22 20 22 20 21 20 23 22 23 21 23 21 23 22 23 20 21 20 26 24 26 24 25 24 27 26 27 25 27 25 27 26 27 24 25 24 30 28 30 28 29 28 31 30 31 29 31 29 31 30 31 28 29 28</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-poofgroupseven400" name="poofgroupseven400">
+      <mesh>
+        <source id="geom-poofgroupseven400-positions">
+          <float_array id="geom-poofgroupseven400-positions-array" count="84">2.587845 -0.9618676 -1.640689 -0.8833203 -0.961867 -1.640689 2.587845 -0.9618676 1.830472 -0.8833203 -0.961867 1.830472 2.658194 -0.5614336 -1.31443 -0.2436824 -0.5614331 -1.31443 2.658194 -0.5614336 1.587441 -0.2436824 -0.5614331 1.587441 1.345351 -1.424409 -1.043039 -1.238708 -1.424409 -1.043039 1.345351 -1.424409 1.541016 -1.238708 -1.424409 1.541016 1.819612 -1.934578 -0.7543314 -0.7472861 -1.934578 -0.7543314 1.819612 -1.934578 1.812562 -0.7472861 -1.934578 1.812562 1.653836 -0.3689215 -1.689201 -2.000687 -0.368921 -1.689201 1.653836 -0.3689215 1.965317 -2.000687 -0.368921 1.965317 0.9274693 -1.869209 -1.735717 -2.881452 -1.869208 -1.735717 0.9274693 -1.869209 2.0732 -2.881452 -1.869208 2.0732 0.4824152 -0.9796307 -1.544367 -2.892276 -0.9796302 -1.544367 0.4824152 -0.9796307 1.830319 -2.892276 -0.9796302 1.830319</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupseven400-positions-array" count="28" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupseven400-normals">
+          <float_array id="geom-poofgroupseven400-normals-array" count="84">1.54542e-7 1 0 1.54542e-7 0.9999999 0 1.54542e-7 0.9999999 0 1.54542e-7 1 0 1.6432e-7 1 0 1.6432e-7 1 0 1.6432e-7 1 0 1.6432e-7 1 0 1.8453e-7 1 0 1.8453e-7 0.9999999 0 1.8453e-7 0.9999999 0 1.8453e-7 1 0 1.39323e-7 1 0 1.39323e-7 1 0 1.39323e-7 1 0 1.39323e-7 1 0 1.46788e-7 1 0 1.46788e-7 1 0 1.46788e-7 1 0 1.46788e-7 1 0 1.56487e-7 1 0 1.56487e-7 1 0 1.56487e-7 1 0 1.56487e-7 1 0 1.41298e-7 1 0 1.41298e-7 1 0 1.41298e-7 1 0 1.41298e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupseven400-normals-array" count="28" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupseven400-map1">
+          <float_array id="geom-poofgroupseven400-map1-array" count="84">0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupseven400-map1-array" count="28" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-poofgroupseven400-vertices">
+          <input semantic="POSITION" source="#geom-poofgroupseven400-positions"/>
+        </vertices>
+        <triangles material="clouds" count="14">
+          <input semantic="VERTEX" source="#geom-poofgroupseven400-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-poofgroupseven400-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-poofgroupseven400-map1" offset="2" set="1"/>
+          <p>2 0 2 0 1 0 3 2 3 1 3 1 3 2 3 0 1 0 6 4 6 4 5 4 7 6 7 5 7 5 7 6 7 4 5 4 10 8 10 8 9 8 11 10 11 9 11 9 11 10 11 8 9 8 14 12 14 12 13 12 15 14 15 13 15 13 15 14 15 12 13 12 18 16 18 16 17 16 19 18 19 17 19 17 19 18 19 16 17 16 22 20 22 20 21 20 23 22 23 21 23 21 23 22 23 20 21 20 26 24 26 24 25 24 27 26 27 25 27 25 27 26 27 24 25 24</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-poofgroupeight400" name="poofgroupeight400">
+      <mesh>
+        <source id="geom-poofgroupeight400-positions">
+          <float_array id="geom-poofgroupeight400-positions-array" count="84">2.605322 -1.830888 -1.172591 -1.14498 -1.830887 -1.172591 2.605322 -1.830888 2.577706 -1.14498 -1.830887 2.577706 0.8273661 -0.1306431 -1.799374 -2.79011 -0.1306425 -1.799374 0.8273661 -0.1306431 1.818097 -2.79011 -0.1306425 1.818097 0.2656915 -0.3540136 -1.208327 -2.082943 -0.3540132 -1.208327 0.2656915 -0.3540136 1.140303 -2.082943 -0.3540132 1.140303 1.05411 -1.272928 -1.64726 -1.594934 -1.272928 -1.64726 1.05411 -1.272928 1.001779 -1.594934 -1.272928 1.001779 1.206006 -1.465871 -0.8317168 -1.132402 -1.465871 -0.8317168 1.206006 -1.465871 1.506687 -1.132402 -1.465871 1.506687 2.487524 -0.3841706 -1.589408 0.01564837 -0.3841702 -1.589408 2.487524 -0.3841706 0.882462 0.01564837 -0.3841702 0.882462 0.3600628 -0.5620038 -0.4553199 -1.792946 -0.5620034 -0.4553199 0.3600628 -0.5620038 1.697683 -1.792946 -0.5620034 1.697683</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupeight400-positions-array" count="28" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupeight400-normals">
+          <float_array id="geom-poofgroupeight400-normals-array" count="84">1.27146e-7 1 0 1.27146e-7 0.9999999 0 1.27146e-7 0.9999999 0 1.27146e-7 1 0 1.48292e-7 1 0 1.48292e-7 1 0 1.48292e-7 1 0 1.48292e-7 1 0 1.52271e-7 1 0 1.52271e-7 1 0 1.52271e-7 1 0 1.52271e-7 1 0 1.35003e-7 1 0 1.35003e-7 1 0 1.35003e-7 1 0 1.35003e-7 1 0 1.52936e-7 1 0 1.52936e-7 1 0 1.52936e-7 1 0 1.52936e-7 1 0 1.56735e-7 1 0 1.56735e-7 1 0 1.56735e-7 1 0 1.56735e-7 1 0 1.66106e-7 1 0 1.66106e-7 0.9999999 0 1.66106e-7 0.9999999 0 1.66106e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupeight400-normals-array" count="28" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupeight400-map1">
+          <float_array id="geom-poofgroupeight400-map1-array" count="84">0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupeight400-map1-array" count="28" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-poofgroupeight400-vertices">
+          <input semantic="POSITION" source="#geom-poofgroupeight400-positions"/>
+        </vertices>
+        <triangles material="clouds" count="14">
+          <input semantic="VERTEX" source="#geom-poofgroupeight400-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-poofgroupeight400-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-poofgroupeight400-map1" offset="2" set="1"/>
+          <p>2 0 2 0 1 0 3 2 3 1 3 1 3 2 3 0 1 0 6 4 6 4 5 4 7 6 7 5 7 5 7 6 7 4 5 4 10 8 10 8 9 8 11 10 11 9 11 9 11 10 11 8 9 8 14 12 14 12 13 12 15 14 15 13 15 13 15 14 15 12 13 12 18 16 18 16 17 16 19 18 19 17 19 17 19 18 19 16 17 16 22 20 22 20 21 20 23 22 23 21 23 21 23 22 23 20 21 20 26 24 26 24 25 24 27 26 27 25 27 25 27 26 27 24 25 24</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-poofgroupnine400" name="poofgroupnine400">
+      <mesh>
+        <source id="geom-poofgroupnine400-positions">
+          <float_array id="geom-poofgroupnine400-positions-array" count="72">1.737576 0.5527272 -1.636558 -2.037726 0.5527277 -1.636558 1.737576 0.5527272 2.13874 -2.037726 0.5527277 2.13874 0.8420782 -1.233126 -1.355532 -2.086321 -1.233125 -1.355532 0.8420782 -1.233126 1.572862 -2.086321 -1.233125 1.572862 3.155732 -0.03660935 -1.285374 -0.5481629 -0.03660879 -1.285374 3.155732 -0.03660935 2.418516 -0.5481629 -0.03660879 2.418516 2.742774 0.6238124 -1.999332 -0.6044829 0.6238129 -1.999332 2.742774 0.6238124 1.34792 -0.6044829 0.6238129 1.34792 2.661039 0.4086618 -1.245376 -0.1268206 0.4086622 -1.245376 2.661039 0.4086618 1.542478 -0.1268206 0.4086622 1.542478 0.6698408 -0.882537 -1.586415 -1.944231 -0.8825366 -1.586415 0.6698408 -0.882537 1.027651 -1.944231 -0.8825366 1.027651</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupnine400-positions-array" count="24" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupnine400-normals">
+          <float_array id="geom-poofgroupnine400-normals-array" count="72">1.42092e-7 1 0 1.42092e-7 1 0 1.42092e-7 1 0 1.42092e-7 1 0 1.62832e-7 1 0 1.62832e-7 1 0 1.62832e-7 1 0 1.62832e-7 1 0 1.50866e-7 1 0 1.50866e-7 0.9999999 0 1.50866e-7 0.9999999 0 1.50866e-7 1 0 1.60263e-7 1 0 1.60263e-7 0.9999999 0 1.60263e-7 0.9999999 0 1.60263e-7 1 0 1.49661e-7 1 0 1.4966e-7 0.9999999 0 1.4966e-7 0.9999999 0 1.49661e-7 1 0 1.5961e-7 1 0 1.5961e-7 1 0 1.5961e-7 1 0 1.5961e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupnine400-normals-array" count="24" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupnine400-map1">
+          <float_array id="geom-poofgroupnine400-map1-array" count="72">0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupnine400-map1-array" count="24" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-poofgroupnine400-vertices">
+          <input semantic="POSITION" source="#geom-poofgroupnine400-positions"/>
+        </vertices>
+        <triangles material="clouds" count="12">
+          <input semantic="VERTEX" source="#geom-poofgroupnine400-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-poofgroupnine400-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-poofgroupnine400-map1" offset="2" set="1"/>
+          <p>2 0 2 0 1 0 3 2 3 1 3 1 3 2 3 0 1 0 6 4 6 4 5 4 7 6 7 5 7 5 7 6 7 4 5 4 10 8 10 8 9 8 11 10 11 9 11 9 11 10 11 8 9 8 14 12 14 12 13 12 15 14 15 13 15 13 15 14 15 12 13 12 18 16 18 16 17 16 19 18 19 17 19 17 19 18 19 16 17 16 22 20 22 20 21 20 23 22 23 21 23 21 23 22 23 20 21 20</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-poofgroupten400" name="poofgroupten400">
+      <mesh>
+        <source id="geom-poofgroupten400-positions">
+          <float_array id="geom-poofgroupten400-positions-array" count="72">0.07450342 0.2429416 -1.048128 -2.013395 0.2429419 -1.048128 0.07450342 0.2429416 1.039765 -2.013395 0.2429419 1.039765 2.066791 0.8835415 -1.572803 -0.5910687 0.8835419 -1.572803 2.066791 0.8835415 1.085052 -0.5910687 0.8835419 1.085052 0.3172255 1.227093 -1.367902 -2.591622 1.227093 -1.367902 0.3172255 1.227093 1.540941 -2.591622 1.227093 1.540941 1.797345 0.2134087 -0.5817048 -0.6419162 0.2134091 -0.5817048 1.797345 0.2134087 1.857551 -0.6419162 0.2134091 1.857551 2.687558 1.269749 -1.320532 -0.2915912 1.269749 -1.320532 2.687558 1.269749 1.658612 -0.2915912 1.269749 1.658612 2.31716 0.9227648 -2.198126 -1.35566 0.9227653 -2.198126 2.31716 0.9227648 1.47469 -1.35566 0.9227653 1.47469</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupten400-positions-array" count="24" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupten400-normals">
+          <float_array id="geom-poofgroupten400-normals-array" count="72">1.49875e-7 1 0 1.49875e-7 1 0 1.49875e-7 1 0 1.49875e-7 1 0 1.34555e-7 1 0 1.34555e-7 1 0 1.34555e-7 1 0 1.34555e-7 1 0 1.22945e-7 1 0 1.22945e-7 1 0 1.22945e-7 1 0 1.22945e-7 1 0 1.52722e-7 1 0 1.52722e-7 1 0 1.52722e-7 1 0 1.52722e-7 1 0 1.20044e-7 1 0 1.20044e-7 1 0 1.20044e-7 1 0 1.20044e-7 1 0 1.46057e-7 1 0 1.46057e-7 0.9999999 0 1.46057e-7 0.9999999 0 1.46057e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupten400-normals-array" count="24" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-poofgroupten400-map1">
+          <float_array id="geom-poofgroupten400-map1-array" count="72">0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0 0.04453439 0.04453439 0 0.9554656 0.04453439 0 0.04453439 0.9554656 0 0.9554656 0.9554656 0</float_array>
+          <technique_common>
+            <accessor source="#geom-poofgroupten400-map1-array" count="24" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-poofgroupten400-vertices">
+          <input semantic="POSITION" source="#geom-poofgroupten400-positions"/>
+        </vertices>
+        <triangles material="clouds" count="12">
+          <input semantic="VERTEX" source="#geom-poofgroupten400-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-poofgroupten400-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-poofgroupten400-map1" offset="2" set="1"/>
+          <p>2 0 2 0 1 0 3 2 3 1 3 1 3 2 3 0 1 0 6 4 6 4 5 4 7 6 7 5 7 5 7 6 7 4 5 4 10 8 10 8 9 8 11 10 11 9 11 9 11 10 11 8 9 8 14 12 14 12 13 12 15 14 15 13 15 13 15 14 15 12 13 12 18 16 18 16 17 16 19 18 19 17 19 17 19 18 19 16 17 16 22 20 22 20 21 20 23 22 23 21 23 21 23 22 23 20 21 20</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="geom-bounds" name="bounds">
+      <mesh>
+        <source id="geom-bounds-positions">
+          <float_array id="geom-bounds-positions-array" count="24">-3.864795 -3.683633 0 3.864795 -3.683633 0 -3.864795 3.683633 0 3.864795 3.683633 0 -3.864795 -3.683633 6.763391 3.864795 -3.683633 6.763391 -3.864795 3.683633 6.763391 3.864795 3.683633 6.763391</float_array>
+          <technique_common>
+            <accessor source="#geom-bounds-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-bounds-normals">
+          <float_array id="geom-bounds-normals-array" count="72">0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 1 0 0 1 0 0 1 0 0 1 0 -1 0 0 -1 0 0 -1 0 0 -1 0 1 0 0 1 0 0 1 0 0 1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#geom-bounds-normals-array" count="24" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="geom-bounds-map1">
+          <float_array id="geom-bounds-map1-array" count="36">0 0 0 1 0 0 0 1 0 1 1 0 0 0 0 1 0 0 0 1 0 1 1 0 0 0 0 1 0 0 0 1 0 1 1 0</float_array>
+          <technique_common>
+            <accessor source="#geom-bounds-map1-array" count="12" stride="3">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+              <param name="P" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="geom-bounds-vertices">
+          <input semantic="POSITION" source="#geom-bounds-positions"/>
+        </vertices>
+        <triangles material="ColorMaterial" count="12">
+          <input semantic="VERTEX" source="#geom-bounds-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#geom-bounds-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#geom-bounds-map1" offset="2" set="1"/>
+          <p>0 0 9 2 1 11 3 2 10 3 2 10 1 3 8 0 0 9 4 4 8 5 5 9 7 6 11 7 6 11 6 7 10 4 4 8 0 8 4 1 9 5 5 10 7 5 10 7 4 11 6 0 8 4 1 12 0 3 13 1 7 14 3 7 14 3 5 15 2 1 12 0 3 16 4 2 17 5 6 18 7 6 18 7 7 19 6 3 16 4 2 20 0 0 21 1 4 22 3 4 22 3 6 23 2 2 20 0</p>
+        </triangles>
+      </mesh>
+      <extra>
+        <technique profile="OpenCOLLADA3dsMax">
+          <box>
+            <generateuvs>1</generateuvs>
+            <height>6.763391</height>
+            <heightsegments>1</heightsegments>
+            <length>7.367267</length>
+            <lengthsegments>1</lengthsegments>
+            <width>7.72959</width>
+            <widthsegments>1</widthsegments>
+          </box>
+        </technique>
+      </extra>
+    </geometry>
+  </library_geometries>
+  <library_lights>
+    <light id="EnvironmentAmbientLight" name="EnvironmentAmbientLight">
+      <technique_common>
+        <ambient>
+          <color>0.862745 0.862745 0.862745</color>
+        </ambient>
+      </technique_common>
+    </light>
+  </library_lights>
+  <library_images>
+    <image id="grass_diffuse_transparency_png">
+      <init_from>file:///C:/Projects/ForestKit/scriptsAndAssets/data/shapes/vegetation/grass_mesh/grass_diffuse_transparency.png</init_from>
+    </image>
+    <image id="poofalpha_png">
+      <init_from>file:///E:/Russell/Desktop/poofalpha.png</init_from>
+    </image>
+  </library_images>
+  <library_visual_scenes>
+    <visual_scene id="MaxScene">
+      <node name="EnvironmentAmbientLight">
+        <instance_light url="#EnvironmentAmbientLight"/>
+      </node>
+      <node id="node-Birth_01" name="Birth_01"/>
+      <node id="node-Speed_01" name="Speed_01"/>
+      <node id="node-Rotation_01" name="Rotation_01"/>
+      <node id="node-Render_01" name="Render_01"/>
+      <node id="node-Display_01" name="Display_01"/>
+      <node id="node-Event_01" name="Event_01"/>
+      <node id="node-Particle_View_01" name="Particle_View_01"/>
+      <node id="node-Position_Object_01" name="Position_Object_01"/>
+      <node id="node-Shape_Instance_01" name="Shape_Instance_01"/>
+      <node id="node-Scale_01" name="Scale_01"/>
+      <node id="node-Event_02" name="Event_02"/>
+      <node id="node-Display_02" name="Display_02"/>
+      <node id="node-base00" name="base00">
+        <node id="node-detail400" name="detail400"/>
+        <node id="node-start00" name="start00">
+          <node id="node-poofgroupone400" name="poofgroupone400">
+            <translate>-0.2742637 0.5281798 0.0105921</translate>
+            <node>
+              <matrix>1 0 0 0.06531942 0 1 0 -0.1288382 0 0 1 -0.0105921 0 0 0 1</matrix>
+              <instance_geometry url="#geom-poofgroupone400">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="clouds_1" target="#clouds-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+          <node id="node-poofgrouptwo400" name="poofgrouptwo400">
+            <translate>-0.1720873 -2.435719 0.1440272</translate>
+            <node>
+              <matrix>1 0 0 -0.03685707 0 1 0 2.835061 0 0 1 -0.1440272 0 0 0 1</matrix>
+              <instance_geometry url="#geom-poofgrouptwo400">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="clouds" target="#clouds-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+          <node id="node-poofgroupthree400" name="poofgroupthree400">
+            <translate>-0.2237407 -1.805431 0.3666525</translate>
+            <node>
+              <matrix>1 0 0 0.01479638 0 1 0 2.204772 0 0 1 -0.3666525 0 0 0 1</matrix>
+              <instance_geometry url="#geom-poofgroupthree400">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="clouds" target="#clouds-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+          <node id="node-poofgroupfour400" name="poofgroupfour400">
+            <translate>0.02940989 -1.239507 0.6335796</translate>
+            <node>
+              <matrix>1 0 0 -0.2383542 0 1 0 1.638849 0 0 1 -0.6335796 0 0 0 1</matrix>
+              <instance_geometry url="#geom-poofgroupfour400">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="clouds" target="#clouds-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+          <node id="node-poofgroupfive400" name="poofgroupfive400">
+            <translate>-0.2063484 2.21265 0.08948082</translate>
+            <node>
+              <matrix>1 0 0 -0.002595901 0 1 0 -1.813308 0 0 1 -0.08948082 0 0 0 1</matrix>
+              <instance_geometry url="#geom-poofgroupfive400">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="clouds" target="#clouds-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+          <node id="node-poofgroupsix400" name="poofgroupsix400">
+            <translate>-0.2111603 2.348784 0.3881103</translate>
+            <node>
+              <matrix>1 0 0 0.002215981 0 1 0 -1.949443 0 0 1 -0.3881103 0 0 0 1</matrix>
+              <instance_geometry url="#geom-poofgroupsix400">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="clouds" target="#clouds-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+          <node id="node-poofgroupseven400" name="poofgroupseven400">
+            <translate>-0.3259854 -0.7524083 0.1687416</translate>
+            <node>
+              <matrix>1 0 0 0.1170411 0 1 0 1.15175 0 0 1 -0.1687416 0 0 0 1</matrix>
+              <instance_geometry url="#geom-poofgroupseven400">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="clouds" target="#clouds-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+          <node id="node-poofgroupeight400" name="poofgroupeight400">
+            <translate>-0.3013378 -0.5814235 0.3891662</translate>
+            <node>
+              <matrix>1 0 0 0.09239352 0 1 0 0.9807651 0 0 1 -0.3891662 0 0 0 1</matrix>
+              <instance_geometry url="#geom-poofgroupeight400">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="clouds" target="#clouds-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+          <node id="node-poofgroupnine400" name="poofgroupnine400">
+            <translate>0.3257611 0.09468526 0.209592</translate>
+            <node>
+              <matrix>1 0 0 -0.5347054 0 1 0 0.3046563 0 0 1 -0.209592 0 0 0 1</matrix>
+              <instance_geometry url="#geom-poofgroupnine400">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="clouds" target="#clouds-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+          <node id="node-poofgroupten400" name="poofgroupten400">
+            <translate>-0.1609766 1.14092 -0.1702871</translate>
+            <node>
+              <matrix>1 0 0 -0.04796767 0 1 0 -0.7415788 0 0 1 0.1702871 0 0 0 1</matrix>
+              <instance_geometry url="#geom-poofgroupten400">
+                <bind_material>
+                  <technique_common>
+                    <instance_material symbol="clouds" target="#clouds-material">
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                      <bind_vertex_input semantic="CHANNEL1" input_semantic="TEXCOORD" input_set="1"/>
+                    </instance_material>
+                  </technique_common>
+                </bind_material>
+              </instance_geometry>
+            </node>
+          </node>
+        </node>
+      </node>
+      <node id="node-bounds" name="bounds">
+        <node>
+          <matrix>1 0 0 -0.06505597 0 1 0 0.1714063 0 0 1 -2.894123 0 0 0 1</matrix>
+          <instance_geometry url="#geom-bounds">
+            <bind_material>
+              <technique_common>
+                <instance_material symbol="ColorMaterial" target="#ColorEffectR87G224B198-material"/>
+              </technique_common>
+            </bind_material>
+          </instance_geometry>
+        </node>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#MaxScene"/>
+  </scene>
+</COLLADA>

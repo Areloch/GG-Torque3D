@@ -311,14 +311,7 @@ void Entity::processTick(const Move* move)
       }
       else
       {
-         if (isMounted())
-         {
-            MatrixF mat;
-            mMount.object->getMountTransform(mMount.node, mMount.xfm, &mat);
-            Parent::setTransform(mat);
-            Parent::setRenderTransform(mat);
-         }
-         else
+         if (!isMounted())
          {
             if (!move)
             {
@@ -397,7 +390,20 @@ void Entity::processTick(const Move* move)
       mDelta.posVec -= getPosition();
       mDelta.rot[1] = mRot.asQuatF();
 
-      setTransform(getPosition(), mRot);
+      if (isMounted())
+      {
+         MatrixF mat;
+         mMount.object->getMountTransform(mMount.node, mMount.xfm, &mat);
+
+         RotationF mountRot = mat;
+         setTransform(mat.getPosition(), mountRot);
+         //Parent::setTransform(mat);
+         //Parent::setRenderTransform(mat);
+      }
+      else
+      {
+         setTransform(getPosition(), mRot);
+      }
    }
 }
 
@@ -907,8 +913,10 @@ void Entity::getMountTransform(S32 index, const MatrixF &xfm, MatrixF *outMat)
          position.convolve(scale);
          mountTransform.setPosition(position);
 
+         outMat->set(mountTransform.toEuler(), position);
+
          // Also we would like the object to be scaled to the model.
-         outMat->mul(mObjToWorld, mountTransform);
+         //outMat->mul(mObjToWorld, mountTransform);
          return;
       }
    }

@@ -1,0 +1,6 @@
+<StateMachineAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="TestSM"
+    stateMachineFile="data/Weapons/stateMachines/TestSM.xml"
+    VersionId="1" />

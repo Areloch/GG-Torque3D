@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="grassyplant_normals"
+    imageFile="data/Pacific/Images/grassyplant_normals.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\vegetation\smallplants\grassyplant\grassyplant_normals.dds"
+    VersionId="1" />

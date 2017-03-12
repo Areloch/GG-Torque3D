@@ -1,0 +1,11 @@
+<ComponentAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="InteractableComponent"
+    componentName="InteractableComponent"
+    componentClass="Component"
+    friendlyName="Interactable"
+    componentType="Interaction"
+    description="Base component for an entity to respond to interactions."
+    scriptFile="data/Items/components/InteractableComponent.cs"
+    VersionId="1" />

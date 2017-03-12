@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="exposedrock_specular"
+    imageFile="data/Pacific/Images/exposedrock_specular.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\decals\exposed_rock\exposedrock_specular.dds"
+    VersionId="1" />

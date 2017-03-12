@@ -98,12 +98,12 @@ ComponentAsset::ComponentAsset() :
    // Generate an asset definition.
    mpAssetDefinition = new AssetDefinition();
 
-   mComponentName = StringTable->lookup("");
-   mComponentClass = StringTable->lookup("");
-   mFriendlyName = StringTable->lookup("");
-   mComponentType = StringTable->lookup("");
-   mDescription = StringTable->lookup("");
-   mScriptFile = StringTable->lookup("");
+   mComponentName = StringTable->EmptyString();
+   mComponentClass = StringTable->EmptyString();
+   mFriendlyName = StringTable->EmptyString();
+   mComponentType = StringTable->EmptyString();
+   mDescription = StringTable->EmptyString();
+   mScriptFile = StringTable->EmptyString();
 }
 
 //-----------------------------------------------------------------------------

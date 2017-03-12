@@ -1,0 +1,36 @@
+<ShaderGraph>
+    <PixelShader>
+        <In>
+            <float2 name="texCoord" target="TEXCOORD0"/> 
+            <float4 name="screenspacePos" target="TEXCOORD1"/>
+            <float2 name="vpos" target="VPOS"/>
+        </In>
+        <Out>
+            <float4 name="color" target="COLOR0"/>
+        </Out>
+        <Uniforms>
+            <sampler2D name="diffuseMap" register="0"/>
+            <sampler2D name="bumpMap" register="1"/>
+            <sampler2D name="lightInfoBuffer" register="2"/>
+            <float4 name="specularColor" register="0"/>
+            <float name="specularPower" register="1"/>
+            <float name="specularStrength" register="2"/>
+            <float name="visibility" register="3"/>
+            <float4 name="rtParamslightInfoBuffer" register="4"/>
+        </Uniforms>
+        <Nodes>
+            <Texture2DNode name="diffuseMap" uid="0" pos="-100 0" />
+            <Texture2DNode name="bumpMap" uid="1" pos="-100 200" />
+            <DeferredMaterialNode name="" uid="2" pos="100 0" />
+            <float4Node name="specularColor" uid="3" pos="20 20" />
+            <floatNode name="specularPower" uid="4" pos="30 20" />
+            <floatNode name="specularStrength" uid="5" pos="40 20" />
+            <floatNode name="visibility" uid="6" pos="50 20" />
+            <float4Node name="rtParamslightInfoBuffer" uid="7" pos="60 20" />
+        </Nodes>
+        <Connections>
+            <Connection startNodeUid="0" endNodeUid="2" startSocket="0" endSocket="0" />
+            <Connection startNodeUid="1" endNodeUid="2" startSocket="0" endSocket="1" />
+        </Connections>
+    </PixelShader>
+</ShaderGraph>

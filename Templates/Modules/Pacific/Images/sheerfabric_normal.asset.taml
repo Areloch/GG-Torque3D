@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="sheerfabric_normal"
+    imageFile="data/Pacific/Images/sheerfabric_normal.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\props\cloth\sheerfabric_normal.dds"
+    VersionId="1" />

@@ -1,0 +1,23 @@
+<ShaderGraph>
+    <PixelShader>
+        <In>
+            <float2 name="texCoord" target="TEXCOORD0" />
+            <float4 name="screenspacePos" target="TEXCOORD1" />
+            <float2 name="vpos" target="VPOS" />
+        </In>
+        <Out>
+            <float4 name="color" target="COLOR0" />
+            <float4 name="normal" target="COLOR1" />
+        </Out>
+        <Uniforms>
+            <sampler2D name="" register="0" />
+            <sampler2D name="" register="1" />
+        </Uniforms>
+        <Nodes>
+            <DeferredMaterialNode name="" uid="0" pos="857 332" />
+            <Texture2DNode name="" uid="1" pos="600 250" />
+            <Texture2DNode name="" uid="2" pos="573 368" />
+        </Nodes>
+        <Connections />
+    </PixelShader>
+</ShaderGraph>

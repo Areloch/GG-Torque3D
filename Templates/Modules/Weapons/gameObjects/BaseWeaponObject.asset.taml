@@ -1,0 +1,9 @@
+<GameObjectAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="BaseWeaponObject"
+    gameObjectName="BaseWeaponObject"
+    scriptFilePath="data/Weapons/gameObjects/BaseWeaponObject.cs"
+    TAMLFilePath="data/Weapons/gameObjects/BaseWeaponObject.taml"
+    assetId="BaseWeaponObjectAsset"
+    VersionId="1" />

@@ -103,6 +103,7 @@ ImageAsset::ImageAsset() :
    mImage = NULL;
    mUseMips = true;
    mIsHDRImage = false;
+   mIsValidImage = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -141,12 +142,20 @@ void ImageAsset::initializeAsset()
 
    if (mImageFileName)
    {
-      mImage = new GBitmap();
+      if (!Platform::isFile(mImageFileName))
+      {
+         Con::errorf("ImageAsset::initializeAsset: Attempted to load file %s but it was not valid!", mImageFileName);
+         return;
+      }
 
-      mImage->load(mImageFileName);
+      mImage.set(mImageFileName, &GFXDefaultStaticDiffuseSRGBProfile, avar("%s() - mImage (line %d)", __FUNCTION__, __LINE__));
 
-      GFXFormat form = mIsHDRImage ? GFXFormatR16G16B16A16F : GFXFormatR8G8B8A8;
-
-      mImage->allocateBitmap(0, 0, mUseMips, form);
+      if (mImage)
+      {
+         mIsValidImage = true;
+         return;
+      }
    }
+   
+   mIsValidImage = false;
 }

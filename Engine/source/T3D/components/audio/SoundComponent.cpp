@@ -376,7 +376,7 @@ void SoundComponent::updateAudioPos()
 }
 
 //----------------------------------------------------------------------------
-DefineEngineMethod(SoundComponent, playAudio, bool, (S32 slot, SFXTrack* track), (0, NULL),
+DefineEngineMethod(SoundComponent, playAudio, bool, (S32 slot, SFXTrack* track), (0, nullAsType<SFXTrack*>()),
    "@brief Attach a sound to this shape and start playing it.\n\n"
 
    "@param slot Audio slot index for the sound (valid range is 0 - 3)\n" // 3 = ShapeBase::MaxSoundThreads-1

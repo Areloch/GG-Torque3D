@@ -1,0 +1,8 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="LongswordMat"
+    imageFile="data/Weapons/Images/LongswordMat.png"
+    useMips="true"
+    isHDRImage="false"
+    VersionId="1" />

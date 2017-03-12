@@ -1,0 +1,15 @@
+<ModuleDefinition
+    canSave="true"
+    canSaveDynamicFields="true"
+    ModuleId="Items"
+    VersionId="1"
+    ScriptFile="Items.cs"
+    CreateFunction="onCreate"
+    DestroyFunction="onDestroy"
+    Group="Game">
+    <DeclaredAssets
+        canSave="true"
+        canSaveDynamicFields="true"
+        Extension="asset.taml"
+        Recurse="true" />
+</ModuleDefinition>

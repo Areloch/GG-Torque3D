@@ -1,0 +1,9 @@
+<GameObjectAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="ArrowProjectile"
+    gameObjectName="ArrowProjectile"
+    scriptFilePath="data/Weapons/gameObjects/arrowProjectile.cs"
+    TAMLFilePath="data/Weapons/gameObjects/arrowProjectile.taml"
+    assetId="ArrowProjectileAsset"
+    VersionId="1" />

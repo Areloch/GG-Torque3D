@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="hanginglightsbulb_diffuse"
+    imageFile="data/Pacific/Images/hanginglightsbulb_diffuse.dds"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="D:\gamedev\T3DMIT\RndBuildUpdated\My Projects\RndBuildUpdated\art\art\shapes\structures\hanginglights\hanginglightsbulb_diffuse.dds"
+    VersionId="1" />
