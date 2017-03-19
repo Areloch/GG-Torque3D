@@ -336,6 +336,9 @@ void MeshComponent::prepRenderImage( SceneRenderState *state )
 
    if (mOwner->isMounted())
    {
+      MatrixF wrldPos = mOwner->getWorldTransform();
+      Point3F wrldPosPos = wrldPos.getPosition();
+
       Point3F mntPs = mat.getPosition();
       EulerF mntRt = RotationF(mat).asEulerF();
 

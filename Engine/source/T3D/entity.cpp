@@ -291,7 +291,15 @@ void Entity::onStaticModified(const char* slotName, const char* newValue)
 //Updating
 void Entity::processTick(const Move* move)
 {
-   if (!isHidden())
+   bool isServer = isServerObject();
+
+   if (isMounted()) 
+   {
+      MatrixF mat;
+      mMount.object->getMountTransform(mMount.node, mMount.xfm, &mat);
+      Parent::setTransform(mat);
+   }
+   /*if (!isHidden())
    {
       if (mDelta.warpCount < mDelta.warpTicks)
       {
@@ -311,7 +319,14 @@ void Entity::processTick(const Move* move)
       }
       else
       {
-         if (!isMounted())
+         if (isMounted())
+         {
+            MatrixF mat;
+            mMount.object->getMountTransform(mMount.node, mMount.xfm, &mat);
+            Parent::setTransform(mat);
+            Parent::setRenderTransform(mat);
+         }
+         else
          {
             if (!move)
             {
@@ -390,32 +405,33 @@ void Entity::processTick(const Move* move)
       mDelta.posVec -= getPosition();
       mDelta.rot[1] = mRot.asQuatF();
 
-      if (isMounted())
-      {
-         MatrixF mat;
-         mMount.object->getMountTransform(mMount.node, mMount.xfm, &mat);
-
-         RotationF mountRot = mat;
-         setTransform(mat.getPosition(), mountRot);
-         //Parent::setTransform(mat);
-         //Parent::setRenderTransform(mat);
-      }
-      else
-      {
-         setTransform(getPosition(), mRot);
-      }
-   }
+      //setTransform(getPosition(), mRot);
+   }*/
 }
 
 void Entity::advanceTime(F32 dt)
 {
+   if (isMounted()) 
+   {
+      MatrixF mat;
+      mMount.object->getRenderMountTransform(0.0f, mMount.node, mMount.xfm, &mat);
+
+      Point3F pos = mat.getPosition();
+
+      Parent::setRenderTransform(mat);
+      //setRenderTransform(mat.getPosition(), RotationF(mat));
+   }
 }
 
 void Entity::interpolateTick(F32 dt)
 {
    if (dt == 0.0f)
    {
-      setRenderTransform(mDelta.pos, mDelta.rot[1]);
+      MatrixF mat = RotationF(mDelta.rot[1]).asMatrixF();
+      mat.setPosition(mDelta.pos);
+
+      Parent::setRenderTransform(mat);
+      //setRenderTransform(mDelta.pos, mDelta.rot[1]);
    }
    else
    {
@@ -423,7 +439,11 @@ void Entity::interpolateTick(F32 dt)
       rot.interpolate(mDelta.rot[1], mDelta.rot[0], dt);
       Point3F pos = mDelta.pos + mDelta.posVec * dt;
 
-      setRenderTransform(pos, rot);
+      //setRenderTransform(pos, rot);
+      MatrixF mat = RotationF(rot).asMatrixF();
+      mat.setPosition(pos);
+
+      Parent::setRenderTransform(mat);
    }
 
    mDelta.dt = dt;
@@ -651,7 +671,7 @@ void Entity::setTransform(const MatrixF &mat)
 {
    //setMaskBits(TransformMask);
    //setMaskBits(TransformMask | NoWarpMask);
-   MatrixF oldTransform = getTransform();
+   /*MatrixF oldTransform = getTransform();
 
    if (isMounted())
    {
@@ -704,7 +724,7 @@ void Entity::setTransform(const MatrixF &mat)
          p->childTransformUpdated(this, mat);
       }*/
       //else
-      {
+      /*{
          //mRot.set(mat);
          //Parent::setTransform(mat);
 
@@ -718,11 +738,17 @@ void Entity::setTransform(const MatrixF &mat)
 
          setTransform(pos, rot);
       }
-   }
+   }*/
+   Parent::setTransform(mat);
 }
 
 void Entity::setTransform(Point3F position, RotationF rotation)
 {
+   MatrixF mat = rotation.asMatrixF();
+   mat.setPosition(position);
+   Parent::setTransform(mat);
+   return;
+
    MatrixF oldTransform = getTransform();
 
    if (isMounted())
@@ -801,6 +827,11 @@ void Entity::setRenderTransform(const MatrixF &mat)
 
 void Entity::setRenderTransform(Point3F position, RotationF rotation)
 {
+   MatrixF mat = rotation.asMatrixF();
+   mat.setPosition(position);
+   Parent::setRenderTransform(mat);
+   return;
+
    if (isMounted())
    {
       mPos = position;
@@ -899,6 +930,9 @@ void Entity::getMountTransform(S32 index, const MatrixF &xfm, MatrixF *outMat)
 
    if (renderInterface)
    {
+      if (renderInterface->getShapeInstance() == nullptr)
+         return;
+
       renderInterface->getShapeInstance()->animate();
       S32 nodeCount = renderInterface->getShapeInstance()->getShape()->nodes.size();
 
@@ -913,10 +947,8 @@ void Entity::getMountTransform(S32 index, const MatrixF &xfm, MatrixF *outMat)
          position.convolve(scale);
          mountTransform.setPosition(position);
 
-         outMat->set(mountTransform.toEuler(), position);
-
          // Also we would like the object to be scaled to the model.
-         //outMat->mul(mObjToWorld, mountTransform);
+         outMat->mul(mObjToWorld, mountTransform);
          return;
       }
    }

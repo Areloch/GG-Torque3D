@@ -311,7 +311,7 @@ bool GuiInspectorComponentGroup::inspectGroup()
             rollout->instantCollapse();
          }
          else
-   {
+         {
             // If the field already exists, just update it
             GuiInspectorField *fieldGui = findField(field->pFieldname);
             if (fieldGui != NULL)

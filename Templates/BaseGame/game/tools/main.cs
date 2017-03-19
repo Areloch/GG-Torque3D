@@ -259,6 +259,16 @@ function fastLoadWorldEdit(%val)
          LocalClientConnection.camera = %cam;
          
          %cam.setPosition("0 0 0");
+         
+         if ( !physicsPluginPresent() )
+         {
+            physicsInit("bullet");
+            physicsInitWorld("server");
+            physicsInitWorld("client");
+            
+            physicsStartSimulation("server");
+            physicsStartSimulation("client");
+         }
       }
       else
       {        

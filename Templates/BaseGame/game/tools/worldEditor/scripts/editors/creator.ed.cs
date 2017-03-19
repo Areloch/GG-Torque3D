@@ -104,6 +104,7 @@ function EWCreatorWindow::init( %this )
       %this.registerMissionObject( "RenderObjectExample" );
       %this.registerMissionObject( "RenderMeshExample" );
       %this.registerMissionObject( "RenderShapeExample" );
+      %this.registerMissionObject( "MountTestExample" );
       
    %this.endGroup(); 
 }

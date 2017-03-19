@@ -1793,7 +1793,7 @@ function EditorTree::isValidDragTarget( %this, %id, %obj )
    if( %obj.name $= "CameraBookmarks" )
       return EWorldEditor.areAllSelectedObjectsOfType( "CameraBookmark" );
    else
-      return ( %obj.getClassName() $= "SimGroup" );
+      return ( %obj.isMemberOfClass("SimGroup") );
 }
 
 function EditorTree::onBeginReparenting( %this )

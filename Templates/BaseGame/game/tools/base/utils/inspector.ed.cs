@@ -148,6 +148,7 @@ function EditorInspectorBase::onFieldRightClick( %this, %field )
          %obj.isMemberOfClass( "WheeledVehicleTire" ) ||
          %obj.isMemberOfClass( "fxShapeReplicator" ) ||
          %obj.isMemberOfClass( "RenderShapeExample" ) ||
+         %obj.isMemberOfClass( "MountTestExample" ) ||
          %obj.isMemberOfClass( "DebrisData" );
    }
    

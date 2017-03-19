@@ -166,6 +166,8 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
    %previewSize = "80 80";
    %previewBounds = 20;
    
+   %assetType = AssetDatabase.getAssetType(%asset);
+   
    %container = new GuiControl(){
       profile = "ToolsGuiDefaultProfile";
       Position = "0 0";
@@ -175,15 +177,16 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
       isContainer = "1";
       assetName = %assetName;
       moduleName = %moduleName;
+      assetType = %assetType;
    };
-   
-   %assetType = AssetDatabase.getAssetType(%asset);
+
    %tooltip = %assetName;
    
    if(%assetType $= "ShapeAsset")
    {
       %previewButton = new GuiObjectView()
       {
+         className = "AssetPreviewControl";
          internalName = %matName;
          HorizSizing = "right";
          VertSizing = "bottom";
@@ -225,7 +228,7 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
             position = "0 0";
             extent = %previewSize;
             Variable = "";
-            buttonType = "toggleButton";
+            buttonType = "ToggleButton";
             bitmap = "tools/materialEditor/gui/cubemapBtnBorder";
             groupNum = "0";
             text = "";
@@ -257,6 +260,7 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
    {
       %previewButton = new GuiBitmapButtonCtrl()
       {
+         className = "AssetPreviewControl";
          internalName = %assetName;
          HorizSizing = "right";
          VertSizing = "bottom";
@@ -343,6 +347,7 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
          Command = "AssetBrowser.updateSelection( $ThisControl.getParent().assetName, $ThisControl.getParent().moduleName );"; 
 		   altCommand = %doubleClickCommand;
          groupNum = "0";
+         useMouseEvents = true;
          text = "";
    };
    
@@ -979,4 +984,195 @@ function AssetBrowser::reloadModules(%this)
    }
    
    //ModuleDatabase.loadGroup("Game");
+}
+
+function AssetPreviewButton::onMouseDragged(%this)
+{
+   %payload = new GuiBitmapButtonCtrl();
+   %payload.assignFieldsFrom( %this );
+   %payload.className = "AssetPreviewControl";
+   %payload.position = "0 0";
+   %payload.dragSourceControl = %this;
+   
+   %xOffset = getWord( %payload.extent, 0 ) / 2;
+   %yOffset = getWord( %payload.extent, 1 ) / 2;
+   
+   // Compute the initial position of the GuiDragAndDrop control on the cavas based on the current
+   // mouse cursor position.
+   
+   %cursorpos = Canvas.getCursorPos();
+   %xPos = getWord( %cursorpos, 0 ) - %xOffset;
+   %yPos = getWord( %cursorpos, 1 ) - %yOffset;
+   
+   // Create the drag control.
+   %ctrl = new GuiDragAndDropControl()
+   {
+      canSaveDynamicFields    = "0";
+      Profile                 = "GuiSolidDefaultProfile";
+      HorizSizing             = "right";
+      VertSizing              = "bottom";
+      Position                = %xPos SPC %yPos;
+      extent                  = %payload.extent;
+      MinExtent               = "4 4";
+      canSave                 = "1";
+      Visible                 = "1";
+      hovertime               = "1000";
+
+      // Let the GuiDragAndDropControl delete itself on mouse-up.  When the drag is aborted,
+      // this not only deletes the drag control but also our payload.
+      deleteOnMouseUp         = true;
+
+      // To differentiate drags, use the namespace hierarchy to classify them.
+      // This will allow a color swatch drag to tell itself apart from a file drag, for example.
+      class                   = "AssetPreviewControlType_AssetDrop";
+   };
+   
+   // Add the temporary color swatch to the drag control as the payload.
+   %ctrl.add( %payload );
+   
+   // Start drag by adding the drag control to the canvas and then calling startDragging().
+   Canvas.getContent().add( %ctrl );
+   %ctrl.startDragging( %xOffset, %yOffset );
+}
+
+function AssetPreviewButton::onControlDropped( %this, %payload, %position )
+{
+   // Make sure this is a color swatch drag operation.
+   if( !%payload.parentGroup.isInNamespaceHierarchy( "AssetPreviewControlType_AssetDrop" ) )
+      return;
+
+   // If dropped on same button whence we came from,
+   // do nothing.
+
+   if( %payload.dragSourceControl == %this )
+      return;
+
+   // If a swatch button control is dropped onto this control,
+   // copy it's color.
+
+   if( %payload.isMemberOfClass( "AssetPreviewButton" ) )
+   {
+      // If the swatch button is part of a color-type inspector field,
+      // remember the inspector field so we can later set the color
+      // through it.
+
+      if( %this.parentGroup.isMemberOfClass( "GuiInspectorTypeColorI" ) )
+         %this.parentGroup.apply( ColorFloatToInt( %payload.color ) );
+      else if( %this.parentGroup.isMemberOfClass( "GuiInspectorTypeColorF" ) )
+         %this.parentGroup.apply( %payload.color );
+      else
+         %this.setColor( %payload.color );
+   }
+}
+
+function EWorldEditor::onControlDropped( %this, %payload, %position )
+{
+   // Make sure this is a color swatch drag operation.
+   if( !%payload.parentGroup.isInNamespaceHierarchy( "AssetPreviewControlType_AssetDrop" ) )
+      return;
+
+   // If dropped on same button whence we came from,
+   // do nothing.
+
+   if( %payload.dragSourceControl == %this )
+      return;
+
+   %assetType = %payload.dragSourceControl.parentGroup.assetType;
+   
+   %pos = EWCreatorWindow.getCreateObjectPosition(); //LocalClientConnection.camera.position; 
+   %module = %payload.dragSourceControl.parentGroup.moduleName;
+   %asset = %payload.dragSourceControl.parentGroup.assetName;
+   
+   if(%assetType $= "ImageAsset")
+   {
+      echo("DROPPED AN IMAGE ON THE EDITOR WINDOW!");  
+   }
+   else if(%assetType $= "ShapeAsset")
+   {
+      echo("DROPPED A SHAPE ON THE EDITOR WINDOW!"); 
+      
+      %newEntity = new Entity()
+      {
+         position = %pos;
+         
+         new MeshComponent()
+         {
+            MeshAsset = %module @ ":" @ %asset;
+         };
+         
+         //new CollisionComponent(){};
+      };
+      
+      MissionGroup.add(%newEntity);
+      
+      EWorldEditor.clearSelection();
+      EWorldEditor.selectObject(%newEntity);
+   }
+   else if(%assetType $= "MaterialAsset")
+   {
+      echo("DROPPED A MATERIAL ON THE EDITOR WINDOW!");  
+   }
+   else if(%assetType $= "GameObjectAsset")
+   {
+      echo("DROPPED A GAME OBJECT ON THE EDITOR WINDOW!");  
+      
+      %GO = spawnGameObject(%asset, true);
+      
+      %pos = EWCreatorWindow.getCreateObjectPosition(); //LocalClientConnection.camera.position; 
+      
+      %GO.position = %pos;
+      
+      EWorldEditor.clearSelection();
+      EWorldEditor.selectObject(%GO);
+   }
+}
+
+function GuiInspectorTypeShapeAssetPtr::onControlDropped( %this, %payload, %position )
+{
+   // Make sure this is a color swatch drag operation.
+   if( !%payload.parentGroup.isInNamespaceHierarchy( "AssetPreviewControlType_AssetDrop" ) )
+      return;
+
+   %assetType = %payload.dragSourceControl.parentGroup.assetType;
+   
+   if(%assetType $= "ShapeAsset")
+   {
+      echo("DROPPED A SHAPE ON A SHAPE ASSET COMPONENT FIELD!");  
+      
+      %module = %payload.dragSourceControl.parentGroup.moduleName;
+      %asset = %payload.dragSourceControl.parentGroup.assetName;
+      
+      %targetComponent = %this.ComponentOwner;
+      %targetComponent.MeshAsset = %module @ ":" @ %asset;
+      
+      //Inspector.refresh();
+   }
+}
+
+function GuiInspectorTypeImageAssetPtr::onControlDropped( %this, %payload, %position )
+{
+   // Make sure this is a color swatch drag operation.
+   if( !%payload.parentGroup.isInNamespaceHierarchy( "AssetPreviewControlType_AssetDrop" ) )
+      return;
+
+   %assetType = %payload.dragSourceControl.parentGroup.assetType;
+   
+   if(%assetType $= "ImageAsset")
+   {
+      echo("DROPPED A IMAGE ON AN IMAGE ASSET COMPONENT FIELD!");  
+   }
+}
+
+function GuiInspectorTypeMaterialAssetPtr::onControlDropped( %this, %payload, %position )
+{
+   // Make sure this is a color swatch drag operation.
+   if( !%payload.parentGroup.isInNamespaceHierarchy( "AssetPreviewControlType_AssetDrop" ) )
+      return;
+
+   %assetType = %payload.dragSourceControl.parentGroup.assetType;
+   
+   if(%assetType $= "MaterialAsset")
+   {
+      echo("DROPPED A MATERIAL ON A MATERIAL ASSET COMPONENT FIELD!");  
+   }
 }

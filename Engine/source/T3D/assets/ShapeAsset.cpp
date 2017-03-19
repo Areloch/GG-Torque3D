@@ -370,6 +370,8 @@ GuiControl* GuiInspectorTypeShapeAssetPtr::constructEditControl()
       mInspector->getComponentGroupTargetId(), mCaption);
    mBrowseButton->setField("Command", szBuffer);
 
+   setDataField(StringTable->insert("ComponentOwner"), NULL, String::ToString(mInspector->getComponentGroupTargetId()).c_str());
+
    // Create "Open in ShapeEditor" button
    mShapeEdButton = new GuiBitmapButtonCtrl();
 
