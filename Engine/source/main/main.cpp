@@ -290,36 +290,43 @@ int main(int argc, const char **argv)
 // will need to merge against future changes to the SML code if you do this.
 S32 TorqueMain(S32 argc, const char **argv)
 {
-   // Some handy debugging code:
-   //   if (argc == 1) {
-   //      static const char* argvFake[] = { "dtest.exe", "-jload", "test.jrn" };
-   //      argc = 3;
-   //      argv = argvFake;
-   //   }
-
-   //   Memory::enableLogging("testMem.log");
-   //   Memory::setBreakAlloc(104717);
-
-   // Initialize the subsystems.
-   StandardMainLoop::init();
-
-   // Handle any command line args.
-   if(!StandardMainLoop::handleCommandLine(argc, argv))
+   try
    {
-      Platform::AlertOK("Error", "Failed to initialize game, shutting down.");
+      // Some handy debugging code:
+      //   if (argc == 1) {
+      //      static const char* argvFake[] = { "dtest.exe", "-jload", "test.jrn" };
+      //      argc = 3;
+      //      argv = argvFake;
+      //   }
 
-      return 1;
+      //   Memory::enableLogging("testMem.log");
+      //   Memory::setBreakAlloc(104717);
+
+      // Initialize the subsystems.
+      StandardMainLoop::init();
+
+      // Handle any command line args.
+      if (!StandardMainLoop::handleCommandLine(argc, argv))
+      {
+         Platform::AlertOK("Error", "Failed to initialize game, shutting down.");
+
+         return 1;
+      }
+
+      // Main loop
+      while (StandardMainLoop::doMainLoop());
+
+      // Clean everything up.
+      StandardMainLoop::shutdown();
+
+      // Do we need to restart?
+      if (StandardMainLoop::requiresRestart())
+         Platform::restartInstance();
    }
-
-   // Main loop
-   while(StandardMainLoop::doMainLoop());
-
-   // Clean everything up.
-   StandardMainLoop::shutdown();
-
-   // Do we need to restart?
-   if( StandardMainLoop::requiresRestart() )
-      Platform::restartInstance();
+   catch (std::exception e)
+   {
+      bool tmp = true;
+   }
 
    // Return.
    return StandardMainLoop::getReturnStatus();

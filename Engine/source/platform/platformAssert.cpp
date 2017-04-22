@@ -24,7 +24,16 @@
 
 #include "core/strings/stringFunctions.h"
 #include "console/console.h"
+#include "console/consoleInternal.h"
+#include "console/codeBlock.h"
 
+//#include <WinBase.h>
+#include <Windows.h>
+#include <Dbghelp.h>
+#include <process.h>
+#include <iostream>
+
+extern ExprEvalState gEvalState;
 
 //-------------------------------------- STATIC Declaration
 PlatformAssert *PlatformAssert::platformAssert = NULL;
@@ -165,10 +174,105 @@ const char* avar(const char *message, ...)
    return( buffer );
 }
 
+#define TRACE_MAX_STACK_FRAMES 1024
+#define TRACE_MAX_FUNCTION_NAME_LENGTH 1024
+
+//-----------------------------------------------------------------------------
+//Callstack dumping for logging purposes when we assert/crash
+void dumpCallstack()
+{
+   const U32 MaxCommandSize = 2048;
+
+   char buffer[MaxCommandSize];
+   char scope[MaxCommandSize];
+
+   S32 last = 0;
+
+   Con::printf("Dumping Console Callstack now:");
+
+   for (S32 i = (S32)gEvalState.getStackDepth() - 1; i >= last; i--)
+   {
+      CodeBlock *code = gEvalState.stack[i]->code;
+      const char *file = "<none>";
+      if (code && code->name && code->name[0])
+         file = code->name;
+
+      Namespace *ns = gEvalState.stack[i]->scopeNamespace;
+      scope[0] = 0;
+      if (ns) {
+
+         if (ns->mParent && ns->mParent->mPackage && ns->mParent->mPackage[0]) {
+            dStrcat(scope, ns->mParent->mPackage);
+            dStrcat(scope, "::");
+         }
+         if (ns->mName && ns->mName[0]) {
+            dStrcat(scope, ns->mName);
+            dStrcat(scope, "::");
+         }
+      }
+
+      const char *function = gEvalState.stack[i]->scopeName;
+      if ((!function) || (!function[0]))
+         function = "";
+      dStrcat(scope, function);
+
+      U32 line = 0, inst;
+      U32 ip = gEvalState.stack[i]->ip;
+      if (code)
+         code->findBreakLine(ip, line, inst);
+      dSprintf(buffer, MaxCommandSize, "File: \"%s\" Line: %d Function: \"%s\"", file, line, scope);
+      Con::printf(buffer);
+   }
+
+   Con::printf("Finished Dumping Console Callstack");
+   Con::printf("");
+
+   //Engine stacktrace
+   Con::printf("Dumping Engine Callstack now:");
+#ifdef TORQUE_OS_WIN
+   void *stack[TRACE_MAX_STACK_FRAMES];
+
+   HANDLE process = GetCurrentProcess();
+   SymInitialize(process, NULL, TRUE);
+
+   WORD count = CaptureStackBackTrace(0, TRACE_MAX_STACK_FRAMES, stack, NULL);
+   SYMBOL_INFO *symbol = (SYMBOL_INFO *)malloc(sizeof(SYMBOL_INFO) + (TRACE_MAX_FUNCTION_NAME_LENGTH - 1) * sizeof(TCHAR));
+   symbol->MaxNameLen = TRACE_MAX_FUNCTION_NAME_LENGTH;
+   symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+
+   IMAGEHLP_LINE64 *line = (IMAGEHLP_LINE64 *)malloc(sizeof(IMAGEHLP_LINE64));
+   line->SizeOfStruct = sizeof(IMAGEHLP_LINE64);
+
+   DWORD dwDisplacement;
+
+   for (int i = 0; i < count; i++)
+   {
+      DWORD64 address = (DWORD64)(stack[i]);
+      SymFromAddr(process, address, NULL, symbol);
+      if (SymGetLineFromAddr64(process, address, &dwDisplacement, line))
+      {
+         Con::printf("At %s in %s: line: %lu: address: 0x%0X", symbol->Name, line->FileName, line->LineNumber, symbol->Address);
+      }
+   }
+#endif
+
+   Con::printf("Finished Dumping Engine Callstack");
+   Con::printf("");
+
+   bool herpadoo = true;
+}
 //-----------------------------------------------------------------------------
 
 ConsoleFunction( Assert, void, 3, 3, "(condition, message) - Fatal Script Assertion" )
 {
     // Process Assertion.
     AssertISV( dAtob(argv[1]), argv[2] );
+}
+
+ConsoleFunction(barf, void, 2, 2, "")
+{
+   SimObject* bob = NULL;
+   bob->getId();
+
+   dumpCallstack();
 }

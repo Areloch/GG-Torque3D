@@ -99,10 +99,44 @@ function ConsoleDlg::showWindow(%this)
    %this-->Scroll.setVisible(true);
 }
 
+function ConsoleDlg::onWake(%this)
+{
+   %errorValue = ConsoleMessageLogView.getErrorFilter();
+   %warnValue = ConsoleMessageLogView.getWarnFilter();
+   %normalValue = ConsoleMessageLogView.getNormalFilter();
+   
+   ConsoleDlgErrorFilterBtn.setStateOn(ConsoleMessageLogView.getErrorFilter());
+   ConsoleDlgWarnFilterBtn.setStateOn(ConsoleMessageLogView.getWarnFilter());
+   ConsoleDlgNormalFilterBtn.setStateOn(ConsoleMessageLogView.getNormalFilter());
+}
+
 function ConsoleDlg::setAlpha( %this, %alpha)
 {
    if (%alpha $= "")
       ConsoleScrollProfile.fillColor = $ConsoleDefaultFillColor;
    else
       ConsoleScrollProfile.fillColor = getWords($ConsoleDefaultFillColor, 0, 2) SPC %alpha * 255.0;
+}
+
+function ConsoleDlgErrorFilterBtn::onClick(%this)
+{
+   ConsoleMessageLogView.toggleErrorFilter();
+}
+
+function ConsoleDlgWarnFilterBtn::onClick(%this)
+{
+  
+   ConsoleMessageLogView.toggleWarnFilter();
+}
+
+function ConsoleDlgNormalFilterBtn::onClick(%this)
+{
+   ConsoleMessageLogView.toggleNormalFilter();
+}
+
+function ConsoleMessageLogView::onNewMessage(%this, %errorCount, %warnCount, %normalCount)
+{
+   ConsoleDlgErrorFilterBtn.setText("(" @ %errorCount @ ") Errors");
+   ConsoleDlgWarnFilterBtn.setText("(" @ %warnCount @ ") Warnings");
+   ConsoleDlgNormalFilterBtn.setText("(" @ %normalCount @ ") Messages");
 }
