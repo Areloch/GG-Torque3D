@@ -266,4 +266,39 @@ namespace ImageUtil
             return false;
       }
    }
+
+   bool isSRGBFormat(const GFXFormat format)
+   {
+      switch (format)
+      {
+      case GFXFormatR8G8B8_SRGB:
+      case GFXFormatR8G8B8A8_SRGB:
+      case GFXFormatBC1_SRGB:
+      case GFXFormatBC2_SRGB:
+      case GFXFormatBC3_SRGB:
+         return true;
+      default:
+         return false;
+      };
+   }
+
+   GFXFormat toSRGBFormat(const GFXFormat format)
+   {
+      switch (format)
+      {
+      case GFXFormatR8G8B8:
+         return GFXFormatR8G8B8_SRGB;
+      case GFXFormatR8G8B8X8:
+      case GFXFormatR8G8B8A8:
+         return GFXFormatR8G8B8A8_SRGB;
+      case GFXFormatBC1:
+         return GFXFormatBC1_SRGB;
+      case GFXFormatBC2:
+         return GFXFormatBC2_SRGB;
+      case GFXFormatBC3:
+         return GFXFormatBC3_SRGB;
+      default:
+         return format;
+      };
+   }
 }

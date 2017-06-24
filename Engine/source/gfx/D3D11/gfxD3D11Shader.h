@@ -436,7 +436,7 @@ protected:
                                 GenericConstBufferLayout *bufferLayout, 
                                 Vector<GFXShaderConstDesc> &samplerDescriptions );
 
-   void _getShaderConstants( ID3D11ShaderReflection* pTable, 
+   void _getShaderConstants( ID3D11ShaderReflection* refTable, 
 	                         GenericConstBufferLayout *bufferLayout,
                              Vector<GFXShaderConstDesc> &samplerDescriptions );
 

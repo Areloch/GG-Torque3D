@@ -251,7 +251,6 @@ Var* GBufferConditionerGLSL::printMethodHeader( MethodType methodType, const Str
       // possible so that the shader compiler can optimize.
       meta->addStatement( new GenOp( "@ = tex2Dlod(@, float4(@,0,0));\r\n", bufferSampleDecl, deferredSampler, screenUV ) );
 
-
       // We don't use this way of passing var's around, so this should cause a crash
       // if something uses this improperly
       retVal = bufferSample;

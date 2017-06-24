@@ -65,8 +65,7 @@ TerrainMaterial::TerrainMaterial()
       mMacroSize( 200.0f ),
       mMacroStrength( 0.7f ),
       mMacroDistance( 500.0f ),
-      mParallaxScale( 0.0f ),
-      mDiffuseMapSRGB(true)
+      mParallaxScale( 0.0f )
 {
 }
 
@@ -77,7 +76,6 @@ TerrainMaterial::~TerrainMaterial()
 void TerrainMaterial::initPersistFields()
 {
    addField( "diffuseMap", TypeStringFilename, Offset( mDiffuseMap, TerrainMaterial ), "Base texture for the material" );
-   addField( "diffuseMapSRGB", TypeBool, Offset( mDiffuseMapSRGB, TerrainMaterial), "Enable sRGB for the base texture.");
    addField( "diffuseSize", TypeF32, Offset( mDiffuseSize, TerrainMaterial ), "Used to scale the diffuse map to the material square" );
 
    addField( "normalMap", TypeStringFilename, Offset( mNormalMap, TerrainMaterial ), "Bump map for the material" );
@@ -99,6 +97,7 @@ void TerrainMaterial::initPersistFields()
    addField( "parallaxScale", TypeF32, Offset( mParallaxScale, TerrainMaterial ), "Used to scale the height from the normal map to give some self "
 	   "occlusion effect (aka parallax) to the terrain material" );
 
+   addField("compositeMap", TypeStringFilename, Offset(mCompositeMap, TerrainMaterial), "Composite map for the material");
    Parent::initPersistFields();
 
    // Gotta call this at least once or it won't get created!

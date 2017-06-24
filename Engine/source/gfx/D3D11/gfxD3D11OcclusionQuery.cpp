@@ -31,8 +31,7 @@
 #endif
 
 GFXD3D11OcclusionQuery::GFXD3D11OcclusionQuery(GFXDevice *device)
- : GFXOcclusionQuery(device), 
-   mQuery(NULL)   
+   : GFXOcclusionQuery(device), mQuery(NULL), mTesting(false)
 {
 #ifdef TORQUE_GATHER_METRICS
    mTimer = PlatformTimer::create();
@@ -74,7 +73,11 @@ bool GFXD3D11OcclusionQuery::begin()
    }
 
    // Add a begin marker to the command buffer queue.
-   D3D11DEVICECONTEXT->Begin(mQuery);
+   if (!mTesting)
+   {
+      D3D11DEVICECONTEXT->Begin(mQuery);
+      mTesting = true;
+   }
 
 #ifdef TORQUE_GATHER_METRICS
    mBeginFrame = GuiTSCtrl::getFrameCount();
@@ -90,6 +93,7 @@ void GFXD3D11OcclusionQuery::end()
 
    // Add an end marker to the command buffer queue.
    D3D11DEVICECONTEXT->End(mQuery);
+   mTesting = false;
 
 #ifdef TORQUE_GATHER_METRICS
    AssertFatal( mBeginFrame == GuiTSCtrl::getFrameCount(), "GFXD3D11OcclusionQuery::end - ended query on different frame than begin!" );   

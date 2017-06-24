@@ -25,7 +25,9 @@
 
 #include "platform/platform.h"
 
-//#define TORQUE_LOCBUILD
+#if !defined(TORQUE_DEBUG)
+   #define DISABLE_DEBUG_SPEW
+#endif
 
 #include "console/console.h"
 

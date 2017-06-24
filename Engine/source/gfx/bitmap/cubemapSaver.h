@@ -34,6 +34,8 @@ namespace CubemapSaver
 {
    // save cubemap handle to a dds cubemap with optional compression
    bool save(GFXCubemapHandle cubemap, const Torque::Path &path, GFXFormat compressionFormat = GFXFormat_FIRST);
+
+   bool getBitmaps(GFXCubemapHandle cubemap, GFXFormat compressionFormat, GBitmap* faceBitmaps[6]);
 };
 
 #endif

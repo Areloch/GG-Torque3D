@@ -597,7 +597,7 @@ void RenderParticleMgr::_onLMActivate( const char*, bool activate )
 
       // Hunt for the pre-pass manager/target
       RenderDeferredMgr *deferredBin = NULL;
-      for (U32 i = 0; i < rpm->getManagerCount(); i++)
+      for( U32 i = 0; i < rpm->getManagerCount(); i++ )
       {
          RenderBinManager *bin = rpm->getManager(i);
          if (bin->getRenderInstType() == RenderDeferredMgr::RIT_Deferred)
@@ -610,10 +610,10 @@ void RenderParticleMgr::_onLMActivate( const char*, bool activate )
       // and re-add this render-manager. If there is no pre-pass bin, or it doesn't
       // have a depth-texture, we can't render offscreen.
       mOffscreenRenderEnabled = deferredBin && (deferredBin->getTargetChainLength() > 0);
-      if (mOffscreenRenderEnabled)
+      if(mOffscreenRenderEnabled)
       {
          rpm->removeManager(this);
-         setRenderOrder(deferredBin->getRenderOrder() + 0.011f);
+         setRenderOrder( deferredBin->getRenderOrder() + 0.011f );
          rpm->addManager(this);
       }
 

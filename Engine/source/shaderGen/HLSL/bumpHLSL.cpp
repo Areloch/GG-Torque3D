@@ -129,7 +129,6 @@ void BumpFeatHLSL::processPix(Vector<ShaderComponent*> &componentList,
       // Add a newline
       meta->addStatement(new GenOp("\r\n"));
       texOp = new GenOp("@.SampleLevel(@, @, mipLod_bump)", bumpMapTex, bumpMap, texCoord);
-
    }
    else
    {
@@ -145,8 +144,8 @@ void BumpFeatHLSL::processPix(Vector<ShaderComponent*> &componentList,
    if (fd.features.hasFeature(MFT_DetailNormalMap))
    {
       bumpMap = new Var;
-      bumpMap->setType("SamplerState");
-      bumpMap->setName("detailBumpMap");
+      bumpMap->setType( "SamplerState" );
+      bumpMap->setName( "detailBumpMap" );
       bumpMap->uniform = true;
       bumpMap->sampler = true;
       bumpMap->constNum = Var::getTexUnitNum();

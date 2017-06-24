@@ -38,15 +38,15 @@ out vec4 OUT_col;
 
 void main()
 {   
-   //vec2 deferredCoord = ( uv0.xy * rtParams0.zw ) + rtParams0.xy;   
+   //vec2 deferredCoord = ( uv0.xy * rtParams0.zw ) + rtParams0.xy;
    float depth = deferredUncondition( deferredTex, uv0 ).w;
    //return vec4( depth, 0, 0, 0.7 );
-   
+
    float factor = computeSceneFog( eyePosWorld,
                                    eyePosWorld + ( wsEyeRay * depth ),
-                                   fogData.x, 
-                                   fogData.y, 
+                                   fogData.x,
+                                   fogData.y,
                                    fogData.z );
 
-   OUT_col = hdrEncode( vec4( toLinear(fogColor.rgb), 1.0 - saturate( factor ) ) );     
+   OUT_col = hdrEncode( vec4( fogColor.rgb, 1.0 - saturate( factor ) ) );     
 }

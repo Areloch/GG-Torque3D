@@ -516,14 +516,12 @@ Var* ShaderFeatureHLSL::getNormalMapTex()
       normalMap->sampler = true;
       normalMap->constNum = Var::getTexUnitNum();
 
-      Var* normalMapTex = NULL;
-      normalMapTex = new Var;
+      Var* normalMapTex = new Var;
       normalMapTex->setName("bumpMapTex");
       normalMapTex->setType("Texture2D");
       normalMapTex->uniform = true;
       normalMapTex->texture = true;
       normalMapTex->constNum = normalMap->constNum;
-
    }
 
    return normalMap;
@@ -858,14 +856,13 @@ void DiffuseMapFeatHLSL::processPix(   Vector<ShaderComponent*> &componentList,
 
    // create texture var
    Var *diffuseMap = new Var;
-   diffuseMap->setType("SamplerState");
+   diffuseMap->setType( "SamplerState" );
    diffuseMap->setName( "diffuseMap" );
    diffuseMap->uniform = true;
    diffuseMap->sampler = true;
    diffuseMap->constNum = Var::getTexUnitNum();     // used as texture unit num here
 
-   Var* diffuseMapTex = NULL;   
-   diffuseMapTex = new Var;
+   Var* diffuseMapTex = new Var;
    diffuseMapTex->setName("diffuseMapTex");
    diffuseMapTex->setType("Texture2D");
    diffuseMapTex->uniform = true;
@@ -947,7 +944,6 @@ void DiffuseMapFeatHLSL::processPix(   Vector<ShaderComponent*> &componentList,
          return;
       }
 #endif
-
       meta->addStatement(new GenOp("   @ = @.SampleLevel(@,@,mipLod);\r\n",
             new DecOp(diffColor), diffuseMapTex, diffuseMap, inTex));
 
@@ -1042,16 +1038,14 @@ void OverlayTexFeatHLSL::processPix(   Vector<ShaderComponent*> &componentList,
    diffuseMap->sampler = true;
    diffuseMap->constNum = Var::getTexUnitNum();     // used as texture unit num here
 
-   Var* diffuseMapTex = NULL;  
-   diffuseMapTex = new Var;
+   Var* diffuseMapTex = new Var;
    diffuseMapTex->setName("overlayMapTex");
    diffuseMapTex->setType("Texture2D");
    diffuseMapTex->uniform = true;
    diffuseMapTex->texture = true;
    diffuseMapTex->constNum = diffuseMap->constNum;
 
-   LangElement *statement = NULL;
-   statement = new GenOp("@.Sample(@, @)", diffuseMapTex, diffuseMap, inTex);
+   LangElement *statement = new GenOp("@.Sample(@, @)", diffuseMapTex, diffuseMap, inTex);
 
    output = new GenOp( "   @;\r\n", assignColor( statement, Material::LerpAlpha ) );
 }
@@ -1256,7 +1250,7 @@ void LightmapFeatHLSL::processPix(  Vector<ShaderComponent*> &componentList,
          // Find out if RTLighting should be added or substituted
          bool bPreProcessedLighting = false;
          AdvancedLightBinManager *lightBin;
-         if (Sim::findObject("AL_LightBinMgr", lightBin))
+         if ( Sim::findObject( "AL_LightBinMgr", lightBin ) )
             bPreProcessedLighting = lightBin->MRTLightmapsDuringDeferred();
 
          // Lightmap has already been included in the advanced light bin, so
@@ -1390,7 +1384,7 @@ void TonemapFeatHLSL::processPix(  Vector<ShaderComponent*> &componentList,
    // Find out if RTLighting should be added
    bool bPreProcessedLighting = false;
    AdvancedLightBinManager *lightBin;
-   if (Sim::findObject("AL_LightBinMgr", lightBin))
+   if ( Sim::findObject( "AL_LightBinMgr", lightBin ) )
       bPreProcessedLighting = lightBin->MRTLightmapsDuringDeferred();
 
    // Add in the realtime lighting contribution
@@ -1603,7 +1597,7 @@ void DetailFeatHLSL::processPix( Vector<ShaderComponent*> &componentList,
    detailMap->sampler = true;
    detailMap->constNum = Var::getTexUnitNum();     // used as texture unit num here
 
-   Var* detailMapTex = new Var;   
+   Var* detailMapTex = new Var;
    detailMapTex->setName("detailMapTex");
    detailMapTex->setType("Texture2D");
    detailMapTex->uniform = true;
@@ -1696,7 +1690,7 @@ void VertPositionHLSL::processPix( Vector<ShaderComponent*> &componentList,
    ShaderConnector *connectComp = dynamic_cast<ShaderConnector *>(componentList[C_CONNECTOR]);
    Var *outPosition = connectComp->getElement(RT_SVPOSITION);
    outPosition->setName("vpos");
-   outPosition->setStructName("IN");   
+   outPosition->setStructName("IN");
 }
 
 
@@ -1813,8 +1807,8 @@ void ReflectCubeFeatHLSL::processPix(Vector<ShaderComponent*> &componentList,
 
          // create texture var
          Var *newMap = new Var;
-         newMap->setType("SampelrState");
-         newMap->setName("glossMap");
+         newMap->setType( "SamplerState" );
+         newMap->setName( "glossMap" );
          newMap->uniform = true;
          newMap->sampler = true;
          newMap->constNum = Var::getTexUnitNum();     // used as texture unit num here
@@ -1833,7 +1827,8 @@ void ReflectCubeFeatHLSL::processPix(Vector<ShaderComponent*> &componentList,
          LangElement *colorDecl = new DecOp(color);
 
          glossColor = color;
-         meta->addStatement(new GenOp("   @ = @.Sample( @, @ );\r\n", colorDecl, glowMapTex, newMap, inTex));
+         
+          meta->addStatement(new GenOp("   @ = @.Sample( @, @ );\r\n", colorDecl, glowMapTex, newMap, inTex));
       }
    }
    if (!glossColor)

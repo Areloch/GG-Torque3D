@@ -149,12 +149,13 @@ bool GFXGLTextureObject::copyToBmp(GBitmap * bmp)
    // check format limitations
    // at the moment we only support RGBA for the source (other 4 byte formats should
    // be easy to add though)
-   AssertFatal(mFormat == GFXFormatR8G8B8A8, "GFXGLTextureObject::copyToBmp - invalid format");
-   AssertFatal(bmp->getFormat() == GFXFormatR8G8B8A8 || bmp->getFormat() == GFXFormatR8G8B8, "GFXGLTextureObject::copyToBmp - invalid format");
-   if(mFormat != GFXFormatR8G8B8A8)
+   AssertFatal(mFormat == GFXFormatR8G8B8A8 || mFormat == GFXFormatR8G8B8A8_SRGB , "GFXGLTextureObject::copyToBmp - invalid format");
+   AssertFatal(bmp->getFormat() == GFXFormatR8G8B8A8 || bmp->getFormat() == GFXFormatR8G8B8 || bmp->getFormat() == GFXFormatR8G8B8A8_SRGB, "GFXGLTextureObject::copyToBmp - invalid format");
+   
+   if(mFormat != GFXFormatR8G8B8A8 && mFormat != GFXFormatR8G8B8A8_SRGB)
       return false;
 
-   if(bmp->getFormat() != GFXFormatR8G8B8A8 && bmp->getFormat() != GFXFormatR8G8B8)
+   if(bmp->getFormat() != GFXFormatR8G8B8A8 && bmp->getFormat() != GFXFormatR8G8B8 && bmp->getFormat() != GFXFormatR8G8B8A8_SRGB )
       return false;
 
    AssertFatal(bmp->getWidth() == getWidth(), "GFXGLTextureObject::copyToBmp - invalid size");

@@ -36,7 +36,7 @@
 extern bool gEditingMission;
 
 
-bool SceneCullingState::smDisableTerrainOcclusion = false;
+bool SceneCullingState::smDisableTerrainOcclusion = true;
 bool SceneCullingState::smDisableZoneCulling = false;
 U32 SceneCullingState::smMaxOccludersPerZone = 4;
 F32 SceneCullingState::smOccluderMinWidthPercentage = 0.1f;
@@ -49,8 +49,8 @@ F32 SceneCullingState::smOccluderMinHeightPercentage = 0.1f;
 SceneCullingState::SceneCullingState( SceneManager* sceneManager, const SceneCameraState& viewState )
    : mSceneManager( sceneManager ),
      mCameraState( viewState ),
-     mDisableZoneCulling( smDisableZoneCulling ),
-     mDisableTerrainOcclusion( smDisableTerrainOcclusion )
+     mDisableTerrainOcclusion( smDisableTerrainOcclusion ),
+     mDisableZoneCulling( smDisableZoneCulling )
 {
    AssertFatal( sceneManager->getZoneManager(), "SceneCullingState::SceneCullingState - SceneManager must have a zone manager!" );
 

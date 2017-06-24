@@ -242,7 +242,6 @@ public:
    void unpackExtended( BitStream *stream );
 };
 
-
 ///
 class LightInfoList : public Vector<LightInfo*>
 {
@@ -250,100 +249,6 @@ public:
    void registerLight( LightInfo *light );
    void unregisterLight( LightInfo *light );
 };
-
-class ReflectProbeInfo
-{
-//protected:
-
-public:
-   /// The primary light color.
-   ColorF mColor;
-
-   F32 mBrightness;
-
-   ColorF mAmbient;
-
-   MatrixF mTransform;
-
-   Point3F mRange;
-
-   F32 mInnerConeAngle;
-
-   F32 mOuterConeAngle;
-
-   F32 mRadius;
-   bool mOverrideColor;
-   ColorF mSkyColor;
-   ColorF mGroundColor;
-   F32 mIntensity;
-
-   bool mUseCubemap;
-   CubemapData *mCubemap;
-
-   /// The priority of this light used for
-   /// light and shadow scoring.
-   F32 mPriority;
-
-   /// A temporary which holds the score used
-   /// when prioritizing lights for rendering.
-   F32 mScore;
-
-   /// Whether to render debugging visualizations
-   /// for this light.
-   bool mDebugRender;
-
-   GFXPrimitiveBuffer* primBuffer;
-   GFXVertexBuffer* vertBuffer;
-   U32 numPrims;
-
-public:
-
-   ReflectProbeInfo();
-   ~ReflectProbeInfo();
-
-   // Copies data passed in from light
-   void set(const ReflectProbeInfo *light);
-
-   // Sets a fixed function GFXLight with our properties 
-   void setGFXLight(GFXLightInfo *light);
-
-   // Accessors
-   const MatrixF& getTransform() const { return mTransform; }
-   void setTransform(const MatrixF &xfm) { mTransform = xfm; }
-
-   Point3F getPosition() const { return mTransform.getPosition(); }
-   void setPosition(const Point3F &pos) { mTransform.setPosition(pos); }
-
-   VectorF getDirection() const { return mTransform.getForwardVector(); }
-   void setDirection(const VectorF &val);
-
-   const ColorF& getColor() const { return mColor; }
-   void setColor(const ColorF &val) { mColor = val; }
-
-   F32 getBrightness() const { return mBrightness; }
-   void setBrightness(F32 val) { mBrightness = val; }
-
-   const ColorF& getAmbient() const { return mAmbient; }
-   void setAmbient(const ColorF &val) { mAmbient = val; }
-
-   const Point3F& getRange() const { return mRange; }
-   void setRange(const Point3F &range) { mRange = range; }
-   void setRange(F32 range) { mRange.set(range, range, range); }
-
-   void setPriority(F32 priority) { mPriority = priority; }
-   F32 getPriority() const { return mPriority; }
-
-   void setScore(F32 score) { mScore = score; }
-   F32 getScore() const { return mScore; }
-
-   bool isDebugRenderingEnabled() const { return mDebugRender; }
-   void enableDebugRendering(bool value) { mDebugRender = value; }
-
-   // Builds the world to light view projection used for
-   // shadow texture and cookie lookups.
-   void getWorldToLightProj(MatrixF *outMatrix) const;
-};
-
 
 /// When the scene is queried for lights, the light manager will get 
 /// this interface to trigger a register light call.

@@ -100,7 +100,7 @@ void GFXCubemap::initNormalize( U32 size )
          }
       }
 
-      tex.set(bitmap, &GFXDefaultStaticDiffuseProfile, true, "Cubemap");
+      tex.set(bitmap, &GFXStaticTextureSRGBProfile, true, "Cubemap");
    }
 
    initStatic(faces);

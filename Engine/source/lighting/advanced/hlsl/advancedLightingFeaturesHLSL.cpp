@@ -121,8 +121,8 @@ void DeferredRTLightingFeatHLSL::processPix( Vector<ShaderComponent*> &component
 
    // create texture var
    Var *lightInfoBuffer = new Var;
-   lightInfoBuffer->setType("SamplerState");
-   lightInfoBuffer->setName("directLightingBuffer");
+   lightInfoBuffer->setType( "SamplerState" );
+   lightInfoBuffer->setName( "lightInfoBuffer" );
    lightInfoBuffer->uniform = true;
    lightInfoBuffer->sampler = true;
    lightInfoBuffer->constNum = Var::getTexUnitNum();     // used as texture unit num here
@@ -151,9 +151,8 @@ void DeferredRTLightingFeatHLSL::processPix( Vector<ShaderComponent*> &component
    meta->addStatement(new GenOp(avar("   %s(@.Sample(@, @), @, @, @);\r\n",
       unconditionLightInfo.c_str()), lightBufferTex, lightInfoBuffer, uvScene, d_lightcolor, d_NL_Att, d_specular));
 
-
    // If this has an interlaced pre-pass, do averaging here
-   if (fd.features[MFT_InterlacedDeferred])
+   if( fd.features[MFT_InterlacedDeferred] )
    {
       Var *oneOverTargetSize = (Var*)LangElement::find("oneOverTargetSize");
       if (!oneOverTargetSize)
@@ -273,7 +272,7 @@ void DeferredBumpFeatHLSL::processPix( Vector<ShaderComponent*> &componentList,
    // NULL output in case nothing gets handled
    output = NULL;
 
-   if (fd.features[MFT_DeferredConditioner])
+   if( fd.features[MFT_DeferredConditioner] )
    {
       MultiLine *meta = new MultiLine;
 
@@ -300,8 +299,8 @@ void DeferredBumpFeatHLSL::processPix( Vector<ShaderComponent*> &componentList,
       if (fd.features.hasFeature(MFT_DetailNormalMap))
       {
          bumpMap = new Var;
-         bumpMap->setType("SamplerState");
-         bumpMap->setName("detailBumpMap");
+         bumpMap->setType( "SamplerState" );
+         bumpMap->setName( "detailBumpMap" );
          bumpMap->uniform = true;
          bumpMap->sampler = true;
          bumpMap->constNum = Var::getTexUnitNum();
@@ -410,6 +409,7 @@ void DeferredBumpFeatHLSL::processPix( Vector<ShaderComponent*> &componentList,
          bumpSample->setType("float4");
          bumpSample->setName("bumpSample");
          LangElement *bumpSampleDecl = new DecOp(bumpSample);
+
          Var *bumpMapTex = (Var *)LangElement::find("bumpMapTex");
          output = new GenOp("   @ = @.Sample(@, @);\r\n", bumpSampleDecl, bumpMapTex, bumpMap, texCoord);
 
@@ -427,13 +427,16 @@ void DeferredBumpFeatHLSL::processPix( Vector<ShaderComponent*> &componentList,
             }
 
             Var* bumpMapTex = (Var*)LangElement::find("detailBumpMap");
-            bumpMap->setType("SamplerState");
-            bumpMapTex = new Var;
-            bumpMapTex->setName("detailBumpMapTex");
-            bumpMapTex->setType("Texture2D");
-            bumpMapTex->uniform = true;
-            bumpMapTex->texture = true;
-            bumpMapTex->constNum = bumpMap->constNum;
+            if (!bumpMapTex)
+            {
+               bumpMap->setType("SamplerState");
+               bumpMapTex = new Var;
+               bumpMapTex->setName("detailBumpMapTex");
+               bumpMapTex->setType("Texture2D");
+               bumpMapTex->uniform = true;
+               bumpMapTex->texture = true;
+               bumpMapTex->constNum = bumpMap->constNum;
+            }
 
             texCoord = getInTexCoord( "detCoord", "float2", componentList );
             LangElement *texOp = new GenOp("@.Sample(@, @)", bumpMap, bumpMapTex, texCoord);
@@ -468,7 +471,7 @@ void DeferredBumpFeatHLSL::processPix( Vector<ShaderComponent*> &componentList,
       Var *bumpSample = (Var *)LangElement::find("bumpSample");
       if (bumpSample == NULL)
       {
-         Var *texCoord = getInTexCoord("texCoord", "float2", componentList);
+         Var *texCoord = getInTexCoord( "texCoord", "float2", componentList );
 
          Var *bumpMap = getNormalMapTex();
          Var *bumpMapTex = (Var *)LangElement::find("bumpMapTex");
@@ -759,19 +762,20 @@ void DeferredMinnaertHLSL::processPix( Vector<ShaderComponent*> &componentList,
 
    // create texture var
    Var *deferredBuffer = new Var;
-   deferredBuffer->setType("SamplerState");
-   deferredBuffer->setName("deferredBuffer");
+   deferredBuffer->setType( "SamplerState" );
+   deferredBuffer->setName( "deferredBuffer" );
    deferredBuffer->uniform = true;
    deferredBuffer->sampler = true;
    deferredBuffer->constNum = Var::getTexUnitNum();     // used as texture unit num here
 
-   Var* deferredTex = new Var;
+   Var* deferredTex = NULL;
+   deferredBuffer->setType("SamplerState");
+   deferredTex = new Var;
    deferredTex->setName("deferredTex");
    deferredTex->setType("Texture2D");
    deferredTex->uniform = true;
    deferredTex->texture = true;
    deferredTex->constNum = deferredBuffer->constNum;
-
 
    // Texture coord
    Var *uvScene = (Var*)LangElement::find("uvScene");
@@ -785,7 +789,6 @@ void DeferredMinnaertHLSL::processPix( Vector<ShaderComponent*> &componentList,
    String unconditionDeferredMethod = String::ToLower(RenderDeferredMgr::BufferName) + "Uncondition";
 
    Var *d_NL_Att = (Var*)LangElement::find("d_NL_Att");
-
    meta->addStatement(new GenOp(avar("   float4 normalDepth = %s(@, ,@, @);\r\n", unconditionDeferredMethod.c_str()), deferredBuffer, deferredTex, uvScene));
    meta->addStatement( new GenOp( "   float vDotN = dot(normalDepth.xyz, @);\r\n", wsViewVec ) );
    meta->addStatement( new GenOp( "   float Minnaert = pow( @, @) * pow(vDotN, 1.0 - @);\r\n", d_NL_Att, minnaertConstant, minnaertConstant ) );

@@ -66,6 +66,7 @@ public:
 	void updateFaces();
 
    void setCubeFaceFile(U32 index, FileName newFaceFile);
+   GFXTexHandle* getCubeMapFace(U32 faceIdx) { return &mCubeFace[faceIdx]; }
 
 protected:
    FileName mCubeMapFile;

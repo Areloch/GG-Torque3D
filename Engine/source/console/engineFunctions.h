@@ -52,8 +52,6 @@
    #define _PACK_BUG_WORKAROUNDS
 #endif
 
-
-
 /// Structure storing the default argument values for a function invocation
 /// frame.
 struct EngineFunctionDefaultArguments
@@ -80,7 +78,7 @@ struct EngineFunctionDefaultArguments
 
 // Need byte-aligned packing for the default argument structures.
 #ifdef _WIN64
-#pragma pack( push, 4 )
+#pragma pack( push, 8 )
 #else
 #pragma pack( push, 1 )
 #endif
@@ -331,6 +329,5 @@ class EngineFunctionInfo : public EngineExport
          EngineFunctionCallout | EngineFunctionFlags( flags )                                            \
       );                                                                                                 \
    }
-   
 
 #endif // !_ENGINEFUNCTIONS_H_

@@ -240,12 +240,12 @@ void TSLastDetail::update( bool forceUpdate )
 
    // Get the diffuse texture and from its size and
    // the imposter dimensions we can generate the UVs.
-   GFXTexHandle diffuseTex( diffuseMapPath, &GFXDefaultStaticDiffuseProfile, String::EmptyString );
+   GFXTexHandle diffuseTex( diffuseMapPath, &GFXStaticTextureSRGBProfile, String::EmptyString );
    Point2I texSize( diffuseTex->getWidth(), diffuseTex->getHeight() );
 
    _validateDim();
 
-   S32 downscaledDim = mDim >> GFXTextureManager::getTextureDownscalePower(&GFXDefaultStaticDiffuseProfile);
+   S32 downscaledDim = mDim >> GFXTextureManager::getTextureDownscalePower(&GFXStaticTextureSRGBProfile);
 
    // Ok... pack in bitmaps till we run out.
    Vector<RectF> imposterUVs;
@@ -482,7 +482,7 @@ void TSLastDetail::_update()
    // DEBUG: Some code to force usage of a test image.
    //GBitmap* tempMap = GBitmap::load( "./forest/data/test1234.png" );
    //tempMap->extrudeMipLevels();
-   //mTexture.set( tempMap, &GFXDefaultStaticDiffuseProfile, false );
+   //mTexture.set( tempMap, &GFXStaticTextureSRGBProfile, false );
    //delete tempMap;
 
    DDSFile *ddsDest = DDSFile::createDDSFileFromGBitmap( &destBmp );

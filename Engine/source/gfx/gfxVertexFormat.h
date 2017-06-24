@@ -297,10 +297,7 @@ public:
 /// @see GFXVertexFormat
 template<class T> inline const GFXVertexFormat* getGFXVertexFormat();
 
-
 #define GFX_VERTEX_STRUCT struct
-
-
 
 /// The vertex format declaration which is usally placed in your header 
 /// file.  It should be used in conjunction with the implementation macro.

@@ -37,6 +37,10 @@
 #endif
 #include "lighting/lightInfo.h"
 
+#ifndef _RENDERPASSMANAGER_H_
+#include "renderInstance/renderPassManager.h"
+#endif
+
 class BaseMatInstance;
 
 
@@ -49,24 +53,26 @@ class BaseMatInstance;
 // actual setup and rendering for you.
 //-----------------------------------------------------------------------------
 
-class ReflectionProbe : public SceneObject, public ISceneLight
+class ReflectionProbe : public SceneObject
 {
    typedef SceneObject Parent;
 
 public:
-   enum ProbeShapeType
+
+   enum IndrectLightingModeType
    {
-      Sphere = 0,            ///< Sphere shaped
-      Convex = 1,          ///< Convex-based shape
+      NoIndirect = 0,            
+      AmbientColor = 1, 
+      SphericalHarmonics = 2
    };
 
-   enum ProbeModeType
+   enum ReflectionModeType
    {
-      HorizonColor = 0,            
-      StaticCubemap = 1, 
+      NoReflection = 0,
+      StaticCubemap = 1,
       BakedCubemap = 2,
       SkyLight = 3,
-      //DynamicCubemap = 3,
+      DynamicCubemap = 5,
    };
 
 private:
@@ -94,27 +100,24 @@ private:
    //--------------------------------------------------------------------------
    // Rendering variables
    //--------------------------------------------------------------------------
-   // The name of the Material we will use for rendering
-   String            mMaterialName;
-   // The actual Material instance
-   BaseMatInstance*  mMaterialInst;
+   ProbeRenderInst::ProbeShapeType mProbeShapeType;
 
-   ProbeShapeType mProbeShapeType;
+   ProbeRenderInst* mProbeInfo;
 
-   ProbeModeType mProbeModeType;
+   //Indirect Lighting Contribution stuff
+   IndrectLightingModeType mIndrectLightingModeType;
+   ColorF mAmbientColor;
+   ColorF mSphericalHarmonics;
 
-   ReflectProbeInfo* mProbeInfo;
-
-   Polyhedron mPolyhedron;
+   //Reflection Contribution stuff
+   ReflectionModeType mReflectionModeType;
 
    F32 mRadius;
-   bool mOverrideColor;
-   ColorF mSkyColor;
-   ColorF mGroundColor;
    F32 mIntensity;
 
    String mCubemapName;
    CubemapData *mCubemap;
+   GFXCubemapHandle  mDynamicCubemap;
    bool mUseCubemap;
 
    String mReflectionPath;
@@ -122,11 +125,26 @@ private:
 
    // Define our vertex format here so we don't have to
    // change it in multiple spots later
-   typedef GFXVertexPNT VertexType;
+   typedef GFXVertexPNTTB VertexType;
 
    // The GFX vertex and primitive buffers
    GFXVertexBufferHandle< VertexType > mVertexBuffer;
    GFXPrimitiveBufferHandle            mPrimitiveBuffer;
+
+   U32 mSphereVertCount;
+   U32 mSpherePrimitiveCount;
+
+   //Debug rendering
+   static bool smRenderReflectionProbes;
+   static bool smRenderPreviewProbes;
+
+   U32 mDynamicLastBakeMS;
+   U32 mRefreshRateMS;
+
+   GBitmap* mCubeFaceBitmaps[6];
+   U32 mCubemapResolution;
+
+   F32 mMaxDrawDistance;
 
 public:
    ReflectionProbe();
@@ -174,13 +192,12 @@ public:
    // minimizing texture, state, and shader switching by grouping objects that
    // use the same Materials.
    //--------------------------------------------------------------------------
+
    // Create the geometry for rendering
    void createGeometry();
 
    // Get the Material instance
    void updateMaterial();
-
-   void setPolyhedron(const Polyhedron& rPolyhedron);
 
    // This is the function that allows this object to submit itself for rendering
    void prepRenderImage(SceneRenderState *state);
@@ -189,22 +206,40 @@ public:
       SceneRenderState *state,
       BaseMatInstance *overrideMat);
 
-   /// Submit lights to the light manager passed in.
-   virtual void submitLights(LightManager *lm, bool staticLighting);
+   void setPreviewMatParameters(SceneRenderState* renderState, BaseMatInstance* mat);
 
-   ///
-   virtual LightInfo* getLight() {
-      return NULL;
-   }
+   //Spherical Harmonics
+   void calculateSHTerms();
+   F32 texelSolidAngle(F32 aU, F32 aV, U32 width, U32 height);
+   F32 areaElement(F32 x, F32 y);
+
+   //
+   ColorF decodeSH(Point3F normal);
+
+   //
+   void calcDirectionVector(U32 face, U32 face_x, U32 face_y, F32& out_x, F32& out_y, F32& out_z) const;
+   F32 calcSolidAngle(U32 face, U32 x, U32 y) const;
+   ColorF sampleFace(U32 face, F32 s, F32 t);
+   ColorF readTexelClamped(U32 face, U32 x, U32 y);
+   void computeTexCoords(F32 x, F32 y, F32 z, U32& out_face, F32& out_s, F32& out_t);
+   ColorF readTexel(U32 face, U32 x, U32 y) const;
+
+   //
+   ColorF sampleSide(U32 termindex, U32 sideIndex);
+   F32 harmonics(U32 termId, Point3F normal);
+
 
    //Baking
    void bake(String outputPath, S32 resolution);
 };
 
-typedef ReflectionProbe::ProbeShapeType ReflectProbeType;
+typedef ProbeRenderInst::ProbeShapeType ReflectProbeType;
 DefineEnumType(ReflectProbeType);
 
-typedef ReflectionProbe::ProbeModeType ReflectProbeMode;
-DefineEnumType(ReflectProbeMode);
+typedef ReflectionProbe::IndrectLightingModeType IndrectLightingModeEnum;
+DefineEnumType(IndrectLightingModeEnum);
+
+typedef ReflectionProbe::ReflectionModeType ReflectionModeEnum;
+DefineEnumType(ReflectionModeEnum);
 
 #endif // _ReflectionProbe_H_

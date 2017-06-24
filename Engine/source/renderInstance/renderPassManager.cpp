@@ -64,6 +64,7 @@ const RenderInstType RenderPassManager::RIT_Custom("Custom");
 const RenderInstType RenderPassManager::RIT_Particle("Particle");
 const RenderInstType RenderPassManager::RIT_Occluder("Occluder");
 const RenderInstType RenderPassManager::RIT_Editor("Editor");
+const RenderInstType RenderPassManager::RIT_Probes("Probes");
 
 
 //*****************************************************************************
@@ -106,6 +107,11 @@ void OccluderRenderInst::clear()
    dMemset( this, 0, sizeof(OccluderRenderInst) );
 }
 
+void ProbeRenderInst::clear()
+{
+   dMemset(this, 0, sizeof(ProbeRenderInst));
+   //mCubemap);
+}
 
 IMPLEMENT_CONOBJECT(RenderPassManager);
 
@@ -310,7 +316,7 @@ GFXTextureObject *RenderPassManager::getDepthTargetTexture()
 
       const Point2I rtSize = GFX->getActiveRenderTarget()->getSize();
       mDepthBuff.set(rtSize.x, rtSize.y, GFXFormatD24S8, 
-         &GFXDefaultZTargetProfile, avar("%s() - mDepthBuff (line %d)", __FUNCTION__, __LINE__));
+         &GFXZTargetProfile, avar("%s() - mDepthBuff (line %d)", __FUNCTION__, __LINE__));
       return mDepthBuff.getPointer();
    }
 

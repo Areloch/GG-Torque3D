@@ -38,8 +38,8 @@ ConsoleDocClass( WorldEditorSelection,
 WorldEditorSelection::WorldEditorSelection()
    :  mCentroidValid(false),
       mAutoSelect(false),
-      mPrevCentroid(0.0f, 0.0f, 0.0f),
-      mContainsGlobalBounds(false)
+      mContainsGlobalBounds(false),
+      mPrevCentroid(0.0f, 0.0f, 0.0f)
 {
    // Selections are transient by default.
    setCanSave( false );
@@ -306,9 +306,9 @@ void WorldEditorSelection::offset( const Point3F& offset, F32 gridSnap )
       
       if( gridSnap != 0.f )
       {
-         wPos.x -= mFmod( wPos.x, gridSnap );
-         wPos.y -= mFmod( wPos.y, gridSnap );
-         wPos.z -= mFmod( wPos.z, gridSnap );
+         wPos.x = _snapFloat(wPos.x, gridSnap);
+         wPos.y = _snapFloat(wPos.y, gridSnap);
+         wPos.z = _snapFloat(wPos.z, gridSnap);
       }
       
       mat.setColumn(3, wPos);
@@ -317,6 +317,22 @@ void WorldEditorSelection::offset( const Point3F& offset, F32 gridSnap )
 
    mCentroidValid = false;
 }
+
+F32 WorldEditorSelection::_snapFloat(const F32 &val, const F32 &snap) const
+{
+   if (snap == 0.0f)
+      return val;
+
+   F32 a = mFmod(val, snap);
+
+   F32 temp = val;
+
+   if (mFabs(a) > (snap / 2))
+      val < 0.0f ? temp -= snap : temp += snap;
+
+   return(temp - a);
+}
+
 
 //-----------------------------------------------------------------------------
 

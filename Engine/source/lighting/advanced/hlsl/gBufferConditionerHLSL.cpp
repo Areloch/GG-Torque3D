@@ -228,7 +228,7 @@ Var* GBufferConditionerHLSL::printMethodHeader( MethodType methodType, const Str
 
       Var *deferredSampler = new Var;
       deferredSampler->setName("deferredSamplerVar");
-      deferredSampler->setType("sampler2D");
+      deferredSampler->setType("SamplerState");
       DecOp *deferredSamplerDecl = new DecOp(deferredSampler);
 
       Var *screenUV = new Var;
@@ -236,11 +236,9 @@ Var* GBufferConditionerHLSL::printMethodHeader( MethodType methodType, const Str
       screenUV->setType("float2");
       DecOp *screenUVDecl = new DecOp(screenUV);
 
-      Var *deferredTex = NULL;
       DecOp *deferredTexDecl = NULL;
 
-      deferredSampler->setType("SamplerState");
-      deferredTex = new Var;
+      Var *deferredTex = new Var;
       deferredTex->setName("deferredTexVar");
       deferredTex->setType("Texture2D");
       deferredTex->texture = true;
@@ -251,7 +249,6 @@ Var* GBufferConditionerHLSL::printMethodHeader( MethodType methodType, const Str
       bufferSample->setName("bufferSample");
       bufferSample->setType("float4");
       DecOp *bufferSampleDecl = new DecOp(bufferSample); 
-
 
       meta->addStatement(new GenOp("@(@, @, @)\r\n", methodDecl, deferredSamplerDecl, deferredTexDecl, screenUVDecl));
 

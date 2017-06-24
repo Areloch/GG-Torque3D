@@ -45,7 +45,7 @@ DefineConsoleFunction( dumpConsoleClasses, void, (bool dumpScript, bool dumpEngi
             "@brief Dumps all declared console classes to the console.\n\n"
             "@param dumpScript Optional parameter specifying whether or not classes defined in script should be dumped.\n"
             "@param dumpEngine Optional parameter specifying whether or not classes defined in the engine should be dumped.\n"
-			"@ingroup Logging")
+         "@ingroup Logging")
 {
    Namespace::dumpClasses( dumpScript, dumpEngine );
 }
@@ -54,7 +54,7 @@ DefineConsoleFunction(dumpConsoleFunctions, void, ( bool dumpScript, bool dumpEn
             "@brief Dumps all declared console functions to the console.\n"
             "@param dumpScript Optional parameter specifying whether or not functions defined in script should be dumped.\n"
             "@param dumpEngine Optional parameter specitying whether or not functions defined in the engine should be dumped.\n"
-			"@ingroup Logging")
+         "@ingroup Logging")
 {
    Namespace::dumpFunctions( dumpScript, dumpEngine );
 }
@@ -85,7 +85,7 @@ void printClassHeader(const char* usage, const char * className, const char * su
       Con::printf("///       information was available for this class.");
    }
 
-   if( usage != NULL )
+   if((usage != NULL) && strlen(usage))
    {
       // Copy Usage Document
       S32 usageLen = dStrlen( usage );

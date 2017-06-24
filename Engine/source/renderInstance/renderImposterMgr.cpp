@@ -231,7 +231,7 @@ void RenderImposterMgr::_innerRender( const SceneRenderState *state, RenderDefer
       
    for ( U32 i=0; i < binSize; )
    {
-      currMat = static_cast<ImposterBaseRenderInst*>( mElementList[i].inst )->mat;      
+      currMat = static_cast<ImposterBaseRenderInst*>( mElementList[i].inst )->mat;
       setupMat = deferredBin ? deferredBin->getDeferredMaterial( currMat ) : currMat;
 
       // TODO: Fix MatInstance to take a const SceneRenderState!

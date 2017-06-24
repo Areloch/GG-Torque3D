@@ -103,7 +103,7 @@ new ShaderData( fxFoliageReplicatorShader )
    pixVersion = 1.4;
 };
 
-singleton ShaderData( VolumetricFogdeferredShader )
+singleton ShaderData( VolumetricFogDeferredShader )
 {
    DXVertexShaderFile = $Core::CommonShaderPath @ "/VolumetricFog/VFogPreV.hlsl";
    DXPixelShaderFile = $Core::CommonShaderPath @ "/VolumetricFog/VFogPreP.hlsl";

@@ -57,13 +57,13 @@ void DeferredSpecMapHLSL::processPix( Vector<ShaderComponent*> &componentList, c
 
    // create texture var
    Var *specularMap = new Var;
-   specularMap->setName("specularMap");
-   specularMap->setType("SamplerState");
+   specularMap->setType( "SamplerState" );
+   specularMap->setName( "specularMap" );
    specularMap->uniform = true;
    specularMap->sampler = true;
    specularMap->constNum = Var::getTexUnitNum();
 
-   Var *specularMapTex = new Var;
+   Var* specularMapTex = new Var;
    specularMapTex->setName("specularMapTex");
    specularMapTex->setType("Texture2D");
    specularMapTex->uniform = true;
@@ -92,7 +92,6 @@ void DeferredSpecMapHLSL::processPix( Vector<ShaderComponent*> &componentList, c
       meta->addStatement(new GenOp("   @ = 1.0-@;\r\n", smoothness, smoothness));
 
    meta->addStatement(new GenOp("   @ = @.ggga;\r\n", new DecOp(specularColor), texOp));
-
    meta->addStatement(new GenOp("   @.bga = float3(@,@.g,@);\r\n", material, smoothness, specularColor, metalness));
    output = meta;
 }

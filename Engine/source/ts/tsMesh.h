@@ -81,12 +81,7 @@ struct TSDrawPrimitive
    S32 matIndex;    ///< holds material index & element type (see above enum)
 };
 
-#if defined(USE_MEM_VERTEX_BUFFERS)
-struct __NullVertexStruct {};
-typedef GFX360MemVertexBufferHandle<__NullVertexStruct> TSVertexBufferHandle;
-#else
 typedef GFXVertexBufferDataHandle TSVertexBufferHandle;
-#endif
 
 class TSMesh;
 class TSShapeAlloc;

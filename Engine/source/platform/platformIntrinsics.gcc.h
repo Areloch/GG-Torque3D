@@ -73,7 +73,6 @@ inline bool dCompareAndSwap( volatile U64& ref, U64 oldVal, U64 newVal )
    #else
       return OSAtomicCompareAndSwap64(oldVal, newVal, (int64_t *) &ref);
    #endif
-
 }
 
 /// Performs an atomic read operation.

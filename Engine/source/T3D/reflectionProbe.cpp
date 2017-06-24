@@ -20,90 +20,36 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#include "platform/platform.h"
-#include "T3D/ReflectionProbe.h"
-
+#include "T3D/reflectionProbe.h"
 #include "math/mathIO.h"
 #include "scene/sceneRenderState.h"
 #include "console/consoleTypes.h"
 #include "core/stream/bitStream.h"
-#include "materials/materialManager.h"
 #include "materials/baseMatInstance.h"
-#include "renderInstance/renderPassManager.h"
-#include "lighting/lightQuery.h"
 #include "console/engineAPI.h"
-
 #include "gfx/gfxDrawUtil.h"
-
-#include "lighting/advanced/advancedLightBinManager.h"
-
 #include "gfx/gfxDebugEvent.h"
 #include "gfx/gfxTransformSaver.h"
 #include "math/mathUtils.h"
-#include "math/util/frustum.h"
 #include "gfx/bitmap/gBitmap.h"
-#include "gfx/gfxTextureHandle.h"
 #include "core/stream/fileStream.h"
 #include "core/fileObject.h"
-#include "scene/reflectionManager.h"
-#include "lighting/advanced/advancedLightManager.h"
 #include "core/resourceManager.h"
-
 #include "console/simPersistId.h"
-#include "math/mPolyhedron.impl.h"
 #include <string>
+#include "T3D/gameFunctions.h"
+#include "postFx/postEffect.h"
+#include "renderInstance/renderProbeMgr.h"
+
+#include "math/util/sphereMesh.h"
+#include "materials/materialManager.h"
+#include "math/util/matrixSet.h"
+#include "gfx/bitmap/cubemapSaver.h"
 
 extern bool gEditingMission;
 extern ColorI gCanvasClearColor;
-
-/*#include "platform/platform.h"
-#include "lighting/lightInfo.h"
-
-#include "math/mMath.h"
-#include "core/color.h"
-#include "gfx/gfxCubemap.h"
-#include "console/simObject.h"
-#include "math/mathUtils.h"*/
-
-
-ReflectProbeInfo::ReflectProbeInfo()
-   : mTransform(true),
-   mColor(0.0f, 0.0f, 0.0f, 1.0f),
-   mBrightness(1.0f),
-   mAmbient(0.0f, 0.0f, 0.0f, 1.0f),
-   mRange(1.0f, 1.0f, 1.0f),
-   mInnerConeAngle(90.0f),
-   mOuterConeAngle(90.0f),
-   mPriority(1.0f),
-   mScore(0.0f),
-   mDebugRender(false),
-   mCubemap(NULL),
-   mRadius(1.0f),
-   mOverrideColor(false),
-   mGroundColor(ColorI::WHITE),
-   mSkyColor(ColorI::WHITE),
-   mIntensity(1.0f)
-{
-}
-
-ReflectProbeInfo::~ReflectProbeInfo()
-{
-}
-
-void ReflectProbeInfo::set(const ReflectProbeInfo *light)
-{
-   mTransform = light->mTransform;
-   mColor = light->mColor;
-   mBrightness = light->mBrightness;
-   mAmbient = light->mAmbient;
-   mRange = light->mRange;
-}
-
-void ReflectProbeInfo::getWorldToLightProj(MatrixF *outMatrix) const
-{
-   *outMatrix = getTransform();
-   outMatrix->inverse();
-}
+bool ReflectionProbe::smRenderReflectionProbes = true;
+bool ReflectionProbe::smRenderPreviewProbes = true;
 
 IMPLEMENT_CO_NETOBJECT_V1(ReflectionProbe);
 
@@ -121,16 +67,25 @@ ConsoleDocClass(ReflectionProbe,
 ImplementEnumType(ReflectProbeType,
    "Type of mesh data available in a shape.\n"
    "@ingroup gameObjects")
-{ ReflectionProbe::Sphere, "Sphere", "Sphere shaped" },
-{ ReflectionProbe::Convex, "Convex", "Convex-based shape" }
+{ ProbeRenderInst::Sphere, "Sphere", "Sphere shaped" },
+{ ProbeRenderInst::Box, "Box", "Box shape" }
 EndImplementEnumType;
 
-ImplementEnumType(ReflectProbeMode,
+ImplementEnumType(IndrectLightingModeEnum,
    "Type of mesh data available in a shape.\n"
    "@ingroup gameObjects")
-{ ReflectionProbe::HorizonColor, "Horizon Colors", "Uses sky and ground flat colors for ambient light" },
+{ ReflectionProbe::NoIndirect, "No Lighting", "This probe does not provide any local indirect lighting data" },
+{ ReflectionProbe::AmbientColor, "Ambient Color", "Adds a flat color to act as the local indirect lighting" },
+{ ReflectionProbe::SphericalHarmonics, "Spherical Harmonics", "Creates spherical harmonics data based off the reflection data" },
+   EndImplementEnumType;
+
+ImplementEnumType(ReflectionModeEnum,
+   "Type of mesh data available in a shape.\n"
+   "@ingroup gameObjects")
+{ ReflectionProbe::NoReflection, "No Reflections", "This probe does not provide any local reflection data"},
 { ReflectionProbe::StaticCubemap, "Static Cubemap", "Uses a static CubemapData" },
 { ReflectionProbe::BakedCubemap, "Baked Cubemap", "Uses a cubemap baked from the probe's current position" },
+{ ReflectionProbe::DynamicCubemap, "Dynamic Cubemap", "Uses a cubemap baked from the probe's current position, updated at a set rate" },
 { ReflectionProbe::SkyLight, "Skylight", "Captures a cubemap of the sky and far terrain, designed to influence the whole level" }
    EndImplementEnumType;
 
@@ -143,27 +98,23 @@ ReflectionProbe::ReflectionProbe()
    // be sent across the network to clients
    mNetFlags.set(Ghostable | ScopeAlways);
 
-   // Set it as a "static" object that casts shadows
-   mTypeMask |= StaticObjectType | StaticShapeObjectType | LightObjectType;
+   mTypeMask = LightObjectType | MarkerObjectType;
 
-   // Make sure we the Material instance to NULL
-   // so we don't try to access it incorrectly
-   mMaterialInst = NULL;
+   mProbeShapeType = ProbeRenderInst::Sphere;
 
-   mProbeShapeType = Sphere;
-   mProbeModeType = BakedCubemap;
+   mIndrectLightingModeType = AmbientColor;
+   mAmbientColor = ColorF(1, 1, 1, 1);
+   mSphericalHarmonics = ColorF(0,0,0,1);
+
+   mReflectionModeType = BakedCubemap;
 
    mEnabled = true;
    mBake = false;
    mDirty = false;
 
-   mProbeInfo = new ReflectProbeInfo();
+   mProbeInfo = new ProbeRenderInst();
 
    mRadius = 10;
-
-   mOverrideColor = false;
-   mSkyColor = ColorF(0.5f, 0.5f, 1.0f, 1.0f);
-   mGroundColor = ColorF(0.8f, 0.7f, 0.5f, 1.0f);
    mIntensity = 1.0f;
 
    mUseCubemap = false;
@@ -173,15 +124,20 @@ ReflectionProbe::ReflectionProbe()
 
    mEditorShapeInst = NULL;
    mEditorShape = NULL;
+
+   mRefreshRateMS = 200;
+   mDynamicLastBakeMS = 0;
+
+   mMaxDrawDistance = 75;
 }
 
 ReflectionProbe::~ReflectionProbe()
 {
-   if (mMaterialInst)
-      SAFE_DELETE(mMaterialInst);
-
    if (mEditorShapeInst)
       SAFE_DELETE(mEditorShapeInst);
+
+   if (mCubemap)
+      mCubemap->deleteObject();
 }
 
 //-----------------------------------------------------------------------------
@@ -190,36 +146,45 @@ ReflectionProbe::~ReflectionProbe()
 void ReflectionProbe::initPersistFields()
 {
    addGroup("Rendering");
-   addProtectedField("enabled", TypeBool, Offset(mEnabled, ReflectionProbe),
-      &_setEnabled, &defaultProtectedGetFn, "Regenerate Voxel Grid");
+      addProtectedField("enabled", TypeBool, Offset(mEnabled, ReflectionProbe),
+         &_setEnabled, &defaultProtectedGetFn, "Regenerate Voxel Grid");
 
-   addField("ProbeShape", TypeReflectProbeType, Offset(mProbeShapeType, ReflectionProbe),
-      "The type of mesh data to use for collision queries.");
-   addField("radius", TypeF32, Offset(mRadius, ReflectionProbe), "The name of the material used to render the mesh.");
+      addField("ProbeShape", TypeReflectProbeType, Offset(mProbeShapeType, ReflectionProbe),
+         "The type of mesh data to use for collision queries.");
+      addField("radius", TypeF32, Offset(mRadius, ReflectionProbe), "The name of the material used to render the mesh.");
 
-   addField("ProbeMode", TypeReflectProbeMode, Offset(mProbeModeType, ReflectionProbe),
-      "The type of mesh data to use for collision queries.");
-
-   addField("Intensity", TypeF32, Offset(mIntensity, ReflectionProbe), "Path of file to save and load results.");
+      addField("Intensity", TypeF32, Offset(mIntensity, ReflectionProbe), "Path of file to save and load results.");
    endGroup("Rendering");
 
-   addGroup("CubemapMode");
-   addField("reflectionPath", TypeImageFilename, Offset(mReflectionPath, ReflectionProbe),
-      "The type of mesh data to use for collision queries.");
+   addGroup("IndirectLighting");
+      addField("IndirectLightMode", TypeIndrectLightingModeEnum, Offset(mIndrectLightingModeType, ReflectionProbe),
+         "The type of mesh data to use for collision queries.");
 
-   //addField("useCubemap", TypeBool, Offset(mUseCubemap, ReflectionProbe), "Cubemap used instead of reflection texture if fullReflect is off.");
-   addField("StaticCubemap", TypeCubemapName, Offset(mCubemapName, ReflectionProbe), "Cubemap used instead of reflection texture if fullReflect is off.");
-   endGroup("CubemapMode");
+      addField("IndirectLight", TypeColorF, Offset(mAmbientColor, ReflectionProbe), "Path of file to save and load results.");
+   endGroup("IndirectLighting");
 
-   addGroup("ColorMode");
-   addField("SkyColor", TypeColorF, Offset(mSkyColor, ReflectionProbe), "Path of file to save and load results.");
-   addField("GroundColor", TypeColorF, Offset(mGroundColor, ReflectionProbe), "Path of file to save and load results.");
-   endGroup("ColorMode");
+   addGroup("Reflection");
+      addField("ReflectionMode", TypeReflectionModeEnum, Offset(mReflectionModeType, ReflectionProbe),
+         "The type of mesh data to use for collision queries.");
 
-   addGroup("Baking");
-   addProtectedField("Bake", TypeBool, Offset(mBake, ReflectionProbe),
-      &_doBake, &defaultProtectedGetFn, "Regenerate Voxel Grid", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
-   endGroup("Baking");
+      addField("reflectionPath", TypeImageFilename, Offset(mReflectionPath, ReflectionProbe),
+         "The type of mesh data to use for collision queries.");
+
+      addField("StaticCubemap", TypeCubemapName, Offset(mCubemapName, ReflectionProbe), "Cubemap used instead of reflection texture if fullReflect is off.");
+
+      addProtectedField("Bake", TypeBool, Offset(mBake, ReflectionProbe),
+         &_doBake, &defaultProtectedGetFn, "Regenerate Voxel Grid", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
+   endGroup("Reflection");
+
+   Con::addVariable("$Light::renderReflectionProbes", TypeBool, &ReflectionProbe::smRenderReflectionProbes,
+      "Toggles rendering of light frustums when the light is selected in the editor.\n\n"
+      "@note Only works for shadow mapped lights.\n\n"
+      "@ingroup Lighting");
+
+   Con::addVariable("$Light::renderPreviewProbes", TypeBool, &ReflectionProbe::smRenderPreviewProbes,
+      "Toggles rendering of light frustums when the light is selected in the editor.\n\n"
+      "@note Only works for shadow mapped lights.\n\n"
+      "@ingroup Lighting");
 
    // SceneObject already handles exposing the transform
    Parent::initPersistFields();
@@ -263,7 +228,7 @@ bool ReflectionProbe::onAdd()
 
    mObjBox.minExtents.set(-1, -1, -1);
    mObjBox.maxExtents.set(1, 1, 1);
-   mObjScale.set(mRadius, mRadius, mRadius);
+   mObjScale.set(mRadius/2, mRadius/2, mRadius/2);
 
    // Skip our transform... it just dirties mask bits.
    Parent::setTransform(mObjToWorld);
@@ -281,60 +246,10 @@ bool ReflectionProbe::onAdd()
       mProbeUniqueID = std::to_string(mPersistentId->getUUID().getHash()).c_str();
    }
 
-   //Store the hash as our probeID string
-
    // Refresh this object's material (if any)
    if (isClientObject())
       updateMaterial();
-
-   Point3F origin = Point3F(-0.5000000, 0.5000000, -0.5000000);
-   Point3F vecs[3];
-   vecs[0] = Point3F(1.0000000, 0.0000000, 0.0000000);
-   vecs[1] = Point3F(0.0000000, -1.0000000, 0.0000000);
-   vecs[2] = Point3F(0.0000000, 0.0000000, 1.0000000);
-
-   origin += getPosition();
-
-   mPolyhedron.pointList.setSize(8);
-   mPolyhedron.pointList[0] = origin;
-   mPolyhedron.pointList[1] = origin + vecs[0];
-   mPolyhedron.pointList[2] = origin + vecs[1];
-   mPolyhedron.pointList[3] = origin + vecs[2];
-   mPolyhedron.pointList[4] = origin + vecs[0] + vecs[1];
-   mPolyhedron.pointList[5] = origin + vecs[0] + vecs[2];
-   mPolyhedron.pointList[6] = origin + vecs[1] + vecs[2];
-   mPolyhedron.pointList[7] = origin + vecs[0] + vecs[1] + vecs[2];
-
-   Point3F normal;
-   mPolyhedron.planeList.setSize(6);
-
-   mCross(vecs[2], vecs[0], &normal);
-   mPolyhedron.planeList[0].set(origin, normal);
-   mCross(vecs[0], vecs[1], &normal);
-   mPolyhedron.planeList[1].set(origin, normal);
-   mCross(vecs[1], vecs[2], &normal);
-   mPolyhedron.planeList[2].set(origin, normal);
-   mCross(vecs[1], vecs[0], &normal);
-   mPolyhedron.planeList[3].set(mPolyhedron.pointList[7], normal);
-   mCross(vecs[2], vecs[1], &normal);
-   mPolyhedron.planeList[4].set(mPolyhedron.pointList[7], normal);
-   mCross(vecs[0], vecs[2], &normal);
-   mPolyhedron.planeList[5].set(mPolyhedron.pointList[7], normal);
-
-   mPolyhedron.edgeList.setSize(12);
-   mPolyhedron.edgeList[0].vertex[0] = 0; mPolyhedron.edgeList[0].vertex[1] = 1; mPolyhedron.edgeList[0].face[0] = 0; mPolyhedron.edgeList[0].face[1] = 1;
-   mPolyhedron.edgeList[1].vertex[0] = 1; mPolyhedron.edgeList[1].vertex[1] = 5; mPolyhedron.edgeList[1].face[0] = 0; mPolyhedron.edgeList[1].face[1] = 4;
-   mPolyhedron.edgeList[2].vertex[0] = 5; mPolyhedron.edgeList[2].vertex[1] = 3; mPolyhedron.edgeList[2].face[0] = 0; mPolyhedron.edgeList[2].face[1] = 3;
-   mPolyhedron.edgeList[3].vertex[0] = 3; mPolyhedron.edgeList[3].vertex[1] = 0; mPolyhedron.edgeList[3].face[0] = 0; mPolyhedron.edgeList[3].face[1] = 2;
-   mPolyhedron.edgeList[4].vertex[0] = 3; mPolyhedron.edgeList[4].vertex[1] = 6; mPolyhedron.edgeList[4].face[0] = 3; mPolyhedron.edgeList[4].face[1] = 2;
-   mPolyhedron.edgeList[5].vertex[0] = 6; mPolyhedron.edgeList[5].vertex[1] = 2; mPolyhedron.edgeList[5].face[0] = 2; mPolyhedron.edgeList[5].face[1] = 5;
-   mPolyhedron.edgeList[6].vertex[0] = 2; mPolyhedron.edgeList[6].vertex[1] = 0; mPolyhedron.edgeList[6].face[0] = 2; mPolyhedron.edgeList[6].face[1] = 1;
-   mPolyhedron.edgeList[7].vertex[0] = 1; mPolyhedron.edgeList[7].vertex[1] = 4; mPolyhedron.edgeList[7].face[0] = 4; mPolyhedron.edgeList[7].face[1] = 1;
-   mPolyhedron.edgeList[8].vertex[0] = 4; mPolyhedron.edgeList[8].vertex[1] = 2; mPolyhedron.edgeList[8].face[0] = 1; mPolyhedron.edgeList[8].face[1] = 5;
-   mPolyhedron.edgeList[9].vertex[0] = 4; mPolyhedron.edgeList[9].vertex[1] = 7; mPolyhedron.edgeList[9].face[0] = 4; mPolyhedron.edgeList[9].face[1] = 5;
-   mPolyhedron.edgeList[10].vertex[0] = 5; mPolyhedron.edgeList[10].vertex[1] = 7; mPolyhedron.edgeList[10].face[0] = 3; mPolyhedron.edgeList[10].face[1] = 4;
-   mPolyhedron.edgeList[11].vertex[0] = 7; mPolyhedron.edgeList[11].vertex[1] = 6; mPolyhedron.edgeList[11].face[0] = 3; mPolyhedron.edgeList[11].face[1] = 5;
-
+  
    setMaskBits(-1);
 
    return true;
@@ -372,16 +287,13 @@ U32 ReflectionProbe::packUpdate(NetConnection *conn, U32 mask, BitStream *stream
       mathWrite(*stream, getScale());
    }
 
-   // Write out any of the updated editable properties
-   if (stream->writeFlag(mask & UpdateMask))
-      stream->write(mMaterialName);
-
    stream->write((U32)mProbeShapeType);
-   stream->write((U32)mProbeModeType);
 
-   stream->writeFlag(mOverrideColor);
-   stream->write(mSkyColor);
-   stream->write(mGroundColor);
+   stream->write((U32)mIndrectLightingModeType);
+   stream->write(mAmbientColor);
+
+   stream->write((U32)mReflectionModeType);
+
    stream->writeFloat(mIntensity, 7);
    stream->write(mRadius);
 
@@ -392,28 +304,6 @@ U32 ReflectionProbe::packUpdate(NetConnection *conn, U32 mask, BitStream *stream
 
    stream->writeFlag(mUseCubemap);
    stream->write(mCubemapName);
-
-   //if (stream->writeFlag(mask & PolyMask))
-   {
-      U32 i;
-      stream->write(mPolyhedron.pointList.size());
-      for (i = 0; i < mPolyhedron.pointList.size(); i++)
-         mathWrite(*stream, mPolyhedron.pointList[i]);
-
-      stream->write(mPolyhedron.planeList.size());
-      for (i = 0; i < mPolyhedron.planeList.size(); i++)
-         mathWrite(*stream, mPolyhedron.planeList[i]);
-
-      stream->write(mPolyhedron.edgeList.size());
-      for (i = 0; i < mPolyhedron.edgeList.size(); i++) {
-         const Polyhedron::Edge& rEdge = mPolyhedron.edgeList[i];
-
-         stream->write(rEdge.face[0]);
-         stream->write(rEdge.face[1]);
-         stream->write(rEdge.vertex[0]);
-         stream->write(rEdge.vertex[1]);
-      }
-   }
 
    return retMask;
 }
@@ -431,31 +321,23 @@ void ReflectionProbe::unpackUpdate(NetConnection *conn, BitStream *stream)
       setTransform(mObjToWorld);
    }
 
-   if (stream->readFlag())  // UpdateMask
-   {
-      stream->read(&mMaterialName);
-
-      if (isProperlyAdded())
-         updateMaterial();
-   }
-
-   U32 shapeType = Sphere;
+   U32 shapeType = ProbeRenderInst::Sphere;
    stream->read(&shapeType);
-   if ((ProbeShapeType)shapeType != Sphere)
+   mProbeShapeType = (ProbeRenderInst::ProbeShapeType)shapeType;
+
+   U32 indirectModeType = AmbientColor;
+   stream->read(&indirectModeType);
+   if ((IndrectLightingModeType)indirectModeType != NoIndirect)
    {
-      mProbeShapeType = (ProbeShapeType)shapeType;
+      mIndrectLightingModeType = (IndrectLightingModeType)indirectModeType;
    }
 
-   U32 modeType = BakedCubemap;
-   stream->read(&modeType);
-   if ((ProbeModeType)modeType != BakedCubemap)
-   {
-      mProbeModeType = (ProbeModeType)modeType;
-   }
+   stream->read(&mAmbientColor);
 
-   mOverrideColor = stream->readFlag();
-   stream->read(&mSkyColor);
-   stream->read(&mGroundColor);
+   U32 reflectModeType = BakedCubemap;
+   stream->read(&reflectModeType);
+   mReflectionModeType = (ReflectionModeType)reflectModeType;
+
    mIntensity = stream->readFloat(7);
    stream->read(&mRadius);
 
@@ -467,166 +349,41 @@ void ReflectionProbe::unpackUpdate(NetConnection *conn, BitStream *stream)
    mUseCubemap = stream->readFlag();
    stream->read(&mCubemapName);
 
-   if (mCubemapName.isNotEmpty())
+   if (mCubemapName.isNotEmpty() && mReflectionModeType == ReflectionModeType::StaticCubemap)
       Sim::findObject(mCubemapName, mCubemap);
-
-   //if (stream->readFlag())
-   {
-      U32 i, size;
-      Polyhedron tempPH;
-      stream->read(&size);
-      tempPH.pointList.setSize(size);
-      for (i = 0; i < tempPH.pointList.size(); i++)
-         mathRead(*stream, &tempPH.pointList[i]);
-
-      stream->read(&size);
-      tempPH.planeList.setSize(size);
-      for (i = 0; i < tempPH.planeList.size(); i++)
-         mathRead(*stream, &tempPH.planeList[i]);
-
-      stream->read(&size);
-      tempPH.edgeList.setSize(size);
-      for (i = 0; i < tempPH.edgeList.size(); i++) {
-         Polyhedron::Edge& rEdge = tempPH.edgeList[i];
-
-         stream->read(&rEdge.face[0]);
-         stream->read(&rEdge.face[1]);
-         stream->read(&rEdge.vertex[0]);
-         stream->read(&rEdge.vertex[1]);
-      }
-      setPolyhedron(tempPH);
-   }
 
    createGeometry();
    updateMaterial();
 }
 
-//-----------------------------------------------------------------------------
-// Object Rendering
-//-----------------------------------------------------------------------------
 void ReflectionProbe::createGeometry()
 {
    // Clean up our previous shape
    if (mEditorShapeInst)
       SAFE_DELETE(mEditorShapeInst);
-
+   
    mEditorShape = NULL;
-
+   
    String shapeFile = "tools/resources/ReflectProbeSphere.dae";
-
+   
    // Attempt to get the resource from the ResourceManager
    mEditorShape = ResourceManager::get().load(shapeFile);
-
    if (mEditorShape)
    {
       mEditorShapeInst = new TSShapeInstance(mEditorShape, isClientObject());
    }
 }
 
-void ReflectionProbe::setPolyhedron(const Polyhedron& rPolyhedron)
-{
-   mPolyhedron = rPolyhedron;
-
-   mPolyhedron.transform(getTransform(), getScale());
-
-   Point3F halfScale = getScale()/2;
-   mObjBox = Box3F(-halfScale, halfScale);
-
-   resetWorldBox();
-
-   /*MatrixF base(true);
-   base.scale(Point3F(1.0 / mObjScale.x,
-      1.0 / mObjScale.y,
-      1.0 / mObjScale.z));
-   base.mul(mWorldToObj);*/
-
-   //
-   //Translate the probeInfo's polyhedron into a convex shape for rendering with
-   const U32 numPoints = mPolyhedron.getNumPoints();
-
-   if (numPoints == 0)
-   {
-      mProbeInfo->numPrims = numPoints;
-      return;
-   }
-
-   const Point3F* points = mPolyhedron.getPoints();
-   const PlaneF* planes = mPolyhedron.getPlanes();
-   const Point3F viewDir = GFX->getViewMatrix().getForwardVector();
-
-   // Create a temp buffer for the vertices and
-   // put all the polyhedron's points in there.
-
-   GFXVertexBufferHandle< AdvancedLightManager::LightVertex > verts(GFX, numPoints, GFXBufferTypeStatic);
-
-   verts.lock();
-   for (U32 i = 0; i < numPoints; ++i)
-   {
-      verts[i].point = points[i];
-      verts[i].color = ColorI::WHITE;
-   }
-
-   if (getTransform())
-   {
-      for (U32 i = 0; i < numPoints; ++i)
-         getTransform().mulP(verts[i].point);
-   }
-   verts.unlock();
-
-   // Allocate a temp buffer for the face indices.
-
-   const U32 numIndices = mPolyhedron.getNumEdges() * 3;
-   const U32 numPlanes = mPolyhedron.getNumPlanes();
-
-   GFXPrimitiveBufferHandle prims(GFX, numIndices, 0, GFXBufferTypeVolatile);
-
-   // Unfortunately, since polygons may have varying numbers of
-   // vertices, we also need to retain that information.
-
-   FrameTemp< U32 > numIndicesForPoly(numPlanes);
-   U32 numPolys = 0;
-
-   // Create all the polygon indices.
-   U16* indices;
-   prims.lock(&indices);
-   U32 idx = 0;
-   for (U32 i = 0; i < numPlanes; ++i)
-   {
-      // Since face extraction is somewhat costly, don't bother doing it for
-      // backfacing polygons if culling is enabled.
-
-      /*if (!desc.cullDefined || desc.cullMode != GFXCullNone)
-      {
-         F32 dot = mDot(planes[i], viewDir);
-
-         // See if it faces *the same way* as the view direction.  This would
-         // normally mean that the face is *not* backfacing but since we expect
-         // planes on the polyhedron to be facing *inwards*, we need to reverse
-         // the logic here.
-
-         if (dot > 0.f)
-            continue;
-      }*/
-
-      U32 numPoints = mPolyhedron.extractFace(i, &indices[idx], numIndices - idx);
-      numIndicesForPoly[numPolys] = numPoints;
-      idx += numPoints;
-
-      numPolys++;
-   }
-   prims.unlock();
-
-   mProbeInfo->vertBuffer = verts;
-   mProbeInfo->primBuffer = prims;
-   mProbeInfo->numPrims = numPolys;
-}
+//-----------------------------------------------------------------------------
+// Object Rendering
+//-----------------------------------------------------------------------------
 
 void ReflectionProbe::updateMaterial()
 {
    mProbeInfo->setPosition(getPosition());
 
-   if (mProbeModeType == BakedCubemap || mProbeModeType == StaticCubemap || mProbeModeType == SkyLight)
-   { 
+   if (mReflectionModeType != DynamicCubemap)
+   {
       if (!mCubemap)
       {
          mCubemap = new CubemapData();
@@ -650,43 +407,75 @@ void ReflectionProbe::updateMaterial()
          }
 
          if (validCubemap)
+         {
             mCubemap->createMap();
+            mCubemap->updateFaces();
+         }
       }
 
-      mProbeInfo->mUseCubemap = true;
-      mProbeInfo->mCubemap = mCubemap;
+      mProbeInfo->mCubemap = &mCubemap->mCubemap;
+   }
+   else if (mReflectionModeType == DynamicCubemap && !mDynamicCubemap.isNull())
+   {
+      mProbeInfo->mCubemap = &mDynamicCubemap;
+   }
+
+   mProbeInfo->mIntensity = mIntensity;
+   mProbeInfo->mRadius = mRadius;
+
+   if (mIndrectLightingModeType == AmbientColor)
+   {
+      mProbeInfo->mAmbient = mAmbientColor;
    }
    else
    {
-      mProbeInfo->mUseCubemap = false;
-      mProbeInfo->mSkyColor = mSkyColor;
-      mProbeInfo->mGroundColor = mGroundColor;
+      mProbeInfo->mAmbient = ColorF(0, 0, 0, 0);
    }
-   
-   mProbeInfo->mIntensity = mIntensity;
-   mProbeInfo->mRadius = mRadius;
+
+   mProbeInfo->mProbeShapeType = mProbeShapeType;
+
+   mProbeInfo->mBounds = mWorldBox;
+
+   calculateSHTerms();
+
+   bool tump = true;
 }
 
 void ReflectionProbe::prepRenderImage(SceneRenderState *state)
 {
-   if (!mEnabled)
+   if (!mEnabled || !ReflectionProbe::smRenderReflectionProbes)
       return;
 
-   // If the light is selected or light visualization
-   // is enabled then register the callback.
-   const bool isSelectedInEditor = (gEditingMission && isSelected());
-   if (isSelectedInEditor)
+   Point3F distVec = getPosition() - state->getCameraPosition();
+   F32 dist = distVec.len();
+
+   //Culling distance. Can be adjusted for performance options considerations via the scalar
+   if (dist > mMaxDrawDistance * Con::getFloatVariable("$pref::GI::ProbeDrawDistScale", 1.0))
+      return;
+
+   if (mReflectionModeType == DynamicCubemap && mRefreshRateMS < (Platform::getRealMilliseconds() - mDynamicLastBakeMS))
    {
-      ObjectRenderInst *ri = state->getRenderPass()->allocInst<ObjectRenderInst>();
-      ri->renderDelegate.bind(this, &ReflectionProbe::_onRenderViz);
-      ri->type = RenderPassManager::RIT_Editor;
-      state->getRenderPass()->addInst(ri);
+      bake("", 32);
+      mDynamicLastBakeMS = Platform::getRealMilliseconds();
    }
 
-   if (gEditingMission)
+   //Submit our probe to actually do the probe action
+   // Get a handy pointer to our RenderPassmanager
+   RenderPassManager *renderPass = state->getRenderPass();
+
+   // Allocate an MeshRenderInst so that we can submit it to the RenderPassManager
+   ProbeRenderInst *probeInst = renderPass->allocInst<ProbeRenderInst>();
+
+   probeInst->set(mProbeInfo);
+
+   probeInst->type = RenderPassManager::RIT_Probes;
+
+   // Submit our RenderInst to the RenderPassManager
+   state->getRenderPass()->addInst(probeInst);
+
+   if (ReflectionProbe::smRenderPreviewProbes && gEditingMission && mEditorShapeInst)
    {
-      if (!mEditorShapeInst)
-         return;
+      GFXTransformSaver saver;
 
       // Calculate the distance of this object from the camera
       Point3F cameraOffset;
@@ -705,15 +494,23 @@ void ReflectionProbe::prepRenderImage(SceneRenderState *state)
       if (mEditorShapeInst->getCurrentDetail() < 0)
          return;
 
+      BaseMatInstance* probePrevMat = mEditorShapeInst->getMaterialList()->getMaterialInst(0);
+
+      setPreviewMatParameters(state, probePrevMat);
+
       // GFXTransformSaver is a handy helper class that restores
       // the current GFX matrices to their original values when
       // it goes out of scope at the end of the function
-      GFXTransformSaver saver;
 
       // Set up our TS render state      
       TSRenderState rdata;
       rdata.setSceneState(state);
       rdata.setFadeOverride(1.0f);
+
+      if(mReflectionModeType != DynamicCubemap)
+         rdata.setCubemap(mCubemap->mCubemap);
+      else
+         rdata.setCubemap(mDynamicCubemap);
 
       // We might have some forward lit materials
       // so pass down a query to gather lights.
@@ -723,7 +520,7 @@ void ReflectionProbe::prepRenderImage(SceneRenderState *state)
 
       // Set the world matrix to the objects render transform
       MatrixF mat = getRenderTransform();
-      mat.scale(Point3F(1,1,1));
+      mat.scale(Point3F(1, 1, 1));
       GFX->setWorldMatrix(mat);
 
       // Animate the the shape
@@ -731,30 +528,27 @@ void ReflectionProbe::prepRenderImage(SceneRenderState *state)
 
       // Allow the shape to submit the RenderInst(s) for itself
       mEditorShapeInst->render(rdata);
+
+      saver.restore();
    }
-}
 
-void ReflectionProbe::submitLights(LightManager *lm, bool staticLighting)
-{
-   if (!mEnabled)
-      return;
-
-   if ((mProbeModeType == SkyLight || mProbeModeType == BakedCubemap || mProbeModeType == StaticCubemap) && !mProbeInfo->mCubemap->mCubemap.isValid())
+   // If the light is selected or light visualization
+   // is enabled then register the callback.
+   const bool isSelectedInEditor = (gEditingMission && isSelected());
+   if (isSelectedInEditor)
    {
-      mProbeInfo->mCubemap->mCubemap = NULL;
+      ObjectRenderInst *ri = state->getRenderPass()->allocInst<ObjectRenderInst>();
+      ri->renderDelegate.bind(this, &ReflectionProbe::_onRenderViz);
+      ri->type = RenderPassManager::RIT_Editor;
+      state->getRenderPass()->addInst(ri);
    }
-
-   if (mProbeShapeType == Sphere)
-      lm->addSphereReflectProbe(mProbeInfo);
-   //else
-   //   lm->addConvexReflectProbe(mProbeInfo);
 }
 
 void ReflectionProbe::_onRenderViz(ObjectRenderInst *ri,
    SceneRenderState *state,
    BaseMatInstance *overrideMat)
 {
-   if (overrideMat)
+   if (!ReflectionProbe::smRenderReflectionProbes)
       return;
 
    GFXDrawUtil *draw = GFX->getDrawUtil();
@@ -768,10 +562,324 @@ void ReflectionProbe::_onRenderViz(ObjectRenderInst *ri,
    ColorI color = ColorI::WHITE;
    color.alpha = 50;
 
-   if (mProbeShapeType == Sphere)
+   if (mProbeShapeType == ProbeRenderInst::Sphere)
+   {
       draw->drawSphere(desc, mRadius, getPosition(), color);
+   }
    else
-      draw->drawPolyhedron(desc, mPolyhedron, color);
+   {
+      Box3F cube(mRadius);
+      draw->drawCube(desc, cube, color);
+   }
+}
+
+void ReflectionProbe::setPreviewMatParameters(SceneRenderState* renderState, BaseMatInstance* mat)
+{
+   //Set up the params
+   MaterialParameters *matParams = mat->getMaterialParameters();
+
+   //Get the deferred render target
+   NamedTexTarget* deferredTexTarget = NamedTexTarget::find("deferred");
+
+   GFXTextureObject *deferredTexObject = deferredTexTarget->getTexture();
+   if (!deferredTexObject) 
+      return;
+
+   GFX->setTexture(0, deferredTexObject);
+
+   //Set the cubemap
+   GFX->setCubeTexture(1, mCubemap->mCubemap);
+
+   //Set the invViewMat
+   MatrixSet &matrixSet = renderState->getRenderPass()->getMatrixSet();
+   const MatrixF &worldToCameraXfm = matrixSet.getWorldToCamera();
+
+   MaterialParameterHandle *invViewMat = mat->getMaterialParameterHandle("$invViewMat");
+
+   matParams->setSafe(invViewMat, worldToCameraXfm);
+}
+
+ColorF ReflectionProbe::decodeSH(Point3F normal)
+{
+   float x = normal.x;
+   float y = normal.y;
+   float z = normal.z;
+
+   ColorF l00 = mProbeInfo->mSHTerms[0];
+
+   ColorF l10 = mProbeInfo->mSHTerms[1];
+   ColorF l11 = mProbeInfo->mSHTerms[2];
+   ColorF l12 = mProbeInfo->mSHTerms[3];
+
+   ColorF l20 = mProbeInfo->mSHTerms[4];
+   ColorF l21 = mProbeInfo->mSHTerms[5];
+   ColorF l22 = mProbeInfo->mSHTerms[6];
+   ColorF l23 = mProbeInfo->mSHTerms[7];
+   ColorF l24 = mProbeInfo->mSHTerms[8];
+
+   ColorF result = (
+         l00 * mProbeInfo->mSHConstants[0] +
+
+         l12 * mProbeInfo->mSHConstants[1] * x +
+         l10 * mProbeInfo->mSHConstants[1] * y +
+         l11 * mProbeInfo->mSHConstants[1] * z +
+
+         l20 * mProbeInfo->mSHConstants[2] * x*y +
+         l21 * mProbeInfo->mSHConstants[2] * y*z +
+         l22 * mProbeInfo->mSHConstants[3] * (3.0*z*z - 1.0) +
+         l23 * mProbeInfo->mSHConstants[2] * x*z +
+         l24 * mProbeInfo->mSHConstants[4] * (x*x - y*y)
+      );
+
+   return ColorF(mMax(result.red, 0), mMax(result.green, 0), mMax(result.blue, 0));
+}
+
+MatrixF getSideMatrix(U32 side)
+{
+   // Standard view that will be overridden below.
+   VectorF vLookatPt(0.0f, 0.0f, 0.0f), vUpVec(0.0f, 0.0f, 0.0f), vRight(0.0f, 0.0f, 0.0f);
+
+   switch (side)
+   {
+   case 0: // D3DCUBEMAP_FACE_POSITIVE_X:
+      vLookatPt = VectorF(1.0f, 0.0f, 0.0f);
+      vUpVec = VectorF(0.0f, 1.0f, 0.0f);
+      break;
+   case 1: // D3DCUBEMAP_FACE_NEGATIVE_X:
+      vLookatPt = VectorF(-1.0f, 0.0f, 0.0f);
+      vUpVec = VectorF(0.0f, 1.0f, 0.0f);
+      break;
+   case 2: // D3DCUBEMAP_FACE_POSITIVE_Y:
+      vLookatPt = VectorF(0.0f, 1.0f, 0.0f);
+      vUpVec = VectorF(0.0f, 0.0f, -1.0f);
+      break;
+   case 3: // D3DCUBEMAP_FACE_NEGATIVE_Y:
+      vLookatPt = VectorF(0.0f, -1.0f, 0.0f);
+      vUpVec = VectorF(0.0f, 0.0f, 1.0f);
+      break;
+   case 4: // D3DCUBEMAP_FACE_POSITIVE_Z:
+      vLookatPt = VectorF(0.0f, 0.0f, 1.0f);
+      vUpVec = VectorF(0.0f, 1.0f, 0.0f);
+      break;
+   case 5: // D3DCUBEMAP_FACE_NEGATIVE_Z:
+      vLookatPt = VectorF(0.0f, 0.0f, -1.0f);
+      vUpVec = VectorF(0.0f, 1.0f, 0.0f);
+      break;
+   }
+
+   // create camera matrix
+   VectorF cross = mCross(vUpVec, vLookatPt);
+   cross.normalizeSafe();
+
+   MatrixF rotMat(true);
+   rotMat.setColumn(0, cross);
+   rotMat.setColumn(1, vLookatPt);
+   rotMat.setColumn(2, vUpVec);
+   //rotMat.inverse();
+
+   return rotMat;
+}
+
+F32 ReflectionProbe::harmonics(U32 termId, Point3F normal)
+{
+   F32 x = normal.x;
+   F32 y = normal.y;
+   F32 z = normal.z;
+
+   switch(termId)
+   {
+   case 0:
+      return 1.0;
+   case 1:
+      return y;
+   case 2:
+      return z;
+   case 3:
+      return x;
+   case 4:
+      return x*y;
+   case 5:
+      return y*z;
+   case 6:
+      return 3.0*z*z - 1.0;
+   case 7:
+      return x*z;
+   default:
+      return x*x - y*y;
+   }
+}
+
+ColorF ReflectionProbe::sampleSide(U32 termindex, U32 sideIndex)
+{
+   MatrixF sideRot = getSideMatrix(sideIndex);
+
+   ColorF result = ColorF::ZERO;
+   F32 divider = 0;
+
+   for (int y = 0; y<mCubemapResolution; y++)
+   {
+      for (int x = 0; x<mCubemapResolution; x++)
+      {
+         Point2F sidecoord = ((Point2F(x, y) + Point2F(0.5, 0.5)) / Point2F(mCubemapResolution, mCubemapResolution))*2.0 - Point2F(1.0, 1.0);
+         Point3F normal = Point3F(sidecoord.x, sidecoord.y, -1.0);
+         normal.normalize();
+
+         F32 minBrightness = Con::getFloatVariable("$pref::GI::Cubemap_Sample_MinBrightness", 0.001f);
+
+         ColorF texel = mCubeFaceBitmaps[sideIndex]->sampleTexel(y, x);
+         texel = ColorF(mMax(texel.red, minBrightness), mMax(texel.green, minBrightness), mMax(texel.blue, minBrightness)) * Con::getFloatVariable("$pref::GI::Cubemap_Gain", 1.5);
+
+         Point3F dir;
+         sideRot.mulP(normal, &dir);
+
+         result += texel * harmonics(termindex,dir) * -normal.z;
+         divider += -normal.z;
+      }
+   }
+
+   result /= divider;
+
+   return result;
+}
+
+//
+//SH Calculations
+// From http://sunandblackcat.com/tipFullView.php?l=eng&topicid=32&topic=Spherical-Harmonics-From-Cube-Texture
+// With shader decode logic from https://github.com/nicknikolov/cubemap-sh
+void ReflectionProbe::calculateSHTerms()
+{
+   if (!mCubemap || !mCubemap->mCubemap)
+      return;
+
+   const VectorF cubemapFaceNormals[6] =
+   {
+      // D3DCUBEMAP_FACE_POSITIVE_X:
+      VectorF(1.0f, 0.0f, 0.0f),
+      // D3DCUBEMAP_FACE_NEGATIVE_X:
+      VectorF(-1.0f, 0.0f, 0.0f),
+      // D3DCUBEMAP_FACE_POSITIVE_Y:
+      VectorF(0.0f, 1.0f, 0.0f),
+      // D3DCUBEMAP_FACE_NEGATIVE_Y:
+      VectorF(0.0f, -1.0f, 0.0f),
+      // D3DCUBEMAP_FACE_POSITIVE_Z:
+      VectorF(0.0f, 0.0f, 1.0f),
+      // D3DCUBEMAP_FACE_NEGATIVE_Z:
+      VectorF(0.0f, 0.0f, -1.0f),
+   };
+
+   mCubemapResolution = mCubemap->mCubemap->getSize();
+
+   for (U32 i = 0; i < 6; i++)
+   {
+      mCubeFaceBitmaps[i] = new GBitmap(mCubemapResolution, mCubemapResolution, false, GFXFormatR8G8B8);
+   }
+
+   //If we fail to parse the cubemap for whatever reason, we really can't continue
+   if (!CubemapSaver::getBitmaps(mCubemap->mCubemap, GFXFormatR8G8B8, mCubeFaceBitmaps))
+      return; 
+
+   //Set up our constants
+   F32 L0 = Con::getFloatVariable("$pref::GI::SH_Term_L0", 1.0f);
+   F32 L1 = Con::getFloatVariable("$pref::GI::SH_Term_L1", 1.8f);
+   F32 L2 = Con::getFloatVariable("$pref::GI::SH_Term_L2", 0.83f);
+   F32 L2m2_L2m1_L21 = Con::getFloatVariable("$pref::GI::SH_Term_L2m2", 2.9f);
+   F32 L20 = Con::getFloatVariable("$pref::GI::SH_Term_L20", 0.58f);
+   F32 L22 = Con::getFloatVariable("$pref::GI::SH_Term_L22", 1.1f);
+
+   mProbeInfo->mSHConstants[0] = L0;
+   mProbeInfo->mSHConstants[1] = L1;
+   mProbeInfo->mSHConstants[2] = L2 * L2m2_L2m1_L21;
+   mProbeInfo->mSHConstants[3] = L2 * L20;
+   mProbeInfo->mSHConstants[4] = L2 * L22;
+
+   for (U32 i = 0; i < 9; i++)
+   {
+      //Clear it, just to be sure
+      mProbeInfo->mSHTerms[i] = ColorF(0.f, 0.f, 0.f);
+
+      //Now, encode for each side
+      mProbeInfo->mSHTerms[i] = sampleSide(i, 0); //POS_X
+      mProbeInfo->mSHTerms[i] += sampleSide(i, 1); //NEG_X
+      mProbeInfo->mSHTerms[i] += sampleSide(i, 2); //POS_Y
+      mProbeInfo->mSHTerms[i] += sampleSide(i, 3); //NEG_Y
+      mProbeInfo->mSHTerms[i] += sampleSide(i, 4); //POS_Z
+      mProbeInfo->mSHTerms[i] += sampleSide(i, 5); //NEG_Z
+
+      //Average
+      mProbeInfo->mSHTerms[i] /= 6;
+   }
+
+   for (U32 i = 0; i < 6; i++)
+      SAFE_DELETE(mCubeFaceBitmaps[i]);
+
+   bool mExportSHTerms = false;
+   if (mExportSHTerms)
+   {
+      for (U32 f = 0; f < 6; f++)
+      {
+         char fileName[256];
+         dSprintf(fileName, 256, "%s%s_DecodedFaces_%d.png", mReflectionPath.c_str(),
+            mProbeUniqueID.c_str(), f);
+
+         ColorF color = decodeSH(cubemapFaceNormals[f]);
+
+         FileStream stream;
+         if (stream.open(fileName, Torque::FS::File::Write))
+         {
+            GBitmap bitmap(mCubemapResolution, mCubemapResolution, false, GFXFormatR8G8B8);
+
+            bitmap.fill(color);
+
+            bitmap.writeBitmap("png", stream);
+         }
+      }
+
+      for (U32 f = 0; f < 9; f++)
+      {
+         char fileName[256];
+         dSprintf(fileName, 256, "%s%s_SHTerms_%d.png", mReflectionPath.c_str(),
+            mProbeUniqueID.c_str(), f);
+
+         ColorF color = mProbeInfo->mSHTerms[f];
+
+         FileStream stream;
+         if (stream.open(fileName, Torque::FS::File::Write))
+         {
+            GBitmap bitmap(mCubemapResolution, mCubemapResolution, false, GFXFormatR8G8B8);
+
+            bitmap.fill(color);
+
+            bitmap.writeBitmap("png", stream);
+         }
+      }
+   }
+}
+
+F32 ReflectionProbe::texelSolidAngle(F32 aU, F32 aV, U32 width, U32 height)
+{
+   // transform from [0..res - 1] to [- (1 - 1 / res) .. (1 - 1 / res)]
+   // ( 0.5 is for texel center addressing)
+   const F32 U = (2.0 * (aU + 0.5) / width) - 1.0;
+   const F32 V = (2.0 * (aV + 0.5) / height) - 1.0;
+
+   // shift from a demi texel, mean 1.0 / size  with U and V in [-1..1]
+   const F32 invResolutionW = 1.0 / width;
+   const F32 invResolutionH = 1.0 / height;
+
+   // U and V are the -1..1 texture coordinate on the current face.
+   // get projected area for this texel
+   const F32 x0 = U - invResolutionW;
+   const F32 y0 = V - invResolutionH;
+   const F32 x1 = U + invResolutionW;
+   const F32 y1 = V + invResolutionH;
+   const F32 angle = areaElement(x0, y0) - areaElement(x0, y1) - areaElement(x1, y0) + areaElement(x1, y1);
+
+   return angle;
+}
+
+F32 ReflectionProbe::areaElement(F32 x, F32 y) 
+{
+   return mAtan2(x * y, (F32)mSqrt(x * x + y * y + 1.0));
 }
 
 DefineEngineMethod(ReflectionProbe, postApply, void, (), ,
@@ -784,7 +892,14 @@ void ReflectionProbe::bake(String outputPath, S32 resolution)
 {
    GFXDEBUGEVENT_SCOPE(ReflectionProbe_Bake, ColorI::WHITE);
 
-   if (mProbeModeType == StaticCubemap || mProbeModeType == BakedCubemap || mProbeModeType == SkyLight)
+   PostEffect *preCapture = dynamic_cast<PostEffect*>(Sim::findObject("AL_PreCapture"));
+   PostEffect *deferredShading = dynamic_cast<PostEffect*>(Sim::findObject("AL_DeferredShading"));
+   if (preCapture)
+      preCapture->enable();
+   if (deferredShading)
+      deferredShading->disable();
+
+   //if (mReflectionModeType == StaticCubemap || mReflectionModeType == BakedCubemap || mReflectionModeType == SkyLight)
    {
       if (!mCubemap)
       {
@@ -793,44 +908,53 @@ void ReflectionProbe::bake(String outputPath, S32 resolution)
       }
    }
 
-   if (mReflectionPath.isEmpty() || !mPersistentId)
+   if (mReflectionModeType == DynamicCubemap && mDynamicCubemap.isNull())
    {
-      if (!mPersistentId)
-         mPersistentId = getOrCreatePersistentId();
-
-      mReflectionPath = outputPath.c_str();
-
-      mProbeUniqueID = std::to_string(mPersistentId->getUUID().getHash()).c_str();
+      //mCubemap->createMap();
+      mDynamicCubemap = GFX->createCubemap();
+      mDynamicCubemap->initDynamic(resolution, GFXFormatR8G8B8);
    }
-
-   // store current matrices
-   GFXTransformSaver saver;
-
-   // set projection to 90 degrees vertical and horizontal
-   F32 left, right, top, bottom;
-   F32 nearPlane = 0.1;
-   F32 farDist = 1000;
-
-   if (mProbeModeType == SkyLight)
+   else if (mReflectionModeType != DynamicCubemap)
    {
-      nearPlane = 1000;
-      farDist = 10000;
+      if (mReflectionPath.isEmpty() || !mPersistentId)
+      {
+         if (!mPersistentId)
+            mPersistentId = getOrCreatePersistentId();
+
+         mReflectionPath = outputPath.c_str();
+
+         mProbeUniqueID = std::to_string(mPersistentId->getUUID().getHash()).c_str();
+      }
    }
-
-   MathUtils::makeFrustum(&left, &right, &top, &bottom, M_HALFPI_F, 1.0f, nearPlane);
-   GFX->setFrustum(left, right, bottom, top, nearPlane, farDist);
-
-   // We don't use a special clipping projection, but still need to initialize 
-   // this for objects like SkyBox which will use it during a reflect pass.
-   gClientSceneGraph->setNonClipProjection(GFX->getProjectionMatrix());
 
    bool validCubemap = true;
 
-   // Standard view that will be overridden below.
-   VectorF vLookatPt(0.0f, 0.0f, 0.0f), vUpVec(0.0f, 0.0f, 0.0f), vRight(0.0f, 0.0f, 0.0f);
+   // Save the current transforms so we can restore
+   // it for child control rendering below.
+   GFXTransformSaver saver;
 
+   //bool saveEditingMission = gEditingMission;
+   //gEditingMission = false;
+
+   //Set this to true to use the prior method where it goes through the SPT_Reflect path for the bake
+   bool probeRenderState = ReflectionProbe::smRenderReflectionProbes;
+   ReflectionProbe::smRenderReflectionProbes = false;
    for (U32 i = 0; i < 6; ++i)
    {
+      GFXTexHandle blendTex;
+      blendTex.set(resolution, resolution, GFXFormatR8G8B8A8, &GFXRenderTargetProfile, "");
+
+      GFXTextureTargetRef mBaseTarget = GFX->allocRenderToTextureTarget();
+
+      GFX->clearTextureStateImmediate(0);
+      if(mReflectionModeType == DynamicCubemap)
+         mBaseTarget->attachTexture(GFXTextureTarget::Color0, mDynamicCubemap, i);
+      else
+         mBaseTarget->attachTexture(GFXTextureTarget::Color0, blendTex);
+
+      // Standard view that will be overridden below.
+      VectorF vLookatPt(0.0f, 0.0f, 0.0f), vUpVec(0.0f, 0.0f, 0.0f), vRight(0.0f, 0.0f, 0.0f);
+
       switch (i)
       {
       case 0: // D3DCUBEMAP_FACE_POSITIVE_X:
@@ -870,58 +994,55 @@ void ReflectionProbe::bake(String outputPath, S32 resolution)
       matView.setPosition(getPosition());
       matView.inverse();
 
-      GFX->setWorldMatrix(matView);
+      // set projection to 90 degrees vertical and horizontal
+      F32 left, right, top, bottom;
+      F32 nearPlane = 0.01f;
+      F32 farDist = 1000.f;
 
-      Point2I destSize = Point2I(resolution, resolution);
-      GFXTexHandle blendTex;
-      blendTex.set(destSize.x, destSize.y, GFXFormatR8G8B8A8, &GFXDefaultRenderTargetProfile, "");
+      if (mReflectionModeType == SkyLight)
+      {
+         nearPlane = 1000.f;
+         farDist = 10000.f;
+      }
 
-      GFXTextureTargetRef mBaseTarget = GFX->allocRenderToTextureTarget();
-      mBaseTarget->attachTexture(GFXTextureTarget::Color0, blendTex);
-      GFX->setActiveRenderTarget(mBaseTarget);
+      MathUtils::makeFrustum(&left, &right, &top, &bottom, M_HALFPI_F, 1.0f, nearPlane);
+      Frustum frustum(false, left, right, top, bottom, nearPlane, farDist);
 
-      GFX->clear(GFXClearStencil | GFXClearTarget | GFXClearZBuffer, gCanvasClearColor, 1.0f, 0);
-
-      SceneRenderState reflectRenderState
-         (
-         gClientSceneGraph,
-         SPT_Reflect,
-         SceneCameraState::fromGFX()
-         );
-
-      reflectRenderState.getMaterialDelegate().bind(REFLECTMGR, &ReflectionManager::getReflectionMaterial);
-      reflectRenderState.setDiffuseCameraTransform(matView);
-
-      // render scene
-      //LIGHTMGR->unregisterAllLights();
-      //LIGHTMGR->registerGlobalLights(&reflectRenderState.getCullingFrustum(), false);
-      gClientSceneGraph->renderScene(&reflectRenderState, -1);
-      //LIGHTMGR->unregisterAllLights();
+      renderFrame(&mBaseTarget, matView, frustum, StaticObjectType | StaticShapeObjectType & EDITOR_RENDER_TYPEMASK, gCanvasClearColor);
 
       mBaseTarget->resolve();
 
-      char fileName[256];
-      dSprintf(fileName, 256, "%s%s_%i.png", mReflectionPath.c_str(),
-         mProbeUniqueID.c_str(), i);
-
-      FileStream stream;
-      if (!stream.open(fileName, Torque::FS::File::Write))
+      if (mReflectionModeType != DynamicCubemap)
       {
-         Con::errorf("ReflectionProbe::bake(): Couldn't open cubemap face file fo writing " + String(fileName));
-         return;
+         char fileName[256];
+         dSprintf(fileName, 256, "%s%s_%i.png", mReflectionPath.c_str(),
+            mProbeUniqueID.c_str(), i);
+
+         FileStream stream;
+         if (!stream.open(fileName, Torque::FS::File::Write))
+         {
+            Con::errorf("ReflectionProbe::bake(): Couldn't open cubemap face file fo writing " + String(fileName));
+            if (preCapture)
+               preCapture->disable();
+            if (deferredShading)
+               deferredShading->enable();
+            return;
+         }
+
+         GBitmap bitmap(blendTex->getWidth(), blendTex->getHeight(), false, GFXFormatR8G8B8);
+         blendTex->copyToBmp(&bitmap);
+         bitmap.writeBitmap("png", stream);
+
+         if (Platform::isFile(fileName) && mCubemap)
+            mCubemap->setCubeFaceFile(i, FileName(fileName));
+         else
+            validCubemap = false;
+
+         bitmap.deleteImage();
       }
-
-      GBitmap bitmap(blendTex->getWidth(), blendTex->getHeight(), false, GFXFormatR8G8B8);
-      blendTex->copyToBmp(&bitmap);
-      bitmap.writeBitmap("png", stream);
-
-      if (Platform::isFile(fileName) && mCubemap)
-         mCubemap->setCubeFaceFile(i, FileName(fileName));
-      else
-         validCubemap = false;
    }
 
-   if (validCubemap)
+   if (mReflectionModeType != DynamicCubemap && validCubemap)
    {
       if (mCubemap->mCubemap)
          mCubemap->updateFaces();
@@ -931,11 +1052,20 @@ void ReflectionProbe::bake(String outputPath, S32 resolution)
       mDirty = false;
    }
 
+   calculateSHTerms();
+
+   ReflectionProbe::smRenderReflectionProbes = probeRenderState;
    setMaskBits(-1);
+
+   if (preCapture)
+      preCapture->disable();
+   if (deferredShading)
+      deferredShading->enable();
 }
 
 DefineEngineMethod(ReflectionProbe, Bake, void, (String outputPath, S32 resolution), ("", 256),
    "@brief returns true if control object is inside the fog\n\n.")
 {
    object->bake(outputPath, resolution);
+   //object->renderFrame(false);
 }

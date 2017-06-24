@@ -30,7 +30,7 @@ new SimGroup(MissionGroup) {
       castShadows = "1";
       squareSize = "2";
       baseTexSize = "1024";
-      baseTexFormat = "JPG";
+      baseTexFormat = "DDS";
       lightMapSize = "256";
       screenError = "16";
       position = "-1024 -1024 179.978";

@@ -259,6 +259,8 @@ function EditorGui::buildMenus(%this)
       item[0] = "Full Relight" TAB "Alt L" TAB "Editor.lightScene(\"\", forceAlways);";
       item[1] = "Toggle ShadowViz" TAB "" TAB "toggleShadowViz();";
       item[2] = "-";
+      item[3] = "Update Reflection Probes" TAB "" TAB "updateReflectionProbes();";
+      item[4] = "-";
          
          // NOTE: The light managers will be inserted as the
          // last menu items in EditorLightingMenu::onAdd().
@@ -315,6 +317,7 @@ function EditorGui::buildMenus(%this)
          item[5] = "at Centroid" TAB "" TAB "atCentroid";
          item[6] = "to Terrain" TAB "" TAB "toTerrain";
          item[7] = "Below Selection" TAB "" TAB "belowSelection";
+         item[8] = "At Gizmo" TAB "" TAB "atGizmo";
       };
       
       %this.alignBoundsMenu = new PopupMenu()

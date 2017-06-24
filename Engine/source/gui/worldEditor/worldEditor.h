@@ -164,7 +164,8 @@ class WorldEditor : public EditTSCtrl
       bool copySelection(Selection*  sel);
       bool pasteSelection(bool dropSel=true);
       void dropSelection(Selection*  sel);
-      void dropBelowSelection(Selection*  sel, const Point3F & centroid, bool useBottomBounds=false);
+      void dropBelowSelection(Selection*  sel, const Point3F & centroid, bool useBottomBounds = false);
+      void dropAtGizmo(Selection*  sel, const Point3F & gizmoPos);
 
       void terrainSnapSelection(Selection* sel, U8 modifier, Point3F gizmoPos, bool forceStick=false);
       void softSnapSelection(Selection* sel, U8 modifier, Point3F gizmoPos);
@@ -299,7 +300,8 @@ class WorldEditor : public EditTSCtrl
          DropAtScreenCenter,
          DropAtCentroid,
          DropToTerrain,
-         DropBelowSelection
+         DropBelowSelection,
+         DropAtGizmo
       };
 
       // Snapping alignment mode
@@ -352,6 +354,7 @@ class WorldEditor : public EditTSCtrl
       F32               mDropAtScreenCenterMax;
 
       bool              mGridSnap;
+      bool              mUseGroupCenter;
       bool              mStickToGround;
       bool              mStuckToGround;            ///< Selection is stuck to the ground
       AlignmentType     mTerrainSnapAlignment;     ///< How does the stickied object align to the terrain

@@ -92,6 +92,7 @@ RenderDeferredMgr::RenderDeferredMgr( bool gatherDepth,
    notifyType( RenderPassManager::RIT_Mesh );
    notifyType( RenderPassManager::RIT_Terrain );
    notifyType( RenderPassManager::RIT_Object );
+   notifyType( RenderPassManager::RIT_Probes );
 
    // We want a full-resolution buffer
    mTargetSizeType = RenderTexTargetBinManager::WindowSize;
@@ -155,46 +156,41 @@ bool RenderDeferredMgr::_updateTargets()
       // reload materials, the conditioner needs to alter the generated shaders
    }
 
-   GFXFormat colorFormat = mTargetFormat;
-
-   /*
-   bool independentMrtBitDepth = GFX->getCardProfiler()->queryProfile("independentMrtBitDepth", false);
-   //If independent bit depth on a MRT is supported than just use 8bit channels for the albedo color.
-   if(independentMrtBitDepth)
-      colorFormat = GFXFormatR8G8B8A8;
-   */
+   // TODO: these formats should be passed in and not hard-coded
+   const GFXFormat colorFormat = GFXFormatR8G8B8A8_SRGB;
+   const GFXFormat matInfoFormat = GFXFormatR8G8B8A8;
 
    // andrewmac: Deferred Shading Color Buffer
    if (mColorTex.getFormat() != colorFormat || mColorTex.getWidthHeight() != mTargetSize || GFX->recentlyReset())
    {
-           mColorTarget.release();
-           mColorTex.set(mTargetSize.x, mTargetSize.y, colorFormat,
-                   &GFXDefaultRenderTargetProfile, avar("%s() - (line %d)", __FUNCTION__, __LINE__),
-                   1, GFXTextureManager::AA_MATCH_BACKBUFFER);
-           mColorTarget.setTexture(mColorTex);
+      mColorTarget.release();
+      mColorTex.set(mTargetSize.x, mTargetSize.y, colorFormat,
+         &GFXRenderTargetSRGBProfile, avar("%s() - (line %d)", __FUNCTION__, __LINE__),
+         1, GFXTextureManager::AA_MATCH_BACKBUFFER);
+      mColorTarget.setTexture(mColorTex);
  
-           for (U32 i = 0; i < mTargetChainLength; i++)
-                   mTargetChain[i]->attachTexture(GFXTextureTarget::Color1, mColorTarget.getTexture());
+      for (U32 i = 0; i < mTargetChainLength; i++)
+         mTargetChain[i]->attachTexture(GFXTextureTarget::Color1, mColorTarget.getTexture());
    }
  
    // andrewmac: Deferred Shading Material Info Buffer
-   if (mMatInfoTex.getFormat() != colorFormat || mMatInfoTex.getWidthHeight() != mTargetSize || GFX->recentlyReset())
+   if (mMatInfoTex.getFormat() != matInfoFormat || mMatInfoTex.getWidthHeight() != mTargetSize || GFX->recentlyReset())
    {
-                mMatInfoTarget.release();
-                mMatInfoTex.set(mTargetSize.x, mTargetSize.y, colorFormat,
-                        &GFXDefaultRenderTargetProfile, avar("%s() - (line %d)", __FUNCTION__, __LINE__),
-                        1, GFXTextureManager::AA_MATCH_BACKBUFFER);
-                mMatInfoTarget.setTexture(mMatInfoTex);
+      mMatInfoTarget.release();
+      mMatInfoTex.set(mTargetSize.x, mTargetSize.y, matInfoFormat,
+         &GFXRenderTargetProfile, avar("%s() - (line %d)", __FUNCTION__, __LINE__),
+         1, GFXTextureManager::AA_MATCH_BACKBUFFER);
+         mMatInfoTarget.setTexture(mMatInfoTex);
  
-                for (U32 i = 0; i < mTargetChainLength; i++)
-                        mTargetChain[i]->attachTexture(GFXTextureTarget::Color2, mMatInfoTarget.getTexture());
+      for (U32 i = 0; i < mTargetChainLength; i++)
+         mTargetChain[i]->attachTexture(GFXTextureTarget::Color2, mMatInfoTarget.getTexture());
    }
 
-   if (mLightMapTex.getFormat() != colorFormat || mLightMapTex.getWidthHeight() != mTargetSize || GFX->recentlyReset())
+   if (mLightMapTex.getFormat() != mTargetFormat || mLightMapTex.getWidthHeight() != mTargetSize || GFX->recentlyReset())
    {
       mLightMapTarget.release();
-      mLightMapTex.set(mTargetSize.x, mTargetSize.y, colorFormat,
-         &GFXDefaultRenderTargetProfile, avar("%s() - (line %d)", __FUNCTION__, __LINE__),
+      mLightMapTex.set(mTargetSize.x, mTargetSize.y, mTargetFormat,
+         &GFXRenderTargetProfile, avar("%s() - (line %d)", __FUNCTION__, __LINE__),
          1, GFXTextureManager::AA_MATCH_BACKBUFFER);
       mLightMapTarget.setTexture(mLightMapTex);
 
@@ -242,6 +238,8 @@ void RenderDeferredMgr::addElement( RenderInst *inst )
 
    const bool isTerrainInst = inst->type == RenderPassManager::RIT_Terrain;
 
+   const bool isProbeInst = inst->type == RenderPassManager::RIT_Probes;
+
    // Get the material if its a mesh.
    BaseMatInstance* matInst = NULL;
    if ( isMeshInst || isDecalMeshInst )
@@ -249,10 +247,6 @@ void RenderDeferredMgr::addElement( RenderInst *inst )
 
    if (matInst)
    {
-      // Skip decals if they don't have normal maps.
-      if (isDecalMeshInst && !matInst->hasNormalMap())
-         return;
-
       // If its a custom material and it refracts... skip it.
       if (matInst->isCustomMaterial() &&
          static_cast<CustomMaterial*>(matInst->getMaterial())->mRefract)
@@ -266,10 +260,12 @@ void RenderDeferredMgr::addElement( RenderInst *inst )
 
    // We're gonna add it to the bin... get the right element list.
    Vector< MainSortElem > *elementList;
-   if ( isMeshInst || isDecalMeshInst )
+   if (isMeshInst || isDecalMeshInst)
       elementList = &mElementList;
-   else if ( isTerrainInst )
+   else if (isTerrainInst)
       elementList = &mTerrainElementList;
+   else if (isProbeInst)
+      elementList = &mProbeElementList;
    else
       elementList = &mObjectElementList;
 
@@ -302,6 +298,7 @@ void RenderDeferredMgr::sort()
 void RenderDeferredMgr::clear()
 {
    Parent::clear();
+   mProbeElementList.clear();
    mTerrainElementList.clear();
    mObjectElementList.clear();
 }
@@ -577,7 +574,6 @@ const GFXStateBlockDesc & RenderDeferredMgr::getOpaqueStencilTestDesc()
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-
 ProcessedDeferredMaterial::ProcessedDeferredMaterial( Material& mat, const RenderDeferredMgr *deferredMgr )
 : Parent(mat), mDeferredMgr(deferredMgr)
 {
@@ -681,7 +677,6 @@ void ProcessedDeferredMaterial::_determineFeatures( U32 stageNum,
                   type == MFT_UseInstancing ||
                   type == MFT_DiffuseVertColor ||
                   type == MFT_DetailMap ||
-                  type == MFT_DetailNormalMap ||
                   type == MFT_DiffuseMapAtlas)
          newFeatures.addFeature( type );
 
@@ -753,7 +748,7 @@ void ProcessedDeferredMaterial::_determineFeatures( U32 stageNum,
 
    bool envmapped = false;
    SceneObject * test = dynamic_cast<SceneObject *>(mUserObject);
-   if (!mMaterial->mEmissive[stageNum] )//&& test && (test->getTypeMask() & (DynamicShapeObjectType | StaticObjectType | StaticShapeObjectType)))
+   if ((!mMaterial->mEmissive[stageNum]) && (!fd.features[MFT_ImposterVert]))//&& test && (test->getTypeMask() & (DynamicShapeObjectType | StaticObjectType | StaticShapeObjectType)))
       envmapped = true;
    // cubemaps only available on stage 0 for now - bramage   
    if ( stageNum < 1 &&
@@ -857,8 +852,8 @@ void ProcessedDeferredMaterial::addStateBlockDesc(const GFXStateBlockDesc& desc)
    const bool isTranslucent = getMaterial()->isTranslucent();
    if (isTranslucent)
    {
-	   deferredStateBlock.setBlend(true, GFXBlendSrcAlpha, GFXBlendInvSrcAlpha);
-	   deferredStateBlock.setColorWrites(false, false, false, true);
+      deferredStateBlock.setBlend( true, GFXBlendSrcAlpha, GFXBlendInvSrcAlpha );
+      deferredStateBlock.setColorWrites(false, false, false, true);
    }
 
    // Enable z reads, but only enable zwrites if we're not translucent.

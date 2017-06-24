@@ -85,11 +85,7 @@ void TerrainBlock::_updateMaterials()
 
       if (!mat->getDiffuseMap().isEmpty())
       {
-         GFXTextureProfile *profile = &GFXDefaultStaticDiffuseProfile;
-         if (mat->isBaseTextureSRGB())
-            profile = &GFXDefaultStaticDiffuseSRGBProfile;
-
-         mBaseTextures[i].set(mat->getDiffuseMap(), profile ,
+         mBaseTextures[i].set(mat->getDiffuseMap(), &GFXStaticTextureSRGBProfile,
             "TerrainBlock::_updateMaterials() - DiffuseMap");
       }
       else
@@ -118,7 +114,7 @@ void TerrainBlock::_updateLayerTexture()
    if (  mLayerTex.isNull() ||
          mLayerTex.getWidth() != layerSize ||
          mLayerTex.getHeight() != layerSize )
-      mLayerTex.set( layerSize, layerSize, GFXFormatB8G8R8A8, &TerrainLayerTexProfile, "" );
+      mLayerTex.set( layerSize, layerSize, GFXFormatR8G8B8A8, &TerrainLayerTexProfile, "" );
 
    AssertFatal(   mLayerTex.getWidth() == layerSize &&
                   mLayerTex.getHeight() == layerSize,
@@ -237,12 +233,12 @@ void TerrainBlock::_updateBaseTexture(bool writeToCache)
    // use it to render to else we create one.
    if (  mBaseTex.isValid() && 
          mBaseTex->isRenderTarget() &&
-         mBaseTex->getFormat() == GFXFormatR8G8B8A8 &&
+         mBaseTex->getFormat() == GFXFormatR8G8B8A8_SRGB &&
          mBaseTex->getWidth() == destSize.x &&
          mBaseTex->getHeight() == destSize.y )
       blendTex = mBaseTex;
    else
-      blendTex.set( destSize.x, destSize.y, GFXFormatR8G8B8A8, &GFXDefaultRenderTargetProfile, "" );
+      blendTex.set( destSize.x, destSize.y, GFXFormatR8G8B8A8_SRGB, &GFXRenderTargetSRGBProfile, "" );
 
    GFX->pushActiveRenderTarget();   
 
@@ -347,7 +343,7 @@ void TerrainBlock::_updateBaseTexture(bool writeToCache)
          return;
       }
 
-      GBitmap bitmap(blendTex->getWidth(), blendTex->getHeight(), false, GFXFormatR8G8B8);
+      GBitmap bitmap(blendTex->getWidth(), blendTex->getHeight(), false, GFXFormatR8G8B8A8);
       blendTex->copyToBmp(&bitmap);
       bitmap.writeBitmap(formatToExtension(mBaseTexFormat), stream);
    }

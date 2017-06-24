@@ -45,8 +45,8 @@ ConsoleDocClass( GuiInspectorField,
 GuiInspectorField::GuiInspectorField( GuiInspector* inspector,
                                       GuiInspectorGroup* parent, 
                                       AbstractClassRep::Field* field ) 
- : mInspector( inspector ),
-   mParent( parent ), 
+ : mParent( parent ),
+   mInspector( inspector ),
    mField( field ), 
    mFieldArrayIndex( NULL ), 
    mEdit( NULL ),
@@ -67,12 +67,12 @@ GuiInspectorField::GuiInspectorField( GuiInspector* inspector,
 //-----------------------------------------------------------------------------
 
 GuiInspectorField::GuiInspectorField() 
- : mInspector( NULL ),
-   mParent( NULL ), 
+ : mParent( NULL ),
+   mInspector( NULL ),
+   mField( NULL ),
    mEdit( NULL ),
-   mField( NULL ), 
-   mFieldArrayIndex( NULL ),
    mCaption( StringTable->EmptyString() ),
+   mFieldArrayIndex( NULL ),
    mHighlighted(false),
    mTargetObject(NULL)
 {

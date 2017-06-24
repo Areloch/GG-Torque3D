@@ -60,33 +60,22 @@ protected:
    enum
    {
       DynamicLight = 0,
+      SunLight,
       StaticLightNonLMGeometry,
       StaticLightLMGeometry,
-      NUM_LIT_STATES
+      NUM_LIT_STATES,
+      Base = 0,
+      Reflecting = 1
    };
-   GFXStateBlockRef mLitState[NUM_LIT_STATES];
+   GFXStateBlockRef mLitState[NUM_LIT_STATES][2];
 
 public:
    LightMatInstance(Material &mat) : Parent(mat), mLightMapParamsSC(NULL), mInternalPass(false) {}
 
    virtual bool init( const FeatureSet &features, const GFXVertexFormat *vertexFormat );
    virtual bool setupPass( SceneRenderState *state, const SceneData &sgData );
-};
 
-class ReflectProbeMatInstance : public MatInstance
-{
-   typedef MatInstance Parent;
-protected:
-   MaterialParameterHandle *mProbeParamsSC;
-   bool mInternalPass;
-
-   GFXStateBlockRef mStateBlock;
-
-public:
-   ReflectProbeMatInstance(Material &mat) : Parent(mat), mProbeParamsSC(NULL), mInternalPass(false) {}
-
-   virtual bool init(const FeatureSet &features, const GFXVertexFormat *vertexFormat);
-   virtual bool setupPass(SceneRenderState *state, const SceneData &sgData);
+   bool mSpecialLight;
 };
 
 class AdvancedLightBinManager : public RenderTexTargetBinManager
@@ -130,10 +119,6 @@ public:
 
    // Clear all lights from the bins
    void clearAllLights();
-
-   // Add a reflection probe to the bin
-   void addSphereReflectionProbe(ReflectProbeInfo *probeInfo);
-   void addConvexReflectionProbe(ReflectProbeInfo *probeInfo);
 
    virtual bool setTargetSize(const Point2I &newTargetSize);
 
@@ -198,57 +183,7 @@ protected:
       void setLightParameters( const LightInfo *light, const SceneRenderState* renderState, const MatrixF &worldViewOnly );
    };
 
-   struct ReflectProbeMaterialInfo
-   {
-      ReflectProbeMatInstance *matInstance;
-
-      // { zNear, zFar, 1/zNear, 1/zFar }
-      MaterialParameterHandle *zNearFarInvNearFar;
-
-      // Far frustum plane (World Space)
-      MaterialParameterHandle *farPlane;
-
-      // Far frustum plane (View Space)
-      MaterialParameterHandle *vsFarPlane;
-
-      // -dot( farPlane, eyePos )
-      MaterialParameterHandle *negFarPlaneDotEye;
-
-      // Inverse View matrix
-      MaterialParameterHandle *invViewMat;
-
-      // Light Parameters
-      MaterialParameterHandle *lightPosition;
-      MaterialParameterHandle *lightDirection;
-      MaterialParameterHandle *lightColor;
-      MaterialParameterHandle *lightBrightness;
-      MaterialParameterHandle *lightAttenuation;
-      MaterialParameterHandle *lightRange;
-      MaterialParameterHandle *lightAmbient;
-      MaterialParameterHandle *lightTrilight;
-      MaterialParameterHandle *lightSpotParams;
-
-      MaterialParameterHandle *skyColor;
-      MaterialParameterHandle *groundColor;
-      MaterialParameterHandle *intensity;
-
-      MaterialParameterHandle *useCubemap;
-      MaterialParameterHandle *cubemap;
-
-      ReflectProbeMaterialInfo(const String &matName, const GFXVertexFormat *vertexFormat);
-
-      virtual ~ReflectProbeMaterialInfo();
-
-
-      void setViewParameters(const F32 zNear,
-         const F32 zFar,
-         const Point3F &eyePos,
-         const PlaneF &farPlane,
-         const PlaneF &_vsFarPlane,
-         const MatrixF &_inverseViewMatrix);
-
-      void setProbeParameters(const ReflectProbeInfo *probe, const SceneRenderState* renderState, const MatrixF &worldViewOnly);
-   };
+   
 
 protected:
 
@@ -290,11 +225,6 @@ protected:
 
    LightMaterialInfo* _getLightMaterial( LightInfo::Type lightType, ShadowType shadowType, bool useCookieTex );
 
-   ReflectProbeMaterialInfo* mReflectProbeMaterial;
-   ReflectProbeMaterialInfo* mReflectProbeDiffuseMaterial;
-   ReflectProbeMaterialInfo* _getReflectProbeMaterial();
-   ReflectProbeMaterialInfo* _getReflectProbeDiffuseMaterial();
-
    ///
    void _onShadowFilterChanged();
 
@@ -303,27 +233,8 @@ protected:
    typedef GFXVertexPNTT FarFrustumQuadVert; 
    GFXVertexBufferHandle<FarFrustumQuadVert> mFarFrustumQuadVerts;
 
-public:
-   //Reflection Probes
-   struct ReflectProbeBinEntry
-   {
-      ReflectProbeInfo* probeInfo;
-      Point3F position;
-      F32 radius;
-      Box3F bounds;
-      ReflectProbeMaterialInfo* probeMaterial;
-      GFXPrimitiveBuffer* primBuffer;
-      GFXVertexBuffer* vertBuffer;
-      U32 numPrims;
-
-      ReflectProbeBinEntry() : probeInfo(nullptr), primBuffer(nullptr), vertBuffer(nullptr), probeMaterial(nullptr) {}
-   };
 
 protected:
-   Vector<ReflectProbeBinEntry> mReflectProbeBin;
-   typedef Vector<ReflectProbeBinEntry>::iterator ReflectProbeBinIterator;
-
-
    //void _createMaterials();
 
    void _setupPerFrameParameters( const SceneRenderState *state );

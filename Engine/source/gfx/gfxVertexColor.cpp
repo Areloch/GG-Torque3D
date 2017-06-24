@@ -30,6 +30,6 @@ GFXVertexColor GFXVertexColor::toLinear()
    GFXVertexColor vertColor;
    ColorI color;
    getColor(&color);
-   vertColor.set(color.toLinear());
+   vertColor.set(color);
    return vertColor;
 }

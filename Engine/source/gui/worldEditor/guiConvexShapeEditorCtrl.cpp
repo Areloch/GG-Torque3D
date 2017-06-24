@@ -544,8 +544,8 @@ void CSGSolid::convertConvexShape(ConvexShape* outBrush)
 
 GuiConvexEditorCtrl::GuiConvexEditorCtrl()
  : mIsDirty( false ),
-   mFaceHL( -1 ),
    mFaceSEL( -1 ),
+   mFaceHL( -1 ),
    mVertHL( -1 ),
    mFaceSavedXfm( true ),
    mSavedUndo( false ),
@@ -555,12 +555,12 @@ GuiConvexEditorCtrl::GuiConvexEditorCtrl()
    mUsingPivot( false ),
    mSettingPivot( false ),
    mActiveTool( NULL ),
-   mCreateTool( NULL ),
    mMouseDown( false ),
-   mUndoManager( NULL ),
-   mLastUndo( NULL ),
-   mHasCopied( false ),
+   mCreateTool( NULL ),
    mSavedGizmoFlags( -1 ),
+   mHasCopied( false ),
+   mLastUndo( NULL ),
+   mUndoManager( NULL ),
    mCtrlDown( false ),
    mGridSnap(false),
    mSelectionMode(VertMode)
@@ -1835,7 +1835,7 @@ void GuiConvexEditorCtrl::drawFacePlane( ConvexShape *shape, S32 faceId )
 
    GFX->setVertexBuffer( vb );
 
-   GFXTexHandle tex( "core/art/grids/512_transp", &GFXDefaultStaticDiffuseProfile, "ConvexEditor_grid" );
+   GFXTexHandle tex( "core/art/grids/512_transp", &GFXStaticTextureSRGBProfile, "ConvexEditor_grid" );
    GFX->setTexture( 0, tex );
    GFX->setupGenericShaders();
    GFX->drawPrimitive( GFXTriangleList, 0, points.size() / 3 );

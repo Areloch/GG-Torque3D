@@ -196,15 +196,15 @@ WaterObject::WaterObject()
    mUndulateMaxDist(50.0f),
    mMiscParamW( 0.0f ),
    mUnderwaterPostFx( NULL ),
-   mBasicLighting( false ),
-   mOverallWaveMagnitude( 1.0f ),
    mOverallRippleMagnitude( 0.1f ),
-   mCubemap( NULL ),
-   mSoundAmbience( NULL ),
+   mOverallWaveMagnitude( 1.0f ),
+   mBasicLighting( false ),
    mSpecularPower( 48.0f ),
+   mSoundAmbience( NULL ),
+   mCubemap( NULL ),
    mSpecularColor( 1.0f, 1.0f, 1.0f, 1.0f ),
-   mDepthGradientMax( 50.0f ),
-   mEmissive( false )
+   mEmissive( false ),
+   mDepthGradientMax( 50.0f )
 {
    mTypeMask = WaterObjectType;
 
@@ -1159,22 +1159,22 @@ bool WaterObject::initMaterial( S32 idx )
 void WaterObject::initTextures()
 {
    if ( mRippleTexName.isNotEmpty() )
-      mRippleTex.set( mRippleTexName, &GFXDefaultStaticDiffuseProfile, "WaterObject::mRippleTex" );
+      mRippleTex.set( mRippleTexName, &GFXStaticTextureSRGBProfile, "WaterObject::mRippleTex" );
    if ( mRippleTex.isNull() )
-      mRippleTex.set( GFXTextureManager::getWarningTexturePath(), &GFXDefaultStaticDiffuseProfile, "WaterObject::mRippleTex" );
+      mRippleTex.set( GFXTextureManager::getWarningTexturePath(), &GFXStaticTextureSRGBProfile, "WaterObject::mRippleTex" );
 
    if ( mDepthGradientTexName.isNotEmpty() )
-      mDepthGradientTex.set( mDepthGradientTexName, &GFXDefaultStaticDiffuseProfile, "WaterObject::mDepthGradientTex" );
+      mDepthGradientTex.set( mDepthGradientTexName, &GFXStaticTextureSRGBProfile, "WaterObject::mDepthGradientTex" );
    if ( mDepthGradientTex.isNull() )
-      mDepthGradientTex.set( GFXTextureManager::getWarningTexturePath(), &GFXDefaultStaticDiffuseProfile, "WaterObject::mDepthGradientTex" );
+      mDepthGradientTex.set( GFXTextureManager::getWarningTexturePath(), &GFXStaticTextureSRGBProfile, "WaterObject::mDepthGradientTex" );
    
    if ( mNamedDepthGradTex.isRegistered() )
       mNamedDepthGradTex.setTexture( mDepthGradientTex );
 
    if ( mFoamTexName.isNotEmpty() )
-      mFoamTex.set( mFoamTexName, &GFXDefaultStaticDiffuseProfile, "WaterObject::mFoamTex" );
+      mFoamTex.set( mFoamTexName, &GFXStaticTextureSRGBProfile, "WaterObject::mFoamTex" );
    if ( mFoamTex.isNull() )
-      mFoamTex.set( GFXTextureManager::getWarningTexturePath(), &GFXDefaultStaticDiffuseProfile, "WaterObject::mFoamTex" );
+      mFoamTex.set( GFXTextureManager::getWarningTexturePath(), &GFXStaticTextureSRGBProfile, "WaterObject::mFoamTex" );
 
    if ( mCubemapName.isNotEmpty() )
       Sim::findObject( mCubemapName, mCubemap );   

@@ -102,7 +102,7 @@ function initClient()
    exec("./game.cs");
    exec("./missionDownload.cs");
    exec("./serverConnection.cs");
-
+   
    // Load useful Materials
    exec("./shaders.cs");
 
@@ -111,7 +111,15 @@ function initClient()
 
    if (isFile("./config.cs"))
       exec("./config.cs");
+      
+   //benchmarking
+   if(isFile("./benchmark.cs"))
+      exec("./benchmark.cs");
 
+   if(isFile("art/gui/benchmarkGui.gui"))
+      exec("art/gui/benchmarkGui.gui");  
+   if (isFile("./config_vehicle.cs"))
+      exec("./config_vehicle.cs");
    loadMaterials();
 
    // Really shouldn't be starting the networking unless we are

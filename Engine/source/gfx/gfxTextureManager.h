@@ -344,9 +344,6 @@ protected:
    void _validateTexParams( const U32 width, const U32 height, const GFXTextureProfile *profile, 
       U32 &inOutNumMips, GFXFormat &inOutFormat );
 
-   /// Grab gamma format
-   GFXFormat _toGammaFormat(GFXFormat fmt);
-
    // New texture manager methods for the cleanup work:
    GFXTextureObject *_lookupTexture( const char *filename, const GFXTextureProfile *profile  );
    GFXTextureObject *_lookupTexture( const DDSFile *ddsFile, const GFXTextureProfile *profile  );

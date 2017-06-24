@@ -39,8 +39,6 @@ protected:
    ///
    FileName mDiffuseMap;
 
-   bool mDiffuseMapSRGB;
-
    /// The size of the diffuse base map in meters 
    /// used to generate its texture coordinates.
    F32 mDiffuseSize;
@@ -51,6 +49,9 @@ protected:
    ///
    FileName mDetailMap;
 
+   ///
+   FileName mCompositeMap;
+   
    /// The size of the detail map in meters used
    /// to generate the texture coordinates for the
    /// detail and normal maps.
@@ -105,6 +106,8 @@ public:
 
    const String& getMacroMap() const { return mMacroMap; }
 
+   const String& getCompositeMap() const { return mCompositeMap; }
+
    F32 getDetailSize() const { return mDetailSize; }
 
    F32 getDetailStrength() const { return mDetailStrength; }
@@ -120,8 +123,6 @@ public:
    bool useSideProjection() const { return mSideProjection; }
 
    F32 getParallaxScale() const { return mParallaxScale; }
-
-   bool isBaseTextureSRGB() const { return mDiffuseMapSRGB; }
 
 };
 

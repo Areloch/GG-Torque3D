@@ -305,7 +305,7 @@ bool GFXGLTextureManager::_loadTexture(GFXTextureObject *aTexture, DDSFile *dds)
 
       if(ImageUtil::isCompressedFormat(texture->mFormat))
       {
-         if((!isPow2(dds->getWidth()) || !isPow2(dds->getHeight())))
+         if((!isPow2(dds->getWidth()) || !isPow2(dds->getHeight())) && GFX->getCardProfiler()->queryProfile("GL::Workaround::noCompressedNPoTTextures"))
          {
             U8* uncompressedTex = new U8[dds->getWidth(i) * dds->getHeight(i) * 4];
             ImageUtil::decompress(dds->mSurfaces[0]->mMips[i],uncompressedTex, dds->getWidth(i), dds->getHeight(i), fmt);

@@ -142,7 +142,7 @@ VolumetricFog::VolumetricFog()
 
 VolumetricFog::~VolumetricFog()
 {
-   if (isClientObject())
+   if (!isClientObject())
       return;
 
    for (S32 i = 0; i < det_size.size(); i++)
@@ -152,12 +152,11 @@ VolumetricFog::~VolumetricFog()
       if (det_size[i].piArray != NULL)
          delete(det_size[i].piArray);
       if (det_size[i].verts != NULL)
-         delete(det_size[i].verts);
+         delete [] (det_size[i].verts);
    }
    det_size.clear();
 
-   if (z_buf.isValid())
-      SAFE_DELETE(z_buf);
+   z_buf = NULL;
 
    if (!mTexture.isNull())
       mTexture.free();
@@ -365,7 +364,7 @@ bool VolumetricFog::LoadShape()
       if (det_size[i].piArray != NULL)
          delete(det_size[i].piArray);
       if (det_size[i].verts != NULL)
-         delete(det_size[i].verts);
+         delete [] (det_size[i].verts);
    }
    det_size.clear();
 
@@ -1160,10 +1159,9 @@ void VolumetricFog::render(ObjectRenderInst *ri, SceneRenderState *state, BaseMa
 
    GFX->drawPrimitive(0);
 
-   // Ensure these two textures are bound to the pixel shader input on the second run as they are used as pixel shader outputs (render targets).
-   GFX->setTexture(1, NULL); //mDepthBuffer
-   GFX->setTexture(2, NULL); //mFrontBuffer
-   GFX->updateStates(); //update the dirty texture state we set above
+   // Ensure these two textures are NOT bound to the pixel shader input on the second run as they are used as pixel shader outputs (render targets).
+   GFX->clearTextureStateImmediate(1); //mDepthBuffer
+   GFX->clearTextureStateImmediate(2); //mFrontBuffer
 }
 
 void VolumetricFog::reflect_render(ObjectRenderInst *ri, SceneRenderState *state, BaseMatInstance *overrideMat)
@@ -1205,7 +1203,7 @@ void VolumetricFog::InitTexture()
    mIsTextured = false;
 
    if (mTextureName.isNotEmpty())
-      mTexture.set(mTextureName, &GFXDefaultStaticDiffuseProfile, "VolumetricFogMod");
+      mTexture.set(mTextureName, &GFXStaticTextureSRGBProfile, "VolumetricFogMod");
 
    if (!mTexture.isNull())
    {

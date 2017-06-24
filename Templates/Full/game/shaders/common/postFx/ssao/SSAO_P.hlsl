@@ -196,8 +196,8 @@ float4 main( PFXVertToPix IN ) : TORQUE_TARGET0
       ray.y = -ray.y;      
        
       se = ep + ray;
-            
-      occluderFragment = TORQUE_DEFERRED_UNCONDITION( deferredMap, se.xy );                  
+	  
+      occluderFragment = TORQUE_DEFERRED_UNCONDITION( deferredMap, se.xy );
       
       depthDiff = se.z - occluderFragment.a; 
       
@@ -245,9 +245,9 @@ float4 main( PFXVertToPix IN ) : TORQUE_TARGET0
       ray.y = -ray.y;      
        
       se = ep + ray;
-            
-      occluderFragment = TORQUE_DEFERRED_UNCONDITION( deferredMap, se.xy );                  
-      
+	  
+	  occluderFragment = TORQUE_DEFERRED_UNCONDITION( deferredMap, se.xy );
+	  
       depthDiff = se.z - occluderFragment.a;       
       
       normalDiff = dot( occluderFragment.xyz, normal );        

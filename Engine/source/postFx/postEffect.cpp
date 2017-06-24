@@ -271,21 +271,21 @@ PostEffect::PostEffect()
    :  mRenderTime( PFXAfterDiffuse ),
       mRenderPriority( 1.0 ),
       mEnabled( false ),
-      mSkip( false ),
-      mUpdateShader( true ),
       mStateBlockData( NULL ),
+      mUpdateShader( true ),
+      mSkip( false ),
       mAllowReflectPass( false ),
       mTargetClear( PFXTargetClear_None ),
-      mTargetViewport( PFXTargetViewport_TargetSize ),
       mTargetScale( Point2F::One ),
+      mTargetViewport( PFXTargetViewport_TargetSize ),
       mTargetSize( Point2I::Zero ),
       mTargetFormat( GFXFormatR8G8B8A8 ),
       mTargetClearColor( ColorF::BLACK ),
       mOneFrameOnly( false ),
       mOnThisFrame( true ),
-      mShaderReloadKey( 0 ),
-      mIsValid( false ),
       mRTSizeSC( NULL ),
+      mIsValid( false ),
+      mShaderReloadKey( 0 ),
       mOneOverRTSizeSC( NULL ),
       mViewportOffsetSC( NULL ),
       mTargetViewportSC( NULL ),
@@ -1080,7 +1080,7 @@ void PostEffect::_setupTarget( const SceneRenderState *state, bool *outClearTarg
             mTargetDepthStencil.getWidthHeight() != targetSize )
       {         
          mTargetDepthStencil.set( targetSize.x, targetSize.y, GFXFormatD24S8,
-                     &GFXDefaultZTargetProfile, "PostEffect::_setupTarget" );
+                     &GFXZTargetProfile, "PostEffect::_setupTarget" );
 
          if ( mTargetClear == PFXTargetClear_OnCreate )
             *outClearTarget = true;
@@ -1189,7 +1189,6 @@ void PostEffect::process(  const SceneRenderState *state,
 
    if ( mTargetTex || mTargetDepthStencil )
    {
-
       const RectI &oldViewport = GFX->getViewport();
       GFXTarget *oldTarget = GFX->getActiveRenderTarget();
 
@@ -1710,7 +1709,7 @@ DefineEngineFunction( dumpRandomNormalMap, void, (),,
 {
    GFXTexHandle tex;
 
-   tex.set( 64, 64, GFXFormatR8G8B8A8, &GFXDefaultPersistentProfile, "" );
+   tex.set( 64, 64, GFXFormatR8G8B8A8, &GFXTexturePersistentProfile, "" );
 
    GFXLockedRect *rect = tex.lock();
    U8 *f = rect->bits;

@@ -52,6 +52,7 @@ function onActivateAdvancedLM()
    AL_FormatToken.enable();
    
    // Activate Deferred Shading
+   //AL_PreCapture.enable();
    AL_DeferredShading.enable();
 }
 

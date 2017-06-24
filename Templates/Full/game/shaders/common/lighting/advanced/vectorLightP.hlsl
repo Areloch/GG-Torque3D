@@ -308,7 +308,7 @@ float4 main( FarFrustumQuadConnectP IN ) : TORQUE_TARGET0
    // Sample the AO texture.      
    #ifdef USE_SSAO_MASK
       float ao = 1.0 - TORQUE_TEX2D( ssaoMask, viewportCoordToRenderTarget( IN.uv0.xy, rtParams3 ) ).r;
-      addToResult *= ao;
+      //addToResult *= ao;
    #endif
 
    #ifdef PSSM_DEBUG_RENDER

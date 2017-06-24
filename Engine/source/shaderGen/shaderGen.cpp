@@ -100,7 +100,6 @@ void ShaderGen::initShaderGen()
    mInit = true;
 
    String shaderPath = Con::getVariable( "$shaderGen::cachePath");
-
    if (!shaderPath.equal( "shadergen:" ) && !shaderPath.isEmpty() )
    {
       // this is necessary, especially under Windows with UAC enabled

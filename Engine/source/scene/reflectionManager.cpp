@@ -59,13 +59,14 @@ MODULE_END;
 
 GFX_ImplementTextureProfile( ReflectRenderTargetProfile, 
                              GFXTextureProfile::DiffuseMap, 
-                             GFXTextureProfile::PreserveSize | GFXTextureProfile::RenderTarget | GFXTextureProfile::Pooled, 
+                             GFXTextureProfile::PreserveSize | GFXTextureProfile::RenderTarget | GFXTextureProfile::SRGB | GFXTextureProfile::Pooled,
                              GFXTextureProfile::NONE );
 
 GFX_ImplementTextureProfile( RefractTextureProfile,
                              GFXTextureProfile::DiffuseMap,
                              GFXTextureProfile::PreserveSize | 
                              GFXTextureProfile::RenderTarget |
+                             GFXTextureProfile::SRGB | 
                              GFXTextureProfile::Pooled,
                              GFXTextureProfile::NONE );
 
@@ -84,7 +85,7 @@ F32 ReflectionManager::smRefractTexScale = 0.5f;
 
 ReflectionManager::ReflectionManager() 
  : mUpdateRefract( true ),
-   mReflectFormat( GFXFormatR8G8B8A8 ),
+   mReflectFormat( GFXFormatR8G8B8A8_SRGB ),
    mLastUpdateMs( 0 )
 {
    mTimer = PlatformTimer::create();
@@ -282,18 +283,9 @@ GFXTextureObject* ReflectionManager::getRefractTex( bool forceUpdate )
    GFXFormat targetFormat = target->getFormat();
    const Point2I &targetSize = target->getSize();
 
-   U32 desWidth, desHeight;
    // D3D11 needs to be the same size as the active target
-   if (GFX->getAdapterType() == Direct3D11)
-   {
-      desWidth = targetSize.x;
-      desHeight = targetSize.y;
-   }
-   else
-   {
-      desWidth = mFloor((F32)targetSize.x * smRefractTexScale);
-      desHeight = mFloor((F32)targetSize.y * smRefractTexScale);
-   }
+   U32 desWidth = targetSize.x;
+   U32 desHeight = targetSize.y;
 
 
    if ( mRefractTex.isNull() || 

@@ -42,7 +42,7 @@ ImplementEnumType( GFXAdapterType,
    "@ingroup GFX" )
    { OpenGL, "OpenGL", "OpenGL." },
    { Direct3D11, "D3D11", "Direct3D 11." },
-   { NullDevice, "NullDevice", "Null device for dedicated servers." },
+   { NullDevice, "NullDevice", "Null device for dedicated servers." }
 EndImplementEnumType;
 
 ImplementEnumType( GFXBlend,
@@ -173,6 +173,7 @@ ImplementEnumType( GFXFormat,
 
    { GFXFormatR8G8B8, "GFXFormatR8G8B8" },
    { GFXFormatR8G8B8A8, "GFXFormatR8G8B8A8" },
+   { GFXFormatR8G8B8A8_SRGB, "GFXFormatR8G8B8A8_SRGB" },
    { GFXFormatR8G8B8X8, "GFXFormatR8G8B8X8" },
    { GFXFormatR32F, "GFXFormatR32F" },
    { GFXFormatR5G6B5, "GFXFormatR5G6B5" },

@@ -26,7 +26,6 @@
 #include "materials/materialManager.h"
 #include "materials/customMaterialDefinition.h"
 #include "materials/processedMaterial.h"
-#include "materials/processedFFMaterial.h"
 #include "materials/processedShaderMaterial.h"
 #include "materials/processedCustomMaterial.h"
 #include "materials/materialFeatureTypes.h"
@@ -342,18 +341,16 @@ bool MatInstance::processMaterial()
          }
          else
          {            
-            AssertWarn(custMat->mVersion == 0.0f, avar("Can't load CustomMaterial %s for %s, using generic FF fallback", 
+            AssertWarn(custMat->mVersion == 0.0f, avar("Can't load CustomMaterial %s for %s", 
                String(mMaterial->getName()).isEmpty() ? "Unknown" : mMaterial->getName(), custMat->mMapTo.c_str()));
-            mProcessedMaterial = new ProcessedFFMaterial(*mMaterial);
+            return false;
          }
       }
       else 
          mProcessedMaterial = new ProcessedCustomMaterial(*mMaterial);
    }
-   else if(GFX->getPixelShaderVersion() > 0.001)
-      mProcessedMaterial = getShaderMaterial();
    else
-      mProcessedMaterial = new ProcessedFFMaterial(*mMaterial);
+      mProcessedMaterial = getShaderMaterial();
 
    if (mProcessedMaterial)
    {

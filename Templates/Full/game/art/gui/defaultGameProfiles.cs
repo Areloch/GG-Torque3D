@@ -173,3 +173,30 @@ singleton GuiControlProfile (NumericHealthProfile)
    fontSize = 32;
    fontColor = "255 255 255";
 };
+
+// -----------------------------------------------------------------------------
+// Benchmark Gui
+// -----------------------------------------------------------------------------
+
+singleton GuiControlProfile(BenchmarkTextLargeProfile)
+{
+   fontType = "ArialBold";
+   fontSize = "30";
+   justify = "Center";
+   fontColor = "255 255 254 255";
+};
+
+singleton GuiControlProfile(BenchmarkTextSmallProfile)
+{
+   fontType = "ArialBold";
+   fontSize = "16";
+   justify = "Left";
+   fontColor = "255 255 255 255";
+};
+
+singleton GuiControlProfile (BenchmarkBorderProfile)
+{
+   bitmap = "core/art/gui/images/chatHudBorderArray";
+   hasBitmapArray = true;
+   opaque = false;
+};

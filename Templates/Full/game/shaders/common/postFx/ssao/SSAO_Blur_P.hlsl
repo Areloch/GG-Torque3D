@@ -49,7 +49,7 @@ uniform float blurNormalTol;
 void sample( float2 uv, float weight, float4 centerTap, inout int usedCount, inout float occlusion, inout float total )
 {
    //return;
-   float4 tap = TORQUE_DEFERRED_UNCONDITION( deferredMap, uv );   
+   float4 tap = TORQUE_DEFERRED_UNCONDITION( deferredMap, uv ); 
    
    if ( abs( tap.a - centerTap.a ) < blurDepthTol )
    {

@@ -124,7 +124,6 @@ class ParticleEmitter : public GameBase
 
   public:
 
-
    typedef GFXVertexPCT ParticleVertexType;
 
    ParticleEmitter();

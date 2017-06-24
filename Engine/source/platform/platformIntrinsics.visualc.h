@@ -26,7 +26,6 @@
 /// @file
 /// Compiler intrinsics for Visual C++.
 
-
 #include <intrin.h>
 
 // Fetch-And-Add
@@ -44,7 +43,6 @@ inline void dFetchAndAdd( volatile S32& ref, S32 val )
 }
 
 // Compare-And-Swap
-
 inline bool dCompareAndSwap( volatile U32& ref, U32 oldVal, U32 newVal )
 {
    return ( _InterlockedCompareExchange( ( volatile long* ) &ref, newVal, oldVal ) == oldVal );

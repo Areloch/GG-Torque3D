@@ -603,7 +603,7 @@ bool ParticleEmitterData::preload(bool server, String &errorStr)
      // load emitter texture if specified
      if (textureName && textureName[0])
      {
-       textureHandle = GFXTexHandle(textureName, &GFXDefaultStaticDiffuseProfile, avar("%s() - textureHandle (line %d)", __FUNCTION__, __LINE__));
+       textureHandle = GFXTexHandle(textureName, &GFXStaticTextureSRGBProfile, avar("%s() - textureHandle (line %d)", __FUNCTION__, __LINE__));
        if (!textureHandle)
        {
          errorStr = String::ToString("Missing particle emitter texture: %s", textureName);
@@ -1631,7 +1631,6 @@ void ParticleEmitter::copyToVB( const Point3F &camPos, const ColorF &ambientColo
       PROFILE_END();
    }
 
-
    PROFILE_START(ParticleEmitter_copyToVB_LockCopy);
    // create new VB if emitter size grows
    if( !mVertBuff || n_parts > mCurBuffSize )
@@ -1644,7 +1643,6 @@ void ParticleEmitter::copyToVB( const Point3F &camPos, const ColorF &ambientColo
    dMemcpy( verts, tempBuff.address(), n_parts * 4 * sizeof(ParticleVertexType) );
    mVertBuff.unlock();
    PROFILE_END();
-
 
    PROFILE_END();
 }

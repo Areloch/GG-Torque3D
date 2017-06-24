@@ -32,8 +32,8 @@ function initRenderManager()
    new RenderFormatToken(AL_FormatToken)
    {
       enabled = "false";
-      
-      format = getBestHDRFormat();
+      //When hdr is enabled this will be changed to the appropriate format
+      format = "GFXFormatR8G8B8A8_SRGB";
       depthFormat = "GFXFormatD24S8";
       aaLevel = 0; // -1 = match backbuffer
       
@@ -46,6 +46,7 @@ function initRenderManager()
       resolveEffect = "AL_FormatCopy";
    };
    DiffuseRenderPassManager.addManager( new RenderPassStateBin()           { renderOrder = 0.001; stateToken = AL_FormatToken; } );
+   
      
    // We really need to fix the sky to render after all the 
    // meshes... but that causes issues in reflections.
@@ -57,13 +58,14 @@ function initRenderManager()
    // Normal mesh rendering.
    DiffuseRenderPassManager.addManager( new RenderTerrainMgr(TerrainBin)   { renderOrder = 0.4; processAddOrder = 0.4; basicOnly = true; } );
    DiffuseRenderPassManager.addManager( new RenderMeshMgr(MeshBin)         { bintype = "Mesh"; renderOrder = 0.5; processAddOrder = 0.5; basicOnly = true; } );
-   DiffuseRenderPassManager.addManager( new RenderImposterMgr(ImposterBin) { renderOrder = 0.56; processAddOrder = 0.56; basicOnly = true; } );
    DiffuseRenderPassManager.addManager( new RenderObjectMgr(ObjectBin)     { bintype = "Object"; renderOrder = 0.6; processAddOrder = 0.6; } );
      
    DiffuseRenderPassManager.addManager( new RenderObjectMgr(ShadowBin)     { bintype = "Shadow"; renderOrder = 0.7; processAddOrder = 0.7; } );
    DiffuseRenderPassManager.addManager( new RenderMeshMgr(DecalRoadBin)    { bintype = "DecalRoad"; renderOrder = 0.8; processAddOrder = 0.8; } );
    DiffuseRenderPassManager.addManager( new RenderMeshMgr(DecalBin)        { bintype = "Decal"; renderOrder = 0.81; processAddOrder = 0.81; } );
    DiffuseRenderPassManager.addManager( new RenderOcclusionMgr(OccluderBin){ bintype = "Occluder"; renderOrder = 0.9; processAddOrder = 0.9; } );
+   DiffuseRenderPassManager.addManager( new RenderProbeMgr(ProbeBin)       { bintype = "Probes"; renderOrder = 0.95; processAddOrder = 0.95; } );
+   DiffuseRenderPassManager.addManager( new RenderImposterMgr(ImposterBin) { renderOrder = 0.96; processAddOrder = 0.96; basicOnly = true; } );
      
    // We now render translucent objects that should handle
    // their own fogging and lighting.

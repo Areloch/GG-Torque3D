@@ -71,7 +71,9 @@ new ShaderData( AL_VectorLightShader )
    samplerNames[2] = "$dynamicShadowMap";
    samplerNames[3] = "$ssaoMask";
    samplerNames[4] = "$gTapRotationTex";
-   
+   samplerNames[5] = "$lightBuffer";
+   samplerNames[6] = "$colorBuffer";
+   samplerNames[7] = "$matInfoBuffer";  
    pixVersion = 3.0;
 };
 
@@ -83,14 +85,10 @@ new CustomMaterial( AL_VectorLightMaterial )
    sampler["deferredBuffer"] = "#deferred";
    sampler["shadowMap"] = "$dynamiclight";
    sampler["dynamicShadowMap"] = "$dynamicShadowMap";
-<<<<<<< HEAD
-   sampler["ssaoMask"] = "#ssaoMask";
-=======
    sampler["ssaoMask"] = "#ssaoMask";  
    sampler["lightBuffer"] = "#indirectLighting";
    sampler["colorBuffer"] = "#color";
    sampler["matInfoBuffer"] = "#matinfo";
->>>>>>> PBR
    
    target = "directLighting";
    
@@ -115,11 +113,6 @@ new GFXStateBlockData( AL_ConvexLightState )
 
    samplersDefined = true;
    samplerStates[0] = SamplerClampPoint;  // G-buffer
-<<<<<<< HEAD
-   samplerStates[1] = SamplerClampPoint;  // Shadow Map (Do not use linear, these are perspective projections)
-   samplerStates[2] = SamplerClampLinear; // Cookie Map   
-   samplerStates[3] = SamplerWrapPoint;   // Random Direction Map
-=======
    mSamplerNames[0] = "deferredBuffer";
    samplerStates[1] = SamplerClampPoint;  // Shadow Map (Do not use linear, these are perspective projections)
    mSamplerNames[1] = "shadowMap";
@@ -127,7 +120,6 @@ new GFXStateBlockData( AL_ConvexLightState )
    mSamplerNames[2] = "dynamicShadowMap";
    samplerStates[3] = SamplerClampLinear; // Cookie Map   
    samplerStates[4] = SamplerWrapPoint;   // Random Direction Map
->>>>>>> PBR
    
    cullDefined = true;
    cullMode = GFXCullCW;
@@ -155,6 +147,9 @@ new ShaderData( AL_PointLightShader )
    samplerNames[2] = "$dynamicShadowMap";
    samplerNames[3] = "$cookieMap";
    samplerNames[4] = "$gTapRotationTex";
+   samplerNames[5] = "$lightBuffer";
+   samplerNames[6] = "$colorBuffer";
+   samplerNames[7] = "$matInfoBuffer";
    
    pixVersion = 3.0;
 };
@@ -168,12 +163,9 @@ new CustomMaterial( AL_PointLightMaterial )
    sampler["shadowMap"] = "$dynamiclight";
    sampler["dynamicShadowMap"] = "$dynamicShadowMap";
    sampler["cookieMap"] = "$dynamiclightmask";
-<<<<<<< HEAD
-=======
    sampler["lightBuffer"] = "#indirectLighting";
    sampler["colorBuffer"] = "#color";
    sampler["matInfoBuffer"] = "#matinfo";
->>>>>>> PBR
    
    target = "directLighting";
    
@@ -194,6 +186,9 @@ new ShaderData( AL_SpotLightShader )
    samplerNames[2] = "$dynamicShadowMap";
    samplerNames[3] = "$cookieMap";
    samplerNames[4] = "$gTapRotationTex";
+   samplerNames[5] = "$lightBuffer";
+   samplerNames[6] = "$colorBuffer";
+   samplerNames[7] = "$matInfoBuffer";
    
    pixVersion = 3.0;
 };
@@ -207,12 +202,9 @@ new CustomMaterial( AL_SpotLightMaterial )
    sampler["shadowMap"] = "$dynamiclight";
    sampler["dynamicShadowMap"] = "$dynamicShadowMap";
    sampler["cookieMap"] = "$dynamiclightmask";
-<<<<<<< HEAD
-=======
    sampler["lightBuffer"] = "#indirectLighting";
    sampler["colorBuffer"] = "#color";
    sampler["matInfoBuffer"] = "#matinfo";
->>>>>>> PBR
    
    target = "directLighting";
    
@@ -282,13 +274,62 @@ new CustomMaterial( AL_ParticlePointLightMaterial )
    pixVersion = 3.0;
 };
 
-singleton ShaderData( AmbientLightProbeShaderData )
+//Reflection probe Specular
+new ShaderData( ReflectionProbeShader )
 {
-   DXVertexShaderFile     = "shaders/common/ambientLightProbeV.hlsl";
-   DXPixelShaderFile      = "shaders/common/ambientLightProbeP.hlsl";  
+   DXVertexShaderFile = "shaders/common/lighting/advanced/convexGeometryV.hlsl";
+   DXPixelShaderFile  = "shaders/common/lighting/advanced/reflectionProbeP.hlsl";
+
+   //OGLVertexShaderFile = "shaders/common/lighting/advanced/gl/convexGeometryV.glsl";
+   //OGLPixelShaderFile  = "shaders/common/lighting/advanced/gl/pointLightP.glsl";
+
+   samplerNames[0] = "$deferredBuffer";
+   samplerNames[1] = "$matInfoBuffer";
    
-   samplerNames[0] = "$prePassBuffer"; 
-   samplerNames[1] = "$cubeMap";
+   pixVersion = 3.0;
+};
+
+// Convex-geometry light states
+new GFXStateBlockData( AL_ProbeState )
+{
+   blendDefined = true;
+   blendEnable = true;
+   blendSrc = GFXBlendOne;
+   blendDest = GFXBlendOne;
+   blendOp = GFXBlendOpAdd;
+   
+   zDefined = true;
+   zEnable = true;
+   zWriteEnable = false;
+   zFunc = GFXCmpGreaterEqual;
+
+   samplersDefined = true;
+   samplerStates[0] = SamplerClampPoint;  // G-buffer
+   mSamplerNames[0] = "deferredBuffer";
+   samplerStates[1] = SamplerClampLinear;  // Shadow Map (Do not use linear, these are perspective projections)
+   mSamplerNames[1] = "matInfoBuffer";
+   
+   cullDefined = true;
+   cullMode = GFXCullCW;
+   
+   stencilDefined = true;
+   stencilEnable = true;
+   stencilFailOp = GFXStencilOpKeep;
+   stencilZFailOp = GFXStencilOpKeep;
+   stencilPassOp = GFXStencilOpKeep;
+   stencilFunc = GFXCmpLess;
+   stencilRef = 0;
+};
+
+new CustomMaterial( ReflectionProbeMaterial )
+{
+   shader = ReflectionProbeShader;
+   stateBlock = AL_ProbeState;
+   
+   sampler["deferredBuffer"] = "#deferred";
+   sampler["matInfoBuffer"] = "#matinfo";
+   
+   target = "indirectLighting";
    
    pixVersion = 3.0;
 };

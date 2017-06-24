@@ -449,7 +449,6 @@ void GroundPlane::createGeometry( const Frustum& frustum )
    if ( mPrimitiveBuffer.isNull() || numTriangles > mPrimitiveBuffer->mPrimitiveCount )
    {
       mPrimitiveBuffer.set( GFX, numTriangles*3, numTriangles, GFXBufferTypeDynamic );
-
    }
 
    // Generate the grid.

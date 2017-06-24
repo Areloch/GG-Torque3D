@@ -261,11 +261,16 @@ void EnvVolume::refreshVolume()
    {
       SimObjectPtr<SceneObject> object = smProbedObjects[n];
       if (object.isNull()) continue;
+      if (!mAreaEnvMap)
+      {
+         mAreaEnvMap = new CubemapData();
+         mAreaEnvMap->registerObject();
+      }
       //area or per object cubemapping
       if (mCubeReflector.isEnabled())
             mAreaEnvMap->mCubemap = mCubeReflector.getCubemap();
-         else if ((mAreaEnvMap) && !(mAreaEnvMap->mCubemap))
-            mAreaEnvMap->createMap();
+      else if ((mAreaEnvMap) && !(mAreaEnvMap->mCubemap))
+         mAreaEnvMap->createMap();
 
          if (containsPoint(object->getPosition()))
          {

@@ -23,3 +23,13 @@
 // This is the default save location for any Particle Emitter datablocks created in the
 // Particle Editor (this script is executed from onServerCreated())
 
+
+datablock ParticleEmitterData(fireplaceE : DefaultEmitter)
+{
+   particles = "fireplaceP";
+   ejectionPeriodMS = "1000";
+   ejectionVelocity = "0";
+   ejectionOffset = "0.75";
+   thetaMax = "0";
+   phiVariance = "0";
+};

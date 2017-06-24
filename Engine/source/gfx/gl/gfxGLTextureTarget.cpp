@@ -162,7 +162,7 @@ void _GFXGLTextureTargetFBOImpl::applyState()
    
    PRESERVE_FRAMEBUFFER();
    glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
-
+   glEnable(GL_FRAMEBUFFER_SRGB);
    bool drawbufs[16];
    int bufsize = 0;
    for (int i = 0; i < 16; i++)

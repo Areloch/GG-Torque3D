@@ -145,6 +145,7 @@ void AccuTexFeatHLSL::processPix(   Vector<ShaderComponent*> &componentList,
         return;
    }
 
+   // get the accu pixel color
    Var *accuMapTex = new Var;
    accuMapTex->setType("Texture2D");
    accuMapTex->setName("accuMapTex");
@@ -152,7 +153,7 @@ void AccuTexFeatHLSL::processPix(   Vector<ShaderComponent*> &componentList,
    accuMapTex->texture = true;
    accuMapTex->constNum = accuMap->constNum;
    meta->addStatement(new GenOp("   @ = @.Sample(@, @ * @);\r\n", colorAccuDecl, accuMapTex, accuMap, inTex, accuScale));
-   
+
    // scale up normals
    meta->addStatement( new GenOp( "   @.xyz = @.xyz * 2.0 - 0.5;\r\n", bumpNorm, bumpNorm ) );
 
