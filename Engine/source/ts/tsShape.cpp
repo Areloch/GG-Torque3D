@@ -41,6 +41,8 @@
 extern TSShape* loadColladaShape(const Torque::Path &path);
 #endif
 
+extern TSShape* assimpLoadShape(const Torque::Path &path);
+
 /// most recent version -- this is the version we write
 S32 TSShape::smVersion = 28;
 /// the version currently being read...valid only during a read
@@ -2163,9 +2165,15 @@ template<> void *Resource<TSShape>::create(const Torque::Path &path)
    }
    else
    {
-      Con::errorf( "Resource<TSShape>::create - '%s' has an unknown file format", path.getFullPath().c_str() );
-      delete ret;
-      return NULL;
+      ret = assimpLoadShape(path);
+      readSuccess = (ret != NULL);
+
+      if (!readSuccess)
+      {
+         Con::errorf("Resource<TSShape>::create - '%s' has an unknown file format", path.getFullPath().c_str());
+         delete ret;
+         return NULL;
+      }
    }
 
    if( !readSuccess )

@@ -26,6 +26,9 @@
 #ifndef _GUI_INSPECTOR_H_
 #include "gui/editor/guiInspector.h"
 #endif
+#ifndef _GUI_INSPECTOR_VARIABLEGROUP_H_
+#include "gui/editor/inspector/variableGroup.h"
+#endif
 
 
 class GuiVariableInspector : public GuiInspector
@@ -44,8 +47,15 @@ public:
 
    virtual void loadVars( String searchString );
 
+   void update();
+
+   void addField(const char* name, const char* label, const char* typeName, const char* description, const char* defaultValue, SimObject* ownerObj, const char* groupName);
+   void setFieldEnabled(const char* name, bool enabled);
+   void clearFields();
 
 protected:
+   
+   Vector<VariableField> mFields;
 
 };
 

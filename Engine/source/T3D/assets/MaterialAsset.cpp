@@ -46,6 +46,8 @@
 
 #include "gfx/gfxTextureHandle.h"
 
+//#include "shaderGen/shaderGen3/shaderGen3.h"
+
 // Script bindings.
 //#include "assets/assetBase_ScriptBinding.h"
 
@@ -139,7 +141,8 @@ void MaterialAsset::initPersistFields()
    // Call parent.
    Parent::initPersistFields();
 
-   //addField("shaderData", TypeRealString, Offset(mShaderFile, MaterialAsset), "");
+   addField("shaderGraph", TypeRealString, Offset(mShaderGraphFile, MaterialAsset), "");
+   addField("scriptFile", TypeRealString, Offset(mScriptFile, MaterialAsset), "");
    //addField("shaderGraph", TypeRealString, Offset(mShaderGraphFile, MaterialAsset), "");
 
    //addField("diffuseTexture", TypeImageFilename, Offset(mDiffuseText, MaterialAsset), "");
@@ -150,6 +153,8 @@ void MaterialAsset::initializeAsset()
 {
    // Call parent.
    Parent::initializeAsset();
+
+   compileShader();
 
    return;
 
@@ -468,8 +473,33 @@ void MaterialAsset::parseShaderGraph()
 }*/
 //------------------------------------------------------------------------------
 
+void MaterialAsset::compileShader()
+{
+   /*if (mShaderGraphFile.isEmpty())
+   {
+      Con::errorf("MaterialAsset:initializeAsset: No valid Shader Graph file!");
+      return;
+   }
+
+   ShaderGen3* sg;
+   if (!Sim::findObject("ShaderGen", sg))
+   {
+      sg = new ShaderGen3();
+      sg->registerObject("ShaderGen");
+   }
+
+   sg->compileShaderGraph(mShaderGraphFile);*/
+}
+
 void MaterialAsset::copyTo(SimObject* object)
 {
    // Call to parent.
    Parent::copyTo(object);
+}
+
+ConsoleMethod(MaterialAsset, compileShader, void, 2, 2, "() - Gets a field description by index\n"
+   "@param index The index of the behavior\n"
+   "@return Returns a string representing the description of this field\n")
+{
+   object->compileShader();
 }

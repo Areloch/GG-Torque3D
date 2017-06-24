@@ -110,6 +110,8 @@ public:
    void resetViewport();
    void setOrbitDistance(F32 distance);
 
+   void setMaterial(const char* materialName);
+
    bool processCameraQuery(CameraQuery *query);
    void renderWorld(const RectI &updateRect);
 

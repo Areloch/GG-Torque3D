@@ -120,6 +120,8 @@ class GuiInspectorField : public GuiControl
       /// this is exposed in case someone wants to override the normal caption.
       virtual void setCaption( StringTableEntry caption ) { mCaption = caption; }
 
+      virtual void setDocs(String docs) { mFieldDocs = docs; }
+
       /// Returns pointer to this InspectorField's edit ctrl.
       virtual GuiControl* getEditCtrl() { return mEdit; }
 

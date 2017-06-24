@@ -82,7 +82,13 @@ public:
    virtual void clearInspectObjects();
 
    /// Get the currently inspected object
-   SimObject* getInspectObject( U32 index = 0 ) { return mTargets[ index ]; }
+   SimObject* getInspectObject(U32 index = 0)
+   {
+      if (!mTargets.empty())
+         return mTargets[index];
+      else
+         return nullptr;
+   }
 
    S32 getComponentGroupTargetId() { return mComponentGroupTargetId; }
    void setComponentGroupTargetId(S32 compId) { mComponentGroupTargetId = compId; }

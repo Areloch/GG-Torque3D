@@ -33,6 +33,7 @@
 #include "core/resourceManager.h"
 #include "scene/sceneManager.h"
 #include "scene/sceneRenderState.h"
+#include "materials/materialDefinition.h"
 
 extern GFXCubemap * gLevelEnvMap;
 
@@ -276,6 +277,30 @@ void GuiMaterialPreview::setObjectModel(const char* modelName)
    lastRenderTime = Platform::getVirtualMilliseconds();
 }
 
+void GuiMaterialPreview::setMaterial(const char* materialName)
+{
+   if (!mModel)
+   {
+      Con::errorf("GuiMaterialPreview::setMaterial: no model set!");
+      return;
+   }
+
+   Material* mat;
+   if (!Sim::findObject(materialName, mat))
+   {
+      Con::errorf("GuiMaterialPreview::setMaterial: invalid material!");
+      return;
+   }
+
+   BaseMatInstance* matInst = mat->createMatInstance();
+
+   TSMaterialList* pMatList = mModel->getMaterialList();
+   
+   pMatList->setMaterialInst(matInst,0);
+
+   mModel->initMaterialList();
+}
+
 void GuiMaterialPreview::deleteModel()
 {
    SAFE_DELETE(mModel);
@@ -459,6 +484,13 @@ DefineEngineMethod(GuiMaterialPreview, setModel, void, ( const char* shapeName )
    "@param shapeName Name of the model to display.\n")
 {
    object->setObjectModel(shapeName);
+}
+
+DefineEngineMethod(GuiMaterialPreview, setMaterial, void, (const char* materialName), ,
+   "Sets the model to be displayed in this control\n\n"
+   "@param shapeName Name of the model to display.\n")
+{
+   object->setMaterial(materialName);
 }
 
 DefineEngineMethod(GuiMaterialPreview, deleteModel, void, (),,

@@ -30,7 +30,7 @@
 
 using namespace ColladaUtils;
 
-String cleanString(const String& str)
+String AppMaterial::cleanString(const String& str)
 {
    String cleanStr(str);
 

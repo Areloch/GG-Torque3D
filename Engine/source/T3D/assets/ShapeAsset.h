@@ -48,6 +48,9 @@
 #ifndef _ANIMATION_ASSET_H_
 #include "AnimationAsset.h";
 #endif
+#ifndef _MATERIAL_ASSET_H_
+#include "MaterialAsset.h";
+#endif
 
 #include "gui/editor/guiInspectorTypes.h"
 
@@ -67,6 +70,7 @@ protected:
 
    //List of animation assets attached to this one
    Vector<AnimationAsset*> mAnimations;
+   Vector<MaterialAsset*> mMaterials;
 
 public:
    ShapeAsset();

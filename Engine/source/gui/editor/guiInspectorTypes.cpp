@@ -401,7 +401,7 @@ ConsoleDocClass( GuiInspectorTypeCheckBox,
 
 GuiControl* GuiInspectorTypeCheckBox::constructEditControl()
 {
-   if (mField->flag.test(AbstractClassRep::FIELD_ButtonInInspectors))
+   if (mField && mField->flag.test(AbstractClassRep::FIELD_ButtonInInspectors))
    {
       // This checkbox (bool field) is meant to be treated as a button.
       GuiControl* retCtrl = new GuiButtonCtrl();
@@ -427,7 +427,7 @@ GuiControl* GuiInspectorTypeCheckBox::constructEditControl()
 
       return retCtrl;
    }
-   else if (mField->flag.test(AbstractClassRep::FieldFlags::FIELD_ComponentInspectors))
+   else if (mField && mField->flag.test(AbstractClassRep::FieldFlags::FIELD_ComponentInspectors))
    {
       // This checkbox (bool field) is meant to be treated as a button.
       GuiControl* retCtrl = new GuiButtonCtrl();

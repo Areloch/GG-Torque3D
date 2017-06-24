@@ -291,15 +291,7 @@ void Entity::onStaticModified(const char* slotName, const char* newValue)
 //Updating
 void Entity::processTick(const Move* move)
 {
-   bool isServer = isServerObject();
-
-   if (isMounted()) 
-   {
-      MatrixF mat;
-      mMount.object->getMountTransform(mMount.node, mMount.xfm, &mat);
-      Parent::setTransform(mat);
-   }
-   /*if (!isHidden())
+   if (!isHidden())
    {
       if (mDelta.warpCount < mDelta.warpTicks)
       {
@@ -319,14 +311,7 @@ void Entity::processTick(const Move* move)
       }
       else
       {
-         if (isMounted())
-         {
-            MatrixF mat;
-            mMount.object->getMountTransform(mMount.node, mMount.xfm, &mat);
-            Parent::setTransform(mat);
-            Parent::setRenderTransform(mat);
-         }
-         else
+         if(!isMounted())
          {
             if (!move)
             {
@@ -354,42 +339,51 @@ void Entity::processTick(const Move* move)
       else
          lastMove = NullMove;
 
-      if (move && isServerObject())
+      if (!isMounted())
       {
-         if ((move->y != 0 || prevMove.y != 0) 
-            || (move->x != 0 || prevMove.x != 0) 
-            || (move->z != 0 || prevMove.x != 0))
+         if (move && isServerObject())
          {
-            if (isMethod("moveVectorEvent"))
-               Con::executef(this, "moveVectorEvent", move->x, move->y, move->z);
-         }
-
-         if (move->yaw != 0)
-         {
-            if (isMethod("moveYawEvent"))
-               Con::executef(this, "moveYawEvent", move->yaw);
-         }
-
-         if (move->pitch != 0)
-         {
-            if (isMethod("movePitchEvent"))
-               Con::executef(this, "movePitchEvent", move->pitch);
-         }
-
-         if (move->roll != 0)
-         {
-            if (isMethod("moveRollEvent"))
-               Con::executef(this, "moveRollEvent", move->roll);
-         }
-
-         for (U32 i = 0; i < MaxTriggerKeys; i++)
-         {
-            if (move->trigger[i] != prevMove.trigger[i])
+            if ((move->y != 0 || prevMove.y != 0)
+               || (move->x != 0 || prevMove.x != 0)
+               || (move->z != 0 || prevMove.x != 0))
             {
-               if (isMethod("moveTriggerEvent"))
-                  Con::executef(this, "moveTriggerEvent", i, move->trigger[i]);
+               if (isMethod("moveVectorEvent"))
+                  Con::executef(this, "moveVectorEvent", move->x, move->y, move->z);
+            }
+
+            if (move->yaw != 0)
+            {
+               if (isMethod("moveYawEvent"))
+                  Con::executef(this, "moveYawEvent", move->yaw);
+            }
+
+            if (move->pitch != 0)
+            {
+               if (isMethod("movePitchEvent"))
+                  Con::executef(this, "movePitchEvent", move->pitch);
+            }
+
+            if (move->roll != 0)
+            {
+               if (isMethod("moveRollEvent"))
+                  Con::executef(this, "moveRollEvent", move->roll);
+            }
+
+            for (U32 i = 0; i < MaxTriggerKeys; i++)
+            {
+               if (move->trigger[i] != prevMove.trigger[i])
+               {
+                  if (isMethod("moveTriggerEvent"))
+                     Con::executef(this, "moveTriggerEvent", i, move->trigger[i]);
+               }
             }
          }
+      }
+      else
+      {
+         MatrixF mat;
+         mMount.object->getMountTransform(mMount.node, mMount.xfm, &mat);
+         setTransform(mat);
       }
 
       // Save current rigid state interpolation
@@ -405,21 +399,16 @@ void Entity::processTick(const Move* move)
       mDelta.posVec -= getPosition();
       mDelta.rot[1] = mRot.asQuatF();
 
-      //setTransform(getPosition(), mRot);
-   }*/
+   }
 }
 
 void Entity::advanceTime(F32 dt)
 {
-   if (isMounted()) 
+   if (isMounted())
    {
       MatrixF mat;
       mMount.object->getRenderMountTransform(0.0f, mMount.node, mMount.xfm, &mat);
-
-      Point3F pos = mat.getPosition();
-
-      Parent::setRenderTransform(mat);
-      //setRenderTransform(mat.getPosition(), RotationF(mat));
+      setRenderTransform(mat);
    }
 }
 
@@ -430,7 +419,7 @@ void Entity::interpolateTick(F32 dt)
       MatrixF mat = RotationF(mDelta.rot[1]).asMatrixF();
       mat.setPosition(mDelta.pos);
 
-      Parent::setRenderTransform(mat);
+      setRenderTransform(mat);
       //setRenderTransform(mDelta.pos, mDelta.rot[1]);
    }
    else
@@ -443,7 +432,7 @@ void Entity::interpolateTick(F32 dt)
       MatrixF mat = RotationF(rot).asMatrixF();
       mat.setPosition(pos);
 
-      Parent::setRenderTransform(mat);
+      setRenderTransform(mat);
    }
 
    mDelta.dt = dt;
@@ -669,84 +658,47 @@ void Entity::unpackUpdate(NetConnection *con, BitStream *stream)
 //Manipulation
 void Entity::setTransform(const MatrixF &mat)
 {
-   //setMaskBits(TransformMask);
-   //setMaskBits(TransformMask | NoWarpMask);
-   /*MatrixF oldTransform = getTransform();
+   // This test is a bit expensive so turn it off in release.   
+#ifdef TORQUE_DEBUG
+   //AssertFatal( mat.isAffine(), "SceneObject::setTransform() - Bad transform (non affine)!" );
+#endif
 
-   if (isMounted())
-   {
-      // Use transform from mounted object
-      Point3F newPos = mat.getPosition();
-      Point3F parentPos = mMount.object->getTransform().getPosition();
+   PROFILE_SCOPE(Entity_setTransform);
 
-      Point3F newOffset = newPos - parentPos;
+   // Update the transforms.
 
-      if (!newOffset.isZero())
-      {
-         //setMountOffset(newOffset);
-         mPos = newOffset;
-      }
+   mObjToWorld = mWorldToObj = mat;
+   mWorldToObj.affineInverse();
 
-      Point3F matEul = mat.toEuler();
+   mPos = mObjToWorld.getPosition();
+   mRot = mObjToWorld;
 
-      //mRot = Point3F(mRadToDeg(matEul.x), mRadToDeg(matEul.y), mRadToDeg(matEul.z));
+   // Update the world-space AABB.
 
-      if (matEul != Point3F(0, 0, 0))
-      {
-         Point3F mountEul = mMount.object->getTransform().toEuler();
-         Point3F diff = matEul - mountEul;
+   resetWorldBox();
 
-         //setMountRotation(Point3F(mRadToDeg(diff.x), mRadToDeg(diff.y), mRadToDeg(diff.z)));
-         mRot = diff;
-      }
-      else
-      {
-         //setMountRotation(Point3F(0, 0, 0));
-         mRot = Point3F(0, 0, 0);
-      }
+   // If we're in a SceneManager, sync our scene state.
 
-      RotationF addRot = mRot + RotationF(mMount.object->getTransform());
-      MatrixF transf = addRot.asMatrixF();
-      transf.setPosition(mPos + mMount.object->getPosition());
+   if (mSceneManager != NULL)
+      mSceneManager->notifyObjectDirty(this);
 
-      Parent::setTransform(transf);
+   setRenderTransform(mat);
 
-      if (transf != oldTransform)
-         setMaskBits(TransformMask);
-   }
-   else
-   {
-      //Are we part of a prefab?
-      /*Prefab* p = Prefab::getPrefabByChild(this);
-      if (p)
-      {
-         //just let our prefab know we moved
-         p->childTransformUpdated(this, mat);
-      }*/
-      //else
-      /*{
-         //mRot.set(mat);
-         //Parent::setTransform(mat);
-
-         RotationF rot = RotationF(mat);
-
-         EulerF tempRot = rot.asEulerF(RotationF::Degrees);
-
-         Point3F pos;
-
-         mat.getColumn(3,&pos);
-
-         setTransform(pos, rot);
-      }
-   }*/
-   Parent::setTransform(mat);
+   // Dirty our network mask so that the new transform gets
+   // transmitted to the client object
+   setMaskBits(TransformMask);
 }
 
 void Entity::setTransform(Point3F position, RotationF rotation)
 {
+   mPos = position;
+   mRot = rotation;
+
    MatrixF mat = rotation.asMatrixF();
    mat.setPosition(position);
-   Parent::setTransform(mat);
+   mObjToWorld = mat;
+   setTransform(mObjToWorld);
+   setRenderTransform(mObjToWorld);
    return;
 
    MatrixF oldTransform = getTransform();
@@ -798,8 +750,6 @@ void Entity::setTransform(Point3F position, RotationF rotation)
 
       Parent::setTransform(newMat);
 
-      onTransformSet.trigger(&newMat);
-
       Point3F newPos = newMat.getPosition();
       RotationF newRot = newMat;
 
@@ -822,7 +772,13 @@ void Entity::setTransform(Point3F position, RotationF rotation)
 
 void Entity::setRenderTransform(const MatrixF &mat)
 {
-   Parent::setRenderTransform(mat);
+   PROFILE_START(Entity_setRenderTransform);
+   mRenderObjToWorld = mRenderWorldToObj = mat;
+   mRenderWorldToObj.affineInverse();
+
+   AssertFatal(mObjBox.isValidBox(), "Bad object box!");
+   resetRenderWorldBox();
+   PROFILE_END();
 }
 
 void Entity::setRenderTransform(Point3F position, RotationF rotation)
@@ -853,8 +809,6 @@ void Entity::setRenderTransform(Point3F position, RotationF rotation)
       mRot = rotation;
 
       Parent::setRenderTransform(newMat);
-
-      onTransformSet.trigger(&newMat);
    }
 }
 

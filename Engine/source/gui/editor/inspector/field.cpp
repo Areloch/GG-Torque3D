@@ -604,7 +604,10 @@ void GuiInspectorField::_executeSelectedCallback()
 void GuiInspectorField::_registerEditControl( GuiControl *ctrl )
 {
    char szName[512];
-   dSprintf( szName, 512, "IE_%s_%d_%s_Field", ctrl->getClassName(), mInspector->getInspectObject()->getId(), mCaption);
+   if(mInspector->getInspectObject() != nullptr)
+      dSprintf( szName, 512, "IE_%s_%d_%s_Field", ctrl->getClassName(), mInspector->getInspectObject()->getId(), mCaption);
+   else
+      dSprintf(szName, 512, "IE_%s_%s_Field", ctrl->getClassName(), mCaption);
 
    // Register the object
    ctrl->registerObject( szName );

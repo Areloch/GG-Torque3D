@@ -57,6 +57,9 @@ class MaterialAsset : public AssetBase
    AssetDefinition*        mpAssetDefinition;
    U32                     mAcquireReferenceCount;
 
+   String                  mShaderGraphFile;
+   String                  mScriptFile;
+
    //
    //BaseMatInstance*        mMatInstance;
    //CustomMaterial*         mMaterial;
@@ -106,6 +109,8 @@ public:
    virtual void copyTo(SimObject* object);
 
    virtual void initializeAsset();
+
+   void compileShader();
 
    //void parseShaderData();
    //void parseShaderGraph();
