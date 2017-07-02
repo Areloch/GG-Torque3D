@@ -768,9 +768,7 @@ void DeferredMinnaertHLSL::processPix( Vector<ShaderComponent*> &componentList,
    deferredBuffer->sampler = true;
    deferredBuffer->constNum = Var::getTexUnitNum();     // used as texture unit num here
 
-   Var* deferredTex = NULL;
-   deferredBuffer->setType("SamplerState");
-   deferredTex = new Var;
+   Var* deferredTex = new Var;
    deferredTex->setName("deferredTex");
    deferredTex->setType("Texture2D");
    deferredTex->uniform = true;
@@ -788,8 +786,10 @@ void DeferredMinnaertHLSL::processPix( Vector<ShaderComponent*> &componentList,
 
    String unconditionDeferredMethod = String::ToLower(RenderDeferredMgr::BufferName) + "Uncondition";
 
-   Var *d_NL_Att = (Var*)LangElement::find("d_NL_Att");
+   Var *d_NL_Att = (Var*)LangElement::find( "d_NL_Att" );
+
    meta->addStatement(new GenOp(avar("   float4 normalDepth = %s(@, ,@, @);\r\n", unconditionDeferredMethod.c_str()), deferredBuffer, deferredTex, uvScene));
+
    meta->addStatement( new GenOp( "   float vDotN = dot(normalDepth.xyz, @);\r\n", wsViewVec ) );
    meta->addStatement( new GenOp( "   float Minnaert = pow( @, @) * pow(vDotN, 1.0 - @);\r\n", d_NL_Att, minnaertConstant, minnaertConstant ) );
    meta->addStatement( new GenOp( "   @;\r\n", assignColor( new GenOp( "float4(Minnaert, Minnaert, Minnaert, 1.0)" ), Material::Mul ) ) );

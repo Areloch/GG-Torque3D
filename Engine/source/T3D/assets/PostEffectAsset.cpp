@@ -98,9 +98,7 @@ PostEffectAsset::PostEffectAsset() :
    // Generate an asset definition.
    mpAssetDefinition = new AssetDefinition();
 
-   mLevelFile = StringTable->EmptyString();
-   mLevelDescription = StringTable->EmptyString();
-   mPreviewImage = StringTable->EmptyString();
+   mScriptFile = StringTable->EmptyString();
 }
 
 //-----------------------------------------------------------------------------
@@ -120,9 +118,7 @@ void PostEffectAsset::initPersistFields()
    // Call parent.
    Parent::initPersistFields();
 
-   addField("LevelFile", TypeString, Offset(mLevelFile, PostEffectAsset), "Class of object this component uses.");
-   addField("LevelDescription", TypeString, Offset(mLevelDescription, PostEffectAsset), "Class of object this component uses.");
-   addField("PreviewImage", TypeString, Offset(mPreviewImage, PostEffectAsset), "Class of object this component uses.");
+   addField("scriptFile", TypeString, Offset(mScriptFile, PostEffectAsset), "Class of object this component uses.");
 }
 
 //------------------------------------------------------------------------------
@@ -135,5 +131,5 @@ void PostEffectAsset::copyTo(SimObject* object)
 
 void PostEffectAsset::initializeAsset()
 {
-   mPostEffect = new PostEffect();
+   //mPostEffect = new PostEffect();
 }

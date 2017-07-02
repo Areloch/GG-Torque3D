@@ -98,7 +98,7 @@ ImageAsset::ImageAsset() :
    // Generate an asset definition.
    mpAssetDefinition = new AssetDefinition();
 
-   mImageFileName = StringTable->lookup("");
+   mImageFileName = StringTable->EmptyString();
 
    mImage = NULL;
    mUseMips = true;
@@ -148,7 +148,7 @@ void ImageAsset::initializeAsset()
          return;
       }
 
-      mImage.set(mImageFileName, &GFXDefaultStaticDiffuseSRGBProfile, avar("%s() - mImage (line %d)", __FUNCTION__, __LINE__));
+      mImage.set(mImageFileName, &GFXStaticTextureSRGBProfile, avar("%s() - mImage (line %d)", __FUNCTION__, __LINE__));
 
       if (mImage)
       {

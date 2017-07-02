@@ -98,9 +98,9 @@ GameObjectAsset::GameObjectAsset() :
    // Generate an asset definition.
    mpAssetDefinition = new AssetDefinition();
 
-   mGameObjectName = StringTable->lookup("");
-   mScriptFilePath = StringTable->lookup("");
-   mTAMLFilePath = StringTable->lookup("");
+   mGameObjectName = StringTable->EmptyString();
+   mScriptFilePath = StringTable->EmptyString();
+   mTAMLFilePath = StringTable->EmptyString();
 }
 
 //-----------------------------------------------------------------------------

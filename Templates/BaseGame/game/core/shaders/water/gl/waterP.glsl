@@ -163,8 +163,9 @@ void main()
 
    // Get depth of the water surface (this pixel).
    // Convert from WorldSpace to EyeSpace.
-   float pixelDepth = PIXEL_DIST / farPlaneDist;
 
+   float pixelDepth = PIXEL_DIST / farPlaneDist; 
+   
    vec2 deferredCoord = viewportCoordToRenderTarget( IN_posPostWave, rtParams1 );
 
    float startDepth = deferredUncondition( deferredTex, deferredCoord ).w;
@@ -187,17 +188,18 @@ void main()
    // Do the intial distortion... we might remove it below.
    vec2 distortDelta = bumpNorm.xy * distortAmt;
    vec4 distortPos = IN_posPostWave;
-   distortPos.xy += distortDelta;
 
-   deferredCoord = viewportCoordToRenderTarget( distortPos, rtParams1 );
+   distortPos.xy += distortDelta;      
+      
+   deferredCoord = viewportCoordToRenderTarget( distortPos, rtParams1 );   
 
    // Get deferred depth at the position of this distorted pixel.
-   float deferredDepth = deferredUncondition( deferredTex, deferredCoord ).w;
+   float deferredDepth = deferredUncondition( deferredTex, deferredCoord ).w;      
    if ( deferredDepth > 0.99 )
      deferredDepth = 5.0;
-
+    
    float delta = ( deferredDepth - pixelDepth ) * farPlaneDist;
-
+      
    if ( delta < 0.0 )
    {
       // If we got a negative delta then the distorted

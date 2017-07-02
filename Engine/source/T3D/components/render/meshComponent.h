@@ -99,7 +99,8 @@ protected:
 
    struct matMap
    {
-      String matName;
+      MaterialAsset* matAsset;
+      String assetId;
       U32 slot;
    };
 
@@ -174,7 +175,7 @@ public:
 
    virtual void onDynamicModified(const char* slotName, const char* newValue);
 
-   void changeMaterial(U32 slot, const char* newMat);
+   void changeMaterial(U32 slot, MaterialAsset* newMat);
    bool setMatInstField(U32 slot, const char* field, const char* value);
 
    virtual void onInspect();

@@ -59,6 +59,7 @@ class MaterialAsset : public AssetBase
 
    String                  mShaderGraphFile;
    String                  mScriptFile;
+   String                  mMatDefinitionName;
 
    //
    //BaseMatInstance*        mMatInstance;
@@ -114,6 +115,8 @@ public:
 
    //void parseShaderData();
    //void parseShaderGraph();
+
+   String getMaterialDefinitionName() { return mMatDefinitionName; }
 
    /// Declare Console Object.
    DECLARE_CONOBJECT(MaterialAsset);

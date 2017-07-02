@@ -100,7 +100,21 @@ void GuiVariableInspector::update()
    }
 }
 
-void GuiVariableInspector::addField(const char* name, const char* label, const char* typeName, const char* description, const char* defaultValue, SimObject* ownerObj, const char* groupName)
+void GuiVariableInspector::startGroup(const char* name)
+{
+   if (!mCurrentGroup.isEmpty())
+      return;
+
+   mCurrentGroup = name;
+}
+
+void GuiVariableInspector::endGroup()
+{
+   mCurrentGroup = "";
+}
+
+void GuiVariableInspector::addField(const char* name, const char* label, const char* typeName, const char* description, 
+   const char* defaultValue, const char* dataValues, SimObject* ownerObj)
 {
    VariableField newField;
    newField.mFieldName = StringTable->insert(name);
@@ -108,9 +122,22 @@ void GuiVariableInspector::addField(const char* name, const char* label, const c
    newField.mFieldTypeName = StringTable->insert(typeName);
    newField.mFieldDescription = StringTable->insert(description);
    newField.mDefaultValue = StringTable->insert(defaultValue);
-   newField.mGroup = StringTable->insert(groupName);
+   newField.mDataValues = String(dataValues);
+   newField.mGroup = mCurrentGroup;
+   newField.mSetCallbackName = StringTable->EmptyString();
+   newField.mEnabled = true;
 
    newField.mOwnerObject = ownerObj;
+
+   //establish the field on the ownerObject(if we have one)
+   //This way, we can let the field hook into the object's field and modify it when changed
+   if (newField.mOwnerObject != nullptr)
+   {
+      if (!newField.mOwnerObject->isField(newField.mFieldName))
+      {
+         newField.mOwnerObject->setDataField(newField.mFieldName, NULL, newField.mDefaultValue);
+      }
+   }
 
    //
    //find the field type
@@ -151,6 +178,17 @@ void GuiVariableInspector::addField(const char* name, const char* label, const c
    update();
 }
 
+void GuiVariableInspector::addCallbackField(const char* name, const char* label, const char* typeName, const char* description,
+   const char* defaultValue, const char* dataValues, const char* callbackName, SimObject* ownerObj)
+{
+   addField(name, label, typeName, description, defaultValue, dataValues, ownerObj);
+
+   //Add the callback name
+   mFields.last().mSetCallbackName = StringTable->insert(callbackName);
+
+   update();
+}
+
 void GuiVariableInspector::clearFields()
 {
    mFields.clear();
@@ -159,25 +197,46 @@ void GuiVariableInspector::clearFields()
 
 void GuiVariableInspector::setFieldEnabled(const char* name, bool enabled)
 {
+   String fieldName = name;
    for (U32 i = 0; i < mFields.size(); i++)
    {
-      if (mFields[i].mFieldName == name)
+      if (fieldName.equal(mFields[i].mFieldName, String::NoCase))
       {
          mFields[i].mEnabled = enabled;
+         update();
          return;
       }
    }
-
-   update();
 }
 
-DefineConsoleMethod(GuiVariableInspector, addField, void, (const char* name, const char* label, const char* typeName, const char* description, const char* defaultValue, SimObject* ownerObj, const char* groupName), 
-   ("","","","","", nullAsType<SimObject*>(), ""), "loadVars( searchString )")
+DefineConsoleMethod(GuiVariableInspector, startGroup, void, (const char* name),, "")
+{
+   object->startGroup(name);
+}
+
+DefineConsoleMethod(GuiVariableInspector, endGroup, void, (),, "")
+{
+   object->endGroup();
+}
+
+DefineConsoleMethod(GuiVariableInspector, addField, void, (const char* name, const char* label, const char* typeName, 
+   const char* description, const char* defaultValue, const char* dataValues, SimObject* ownerObj),
+   ("","","","","", "", nullAsType<SimObject*>()), "addField( searchString )")
 {
    if (name == "" || typeName == "")
       return;
 
-   object->addField(name, label, typeName, description, defaultValue, ownerObj, groupName);
+   object->addField(name, label, typeName, description, defaultValue, dataValues, ownerObj);
+}
+
+DefineConsoleMethod(GuiVariableInspector, addCallbackField, void, (const char* name, const char* label, const char* typeName,
+   const char* description, const char* defaultValue, const char* dataValues, const char* callbackName, SimObject* ownerObj),
+   ("", "", "", "", "", "", nullAsType<SimObject*>()), "addField( searchString )")
+{
+   if (name == "" || typeName == "")
+      return;
+
+   object->addCallbackField(name, label, typeName, description, defaultValue, dataValues, callbackName, ownerObj);
 }
 
 DefineConsoleMethod(GuiVariableInspector, update, void, (), , "loadVars( searchString )")

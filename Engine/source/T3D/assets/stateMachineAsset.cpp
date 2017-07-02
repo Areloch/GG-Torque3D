@@ -98,7 +98,7 @@ StateMachineAsset::StateMachineAsset() :
    // Generate an asset definition.
    mpAssetDefinition = new AssetDefinition();
 
-   mStateMachineFileName = StringTable->lookup("");
+   mStateMachineFileName = StringTable->EmptyString();
 }
 
 //-----------------------------------------------------------------------------

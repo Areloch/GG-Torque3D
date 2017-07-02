@@ -170,7 +170,7 @@ DefineEngineMethod(MeshComponent, getNodeByName, S32,
    return -1;
 }
 
-DefineEngineMethod(MeshComponent, changeMaterial, void, (U32 slot, const char* newMat), (0, ""),
+DefineEngineMethod(MeshComponent, changeMaterial, void, (U32 slot, MaterialAsset* newMat), (0, nullAsType<MaterialAsset*>()),
    "@brief Change one of the materials on the shape.\n\n")
 {
    object->changeMaterial(slot, newMat);

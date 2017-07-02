@@ -42,13 +42,13 @@
 
 Component::Component()
 {
-   mFriendlyName = StringTable->lookup("");
-   mFromResource = StringTable->lookup("");
-   mComponentType = StringTable->lookup("");
-   mComponentGroup = StringTable->lookup("");
-   mNetworkType = StringTable->lookup("");
-   mTemplateName = StringTable->lookup("");
-   //mDependency = StringTable->lookup("");
+   mFriendlyName = StringTable->EmptyString();
+   mFromResource = StringTable->EmptyString();
+   mComponentType = StringTable->EmptyString();
+   mComponentGroup = StringTable->EmptyString();
+   mNetworkType = StringTable->EmptyString();
+   mTemplateName = StringTable->EmptyString();
+   //mDependency = StringTable->EmptyString();
 
    mNetworked = false;
 

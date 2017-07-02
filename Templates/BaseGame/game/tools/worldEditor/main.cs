@@ -66,6 +66,7 @@ function initializeWorldEditor()
    exec("./scripts/cameraCommands.ed.cs");
    exec("./scripts/lightViz.cs");
    exec("./scripts/shadowViz.cs");
+   exec("./scripts/probeBake.ed.cs");
 
    // Load Custom Editors
    loadDirectory(expandFilename("./scripts/editors"));
@@ -120,6 +121,8 @@ function initializeWorldEditor()
    EVisibility.addOption( "Debug Render: Light Frustums", "$Light::renderLightFrustums", "" );
    EVisibility.addOption( "Debug Render: Bounding Boxes", "$Scene::renderBoundingBoxes", "" );
    EVisibility.addOption( "Debug Render: Physics World", "$PhysicsWorld::render", "togglePhysicsDebugViz" );
+   EVisibility.addOption( "Debug Render: Reflection Probes", "$Light::renderReflectionProbes", "" );
+   EVisibility.addOption( "Debug Render: Probe Previews", "$Light::renderPreviewProbes", "" );
    EVisibility.addOption( "AL: Disable Shadows", "$Shadows::disable", "" );   
    EVisibility.addOption( "AL: Light Color Viz", "$AL_LightColorVisualizeVar", "toggleLightColorViz" );
    EVisibility.addOption( "AL: Environment Light", "$AL_LightMapShaderVar", "toggleLightMapViz" );

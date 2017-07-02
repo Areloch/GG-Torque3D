@@ -298,6 +298,15 @@ bool TSMaterialList::renameMaterial(U32 i, const String& newName)
          String fullPath = String::ToString( "%s/%s", mLookupPath.c_str(), newName.c_str() );
          texHandle.set( fullPath, &GFXStaticTextureSRGBProfile, avar("%s() - handle (line %d)", __FUNCTION__, __LINE__) );
       }
+
+      if (!texHandle.isValid())
+      {
+         Material* newMat = MATMGR->getMaterialDefinitionByName(newName);
+
+         String fullPath = newMat->mDiffuseMapFilename[0];
+         texHandle.set(fullPath, &GFXStaticTextureSRGBProfile, avar("%s() - handle (line %d)", __FUNCTION__, __LINE__));
+      }
+
       if (!texHandle.isValid())
          return false;
    }

@@ -74,7 +74,9 @@ GuiInspectorField::GuiInspectorField()
    mCaption( StringTable->EmptyString() ),
    mFieldArrayIndex( NULL ),
    mHighlighted(false),
-   mTargetObject(NULL)
+   mTargetObject(NULL),
+   mVariableName(StringTable->EmptyString()),
+   mCallbackName(StringTable->EmptyString())
 {
    setCanSave( false );
 }
@@ -119,6 +121,9 @@ bool GuiInspectorField::onAdd()
 
    // Force our editField to set it's value
    updateValue();
+
+   //Con::evaluatef("%d.label = %d;", this->getId(), mStack->getId());
+   Con::evaluatef("%d.edit = %d;", this->getId(), mEdit->getId());
 
    return true;
 }
@@ -246,6 +251,24 @@ void GuiInspectorField::onRightMouseUp( const GuiEvent &event )
 
 void GuiInspectorField::setData( const char* data, bool callbacks )
 {
+   if (mSpecialEditField)
+   {
+      if (mTargetObject != nullptr && mVariableName != StringTable->EmptyString())
+      {
+         mTargetObject->setDataField(mVariableName, NULL, data);
+
+         if (mCallbackName != StringTable->EmptyString())
+            Con::executef(mInspector, mCallbackName, mVariableName, data, mTargetObject);
+      }
+      else if (mVariableName != StringTable->EmptyString())
+      {
+         Con::setVariable(mVariableName, data);
+
+         if (mCallbackName != StringTable->EmptyString())
+            Con::executef(mInspector, mCallbackName, mVariableName, data);
+      }
+   }
+
    if( mField == NULL )
       return;
 
@@ -361,13 +384,31 @@ void GuiInspectorField::setData( const char* data, bool callbacks )
 
 const char* GuiInspectorField::getData( U32 inspectObjectIndex )
 {
-   if( mField == NULL )
-      return "";
+   if (!mSpecialEditField)
+   {
+      if (mField == NULL)
+         return "";
 
-   if (mTargetObject)
-      return mTargetObject->getDataField(mField->pFieldname, mFieldArrayIndex);
+      if (mTargetObject)
+         return mTargetObject->getDataField(mField->pFieldname, mFieldArrayIndex);
 
-   return mInspector->getInspectObject( inspectObjectIndex )->getDataField( mField->pFieldname, mFieldArrayIndex );
+      return mInspector->getInspectObject(inspectObjectIndex)->getDataField(mField->pFieldname, mFieldArrayIndex);
+   }
+   else
+   {
+      if (mTargetObject != nullptr && mVariableName != StringTable->EmptyString())
+      {
+         return mTargetObject->getDataField(mVariableName, NULL);
+      }
+      else if (mVariableName != StringTable->EmptyString())
+      {
+         return Con::getVariable(mVariableName);
+      }
+      else
+      {
+         return "";
+      }
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -496,6 +537,17 @@ void GuiInspectorField::setValue( StringTableEntry newValue )
    GuiTextEditCtrl *ctrl = dynamic_cast<GuiTextEditCtrl*>( mEdit );
    if( ctrl != NULL )
       ctrl->setText( newValue );
+}
+
+//-----------------------------------------------------------------------------
+
+void GuiInspectorField::setEditControl(GuiControl* editCtrl) 
+{ 
+   if (mEdit)
+      mEdit->deleteObject();
+
+   mEdit = editCtrl; 
+   addObject(mEdit);
 }
 
 //-----------------------------------------------------------------------------
@@ -682,4 +734,14 @@ DefineConsoleMethod( GuiInspectorField, getData, const char*, (), , "() - Return
 DefineConsoleMethod( GuiInspectorField, reset, void, (), , "() - Reset to default value." )
 {
    object->resetData();
+}
+
+DefineConsoleMethod(GuiInspectorField, setCaption, void, (String newCaption),, "() - Reset to default value.")
+{
+   object->setCaption(StringTable->insert(newCaption.c_str()));
+}
+
+DefineConsoleMethod(GuiInspectorField, setEditControl, void, (GuiControl* editCtrl), (nullAsType<GuiControl*>()), "() - Reset to default value.")
+{
+   object->setEditControl(editCtrl);
 }

@@ -259,7 +259,7 @@ U32 MeshComponent::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
       {
          stream->writeInt(mChangingMaterials[i].slot, 16);
 
-         NetStringHandle matNameStr = mChangingMaterials[i].matName.c_str();
+         NetStringHandle matNameStr = mChangingMaterials[i].assetId.c_str();
          con->packNetStringHandleU(stream, matNameStr);
       }
 
@@ -289,7 +289,10 @@ void MeshComponent::unpackUpdate(NetConnection *con, BitStream *stream)
       {
          matMap newMatMap;
          newMatMap.slot = stream->readInt(16);
-         newMatMap.matName = String(con->unpackNetStringHandleU(stream).getString());
+         newMatMap.assetId = String(con->unpackNetStringHandleU(stream).getString());
+
+         //do the lookup, now
+         newMatMap.matAsset = AssetDatabase.acquireAsset<MaterialAsset>(newMatMap.assetId);
 
          mChangingMaterials.push_back(newMatMap);
       }
@@ -487,7 +490,8 @@ void MeshComponent::updateMaterials()
       {
          if(mChangingMaterials[m].slot == i)
          {
-            pMatList->renameMaterial( i, mChangingMaterials[m].matName );
+            //Fetch the actual material asset
+            pMatList->renameMaterial( i, mChangingMaterials[m].matAsset->getMaterialDefinitionName());
          }
       }
 
@@ -624,12 +628,19 @@ void MeshComponent::onDynamicModified(const char* slotName, const char* newValue
       if(slot == -1)
          return;
 
+      
+      //Safe to assume the inbound value for the material will be a MaterialAsset, so lets do a lookup on the name
+      MaterialAsset* matAsset = AssetDatabase.acquireAsset<MaterialAsset>(newValue);
+      if (!matAsset)
+         return;
+
       bool found = false;
       for(U32 i=0; i < mChangingMaterials.size(); i++)
       {
          if(mChangingMaterials[i].slot == slot)
          {
-            mChangingMaterials[i].matName = String(newValue);
+            mChangingMaterials[i].matAsset = matAsset;
+            mChangingMaterials[i].assetId = newValue;
             found = true;
          }
       }
@@ -638,7 +649,8 @@ void MeshComponent::onDynamicModified(const char* slotName, const char* newValue
       {
          matMap newMatMap;
          newMatMap.slot = slot;
-         newMatMap.matName = String(newValue);
+         newMatMap.matAsset = matAsset;
+         newMatMap.assetId = newValue;
 
          mChangingMaterials.push_back(newMatMap);
       }
@@ -649,13 +661,13 @@ void MeshComponent::onDynamicModified(const char* slotName, const char* newValue
    Parent::onDynamicModified(slotName, newValue);
 }
 
-void MeshComponent::changeMaterial(U32 slot, const char* newMat)
+void MeshComponent::changeMaterial(U32 slot, MaterialAsset* newMat)
 {
    char fieldName[512];
 
    //update our respective field
    dSprintf(fieldName, 512, "materialSlot%d", slot);
-   setDataField(fieldName, NULL, newMat);
+   setDataField(fieldName, NULL, newMat->getAssetId());
 }
 
 bool MeshComponent::setMatInstField(U32 slot, const char* field, const char* value)

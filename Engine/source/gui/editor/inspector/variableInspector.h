@@ -49,13 +49,21 @@ public:
 
    void update();
 
-   void addField(const char* name, const char* label, const char* typeName, const char* description, const char* defaultValue, SimObject* ownerObj, const char* groupName);
+   void startGroup(const char* name);
+   void endGroup();
+
+   void addField(const char* name, const char* label, const char* typeName, const char* description, 
+      const char* defaultValue, const char* dataValues, SimObject* ownerObj);
+   void addCallbackField(const char* name, const char* label, const char* typeName, const char* description,
+      const char* defaultValue, const char* dataValues, const char* callbackName, SimObject* ownerObj);
    void setFieldEnabled(const char* name, bool enabled);
    void clearFields();
 
 protected:
    
    Vector<VariableField> mFields;
+
+   String mCurrentGroup;
 
 };
 

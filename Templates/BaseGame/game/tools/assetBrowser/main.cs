@@ -29,19 +29,21 @@ function initializeAssetBrowser()
 {
    echo(" % - Initializing Asset Browser");  
    
-   exec("./assetBrowser.gui");
-   exec("./addPackageWindow.gui");
-   exec("./gameObjectCreator.gui");
-   exec("./newAsset.gui");
-   exec("./newComponentAsset.gui");
-   exec("./editAsset.gui");
+   exec("./scripts/guis/assetBrowser.gui");
+   exec("./scripts/guis/addPackageWindow.gui");
+   exec("./scripts/guis/gameObjectCreator.gui");
+   exec("./scripts/guis/newAsset.gui");
+   exec("./scripts/guis/newComponentAsset.gui");
+   exec("./scripts/guis/editAsset.gui");
+   exec("./scripts/guis/assetImport.gui");
 
-   exec("./assetBrowser.cs");
-   exec("./addPackageWindow.cs");
-   exec("./assetImport.cs");
-   exec("./gameObjectCreator.cs");
-   exec("./newAsset.cs");
-   exec("./editAsset.cs");
+   exec("./scripts/assetBrowser.cs");
+   exec("./scripts/addPackageWindow.cs");
+   exec("./scripts/assetImport.cs");
+   exec("./scripts/gameObjectCreator.cs");
+   exec("./scripts/newAsset.cs");
+   exec("./scripts/editAsset.cs");
+   exec("./scripts/fieldTypes.cs");
    
    new ScriptObject( AssetBrowserPlugin )
    {

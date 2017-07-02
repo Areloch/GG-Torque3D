@@ -63,10 +63,6 @@ class GuiInspectorField : public GuiControl
       /// The GuiInspector that the group is in to which this field belongs.
       GuiInspector* mInspector;
       
-      //An override to make sure this field is associated to an object that isn't expressly
-      //the one the inspector is inspecting. Such as an entity's component.
-      SimObject* mTargetObject;
-      
       ///
       AbstractClassRep::Field* mField;
       
@@ -76,9 +72,11 @@ class GuiInspectorField : public GuiControl
       ///
       String mFieldDocs;
       
+public:
       ///
       GuiControl* mEdit;
       
+protected:
       ///
       RectI mCaptionRect;
       
@@ -87,6 +85,16 @@ class GuiInspectorField : public GuiControl
       
       ///
       bool mHighlighted;
+
+      //An override that lets us bypass inspector-dependent logic for setting/getting variables/fields
+      bool mSpecialEditField;
+      //An override to make sure this field is associated to an object that isn't expressly
+      //the one the inspector is inspecting. Such as an entity's component.
+      SimObject* mTargetObject;
+      //Special edit field, variable name - the variable or field name targeted
+      StringTableEntry mVariableName;
+      //Special edit field, callback name - if defined, we'll do a callback to the function listed here when editing the field
+      StringTableEntry mCallbackName;
 
       virtual void _registerEditControl( GuiControl *ctrl );
       virtual void _executeSelectedCallback();
@@ -119,6 +127,8 @@ class GuiInspectorField : public GuiControl
       /// Sets this control's caption text, usually set within setInspectorField,
       /// this is exposed in case someone wants to override the normal caption.
       virtual void setCaption( StringTableEntry caption ) { mCaption = caption; }
+
+      void setEditControl(GuiControl* editCtrl);
 
       virtual void setDocs(String docs) { mFieldDocs = docs; }
 
@@ -195,6 +205,9 @@ class GuiInspectorField : public GuiControl
 
       void setTargetObject(SimObject* obj) { mTargetObject = obj; }
       SimObject* getTargetObject() { return mTargetObject; }
+      void setSpecialEditField(bool isSpecialEditField) { mSpecialEditField = isSpecialEditField; }
+      void setSpecialEditVariableName(String varName) { mVariableName = StringTable->insert(varName); }
+      void setSpecialEditCallbackName(String callName) { mCallbackName = StringTable->insert(callName); }
 
       DECLARE_CONOBJECT( GuiInspectorField );
       DECLARE_CATEGORY( "Gui Editor" );

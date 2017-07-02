@@ -43,8 +43,11 @@ struct VariableField
    SimObject* mOwnerObject;
 
    StringTableEntry mDefaultValue;
+   String mDataValues;
 
-   StringTableEntry mGroup;
+   String mGroup;
+
+   StringTableEntry mSetCallbackName;
 
    bool mHidden;
    bool mEnabled;
@@ -70,6 +73,9 @@ public:
 
    void clearFields();
    void addField(VariableField* field);
+
+   void addInspectorField(GuiInspectorField* field);
+   GuiInspectorField* createInspectorField();
 
 protected:
    Vector<VariableField*> mFields;

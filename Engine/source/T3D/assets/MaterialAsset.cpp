@@ -116,6 +116,10 @@ mAssetInitialized(false)
    // Generate an asset definition.
    mpAssetDefinition = new AssetDefinition();
 
+   mShaderGraphFile = "";
+   mScriptFile = "";
+   mMatDefinitionName = "";
+
    //mShaderFile = StringTable->lookup("");
    //mShaderGraphFile = StringTable->lookup("");
    //mDiffuseText = StringTable->lookup("");
@@ -143,6 +147,7 @@ void MaterialAsset::initPersistFields()
 
    addField("shaderGraph", TypeRealString, Offset(mShaderGraphFile, MaterialAsset), "");
    addField("scriptFile", TypeRealString, Offset(mScriptFile, MaterialAsset), "");
+   addField("materialDefinitionName", TypeRealString, Offset(mMatDefinitionName, MaterialAsset), "");
    //addField("shaderGraph", TypeRealString, Offset(mShaderGraphFile, MaterialAsset), "");
 
    //addField("diffuseTexture", TypeImageFilename, Offset(mDiffuseText, MaterialAsset), "");

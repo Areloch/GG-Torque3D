@@ -206,31 +206,34 @@ function GuiInspectorComponentGroup::buildMaterialField(%this, %component, %fiel
    // CustomMaterials are not available for selection
    /*if ( !isObject( %currentMaterial ) || %currentMaterial.isMemberOfClass( "CustomMaterial" ) )
       return;*/
+   %assetDef = AssetDatabase.acquireAsset(%currentMaterial);
+   
+   %materialDef = %assetDef.materialDefinitionName;
 
-   if( %currentMaterial.isMemberOfClass("TerrainMaterial") )
+   if( %materialDef.isMemberOfClass("TerrainMaterial") )
    {
       %matName = %currentMaterial.getInternalName();
       
-      if( %currentMaterial.diffuseMap $= "")
+      if( %materialDef.diffuseMap $= "")
          %previewImage = "core/art/warnmat";
       else
-         %previewImage = %currentMaterial.diffuseMap;
+         %previewImage = %materialDef.diffuseMap;
    }
-   else if( %currentMaterial.toneMap[0] $= "" && %currentMaterial.diffuseMap[0] $= "" && !isObject(%material.cubemap) )
+   else if( %materialDef.toneMap[0] $= "" && %materialDef.diffuseMap[0] $= "" && !isObject(%materialDef.cubemap) )
    {
-      %matName = %currentMaterial.name;
+      %matName = %materialDef.name;
       %previewImage = "core/art/warnmat";
    }
    else
    {
-      %matName = %currentMaterial.name;
+      %matName = %materialDef.name;
       
-      if( %currentMaterial.toneMap[0] !$= "" )
-         %previewImage = %currentMaterial.toneMap[0];
-      else if( %currentMaterial.diffuseMap[0] !$= "" )
-         %previewImage = %currentMaterial.diffuseMap[0];
-      else if( %currentMaterial.cubemap.cubeFace[0] !$= "" )
-         %previewImage = %currentMaterial.cubemap.cubeFace[0];
+      if( %materialDef.toneMap[0] !$= "" )
+         %previewImage = %materialDef.toneMap[0];
+      else if( %materialDef.diffuseMap[0] !$= "" )
+         %previewImage = %materialDef.diffuseMap[0];
+      else if( %materialDef.cubemap.cubeFace[0] !$= "" )
+         %previewImage = %materialDef.cubemap.cubeFace[0];
       
       //%previewImage = MaterialEditorGui.searchForTexture( %material,  %previewImage );
       
@@ -238,7 +241,7 @@ function GuiInspectorComponentGroup::buildMaterialField(%this, %component, %fiel
       // find out what the img src path is 
       // **NEW** this needs to be updated with the above, but has some timing issues
       %materialDiffuse =  %previewImage;
-      %materialPath = %currentMaterial.getFilename();
+      %materialPath = %materialDef.getFilename();
       
       if( strchr( %materialDiffuse, "/") $= "" )
       {
@@ -260,4 +263,14 @@ function GuiInspectorComponentGroup::buildMaterialField(%this, %component, %fiel
    %previewButton.setText("");
    
    %this.stack.add(%container);
+}
+
+function materialFieldBtn::onClick(%this)
+{
+   AssetBrowser.showDialog("MaterialAsset", "", %this.Object, %this.targetField, "");  
+}
+
+function materialFieldBtn::setMaterial(%this, %matAssetName)
+{
+   
 }

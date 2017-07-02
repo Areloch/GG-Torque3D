@@ -141,7 +141,6 @@ new SimGroup(MissionGroup) {
          networked = "1";
          enabled = "1";
          BatchingMode = "Individual";
-         MeshAsset = "Weapons:M4";
       };
       new Entity() {
          scale = "1 1 1";
@@ -164,14 +163,15 @@ new SimGroup(MissionGroup) {
             networked = "1";
             enabled = "1";
             BatchingMode = "Individual";
-            MeshAsset = "Placeholder:cube";
          };
       };
    };
    new MountTestExample() {
       shapeFile = "data/Characters/Shapes/Red_Guy.dae";
       position = "0.375642 -7.59177 4.73653";
-      rotation = "0 0 1 48.175";
+      rotation = "0 -0 48.175";
+      position = "0.375642 -7.59177 4.73653";
+      rotation = "0 -0 48.175";
       scale = "1 1 1";
       canSave = "1";
       canSaveDynamicFields = "1";
@@ -179,8 +179,10 @@ new SimGroup(MissionGroup) {
 
       new MountTestExample() {
          shapeFile = "data/Weapons/Shapes/M4.DAE";
-         position = "0.752884 -8.11576 5.88598";
-         rotation = "0.0898349 -0.288318 0.953311 139.854";
+         position = "0.375642 -7.59177 4.73653";
+         rotation = "-0.0827222 32.9557 128.151";
+         position = "0.375642 -7.59177 4.73653";
+         rotation = "-0.0827222 32.9557 128.151";
          scale = "1 1 1";
          mountPID = "77bdf956-0c6e-11e7-8d8f-e52fb45841d2";
          mountNode = "4";
@@ -189,6 +191,26 @@ new SimGroup(MissionGroup) {
          canSave = "1";
          canSaveDynamicFields = "1";
          persistentId = "77bdf955-0c6e-11e7-8d8f-e52fb45841d2";
+      };
+   };
+   new Entity() {
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+      position = "0 0 1.26952";
+      rotation = "0 -0 -0";
+      LocalPosition = "0 0 0";
+      LocalRotation = "1 0 0 0";
+
+      new MeshComponent() {
+         componentType = "Render";
+         friendlyName = "Mesh Component";
+         description = "Causes the object to render a non-animating 3d shape using the file provided.";
+         networked = "1";
+         enabled = "1";
+         BatchingMode = "Individual";
+         MeshAsset = "Test:cubeTest";
+         MaterialSlot0 = "Test:CorrugatedWall6";
       };
    };
 };

@@ -167,28 +167,17 @@ float2 parallaxOffsetDxtnm(TORQUE_SAMPLER2D(texMap), float2 texCoord, float3 neg
    return offset;
 }
 
-/// The maximum value for 16bit per component integer HDR encoding.
-static const float HDR_RGB16_MAX = 100.0;
-
 /// The maximum value for 10bit per component integer HDR encoding.
 static const float HDR_RGB10_MAX = 4.0;
 
 /// Encodes an HDR color for storage into a target.
 float3 hdrEncode( float3 sample )
 {
-   #if defined( TORQUE_HDR_RGB16 )
-
-      return sample / HDR_RGB16_MAX;
-
-   #elif defined( TORQUE_HDR_RGB10 ) 
-
+   #if defined( TORQUE_HDR_RGB10 )
       return sample / HDR_RGB10_MAX;
-
    #else
-
       // No encoding.
       return sample;
-
    #endif
 }
 
@@ -201,19 +190,11 @@ float4 hdrEncode( float4 sample )
 /// Decodes an HDR color from a target.
 float3 hdrDecode( float3 sample )
 {
-   #if defined( TORQUE_HDR_RGB16 )
-
-      return sample * HDR_RGB16_MAX;
-
-   #elif defined( TORQUE_HDR_RGB10 )
-
+   #if defined( TORQUE_HDR_RGB10 )
       return sample * HDR_RGB10_MAX;
-
    #else
-
       // No encoding.
       return sample;
-
    #endif
 }
 

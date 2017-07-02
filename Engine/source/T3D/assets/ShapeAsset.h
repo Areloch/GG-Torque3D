@@ -45,8 +45,8 @@
 #include "core/resource.h"
 #endif
 
-#ifndef _ANIMATION_ASSET_H_
-#include "AnimationAsset.h";
+#ifndef SHAPE_ANIMATION_ASSET_H
+#include "ShapeAnimationAsset.h";
 #endif
 #ifndef _MATERIAL_ASSET_H_
 #include "MaterialAsset.h";
@@ -69,7 +69,7 @@ protected:
    Resource<TSShape>	 mShape;
 
    //List of animation assets attached to this one
-   Vector<AnimationAsset*> mAnimations;
+   Vector<ShapeAnimationAsset*> mAnimations;
    Vector<MaterialAsset*> mMaterials;
 
 public:

@@ -20,8 +20,8 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef _ANIMATION_ASSET_H_
-#include "AnimationAsset.h"
+#ifndef SHAPE_ANIMATION_ASSET_H
+#include "ShapeAnimationAsset.h"
 #endif
 
 #ifndef _ASSET_MANAGER_H_
@@ -45,21 +45,21 @@
 
 //-----------------------------------------------------------------------------
 
-IMPLEMENT_CONOBJECT(AnimationAsset);
+IMPLEMENT_CONOBJECT(ShapeAnimationAsset);
 
-ConsoleType(AnimationAssetPtr, TypeAnimationAssetPtr, AnimationAsset, ASSET_ID_FIELD_PREFIX)
+ConsoleType(ShapeAnimationAssetPtr, TypeShapeAnimationAssetPtr, ShapeAnimationAsset, ASSET_ID_FIELD_PREFIX)
 
 //-----------------------------------------------------------------------------
 
-ConsoleGetType(TypeAnimationAssetPtr)
+ConsoleGetType(TypeShapeAnimationAssetPtr)
 {
    // Fetch asset Id.
-   return (*((AssetPtr<AnimationAsset>*)dptr)).getAssetId();
+   return (*((AssetPtr<ShapeAnimationAsset>*)dptr)).getAssetId();
 }
 
 //-----------------------------------------------------------------------------
 
-ConsoleSetType(TypeAnimationAssetPtr)
+ConsoleSetType(TypeShapeAnimationAssetPtr)
 {
    // Was a single argument specified?
    if (argc == 1)
@@ -68,7 +68,7 @@ ConsoleSetType(TypeAnimationAssetPtr)
       const char* pFieldValue = argv[0];
 
       // Fetch asset pointer.
-      AssetPtr<AnimationAsset>* pAssetPtr = dynamic_cast<AssetPtr<AnimationAsset>*>((AssetPtrBase*)(dptr));
+      AssetPtr<ShapeAnimationAsset>* pAssetPtr = dynamic_cast<AssetPtr<ShapeAnimationAsset>*>((AssetPtrBase*)(dptr));
 
       // Is the asset pointer the correct type?
       if (pAssetPtr == NULL)
@@ -90,7 +90,7 @@ ConsoleSetType(TypeAnimationAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-AnimationAsset::AnimationAsset() :
+ShapeAnimationAsset::ShapeAnimationAsset() :
 mAcquireReferenceCount(0),
 mpOwningAssetManager(NULL),
 mAssetInitialized(false)
@@ -101,7 +101,7 @@ mAssetInitialized(false)
 
 //-----------------------------------------------------------------------------
 
-AnimationAsset::~AnimationAsset()
+ShapeAnimationAsset::~ShapeAnimationAsset()
 {
    // If the asset manager does not own the asset then we own the
    // asset definition so delete it.
@@ -111,7 +111,7 @@ AnimationAsset::~AnimationAsset()
 
 //-----------------------------------------------------------------------------
 
-void AnimationAsset::initPersistFields()
+void ShapeAnimationAsset::initPersistFields()
 {
    // Call parent.
    Parent::initPersistFields();
@@ -120,7 +120,7 @@ void AnimationAsset::initPersistFields()
 
 //------------------------------------------------------------------------------
 
-void AnimationAsset::copyTo(SimObject* object)
+void ShapeAnimationAsset::copyTo(SimObject* object)
 {
    // Call to parent.
    Parent::copyTo(object);

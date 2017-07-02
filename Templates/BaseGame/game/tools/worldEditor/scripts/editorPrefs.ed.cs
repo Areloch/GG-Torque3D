@@ -36,8 +36,8 @@ EditorSettings.setDefaultValue(  "currentEditor",           "WorldEditorInspecto
 EditorSettings.setDefaultValue(  "newLevelFile",            "tools/levels/BlankRoom.mis" );
 EditorSettings.setDefaultValue(  "newGameObjectDir",        "scripts/server/gameObjects" );
 
-if( isFile( "C:/Program Files/Torsion/Torsion.exe" ) )
-   EditorSettings.setDefaultValue(  "torsionPath",          "C:/Program Files/Torsion/Torsion.exe" );
+if( isFile( "E:/Gamedev/tools/Torsion/Torsion.exe" ) )
+   EditorSettings.setDefaultValue(  "torsionPath",          "E:/Gamedev/tools/Torsion/Torsion.exe" );
 else if( isFile( "C:/Program Files (x86)/Torsion/Torsion.exe" ) )
    EditorSettings.setDefaultValue(  "torsionPath",          "C:/Program Files (x86)/Torsion/Torsion.exe" );
 else

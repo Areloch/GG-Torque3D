@@ -1,3 +1,4 @@
+#pragma once
 //-----------------------------------------------------------------------------
 // Copyright (c) 2013 GarageGames, LLC
 //
@@ -19,8 +20,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
-#ifndef _ANIMATION_ASSET_H_
-#define _ANIMATION_ASSET_H_
+#ifndef GUI_ASSET_H
+#define GUI_ASSET_H
 
 #ifndef _ASSET_BASE_H_
 #include "assets/assetBase.h"
@@ -38,15 +39,10 @@
 #include "assets/assetFieldTypes.h"
 #endif
 
-#ifndef _TSSHAPE_H_
-#include "ts/tsShape.h"
-#endif
-#ifndef __RESOURCE_H__
-#include "core/resource.h"
-#endif
+#include "gui/editor/guiInspectorTypes.h"
 
 //-----------------------------------------------------------------------------
-class AnimationAsset : public AssetBase
+class GUIAsset : public AssetBase
 {
    typedef AssetBase Parent;
 
@@ -55,60 +51,44 @@ class AnimationAsset : public AssetBase
    AssetDefinition*        mpAssetDefinition;
    U32                     mAcquireReferenceCount;
 
-protected:
-   StringTableEntry   mFileName;
-   Resource<TSShape>	 mShape;
-
-   //
-   const char* source;
-   const char* name;
-   S32 start;
-   S32 end;
-   bool padRot;
-   bool padTrans;
+   StringTableEntry mScriptFilePath;
+   StringTableEntry mGUIFilePath;
 
 public:
-   AnimationAsset();
-   virtual ~AnimationAsset();
+   GUIAsset();
+   virtual ~GUIAsset();
 
    /// Engine.
    static void initPersistFields();
    virtual void copyTo(SimObject* object);
 
    /// Declare Console Object.
-   DECLARE_CONOBJECT(AnimationAsset);
+   DECLARE_CONOBJECT(GUIAsset);
 
 protected:
    virtual void            initializeAsset(void) {}
    virtual void            onAssetRefresh(void) {}
-
-   bool loadShape() {
-      return false;
-   }
-
-   TSShape* getShape() { return mShape; }
-
-   Resource<TSShape> getShapeResource() { return mShape; }
 };
 
-DefineConsoleType(TypeAnimationAssetPtr, AnimationAsset)
+DefineConsoleType(TypeGUIAssetPtr, GUIAsset)
+
 
 //-----------------------------------------------------------------------------
 // TypeAssetId GuiInspectorField Class
 //-----------------------------------------------------------------------------
-/*class GuiInspectorTypeAnimationAssetPtr : public GuiInspectorTypeFileName
+class GuiInspectorTypeGUIAssetPtr : public GuiInspectorTypeFileName
 {
    typedef GuiInspectorTypeFileName Parent;
 public:
 
-   GuiBitmapButtonCtrl  *mShapeEdButton;
+   GuiBitmapButtonCtrl  *mSMEdButton;
 
-   DECLARE_CONOBJECT(GuiInspectorTypeAnimationAssetPtr);
+   DECLARE_CONOBJECT(GuiInspectorTypeGUIAssetPtr);
    static void consoleInit();
 
    virtual GuiControl* constructEditControl();
    virtual bool updateRects();
-};*/
+};
 
 #endif // _ASSET_BASE_H_
 

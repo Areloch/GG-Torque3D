@@ -329,8 +329,11 @@ DefineConsoleFunction(GetShapeInfo, GuiTreeViewCtrl*, (String filePath), ,
    Torque::Path path = Torque::Path(filePath);
 
    // Attempt to import with Assimp.
-   const aiScene* shapeScene = importer.ReadFile(path.getFullPath().c_str(), (aiProcessPreset_TargetRealtime_Quality | aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_CalcTangentSpace)
-      & ~aiProcess_RemoveRedundantMaterials);
+   //const aiScene* shapeScene = importer.ReadFile(path.getFullPath().c_str(), (aiProcessPreset_TargetRealtime_Quality | aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_CalcTangentSpace)
+   //   & ~aiProcess_RemoveRedundantMaterials);
+
+   const aiScene* shapeScene = importer.ReadFile(path.getFullPath().c_str(), (aiProcessPreset_TargetRealtime_Quality | aiProcess_FlipUVs | aiProcess_CalcTangentSpace)
+         & ~aiProcess_RemoveRedundantMaterials);
 
    //Populate info
    S32 meshItem = treeObj->insertItem(0, "Meshes", String::ToString("%i", shapeScene->mNumMeshes));

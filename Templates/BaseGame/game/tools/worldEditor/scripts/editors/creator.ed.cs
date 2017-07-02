@@ -48,7 +48,6 @@ function EWCreatorWindow::init( %this )
       %this.registerMissionObject( "ParticleEmitterNode", "Particle Emitter" );
       %this.registerMissionObject( "VolumetricFog", "Volumetric Fog" );
       %this.registerMissionObject( "RibbonNode", "Ribbon" );
-      %this.registerMissionObject( "ReflectionProbe", "Reflection Probe" );
       
       // Legacy features. Users should use Ground Cover and the Forest Editor.   
       //%this.registerMissionObject( "fxShapeReplicator",   "Shape Replicator" );
@@ -90,6 +89,7 @@ function EWCreatorWindow::init( %this )
       %this.registerMissionObject( "NavMesh", "Navigation mesh");
       %this.registerMissionObject( "NavPath", "Path");
       %this.registerMissionObject( "Entity",       "Entity" );
+      %this.registerMissionObject( "ReflectionProbe",       "Reflection Probe" );
       
    %this.endGroup();
    

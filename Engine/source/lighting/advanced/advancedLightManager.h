@@ -90,10 +90,6 @@ public:
                                  GFXShaderConstBuffer *shaderConsts, 
                                  ShaderConstHandles *handles );
 
-   //Reflect Probes
-   void addSphereReflectProbe(ReflectProbeInfo* probeInfo);
-   void addConvexReflectProbe(ReflectProbeInfo* probeInfo);
-
    typedef GFXVertexPC LightVertex;
 
    GFXVertexBufferHandle<LightVertex> getSphereMesh(U32 &outNumPrimitives, GFXPrimitiveBuffer *&outPrimitives );

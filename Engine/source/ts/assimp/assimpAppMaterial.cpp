@@ -90,8 +90,8 @@ Material* AssimpAppMaterial::createMaterial(const Torque::Path& path) const
    String cleanName = cleanString(getName());
 
    // Prefix the material name with the filename (if not done already by TSShapeConstructor prefix)
-   if (!cleanName.startsWith(cleanFile))
-      cleanName = cleanFile + "_" + cleanName;
+   //if (!cleanName.startsWith(cleanFile))
+   //   cleanName = cleanFile + "_" + cleanName;
 
    // Determine the blend operation for this material
    Material::BlendOp blendOp = (flags & TSMaterialList::Translucent) ? Material::LerpAlpha : Material::None;
