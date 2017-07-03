@@ -107,6 +107,10 @@ GFXD3D11Device::GFXD3D11Device(U32 index)
 
    mPixVersion = 0.0;
 
+   mVertexShaderTarget = String::EmptyString;
+   mPixelShaderTarget = String::EmptyString;
+   mShaderModel = String::EmptyString;
+
    mDrawInstancesCount = 0;
 
    mCardProfiler = NULL;
@@ -443,9 +447,8 @@ void GFXD3D11Device::init(const GFXVideoMode &mode, PlatformWindow *window)
 
    DXGI_SWAP_CHAIN_DESC d3dpp = setupPresentParams(mode, winHwnd);
 
-   D3D_FEATURE_LEVEL deviceFeature;
    // TODO support at least feature level 10 to match GL
-   D3D_FEATURE_LEVEL pFeatureLevels[] = { D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0 };
+   D3D_FEATURE_LEVEL pFeatureLevels[] = { D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };
    U32 nFeatureCount = ARRAYSIZE(pFeatureLevels);
    D3D_DRIVER_TYPE driverType = D3D_DRIVER_TYPE_HARDWARE;// use D3D_DRIVER_TYPE_REFERENCE for reference device
    // create a device, device context and swap chain using the information in the d3dpp struct
@@ -459,7 +462,7 @@ void GFXD3D11Device::init(const GFXVideoMode &mode, PlatformWindow *window)
                                  &d3dpp,
                                  &mSwapChain,
                                  &mD3DDevice,
-                                 &deviceFeature,
+                                 &mFeatureLevel,
                                  &mD3DDeviceContext);
 
    if(FAILED(hres))
@@ -472,7 +475,7 @@ void GFXD3D11Device::init(const GFXVideoMode &mode, PlatformWindow *window)
          &d3dpp,
          &mSwapChain,
          &mD3DDevice,
-         &deviceFeature,
+         &mFeatureLevel,
          &mD3DDeviceContext);
       //if we failed again than we definitely have a problem
       if (FAILED(hres))
@@ -520,7 +523,7 @@ void GFXD3D11Device::init(const GFXVideoMode &mode, PlatformWindow *window)
    // Now reacquire all the resources we trashed earlier
    reacquireDefaultPoolResources();
    //set vert/pixel shader targets
-   switch (deviceFeature)
+   switch (mFeatureLevel)
    {
    case D3D_FEATURE_LEVEL_11_1:
    case D3D_FEATURE_LEVEL_11_0:
