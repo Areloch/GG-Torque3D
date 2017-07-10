@@ -31,13 +31,16 @@ function isScriptFile(%path)
    return false;
 }
 
-function loadMaterials()
+function loadMaterials(%targetDir)
 {
+   %dir = %targetDir;
+   if(%dir $= "")
+      %dir = "*";
+      
    // Load any materials files for which we only have DSOs.
-
-   for( %file = findFirstFile( "*/materials.cs.dso" );
+   for( %file = findFirstFile( %dir@"/materials.cs.dso" );
         %file !$= "";
-        %file = findNextFile( "*/materials.cs.dso" ))
+        %file = findNextFile( %dir@"/materials.cs.dso" ))
    {
       // Only execute, if we don't have the source file.
       %csFileName = getSubStr( %file, 0, strlen( %file ) - 4 );
@@ -47,9 +50,9 @@ function loadMaterials()
 
    // Load all source material files.
 
-   for( %file = findFirstFile( "*/materials.cs" );
+   for( %file = findFirstFile( %dir@"/materials.cs" );
         %file !$= "";
-        %file = findNextFile( "*/materials.cs" ))
+        %file = findNextFile( %dir@"/materials.cs" ))
    {
       exec( %file );
    }
@@ -75,6 +78,32 @@ function loadMaterials()
          exec( %file );
       }
    }
+   
+   //Go fetch any material scripts in modules as well
+   %assetQuery = new AssetQuery();
+   if(!AssetDatabase.findAssetType(%assetQuery, "MaterialAsset"))
+   {
+      //if we didn't find ANY, just exit
+      %assetQuery.delete();
+      return; 
+   }
+
+   %count = %assetQuery.getCount();
+
+   for(%i=0; %i < %count; %i++)
+   {
+      %assetId = %assetQuery.getAsset(%i);
+
+      %materialAsset = AssetDatabase.acquireAsset(%assetId);
+
+      %subStr = getSubStr(%materialAsset.scriptFile, 0, strlen(%dir));
+      if(isFile(%materialAsset.scriptFile) && getSubStr(%materialAsset.scriptFile, 0, strlen(%dir)) $= %dir)
+      {
+         exec(%materialAsset.scriptFile);
+      }
+   }
+   
+   %assetQuery.delete();
 }
 
 function reloadMaterials()

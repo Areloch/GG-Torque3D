@@ -66,17 +66,18 @@ GuiInspectorField::GuiInspectorField( GuiInspector* inspector,
 
 //-----------------------------------------------------------------------------
 
-GuiInspectorField::GuiInspectorField() 
- : mParent( NULL ),
-   mInspector( NULL ),
-   mField( NULL ),
-   mEdit( NULL ),
-   mCaption( StringTable->EmptyString() ),
-   mFieldArrayIndex( NULL ),
+GuiInspectorField::GuiInspectorField()
+   : mParent(NULL),
+   mInspector(NULL),
+   mField(NULL),
+   mEdit(NULL),
+   mCaption(StringTable->EmptyString()),
+   mFieldArrayIndex(NULL),
    mHighlighted(false),
    mTargetObject(NULL),
    mVariableName(StringTable->EmptyString()),
-   mCallbackName(StringTable->EmptyString())
+   mCallbackName(StringTable->EmptyString()),
+   mSpecialEditField(false)
 {
    setCanSave( false );
 }

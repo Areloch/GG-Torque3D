@@ -34,6 +34,7 @@ function AssetBrowser::addToolbarButton(%this)
 //
 function AssetBrowser::onAdd(%this)
 {
+   %this.isReImportingAsset = false;
 }
 
 function AssetBrowser::onWake(%this)
@@ -64,10 +65,10 @@ function AssetBrowser::buildPopupMenus(%this)
          item[ 1 ] = "Rename Asset" TAB "" TAB "AssetBrowser.renameAsset();";
          item[ 2 ] = "Refresh Asset" TAB "" TAB "AssetBrowser.refreshAsset();";
          item[ 3 ] = "Asset Properties" TAB "" TAB "AssetBrowser.editAssetInfo();";
-         item[ 4 ] = "----" TAB "" TAB "";
-         item[ 5 ] = "Re-Import Asset" TAB "" TAB "AssetBrowser.reImportAsset();";
+         //item[ 4 ] = "----" TAB "" TAB "";
+         item[ 4 ] = "Re-Import Asset" TAB "" TAB "AssetBrowser.reImportAsset();";
          //item[ 6 ] = "----" TAB "" TAB "";
-         item[ 6 ] = "Delete Asset" TAB "" TAB "AssetBrowser.deleteAsset();";
+         item[ 5 ] = "Delete Asset" TAB "" TAB "AssetBrowser.deleteAsset();";
 
          jumpFileName = "";
          jumpLineNumber = "";
@@ -800,6 +801,20 @@ function AssetBrowser::refreshAsset(%this)
    }
 }
 
+/*function AssetBrowser::reImportAsset(%this)
+{
+   %this.isReImportingAsset = true;
+   %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
+   %assetType = %assetDef.getAssetType();
+   
+   if(%assetType $= "Model" || %assetType $= "Image" || %assetType $= "Sound")
+   {
+      %this.onBeginDropFiles();
+      %this.onDropFile(%assetDef.originalFilePath);
+      %this.endDropFiles();
+   }
+}*/
+
 function AssetBrowser::deleteAsset(%this)
 {
    //Find out what type it is
@@ -822,14 +837,21 @@ function AssetBrowser::reImportAsset(%this)
 {
    //Find out what type it is
    %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
+   %assetType = AssetDatabase.getAssetType(EditAssetPopup.assetId);
       
-   if(%assetType $= "ModelAsset" || %assetType $= "ImageAsset" || %assetType $= "SoundAsset")
+   if(%assetType $= "ShapeAsset" || %assetType $= "ImageAsset" || %assetType $= "SoundAsset")
    {
       AssetBrowser.isAssetReImport = true;
+      AssetBrowser.reImportingAssetId = EditAssetPopup.assetId;
       
       AssetBrowser.onBeginDropFiles();
       AssetBrowser.onDropFile(%assetDef.originalFilePath);
       AssetBrowser.onEndDropFiles();
+      
+      %module = AssetDatabase.getAssetModule(EditAssetPopup.assetId);
+      
+      //get the selected module data
+      ImportAssetPackageList.setText(%module.ModuleId);
    }
 }
 

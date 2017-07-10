@@ -218,7 +218,11 @@ bool MeshComponent::setMeshAsset(const char* assetName)
 
 void MeshComponent::_onResourceChanged( const Torque::Path &path )
 {
-   if ( path != Torque::Path( mShapeName ) )
+   String filePath;
+   if (mMeshAsset)
+      filePath = Torque::Path(mMeshAsset->getShapeFilename());
+
+   if (!mMeshAsset || path != Torque::Path(mMeshAsset->getShapeFilename()) )
       return;
 
    updateShape();

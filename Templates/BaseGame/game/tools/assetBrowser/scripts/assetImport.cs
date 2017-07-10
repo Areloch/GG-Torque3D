@@ -807,39 +807,42 @@ function ImportAssetWindow::validateAssets(%this)
       }
       
       //No collisions of for this name in the importing assets. Now, check against the existing assets in the target module
-      %numAssetsFound = AssetDatabase.findAllAssets(%assetQuery);
-
-      %foundCollision = false;
-      for( %f=0; %f < %numAssetsFound; %f++)
+      if(!AssetBrowser.isAssetReImport)
       {
-         %assetId = %assetQuery.getAsset(%f);
-          
-         //first, get the asset's module, as our major categories
-         %module = AssetDatabase.getAssetModule(%assetId);
-         
-         %testModuleName = %module.moduleId;
-         
-         //These are core, native-level components, so we're not going to be messing with this module at all, skip it
-         if(%moduleName !$= %testModuleName)
-            continue;
+         %numAssetsFound = AssetDatabase.findAllAssets(%assetQuery);
 
-         %testAssetName = AssetDatabase.getAssetName(%assetId);
-         
-         if(%testAssetName $= %assetItemA.assetName)
+         %foundCollision = false;
+         for( %f=0; %f < %numAssetsFound; %f++)
          {
-            %foundCollision = true;
-            break;            
-         }
-      }
-      
-      if(%foundCollision == true)
-      {
-         //yup, a collision, prompt for the change and bail out
-         MessageBoxOK( "Error!", "Duplicate asset names found with the target module!\nAsset \"" @ 
-            %assetItemA.assetName @ "\" of type \"" @ %assetItemA.assetType @ "\" has a matching name.\nPlease rename it and try again!");
+            %assetId = %assetQuery.getAsset(%f);
+             
+            //first, get the asset's module, as our major categories
+            %module = AssetDatabase.getAssetModule(%assetId);
             
-         %assetQuery.delete();
-         return false;
+            %testModuleName = %module.moduleId;
+            
+            //These are core, native-level components, so we're not going to be messing with this module at all, skip it
+            if(%moduleName !$= %testModuleName)
+               continue;
+
+            %testAssetName = AssetDatabase.getAssetName(%assetId);
+            
+            if(%testAssetName $= %assetItemA.assetName)
+            {
+               %foundCollision = true;
+               break;            
+            }
+         }
+         
+         if(%foundCollision == true)
+         {
+            //yup, a collision, prompt for the change and bail out
+            MessageBoxOK( "Error!", "Duplicate asset names found with the target module!\nAsset \"" @ 
+               %assetItemA.assetName @ "\" of type \"" @ %assetItemA.assetType @ "\" has a matching name.\nPlease rename it and try again!");
+               
+            %assetQuery.delete();
+            return false;
+         }
       }
    }
    
@@ -904,7 +907,8 @@ function ImportAssetWindow::ImportAssets(%this)
          %assetImportSuccessful = TAMLWrite(%newAsset, %assetPath @ "/" @ %assetName @ ".asset.taml"); 
          
          //and copy the file into the relevent directory
-         if(!pathCopy(%filePath, %assetFullPath))
+         %doOverwrite = !AssetBrowser.isAssetReImport;
+         if(!pathCopy(%filePath, %assetFullPath, %doOverwrite))
          {
             error("Unable to import asset: " @ %filePath);
          }
@@ -920,19 +924,21 @@ function ImportAssetWindow::ImportAssets(%this)
             versionId = 1;
             fileName = %assetFullPath;
             originalFilePath = %filePath;
+            isNewShape = true;
          };
          
          %assetImportSuccessful = TAMLWrite(%newAsset, %assetPath @ "/" @ %assetName @ ".asset.taml"); 
          
          //and copy the file into the relevent directory
-         if(!pathCopy(%filePath, %assetFullPath))
+         %doOverwrite = !AssetBrowser.isAssetReImport;
+         if(!pathCopy(%filePath, %assetFullPath, %doOverwrite))
          {
             error("Unable to import asset: " @ %filePath);
          }
          
          //now, force-load the file if it's collada
          %fileExt = fileExt(%assetFullPath);
-         if(isSupportedFormat(%fileExt))
+         if(isSupportedFormat(getSubStr(%fileExt,1)))
          {
             %tempShape = new TSStatic()
             {
@@ -958,7 +964,8 @@ function ImportAssetWindow::ImportAssets(%this)
          %assetImportSuccessful = TAMLWrite(%newAsset, %assetPath @ "/" @ %assetName @ ".asset.taml"); 
          
          //and copy the file into the relevent directory
-         if(!pathCopy(%filePath, %assetFullPath))
+         %doOverwrite = !AssetBrowser.isAssetReImport;
+         if(!pathCopy(%filePath, %assetFullPath, %doOverwrite))
          {
             error("Unable to import asset: " @ %filePath);
          }
@@ -975,7 +982,7 @@ function ImportAssetWindow::ImportAssets(%this)
             assetName = %assetName;
             versionId = 1;
             shaderGraph = %sgfPath;
-            scriptFile = %assetFullPath;
+            scriptFile = %scriptPath;
             originalFilePath = %filePath;
             materialDefinitionName = %assetName;
          };
@@ -1040,7 +1047,10 @@ function ImportAssetWindow::ImportAssets(%this)
       if(%assetImportSuccessful)
       {
          %moduleDef = ModuleDatabase.findModule(%moduleName,1);
-         AssetDatabase.addDeclaredAsset(%moduleDef, %assetPath @ "/" @ %assetName @ ".asset.taml");
+         if(!AssetBrowser.isAssetReImport)
+            AssetDatabase.addDeclaredAsset(%moduleDef, %assetPath @ "/" @ %assetName @ ".asset.taml");
+         else
+            AssetDatabase.refreshAsset(AssetBrowser.reImportingAssetId);
       }
    }
    
@@ -1048,6 +1058,7 @@ function ImportAssetWindow::ImportAssets(%this)
    //AssetBrowser.reloadModules();
    AssetBrowser.loadFilters();
    Canvas.popDialog(AssetImportCtrl);
+   AssetBrowser.isAssetReImport = false;
 }
 
 function ImportAssetPackageList::onWake(%this)

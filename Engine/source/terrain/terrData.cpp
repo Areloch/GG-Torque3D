@@ -1015,7 +1015,7 @@ void TerrainBlock::_updatePhysics()
 
    SAFE_DELETE( mPhysicsRep );
 
-   PhysicsCollision *colShape;
+   PhysicsCollision *colShape = NULL;
 
    // If we can steal the collision shape from the local server
    // object then do so as it saves us alot of cpu time and memory.
@@ -1026,7 +1026,8 @@ void TerrainBlock::_updatePhysics()
    if ( getServerObject() )
    {
       TerrainBlock *serverTerrain = (TerrainBlock*)getServerObject();
-      colShape = serverTerrain->mPhysicsRep->getColShape();
+      if(serverTerrain->mPhysicsRep)
+         colShape = serverTerrain->mPhysicsRep->getColShape();
    }
    else
    {
@@ -1042,10 +1043,13 @@ void TerrainBlock::_updatePhysics()
       delete [] holes;
    }
 
-   PhysicsWorld *world = PHYSICSMGR->getWorld( isServerObject() ? "server" : "client" );
-   mPhysicsRep = PHYSICSMGR->createBody();
-   mPhysicsRep->init( colShape, 0, 0, this, world );
-   mPhysicsRep->setTransform( getTransform() );
+   if (colShape)
+   {
+      PhysicsWorld *world = PHYSICSMGR->getWorld(isServerObject() ? "server" : "client");
+      mPhysicsRep = PHYSICSMGR->createBody();
+      mPhysicsRep->init(colShape, 0, 0, this, world);
+      mPhysicsRep->setTransform(getTransform());
+   }
 }
 
 void TerrainBlock::onRemove()

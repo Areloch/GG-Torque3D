@@ -146,9 +146,9 @@
       resizeHeight = "1";
       canMove = "1";
       canClose = "1";
-      canMinimize = "1";
+      canMinimize = "0";
       canMaximize = "0";
-      canCollapse = "1";
+      canCollapse = "0";
       closeCommand = "AssetBrowser::hideDialog();";
       edgeSnap = "1";
       margin = "0 0 0 0";

@@ -140,8 +140,8 @@ singleton ShaderData( VolumetricFogReflectionShader )
 };
 singleton ShaderData( CubemapSaveShader )
 {
-   DXVertexShaderFile = "shaders/common/cubemapSaveV.hlsl";
-   DXPixelShaderFile = "shaders/common/cubemapSaveP.hlsl";
+   DXVertexShaderFile = "core/shaders/cubemapSaveV.hlsl";
+   DXPixelShaderFile = "core/shaders/cubemapSaveP.hlsl";
 	
    OGLVertexShaderFile  = "shaders/common/gl/cubemapSaveV.glsl";
    OGLPixelShaderFile   = "shaders/common/gl/cubemapSaveP.glsl";
