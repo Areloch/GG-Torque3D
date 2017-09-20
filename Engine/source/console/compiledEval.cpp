@@ -1843,6 +1843,9 @@ breakContinue:
 
                break;
             }
+
+            // ConsoleFunctionType is for any function defined by script.
+            // Any 'callback' type is an engine function that is exposed to script.
             if(nsEntry->mType == Namespace::Entry::ConsoleFunctionType)
             {
                ConsoleValueRef ret;
