@@ -1727,12 +1727,6 @@ breakContinue:
 
          case OP_CALLFUNC:
          {
-            // This routingId is set when we query the object as to whether
-            // it handles this method.  It is set to an enum from the table
-            // above indicating whether it handles it on a component it owns
-            // or just on the object.
-            S32 routingId = 0;
-
             fnName = CodeToSTE(code, ip);
 
             //if this is called from inside a function, append the ip and codeptr
@@ -1746,8 +1740,6 @@ breakContinue:
 
             ip += 5;
             CSTK.getArgcArgv(fnName, &callArgc, &callArgv);
-
-            const char *componentReturnValue = "";
 
             if(callType == FuncCallExprNode::FunctionCall) 
             {
@@ -1782,14 +1774,6 @@ breakContinue:
                   break;
                }
                
-               bool handlesMethod = gEvalState.thisObject->handlesConsoleMethod(fnName,&routingId);
-               if( handlesMethod && routingId == MethodOnComponent )
-               {
-                  ICallMethod *pComponent = dynamic_cast<ICallMethod *>( gEvalState.thisObject );
-                  if( pComponent )
-                     componentReturnValue = pComponent->callMethodArgList( callArgc, callArgv, false );
-               }
-               
                ns = gEvalState.thisObject->getNamespace();
                if(ns)
                   nsEntry = ns->lookup(fnName);
@@ -1819,11 +1803,10 @@ breakContinue:
             {
                nsCb = &nsEntry->cb;
                nsUsage = nsEntry->mUsage;
-               routingId = 0;
             }
             if(!nsEntry || noCalls)
             {
-               if(!noCalls && !( routingId == MethodOnComponent ) )
+               if(!noCalls)
                {
                   Con::warnf(ConsoleLogEntry::General,"%s: Unknown command %s.", getFileLine(ip-6), fnName);
                   if(callType == FuncCallExprNode::MethodCall)
@@ -1836,11 +1819,7 @@ breakContinue:
                STR.popFrame();
                CSTK.popFrame();
 
-               if( routingId == MethodOnComponent )
-                  STR.setStringValue( componentReturnValue );
-               else
-                  STR.setStringValue( "" );
-
+               STR.setStringValue( "" );
                break;
             }
 
