@@ -35,6 +35,7 @@ class ConsoleValueRef;
 /// This class represents a block of code, usually mapped directly to a file.
 class CodeBlock
 {
+   friend class CodeInterpreter;
 private:
    static CodeBlock* smCodeBlockList;
    static CodeBlock* smCurrentCodeBlock;
