@@ -277,6 +277,8 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
       mCurrentInstruction = mCodeBlock->code[ip++];
       mNSEntry = nullptr;
 
+      Con::printf("%s %d: %d", mCodeBlock->getFileLine(ip - 1), mCurrentInstruction, ip - 1);
+
    breakContinueLabel:
       switch (mCurrentInstruction)
       {
@@ -317,6 +319,13 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
          break;
       case OP_JMPIFFNOT:
          ret = op_jmpiffnot(ip);
+         if (ret == OPCodeReturn::exitCode)
+            goto exitLabel;
+         else if (ret == OPCodeReturn::breakContinue)
+            goto breakContinueLabel;
+         break;
+      case OP_JMPIFNOT:
+         ret = op_jmpifnot(ip);
          if (ret == OPCodeReturn::exitCode)
             goto exitLabel;
          else if (ret == OPCodeReturn::breakContinue)
@@ -939,6 +948,7 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
             goto breakContinueLabel;
          break;
       case OP_INVALID:
+         Con::printf("Unknown OPCODE %d at %s", mCurrentInstruction, mCodeBlock->getFileLine(ip - 1));
          ret = op_invalid(ip);
          if (ret == OPCodeReturn::exitCode)
             goto exitLabel;
@@ -946,6 +956,7 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
             goto breakContinueLabel;
          break;
       default:
+         Con::printf("Unknown OPCODE %d at %s", mCurrentInstruction, mCodeBlock->getFileLine(ip - 1));
          goto exitLabel;
       }
    }
