@@ -258,6 +258,10 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
 
    mCodeBlock->incRefCount();
 
+#ifdef TORQUE_VALIDATE_STACK
+   U32 stackStart = STR.mStartStackSize;
+#endif
+
    STR.clearFunctionOffset(); // ensures arg buffer offset is back to 0
 
    // Lets load up our function arguments.
