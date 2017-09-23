@@ -34,6 +34,8 @@
 #include "console/console.h"
 #include "console/consoleInternal.h"
 
+#define TORQUE_VALIDATE_STACK
+
 using namespace Compiler;
 
 enum EvalConstants
@@ -942,12 +944,23 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
          else if (ret == OPCodeReturn::breakContinue)
             goto breakContinueLabel;
          break;
+      case OP_ITER_BEGIN:
+         ret = op_iter_begin(ip);
+         if (ret == OPCodeReturn::exitCode)
+            goto exitLabel;
+         else if (ret == OPCodeReturn::breakContinue)
+            goto breakContinueLabel;
+         else if (ret == OPCodeReturn::actuallyContinue)
+            continue;
+         break;
       case OP_ITER:
          ret = op_iter(ip);
          if (ret == OPCodeReturn::exitCode)
             goto exitLabel;
          else if (ret == OPCodeReturn::breakContinue)
             goto breakContinueLabel;
+         else if (ret == OPCodeReturn::actuallyContinue)
+            continue;
          break;
       case OP_ITER_END:
          ret = op_iter_end(ip);
@@ -2064,7 +2077,7 @@ OPCodeReturn CodeInterpreter::op_setcurobject(U32 &ip)
       if (*check == ' ')
       {
          mVal = "";
-         return OPCodeReturn::success;
+         break;
       }
    }
    mCurObject = Sim::findObject(mVal);
@@ -2517,7 +2530,7 @@ OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
 #ifndef TORQUE_DEBUG
       // [tom, 12/13/2006] This stops tools functions from working in the console,
       // which is useful behavior when debugging so I'm ifdefing this out for debug builds.
-      if (nsEntry->mToolOnly && !Con::isCurrentScriptToolScript())
+      if (mNSEntry->mToolOnly && !Con::isCurrentScriptToolScript())
       {
          Con::errorf(ConsoleLogEntry::Script, "%s: %s::%s - attempting to call tools only function from outside of tools.", mCodeBlock->getFileLine(ip - 6), nsName, mFnName);
       }
@@ -2790,7 +2803,7 @@ OPCodeReturn CodeInterpreter::op_iter_begin(U32 &ip)
          Con::errorf(ConsoleLogEntry::General, "No SimSet object '%s'", STR.getStringValue());
          Con::errorf(ConsoleLogEntry::General, "Did you mean to use 'foreach$' instead of 'foreach'?");
          ip = failIp;
-         return OPCodeReturn::success;
+         return OPCodeReturn::actuallyContinue;
       }
 
       // Set up.
@@ -2826,7 +2839,7 @@ OPCodeReturn CodeInterpreter::op_iter(U32 &ip)
       if (!str[startIndex])
       {
          ip = breakIp;
-         return OPCodeReturn::success;
+         return OPCodeReturn::actuallyContinue;
       }
 
       // Find right end of current component.
@@ -2861,7 +2874,7 @@ OPCodeReturn CodeInterpreter::op_iter(U32 &ip)
       if (index >= set->size())
       {
          ip = breakIp;
-         return OPCodeReturn::success;
+         return OPCodeReturn::actuallyContinue;
       }
 
       iter.mVariable->setIntValue(set->at(index)->getId());
