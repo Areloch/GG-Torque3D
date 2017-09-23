@@ -228,11 +228,15 @@ CodeInterpreter::CodeInterpreter(CodeBlock *cb) :
 
    // clear docblock class
    memset(mNSDocBlockClass, 0, nsDocLength * sizeof(char));
+
+   // Frame allocator.
+   mWaterMark = FrameAllocator::getWaterMark();
+   mValBuffer = reinterpret_cast<char*>(FrameAllocator::alloc(sizeof(char) * VAL_BUFFER_SIZE));
 }
 
 CodeInterpreter::~CodeInterpreter()
 {
-
+   FrameAllocator::setWaterMark(mWaterMark);
 }
 
 ConsoleValueRef CodeInterpreter::exec(U32 ip,
@@ -245,11 +249,14 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
                                       S32 setFrame) 
 {
    mExec.functionName = functionName;
+   mExec.thisNamespace = thisNamespace;
    mExec.argc = argc;
    mExec.argv = argv;
    mExec.noCalls = noCalls;
    mExec.packageName = packageName;
    mExec.setFrame = setFrame;
+
+   mCodeBlock->incRefCount();
 
    STR.clearFunctionOffset(); // ensures arg buffer offset is back to 0
 
@@ -276,8 +283,6 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
    {
       mCurrentInstruction = mCodeBlock->code[ip++];
       mNSEntry = nullptr;
-
-      Con::printf("%s %d: %d", mCodeBlock->getFileLine(ip - 1), mCurrentInstruction, ip - 1);
 
    breakContinueLabel:
       switch (mCurrentInstruction)
@@ -311,7 +316,7 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
             goto breakContinueLabel;
          break;
       case OP_FINISH_OBJECT:
-         ret = op_end_object(ip);
+         ret = op_finish_object(ip);
          if (ret == OPCodeReturn::exitCode)
             goto exitLabel;
          else if (ret == OPCodeReturn::breakContinue)
@@ -528,7 +533,7 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
             goto breakContinueLabel;
          break;
       case OP_NEG:
-         ret = op_div(ip);
+         ret = op_neg(ip);
          if (ret == OPCodeReturn::exitCode)
             goto exitLabel;
          else if (ret == OPCodeReturn::breakContinue)
@@ -2300,7 +2305,11 @@ OPCodeReturn CodeInterpreter::op_tag_to_str(U32 &ip)
       dSprintf(mCurStringTable + mCodeBlock->code[ip] + 1, 7, "%d", id);
       *(mCurStringTable + mCodeBlock->code[ip]) = StringTagPrefixByte;
    }
-   return OPCodeReturn::success;
+
+   // Fallthrough
+   OPCodeReturn ret = op_loadimmed_str(ip);
+
+   return ret;
 }
 
 OPCodeReturn CodeInterpreter::op_loadimmed_str(U32 &ip)
