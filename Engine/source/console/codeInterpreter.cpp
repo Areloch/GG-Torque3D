@@ -260,6 +260,8 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
 
    mCodeBlock->incRefCount();
 
+   mPopFrame = false;
+
 #ifdef TORQUE_VALIDATE_STACK
    U32 stackStart = STR.mStartStackSize;
 #endif
@@ -289,6 +291,8 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
    {
       mCurrentInstruction = mCodeBlock->code[ip++];
       mNSEntry = nullptr;
+
+      //Con::printf("%s %d: %d", mCodeBlock->getFileLine(ip), mCurrentInstruction, ip);
 
    breakContinueLabel:
       switch (mCurrentInstruction)
