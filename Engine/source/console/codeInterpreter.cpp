@@ -189,6 +189,10 @@ S64 intStack[MaxStackSize];
 char curFieldArray[256];
 char prevFieldArray[256];
 
+typedef OPCodeReturn(CodeInterpreter::*OpFn)(U32&);
+
+static OpFn gOpCodeArray[MAX_OP_CODELEN];
+
 CodeInterpreter::CodeInterpreter(CodeBlock *cb) :
    mCodeBlock(cb),
    mIterDepth(0),
@@ -242,6 +246,107 @@ CodeInterpreter::~CodeInterpreter()
    FrameAllocator::setWaterMark(mWaterMark);
 }
 
+void CodeInterpreter::init()
+{
+   gOpCodeArray[OP_FUNC_DECL] = &CodeInterpreter::op_func_decl;
+   gOpCodeArray[OP_CREATE_OBJECT] = &CodeInterpreter::op_create_object;
+   gOpCodeArray[OP_ADD_OBJECT] = &CodeInterpreter::op_add_object;
+   gOpCodeArray[OP_END_OBJECT] = &CodeInterpreter::op_end_object;
+   gOpCodeArray[OP_FINISH_OBJECT] = &CodeInterpreter::op_finish_object;
+   gOpCodeArray[OP_JMPIFFNOT] = &CodeInterpreter::op_jmpiffnot;
+   gOpCodeArray[OP_JMPIFNOT] = &CodeInterpreter::op_jmpifnot;
+   gOpCodeArray[OP_JMPIFF] = &CodeInterpreter::op_jmpiff;
+   gOpCodeArray[OP_JMPIF] = &CodeInterpreter::op_jmpif;
+   gOpCodeArray[OP_JMPIFNOT_NP] = &CodeInterpreter::op_jmpifnot_np;
+   gOpCodeArray[OP_JMPIF_NP] = &CodeInterpreter::op_jmpif_np;
+   gOpCodeArray[OP_JMP] = &CodeInterpreter::op_jmp;
+   gOpCodeArray[OP_RETURN] = &CodeInterpreter::op_return;
+   gOpCodeArray[OP_RETURN_VOID] = &CodeInterpreter::op_return_void;
+   gOpCodeArray[OP_RETURN_FLT] = &CodeInterpreter::op_return_flt;
+   gOpCodeArray[OP_RETURN_UINT] = &CodeInterpreter::op_return_uint;
+   gOpCodeArray[OP_CMPEQ] = &CodeInterpreter::op_cmpeq;
+   gOpCodeArray[OP_CMPGR] = &CodeInterpreter::op_cmpgr;
+   gOpCodeArray[OP_CMPGE] = &CodeInterpreter::op_cmpge;
+   gOpCodeArray[OP_CMPLT] = &CodeInterpreter::op_cmplt;
+   gOpCodeArray[OP_CMPLE] = &CodeInterpreter::op_cmple;
+   gOpCodeArray[OP_CMPNE] = &CodeInterpreter::op_cmpne;
+   gOpCodeArray[OP_XOR] = &CodeInterpreter::op_xor;
+   gOpCodeArray[OP_MOD] = &CodeInterpreter::op_mod;
+   gOpCodeArray[OP_BITAND] = &CodeInterpreter::op_bitand;
+   gOpCodeArray[OP_BITOR] = &CodeInterpreter::op_bitor;
+   gOpCodeArray[OP_NOT] = &CodeInterpreter::op_not;
+   gOpCodeArray[OP_NOTF] = &CodeInterpreter::op_notf;
+   gOpCodeArray[OP_ONESCOMPLEMENT] = &CodeInterpreter::op_onescomplement;
+   gOpCodeArray[OP_SHR] = &CodeInterpreter::op_shr;
+   gOpCodeArray[OP_SHL] = &CodeInterpreter::op_shl;
+   gOpCodeArray[OP_ADD] = &CodeInterpreter::op_add;
+   gOpCodeArray[OP_SUB] = &CodeInterpreter::op_sub;
+   gOpCodeArray[OP_MUL] = &CodeInterpreter::op_mul;
+   gOpCodeArray[OP_DIV] = &CodeInterpreter::op_div;
+   gOpCodeArray[OP_NEG] = &CodeInterpreter::op_neg;
+   gOpCodeArray[OP_SETCURVAR] = &CodeInterpreter::op_setcurvar;
+   gOpCodeArray[OP_SETCURVAR_CREATE] = &CodeInterpreter::op_setcurvar_create;
+   gOpCodeArray[OP_SETCURVAR_ARRAY] = &CodeInterpreter::op_setcurvar_array;
+   gOpCodeArray[OP_SETCURVAR_ARRAY_CREATE] = &CodeInterpreter::op_setcurvar_array_create;
+   gOpCodeArray[OP_LOADVAR_UINT] = &CodeInterpreter::op_loadvar_uint;
+   gOpCodeArray[OP_LOADVAR_FLT] = &CodeInterpreter::op_loadvar_flt;
+   gOpCodeArray[OP_LOADVAR_STR] = &CodeInterpreter::op_loadvar_str;
+   gOpCodeArray[OP_LOADVAR_VAR] = &CodeInterpreter::op_loadvar_var;
+   gOpCodeArray[OP_SAVEVAR_UINT] = &CodeInterpreter::op_savevar_uint;
+   gOpCodeArray[OP_SAVEVAR_FLT] = &CodeInterpreter::op_savevar_flt;
+   gOpCodeArray[OP_SAVEVAR_STR] = &CodeInterpreter::op_savevar_str;
+   gOpCodeArray[OP_SAVEVAR_VAR] = &CodeInterpreter::op_savevar_var;
+   gOpCodeArray[OP_SETCUROBJECT] = &CodeInterpreter::op_setcurobject;
+   gOpCodeArray[OP_SETCUROBJECT_INTERNAL] = &CodeInterpreter::op_setcurobject_internal;
+   gOpCodeArray[OP_SETCUROBJECT_NEW] = &CodeInterpreter::op_setcurobject_new;
+   gOpCodeArray[OP_SETCURFIELD] = &CodeInterpreter::op_setcurfield;
+   gOpCodeArray[OP_SETCURFIELD_ARRAY] = &CodeInterpreter::op_setcurfield_array;
+   gOpCodeArray[OP_SETCURFIELD_TYPE] = &CodeInterpreter::op_setcurfield_type;
+   gOpCodeArray[OP_LOADFIELD_UINT] = &CodeInterpreter::op_loadfield_uint;
+   gOpCodeArray[OP_LOADFIELD_FLT] = &CodeInterpreter::op_loadfield_flt;
+   gOpCodeArray[OP_LOADFIELD_STR] = &CodeInterpreter::op_loadfield_str;
+   gOpCodeArray[OP_SAVEFIELD_UINT] = &CodeInterpreter::op_savefield_uint;
+   gOpCodeArray[OP_SAVEFIELD_FLT] = &CodeInterpreter::op_savefield_flt;
+   gOpCodeArray[OP_SAVEFIELD_STR] = &CodeInterpreter::op_savefield_str;
+   gOpCodeArray[OP_STR_TO_UINT] = &CodeInterpreter::op_str_to_uint;
+   gOpCodeArray[OP_STR_TO_FLT] = &CodeInterpreter::op_str_to_flt;
+   gOpCodeArray[OP_STR_TO_NONE] = &CodeInterpreter::op_str_to_none;
+   gOpCodeArray[OP_FLT_TO_UINT] = &CodeInterpreter::op_flt_to_uint;
+   gOpCodeArray[OP_FLT_TO_STR] = &CodeInterpreter::op_flt_to_str;
+   gOpCodeArray[OP_FLT_TO_NONE] = &CodeInterpreter::op_flt_to_none;
+   gOpCodeArray[OP_UINT_TO_FLT] = &CodeInterpreter::op_uint_to_flt;
+   gOpCodeArray[OP_UINT_TO_STR] = &CodeInterpreter::op_uint_to_str;
+   gOpCodeArray[OP_UINT_TO_NONE] = &CodeInterpreter::op_uint_to_none;
+   gOpCodeArray[OP_COPYVAR_TO_NONE] = &CodeInterpreter::op_copyvar_to_none;
+   gOpCodeArray[OP_LOADIMMED_UINT] = &CodeInterpreter::op_loadimmed_uint;
+   gOpCodeArray[OP_LOADIMMED_FLT] = &CodeInterpreter::op_loadimmed_flt;
+   gOpCodeArray[OP_TAG_TO_STR] = &CodeInterpreter::op_tag_to_str;
+   gOpCodeArray[OP_LOADIMMED_STR] = &CodeInterpreter::op_loadimmed_str;
+   gOpCodeArray[OP_DOCBLOCK_STR] = &CodeInterpreter::op_docblock_str;
+   gOpCodeArray[OP_LOADIMMED_IDENT] = &CodeInterpreter::op_loadimmed_ident;
+   gOpCodeArray[OP_CALLFUNC_RESOLVE] = &CodeInterpreter::op_callfunc_resolve;
+   gOpCodeArray[OP_CALLFUNC] = &CodeInterpreter::op_callfunc;
+   gOpCodeArray[OP_ADVANCE_STR] = &CodeInterpreter::op_advance_str;
+   gOpCodeArray[OP_ADVANCE_STR_APPENDCHAR] = &CodeInterpreter::op_advance_str_appendchar;
+   gOpCodeArray[OP_ADVANCE_STR_COMMA] = &CodeInterpreter::op_advance_str_comma;
+   gOpCodeArray[OP_ADVANCE_STR_NUL] = &CodeInterpreter::op_advance_str_nul;
+   gOpCodeArray[OP_REWIND_STR] = &CodeInterpreter::op_rewind_str;
+   gOpCodeArray[OP_TERMINATE_REWIND_STR] = &CodeInterpreter::op_terminate_rewind_str;
+   gOpCodeArray[OP_COMPARE_STR] = &CodeInterpreter::op_compare_str;
+   gOpCodeArray[OP_PUSH] = &CodeInterpreter::op_push;
+   gOpCodeArray[OP_PUSH_UINT] = &CodeInterpreter::op_push_uint;
+   gOpCodeArray[OP_PUSH_FLT] = &CodeInterpreter::op_push_flt;
+   gOpCodeArray[OP_PUSH_VAR] = &CodeInterpreter::op_push_var;
+   gOpCodeArray[OP_PUSH_FRAME] = &CodeInterpreter::op_push_frame;
+   gOpCodeArray[OP_ASSERT] = &CodeInterpreter::op_assert;
+   gOpCodeArray[OP_BREAK] = &CodeInterpreter::op_break;
+   gOpCodeArray[OP_ITER_BEGIN_STR] = &CodeInterpreter::op_iter_begin_str;
+   gOpCodeArray[OP_ITER_BEGIN] = &CodeInterpreter::op_iter_begin;
+   gOpCodeArray[OP_ITER] = &CodeInterpreter::op_iter;
+   gOpCodeArray[OP_ITER_END] = &CodeInterpreter::op_iter_end;
+   gOpCodeArray[OP_INVALID] = &CodeInterpreter::op_invalid;
+}
+
 ConsoleValueRef CodeInterpreter::exec(U32 ip,
                                       StringTableEntry functionName,
                                       Namespace *thisNamespace,
@@ -286,706 +391,22 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
       Con::gCurrentRoot = mCodeBlock->modPath;
    }
 
-   OPCodeReturn ret;
-
    while (true)
    {
       mCurrentInstruction = mCodeBlock->code[ip++];
       mNSEntry = nullptr;
 
-      //Con::printf("%s %d: %d", mCodeBlock->getFileLine(ip), mCurrentInstruction, ip);
+      // OP Code check.
+      AssertFatal(mCurrentInstruction < MAX_OP_CODELEN, "Invalid OP code in script interpreter");
 
    breakContinueLabel:
-      switch (mCurrentInstruction)
-      {
-      case OP_FUNC_DECL:
-         ret = op_func_decl(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_CREATE_OBJECT:
-         ret = op_create_object(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_ADD_OBJECT:
-         ret = op_add_object(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_END_OBJECT:
-         ret = op_end_object(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_FINISH_OBJECT:
-         ret = op_finish_object(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_JMPIFFNOT:
-         ret = op_jmpiffnot(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_JMPIFNOT:
-         ret = op_jmpifnot(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_JMPIFF:
-         ret = op_jmpiff(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_JMPIF:
-         ret = op_jmpif(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_JMPIFNOT_NP:
-         ret = op_jmpifnot_np(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_JMPIF_NP:
-         ret = op_jmpif_np(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_JMP:
-         ret = op_jmp(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_RETURN_VOID:
-         ret = op_return_void(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_RETURN:
-         ret = op_return(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_RETURN_FLT:
-         ret = op_return_flt(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_RETURN_UINT:
-         ret = op_return_uint(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_CMPEQ:
-         ret = op_cmpeq(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_CMPGR:
-         ret = op_cmpgr(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_CMPGE:
-         ret = op_cmpge(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_CMPLT:
-         ret = op_cmplt(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_CMPLE:
-         ret = op_cmple(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_CMPNE:
-         ret = op_cmpne(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_XOR:
-         ret = op_xor(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_MOD:
-         ret = op_mod(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_BITAND:
-         ret = op_bitand(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_BITOR:
-         ret = op_bitor(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_NOT:
-         ret = op_not(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_NOTF:
-         ret = op_notf(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_ONESCOMPLEMENT:
-         ret = op_onescomplement(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SHR:
-         ret = op_shr(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SHL:
-         ret = op_shl(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_ADD:
-         ret = op_add(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SUB:
-         ret = op_sub(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_MUL:
-         ret = op_mul(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_DIV:
-         ret = op_div(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_NEG:
-         ret = op_neg(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SETCURVAR:
-         ret = op_setcurvar(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SETCURVAR_CREATE:
-         ret = op_setcurvar_create(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SETCURVAR_ARRAY:
-         ret = op_setcurvar_array(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SETCURVAR_ARRAY_CREATE:
-         ret = op_setcurvar_array_create(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_LOADVAR_UINT:
-         ret = op_loadvar_uint(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_LOADVAR_FLT:
-         ret = op_loadvar_flt(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_LOADVAR_STR:
-         ret = op_loadvar_str(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_LOADVAR_VAR:
-         ret = op_loadvar_var(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SAVEVAR_UINT:
-         ret = op_savevar_uint(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SAVEVAR_FLT:
-         ret = op_savevar_flt(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SAVEVAR_STR:
-         ret = op_savevar_str(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SAVEVAR_VAR:
-         ret = op_savevar_var(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SETCUROBJECT:
-         ret = op_setcurobject(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SETCUROBJECT_INTERNAL:
-         ret = op_setcurobject_internal(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SETCUROBJECT_NEW:
-         ret = op_setcurobject_new(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SETCURFIELD:
-         ret = op_setcurfield(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SETCURFIELD_ARRAY:
-         ret = op_setcurfield_array(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SETCURFIELD_TYPE:
-         ret = op_setcurfield_type(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_LOADFIELD_UINT:
-         ret = op_loadfield_uint(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_LOADFIELD_FLT:
-         ret = op_loadfield_flt(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_LOADFIELD_STR:
-         ret = op_loadfield_str(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SAVEFIELD_UINT:
-         ret = op_savefield_uint(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SAVEFIELD_FLT:
-         ret = op_savefield_flt(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_SAVEFIELD_STR:
-         ret = op_savefield_str(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_STR_TO_UINT:
-         ret = op_str_to_uint(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_STR_TO_FLT:
-         ret = op_str_to_flt(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_STR_TO_NONE:
-         ret = op_str_to_none(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_FLT_TO_UINT:
-         ret = op_flt_to_uint(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_FLT_TO_STR:
-         ret = op_flt_to_str(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_FLT_TO_NONE:
-         ret = op_flt_to_none(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_UINT_TO_FLT:
-         ret = op_uint_to_flt(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_UINT_TO_STR:
-         ret = op_uint_to_str(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_UINT_TO_NONE:
-         ret = op_uint_to_none(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_COPYVAR_TO_NONE:
-         ret = op_copyvar_to_none(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_LOADIMMED_UINT:
-         ret = op_loadimmed_uint(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_LOADIMMED_FLT:
-         ret = op_loadimmed_flt(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_TAG_TO_STR:
-         ret = op_tag_to_str(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_LOADIMMED_STR:
-         ret = op_loadimmed_str(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_DOCBLOCK_STR:
-         ret = op_docblock_str(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_LOADIMMED_IDENT:
-         ret = op_loadimmed_ident(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_CALLFUNC_RESOLVE:
-         ret = op_callfunc_resolve(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_CALLFUNC:
-         ret = op_callfunc(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_ADVANCE_STR:
-         ret = op_advance_str(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_ADVANCE_STR_APPENDCHAR:
-         ret = op_advance_str_appendchar(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_ADVANCE_STR_COMMA:
-         ret = op_advance_str_comma(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_ADVANCE_STR_NUL:
-         ret = op_advance_str_nul(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_REWIND_STR:
-         ret = op_rewind_str(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_TERMINATE_REWIND_STR:
-         ret = op_terminate_rewind_str(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_COMPARE_STR:
-         ret = op_compare_str(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_PUSH:
-         ret = op_push(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_PUSH_UINT:
-         ret = op_push_uint(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_PUSH_FLT:
-         ret = op_push_flt(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_PUSH_VAR:
-         ret = op_push_var(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_PUSH_FRAME:
-         ret = op_push_frame(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_ASSERT:
-         ret = op_assert(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_BREAK:
-         ret = op_break(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_ITER_BEGIN_STR:
-         ret = op_iter_begin_str(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_ITER_BEGIN:
-         ret = op_iter_begin(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         else if (ret == OPCodeReturn::actuallyContinue)
-            continue;
-         break;
-      case OP_ITER:
-         ret = op_iter(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         else if (ret == OPCodeReturn::actuallyContinue)
-            continue;
-         break;
-      case OP_ITER_END:
-         ret = op_iter_end(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      case OP_INVALID:
-         Con::printf("Unknown OPCODE %d at %s", mCurrentInstruction, mCodeBlock->getFileLine(ip - 1));
-         ret = op_invalid(ip);
-         if (ret == OPCodeReturn::exitCode)
-            goto exitLabel;
-         else if (ret == OPCodeReturn::breakContinue)
-            goto breakContinueLabel;
-         break;
-      default:
-         Con::printf("Unknown OPCODE %d at %s", mCurrentInstruction, mCodeBlock->getFileLine(ip - 1));
+      OPCodeReturn ret = (this->*gOpCodeArray[mCurrentInstruction])(ip);
+      if (ret == OPCodeReturn::exitCode)
          goto exitLabel;
-      }
+      else if (ret == OPCodeReturn::breakContinue)
+         goto breakContinueLabel;
+      else if (ret == OPCodeReturn::actuallyContinue)
+         continue;
    }
 
    exitLabel:

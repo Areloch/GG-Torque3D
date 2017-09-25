@@ -165,7 +165,9 @@ namespace Compiler
       OP_ITER,             ///< Enter foreach loop.
       OP_ITER_END,         ///< End foreach loop.
 
-      OP_INVALID   // 90
+      OP_INVALID,   // 90
+
+      MAX_OP_CODELEN ///< The amount of op codes.
    };
 
    //------------------------------------------------------------

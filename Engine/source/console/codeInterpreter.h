@@ -87,6 +87,8 @@ public:
                         StringTableEntry packageName, 
                         S32 setFrame);
 
+   static void init();
+
    // Methods
 private:
    void parseArgs(U32 &ip);
