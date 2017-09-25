@@ -951,6 +951,11 @@ class SimObject: public ConsoleObject, public TamlCallbacks
       /// Copy SimObject to another SimObject (Originally designed for T2D).
       virtual void copyTo(SimObject* object);
 
+      // Component Console Overrides
+      virtual bool handlesConsoleMethod(const char * fname, S32 * routingId) { return false; }
+      virtual void getConsoleMethodData(const char * fname, S32 routingId, S32 * type, S32 * minArgs, S32 * maxArgs, void ** callback, const char ** usage) {}
+
+
       DECLARE_CONOBJECT( SimObject );
       
       static SimObject* __findObject( const char* id ) { return Sim::findObject( id ); }

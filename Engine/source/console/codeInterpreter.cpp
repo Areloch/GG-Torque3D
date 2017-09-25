@@ -40,7 +40,8 @@ using namespace Compiler;
 
 enum EvalConstants
 {
-   MaxStackSize = 1024
+   MaxStackSize = 1024,
+   MethodOnComponent = -2
 };
 
 namespace Con
@@ -1043,14 +1044,14 @@ void CodeInterpreter::parseArgs(U32 &ip)
 {
    U32 *code = mCodeBlock->code;
 
-   if (mExec.argc > 0)
+   if (mExec.argv)
    {
       U32 fnArgc = code[ip + 2 + 6];
       mThisFunctionName = Compiler::CodeToSTE(code, ip);
       S32 wantedArgc = getMin(mExec.argc - 1, fnArgc); // argv[0] is func name
       if (gEvalState.traceOn)
       {
-         sTraceBuffer[0] = 0x0;
+         sTraceBuffer[0] = 0;
          dStrcat(sTraceBuffer, "Entering ");
 
          if (mExec.packageName)
@@ -2406,6 +2407,12 @@ OPCodeReturn CodeInterpreter::op_callfunc_resolve(U32 &ip)
 
 OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
 {
+   // This routingId is set when we query the object as to whether
+   // it handles this method.  It is set to an enum from the table
+   // above indicating whether it handles it on a component it owns
+   // or just on the object.
+   S32 routingId = 0;
+
    U32 *code = mCodeBlock->code;
 
    mFnName = CodeToSTE(code, ip);
@@ -2421,6 +2428,8 @@ OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
 
    ip += 5;
    CSTK.getArgcArgv(mFnName, &mCallArgc, &mCallArgv);
+
+   const char *componentReturnValue = "";
 
    if (callType == FuncCallExprNode::FunctionCall)
    {
@@ -2445,6 +2454,14 @@ OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
          CSTK.popFrame();
          STR.setStringValue("");
          return OPCodeReturn::success;
+      }
+
+      bool handlesMethod = gEvalState.thisObject->handlesConsoleMethod(mFnName, &routingId);
+      if (handlesMethod && routingId == MethodOnComponent)
+      {
+         ICallMethod *pComponent = dynamic_cast<ICallMethod *>(gEvalState.thisObject);
+         if (pComponent)
+            componentReturnValue = pComponent->callMethodArgList(mCallArgc, mCallArgv, false);
       }
 
       mNS = gEvalState.thisObject->getNamespace();
@@ -2476,10 +2493,11 @@ OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
    {
       nsCb = &mNSEntry->cb;
       nsUsage = mNSEntry->mUsage;
+      routingId = 0;
    }
    if (!mNSEntry || mExec.noCalls)
    {
-      if (!mExec.noCalls)
+      if (!mExec.noCalls && !(routingId == MethodOnComponent))
       {
          Con::warnf(ConsoleLogEntry::General, "%s: Unknown command %s.", mCodeBlock->getFileLine(ip - 6), mFnName);
          if (callType == FuncCallExprNode::MethodCall)
@@ -2492,7 +2510,10 @@ OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
       STR.popFrame();
       CSTK.popFrame();
 
-      STR.setStringValue("");
+      if (routingId == MethodOnComponent)
+         STR.setStringValue(componentReturnValue);
+      else
+         STR.setStringValue("");
       return OPCodeReturn::success;
    }
 
@@ -2671,7 +2692,7 @@ OPCodeReturn CodeInterpreter::op_advance_str_comma(U32 &ip)
 
 OPCodeReturn CodeInterpreter::op_advance_str_nul(U32 &ip)
 {
-   STR.advanceChar(0x0);
+   STR.advanceChar(0);
    return OPCodeReturn::success;
 }
 
