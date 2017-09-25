@@ -1252,6 +1252,7 @@ OPCodeReturn CodeInterpreter::op_create_object(U32 &ip)
             mCodeBlock->getFileLine(ip), objectName);
          ip = mFailJump;
          STR.popFrame();
+         CSTK.popFrame();
          return OPCodeReturn::success;
       }
 
@@ -1661,7 +1662,7 @@ OPCodeReturn CodeInterpreter::op_jmpiff(U32 &ip)
    if (!floatStack[_FLT--])
    {
       ip++;
-      OPCodeReturn::success;
+      return OPCodeReturn::success;
    }
    ip = mCodeBlock->code[ip];
    return OPCodeReturn::success;

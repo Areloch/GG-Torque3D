@@ -189,6 +189,7 @@ void CompilerStringTable::reset()
 char *CompilerStringTable::build()
 {
    char *ret = new char[totalLen];
+   dMemset(ret, 0, totalLen);
    for(Entry *walk = list; walk; walk = walk->next)
       dStrcpy(ret + walk->start, walk->string);
    return ret;

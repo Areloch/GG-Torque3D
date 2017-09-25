@@ -66,8 +66,8 @@ SimObject::SimObject()
    objectName            = NULL;
    mOriginalName         = NULL;
    mInternalName         = NULL;
-   nextNameObject        = (SimObject*)-1;
-   nextManagerNameObject = (SimObject*)-1;
+   nextNameObject        = nullptr;
+   nextManagerNameObject = nullptr;
    nextIdObject          = NULL;
 
    mFilename             = NULL;
@@ -79,6 +79,8 @@ SimObject::SimObject()
    mNameSpace    = NULL;
    mNotifyList   = NULL;
    mFlags.set( ModStaticFields | ModDynamicFields );
+
+   mProgenitorFile = StringTable->EmptyString();
 
    mFieldDictionary = NULL;
    mCanSaveFieldDictionary =  true;
@@ -111,10 +113,10 @@ SimObject::~SimObject()
    if( mCopySource )
       mCopySource->unregisterReference( &mCopySource );
 
-   AssertFatal(nextNameObject == (SimObject*)-1,avar(
+   AssertFatal(nextNameObject == nullptr,avar(
       "SimObject::~SimObject:  Not removed from dictionary: name %s, id %i",
       objectName, mId));
-   AssertFatal(nextManagerNameObject == (SimObject*)-1,avar(
+   AssertFatal(nextManagerNameObject == nullptr,avar(
       "SimObject::~SimObject:  Not removed from manager dictionary: name %s, id %i",
       objectName,mId));
    AssertFatal(mFlags.test(Added) == 0, "SimObject::object "
