@@ -34,7 +34,7 @@
 #include "console/console.h"
 #include "console/consoleInternal.h"
 
-#define TORQUE_VALIDATE_STACK
+//#define TORQUE_VALIDATE_STACK
 
 using namespace Compiler;
 
@@ -227,12 +227,6 @@ CodeInterpreter::CodeInterpreter(CodeBlock *cb) :
    mRetValue(0),
    mCurrentInstruction(0)
 {
-   // clear exec argument storage.
-   memset(&mExec, 0, sizeof(mExec));
-
-   // clear objCreationStack
-   memset(mObjectCreationStack, 0, sizeof(mObjectCreationStack));
-
    // clear docblock class
    memset(mNSDocBlockClass, 0, nsDocLength * sizeof(char));
 
@@ -391,9 +385,10 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
       Con::gCurrentRoot = mCodeBlock->modPath;
    }
 
+   U32 *code = mCodeBlock->code;
    while (true)
    {
-      mCurrentInstruction = mCodeBlock->code[ip++];
+      mCurrentInstruction = code[ip++];
       mNSEntry = nullptr;
 
 #ifdef TORQUE_VALIDATE_STACK
