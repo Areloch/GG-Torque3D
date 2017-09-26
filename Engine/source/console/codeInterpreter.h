@@ -68,8 +68,7 @@ enum OPCodeReturn
 {
    exitCode = -1,
    success = 0,
-   breakContinue = 1,
-   actuallyContinue = 2
+   breakContinue = 1
 };
 
 class CodeInterpreter

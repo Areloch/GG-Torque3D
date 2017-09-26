@@ -396,8 +396,10 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
       mCurrentInstruction = mCodeBlock->code[ip++];
       mNSEntry = nullptr;
 
+#ifdef TORQUE_VALIDATE_STACK
       // OP Code check.
       AssertFatal(mCurrentInstruction < MAX_OP_CODELEN, "Invalid OP code in script interpreter");
+#endif
 
    breakContinueLabel:
       OPCodeReturn ret = (this->*gOpCodeArray[mCurrentInstruction])(ip);
@@ -405,8 +407,6 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
          goto exitLabel;
       else if (ret == OPCodeReturn::breakContinue)
          goto breakContinueLabel;
-      else if (ret == OPCodeReturn::actuallyContinue)
-         continue;
    }
 
    exitLabel:
@@ -2250,7 +2250,7 @@ OPCodeReturn CodeInterpreter::op_iter_begin(U32 &ip)
          Con::errorf(ConsoleLogEntry::General, "No SimSet object '%s'", STR.getStringValue());
          Con::errorf(ConsoleLogEntry::General, "Did you mean to use 'foreach$' instead of 'foreach'?");
          ip = failIp;
-         return OPCodeReturn::actuallyContinue;
+         return OPCodeReturn::success;
       }
 
       // Set up.
@@ -2286,7 +2286,7 @@ OPCodeReturn CodeInterpreter::op_iter(U32 &ip)
       if (!str[startIndex])
       {
          ip = breakIp;
-         return OPCodeReturn::actuallyContinue;
+         return OPCodeReturn::success; // continue in old interpreter
       }
 
       // Find right end of current component.
@@ -2321,7 +2321,7 @@ OPCodeReturn CodeInterpreter::op_iter(U32 &ip)
       if (index >= set->size())
       {
          ip = breakIp;
-         return OPCodeReturn::actuallyContinue;
+         return OPCodeReturn::success; // continue in old interpreter
       }
 
       iter.mVariable->setIntValue(set->at(index)->getId());
