@@ -227,9 +227,6 @@ CodeInterpreter::CodeInterpreter(CodeBlock *cb) :
    mRetValue(0),
    mCurrentInstruction(0)
 {
-   // clear docblock class
-   memset(mNSDocBlockClass, 0, nsDocLength * sizeof(char));
-
    // Frame allocator.
    mWaterMark = FrameAllocator::getWaterMark();
    mValBuffer = reinterpret_cast<char*>(FrameAllocator::alloc(sizeof(char) * VAL_BUFFER_SIZE));
