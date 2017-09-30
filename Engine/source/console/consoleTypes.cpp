@@ -20,6 +20,7 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+#include <fmt/format.h>
 #include "console/console.h"
 #include "console/consoleTypes.h"
 #include "console/simPersistID.h"
@@ -289,9 +290,13 @@ ImplementConsoleTypeCasters( TypeS8, S8 )
 
 ConsoleGetType( TypeS8 )
 {
-   static const U32 bufSize = 256;
+   static const U32 bufSize = 64;
    char* returnBuffer = Con::getReturnBuffer(bufSize);
-   dSprintf(returnBuffer, bufSize, "%d", *((U8 *) dptr) );
+
+   fmt::MemoryWriter w;
+   w.write("{:d}", *((U8 *)dptr));
+   dStrncpy(returnBuffer, w.c_str(), bufSize);
+
    return returnBuffer;
 }
 
@@ -311,9 +316,13 @@ ImplementConsoleTypeCasters(TypeS32, S32)
 
 ConsoleGetType( TypeS32 )
 {
-   static const U32 bufSize = 512;
+   static const U32 bufSize = 64;
    char* returnBuffer = Con::getReturnBuffer(bufSize);
-   dSprintf(returnBuffer, bufSize, "%d", *((S32 *) dptr) );
+
+   fmt::MemoryWriter w;
+   w.write("{:d}", *((S32 *)dptr));
+   dStrncpy(returnBuffer, w.c_str(), bufSize);
+
    return returnBuffer;
 }
 
@@ -391,9 +400,13 @@ ImplementConsoleTypeCasters(TypeF32, F32)
 
 ConsoleGetType( TypeF32 )
 {
-   static const U32 bufSize = 256;
+   static const U32 bufSize = 64;
    char* returnBuffer = Con::getReturnBuffer(bufSize);
-   dSprintf(returnBuffer, bufSize, "%g", *((F32 *) dptr) );
+
+   fmt::MemoryWriter w;
+   w.write("{:g}", *((F32 *)dptr));
+   dStrncpy(returnBuffer, w.c_str(), bufSize);
+
    return returnBuffer;
 }
 ConsoleSetType( TypeF32 )
@@ -585,7 +598,11 @@ ConsoleGetType( TypeColorF )
    // Format as color components.
    static const U32 bufSize = 256;
    char* returnBuffer = Con::getReturnBuffer(bufSize);
-   dSprintf(returnBuffer, bufSize, "%g %g %g %g", color->red, color->green, color->blue, color->alpha);
+
+   fmt::MemoryWriter w;
+   w.write("{:g} {:g} {:g} {:g}", color->red, color->green, color->blue, color->alpha);
+   dStrncpy(returnBuffer, w.c_str(), bufSize);
+
    return(returnBuffer);
 }
 
@@ -658,7 +675,11 @@ ConsoleGetType( TypeColorI )
    // Format as color components.
    static const U32 bufSize = 256;
    char* returnBuffer = Con::getReturnBuffer(bufSize);
-   dSprintf(returnBuffer, bufSize, "%d %d %d %d", color->red, color->green, color->blue, color->alpha);
+
+   fmt::MemoryWriter w;
+   w.write("{:d} {:d} {:d} {:d}", color->red, color->green, color->blue, color->alpha);
+   dStrncpy(returnBuffer, w.c_str(), bufSize);
+
    return returnBuffer;
 }
 
