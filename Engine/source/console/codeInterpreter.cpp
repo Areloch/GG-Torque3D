@@ -575,6 +575,9 @@ OPCodeReturn CodeInterpreter::op_func_decl(U32 &ip)
       mNS->addFunction(mFnName, mCodeBlock, hasBody ? ip : 0, mCurFNDocBlock ? dStrdup(mCurFNDocBlock) : NULL, lineNumber);// if no body, set the IP to 0
       if (mCurNSDocBlock)
       {
+         // If we have a docblock before we declare the function in the script file,
+         // this will attempt to set the doc block to the function.
+         // See OP_DOCBLOCK_STR
          if (mFnNamespace == StringTable->lookup(mNSDocBlockClass))
          {
             char *usageStr = dStrdup(mCurNSDocBlock);
