@@ -39,7 +39,6 @@
    #include "core/dataChunker.h"
 #endif
 
-
 /// @ingroup console_system Console System
 /// @{
 

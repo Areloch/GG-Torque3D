@@ -20,6 +20,8 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+#include <unordered_map>
+
 #include "platform/platform.h"
 #include "console/console.h"
 
@@ -43,6 +45,20 @@ DataChunker Namespace::mAllocator;
 Namespace *Namespace::mNamespaceList = NULL;
 Namespace *Namespace::mGlobalNamespace = NULL;
 
+namespace std
+{
+   template<> struct hash<std::pair<StringTableEntry, StringTableEntry>>
+   {
+      typedef std::pair<StringTableEntry, StringTableEntry> argument_type;
+      typedef size_t result_type;
+      result_type operator()(argument_type const& s) const
+      {
+         return HashPointer(s.first) ^ (HashPointer(s.second) << 1);
+      }
+   };
+};
+
+std::unordered_map<std::pair<StringTableEntry, StringTableEntry>, Namespace*> gNamespaceCache;
 
 bool canTabComplete(const char *prevText, const char *bestMatch,
                const char *newText, S32 baseLen, bool fForward)
@@ -967,11 +983,10 @@ Namespace *Namespace::find(StringTableEntry name, StringTableEntry package)
    if ( name == NULL && package == NULL )
       return mGlobalNamespace;
 
-   for(Namespace *walk = mNamespaceList; walk; walk = walk->mNext)
-   {
-      if(walk->mName == name && walk->mPackage == package)
-         return walk;
-   }
+   auto pair = std::make_pair(name, package);
+   auto pos = gNamespaceCache.find(pair);
+   if (pos != gNamespaceCache.end())
+      return pos->second;
 
    Namespace *ret = (Namespace *) mAllocator.alloc(sizeof(Namespace));
    constructInPlace(ret);
@@ -979,6 +994,10 @@ Namespace *Namespace::find(StringTableEntry name, StringTableEntry package)
    ret->mName = name;
    ret->mNext = mNamespaceList;
    mNamespaceList = ret;
+   
+   // insert into namespace cache.
+   gNamespaceCache[pair] = ret;
+
    return ret;
 }
 
@@ -1143,6 +1162,9 @@ void Namespace::init()
    mGlobalNamespace->mName = NULL;
    mGlobalNamespace->mNext = NULL;
    mNamespaceList = mGlobalNamespace;
+
+   // Insert into namespace cache.
+   gNamespaceCache[std::make_pair(mGlobalNamespace->mName, mGlobalNamespace->mPackage)] = mGlobalNamespace;
 }
 
 Namespace *Namespace::global()
