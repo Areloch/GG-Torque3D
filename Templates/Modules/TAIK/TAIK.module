@@ -1,0 +1,11 @@
+<ModuleDefinition
+	ModuleId="TAIK"
+	VersionId="1"
+	Description="Implements the Tactical AI Kit."
+	ScriptFile="TAIK.cs"
+	CreateFunction="create"
+	DestroyFunction="destroy"
+	Group="Game"
+	OverrideExistingObjects="true"
+	Dependencies="clientServer=1,UI=1,FPSGameplay=1">
+</ModuleDefinition>

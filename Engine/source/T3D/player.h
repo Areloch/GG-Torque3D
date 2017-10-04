@@ -117,6 +117,10 @@ struct PlayerData: public ShapeBaseData {
    F32 maxBackwardSpeed;      ///< Maximum backward speed when running
    F32 maxSideSpeed;          ///< Maximum side speed when running
 
+   // TAIK
+   // Cover positioning. Adjusting how much to move the bounding box on cover lean.
+   F32 coverLeanOutDist;
+
    // Jumping
    F32 jumpForce;             ///< Force exerted per jump
    F32 jumpEnergyDrain;       ///< Energy drained per jump
@@ -260,6 +264,13 @@ struct PlayerData: public ShapeBaseData {
       ProneRootAnim,
       ProneForwardAnim,
       ProneBackwardAnim,
+
+	  // Cover hide/return fire animations
+	  StandHideAnim,  // Stand
+	  StandRightAnim, // Fire right while standing
+	  StandLeftAnim, // Fire left while standing
+	  CrouchHideAnim, // Crouch
+      StandFireAnim, // Stand up to fire
 
       SwimRootAnim,
       SwimForwardAnim,
@@ -461,6 +472,9 @@ protected:
    bool mFalling;                   ///< Falling in mid-air?
    S32 mJumpDelay;                  ///< Delay till next jump   
    
+   S32 mCoverPosition;
+   S32 mPlayerPosition;
+
    Pose  mPose;
    bool  mAllowJumping;
    bool  mAllowJetJumping;
@@ -582,6 +596,11 @@ protected:
    /// This is really just a helper for the player class so that its bounding box
    /// will get resized appropriately when the pose changes
    void setPose( Pose pose );
+
+   void setCoverPosition(S32 pos);
+   S32 getCoverPosition() { return mCoverPosition; }
+   void setPlayerPosition(S32 position);
+   S32 getPlayerPosition();
 
    PhysicsPlayer* getPhysicsRep() const { return mPhysicsRep; }
 

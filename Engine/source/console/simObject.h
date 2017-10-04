@@ -240,6 +240,7 @@ class SimObject: public ConsoleObject, public TamlCallbacks
       friend class SimNameDictionary;
       friend class SimManagerNameDictionary;
       friend class SimIdDictionary;
+	  friend class AIPathGroup;
 
       /// @name Notification
       /// @{

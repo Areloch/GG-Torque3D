@@ -48,6 +48,7 @@ public:
 private:
    MoveState mMoveState;
    F32 mMoveSpeed;
+   F32 mAimSpeed;
    F32 mMoveTolerance;                 // Distance from destination before we stop
    F32 mAttackRadius;                  // Distance to trigger weaponry calcs
    Point3F mMoveDestination;           // Destination for movement
@@ -153,6 +154,9 @@ public:
 
    bool onAdd();
    void onRemove();
+   void setAimSpeed ( const F32 aimSpeed );
+   F32 getAimSpeed() const { return mAimSpeed; }
+   bool isStopped() const { return mMoveState == ModeStop; }
 
    virtual bool getAIMove( Move *move );
    virtual void updateMove(const Move *move);

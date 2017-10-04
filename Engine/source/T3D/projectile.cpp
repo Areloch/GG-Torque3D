@@ -1173,7 +1173,25 @@ void Projectile::simulate( F32 dt )
       }
       else
       {
-         mCurrVelocity    = Point3F::Zero;
+         if ( mDataBlock->isBallistic )
+         {
+            // Otherwise, this represents a bounce.  First, reflect our velocity
+            //  around the normal...
+            Point3F bounceVel = mCurrVelocity - rInfo.normal * (mDot( mCurrVelocity, rInfo.normal ) * 2.0);
+            mCurrVelocity = bounceVel;
+
+            // Add in surface friction...
+            Point3F tangent = bounceVel - rInfo.normal * mDot(bounceVel, rInfo.normal);
+            mCurrVelocity  -= tangent * mDataBlock->bounceFriction;
+
+            // Now, take elasticity into account for modulating the speed of the grenade
+            mCurrVelocity *= mDataBlock->bounceElasticity;
+
+            // Set the new position to the impact and the bounce
+            // will apply on the next frame.
+            //F32 timeLeft = 1.0f - rInfo.t;
+            newPosition = oldPosition = rInfo.point + rInfo.normal * 0.05f;
+         }
       }
    }
 
@@ -1450,4 +1468,11 @@ DefineEngineMethod(Projectile, presimulate, void, (F32 seconds), (1.0f),
                                        "@note This function is not called if the SimObject::hidden is true.")
 {
 	object->simulate( seconds );
+}
+
+DefineEngineMethod( Projectile, getVelocity, VectorF, (), ,
+                   "Get the velocity of the projectile.\n\n"
+                   "@returns The projectile's velocity in the form of \"x y z\".")
+{
+   return object->getVelocity();
 }
