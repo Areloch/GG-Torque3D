@@ -109,6 +109,8 @@ static S32 sMaxPredictionTicks = 30;   // Number of ticks to predict
 
 S32 Player::smExtendedMoveHeadPosRotIndex = 0;  // The ExtendedMove position/rotation index used for head movements
 
+// Anchor point compression
+const F32 sAnchorMaxDistance = 32.0f;
 
 //
 static U32 sCollisionMoveMask =  TerrainObjectType       |
@@ -163,6 +165,13 @@ PlayerData::ActionAnimationDef PlayerData::ActionAnimationList[NumTableActionAni
    { "prone_root" },
    { "prone_forward",   { 0.0f, 1.0f, 0.0f } },
    { "prone_backward",  { 0.0f,-1.0f, 0.0f } },
+
+   // Animations for hiding and firing from cover
+   { "standHide" },
+   { "standRight" },
+   { "standLeft" },
+   { "crouchHide" },
+   { "standFire" },
 
    { "swim_root" },
    { "swim_forward",    { 0.0f, 1.0f, 0.0f } },
@@ -298,6 +307,9 @@ PlayerData::PlayerData()
    maxForwardSpeed = 10.0f;
    maxBackwardSpeed = 10.0f;
    maxSideSpeed = 10.0f;
+
+   // TAIK
+   coverLeanOutDist = 1.0;
 
    // Jumping
    jumpForce = 75.0f;
@@ -724,6 +736,9 @@ void PlayerData::initPersistFields()
          "@brief Maximum backward speed when running." );
       addField( "maxSideSpeed", TypeF32, Offset(maxSideSpeed, PlayerData),
          "@brief Maximum sideways speed when running." );
+
+	  addField( "coverLeanOutDist", TypeF32, Offset(coverLeanOutDist, PlayerData),
+         "@brief Distance to lean out from cover. Used to adjust the bounding box." );
 
       addField( "runSurfaceAngle", TypeF32, Offset(runSurfaceAngle, PlayerData),
          "@brief Maximum angle from vertical (in degrees) the player can run up.\n\n" );
@@ -1208,6 +1223,8 @@ void PlayerData::packData(BitStream* stream)
    stream->write(maxSideSpeed);
    stream->write(runSurfaceAngle);
 
+   stream->write(coverLeanOutDist);
+
    stream->write(fallingSpeedThreshold);
 
    stream->write(recoverDelay);
@@ -1389,6 +1406,8 @@ void PlayerData::unpackData(BitStream* stream)
    stream->read(&maxBackwardSpeed);
    stream->read(&maxSideSpeed);
    stream->read(&runSurfaceAngle);
+
+   stream->read(&coverLeanOutDist);
 
    stream->read(&fallingSpeedThreshold);
    stream->read(&recoverDelay);
@@ -1605,6 +1624,8 @@ Player::Player()
    mState = MoveState;
    mJetting = false;
    mFalling = false;
+   mCoverPosition = 5; // No cover stance. See the animation definitions in player.h for descriptions.
+   mPlayerPosition = 1; // AI Stance
    mSwimming = false;
    mInWater = false;
    mPose = StandPose;
@@ -1685,6 +1706,7 @@ bool Player::onAdd()
    // in the initial update is set correctly.
    ActionState state = mState;
    mState = NullState;
+   setCoverPosition(5);
    setState(state);
    setPose(StandPose);
 
@@ -3246,7 +3268,21 @@ void Player::updateMove(const Move* move)
       else if ( canStand() )
          desiredPose = StandPose;
 
+   if (mPlayerPosition == 2 && desiredPose == StandPose)
+	   desiredPose = CrouchPose;
+   if (mPlayerPosition == 3 && desiredPose == StandPose)
+	   desiredPose = PronePose;
+
       setPose( desiredPose );
+   }
+
+   if (mCoverPosition == 1) {
+       mObjBox.maxExtents.x = mDataBlock->boxSize.x + mDataBlock->coverLeanOutDist;
+	   mObjBox.minExtents.x = mObjBox.maxExtents.x - mDataBlock->boxSize.x;
+   }
+   if (mCoverPosition == 2) {
+	   mObjBox.minExtents.x = (-mDataBlock->boxSize.x*0) - (mDataBlock->coverLeanOutDist);
+	   mObjBox.maxExtents.x = mObjBox.minExtents.x - mDataBlock->boxSize.x;
    }
 }
 
@@ -3464,6 +3500,149 @@ bool Player::canSprint()
 }
 
 //----------------------------------------------------------------------------
+void Player::setPlayerPosition(S32 position)
+{
+	mPlayerPosition = position;
+	if (position == 1)
+		setPose(StandPose);
+	else if (position == 2)
+		setPose(CrouchPose);
+	else if (position == 3)
+		setPose(PronePose);
+	else
+		setPose(StandPose);
+}
+
+S32 Player::getPlayerPosition( )
+{
+	return mPlayerPosition;
+}
+void Player::setCoverPosition(S32 position)
+{
+	F32 len_z, offset_x;
+
+	Point3F boxSize(1,1,1);
+	boxSize = mDataBlock->boxSize;
+	offset_x = 0.0f;
+	len_z = 1.0f;
+
+	if (position != mCoverPosition) {
+		if (isProperlyAdded()) {
+			mObjBox.maxExtents.x = 0.7f * 0.5f;
+			mObjBox.minExtents.x = -mObjBox.maxExtents.x;
+			switch (position) 
+			{
+			case 0: // Stand and hide
+				{	
+					/*
+					offset_x = 0.0;
+					mObjBox.maxExtents.x = len_x * 0.5;
+					mObjBox.minExtents.x = -mObjBox.maxExtents.x;
+					break;
+					*/
+				}
+			case 1:  // Fire right while standing
+				{ 
+					offset_x = 0.6f;
+					/*
+					mObjBox.minExtents.x += 0.6;
+					mObjBox.maxExtents.x += 0.6;
+					break;
+					*/
+				}
+			case 2:  // Fire left while standing
+				{	 
+					/*
+					len_x = 0.7;
+					len_y = 0.7;
+					len_z = 2.275;
+					*/
+					offset_x = -0.6f;
+					//mObjBox.minExtents.x -= 0.6;
+					//mObjBox.maxExtents.x -= 0.6;
+					//break;
+				}	 
+			case 3:  // Crouch and hide
+				{	 
+					len_z = 0.5;
+					/*
+					offset_x = 0.0;
+					mObjBox.maxExtents.x = len_x * 0.5;
+					mObjBox.minExtents.x = -mObjBox.maxExtents.x;
+					break;
+					*/
+				}
+			case 4:  // Stand and fire
+				{	 
+					/*
+					len_x = 0.7;
+					len_y = 0.7;
+					len_z = 2.275;
+					offset_x = 0.0;
+					mObjBox.maxExtents.x = len_x * 0.5;
+					mObjBox.minExtents.x = -mObjBox.maxExtents.x;
+					break;
+					*/
+				}
+			case 5: // Stand, no cover pose
+				{				 
+					/*
+					len_x = 0.7;
+					len_y = 0.7;
+					len_z = 2.275;
+					offset_x = 0.0;
+					mObjBox.maxExtents.x = len_x * 0.5;
+					mObjBox.minExtents.x = -mObjBox.maxExtents.x;
+					break;
+					*/
+				}
+			default:
+				{
+					break;
+				}
+			}
+			/*
+			//mObjBox.maxExtents.x = len_x * 0.5;
+			//mObjBox.minExtents.x = -mObjBox.maxExtents.x;
+			mObjBox.maxExtents.y = len_y * 0.5;
+			mObjBox.maxExtents.z = len_z;
+			mObjBox.minExtents.y = -mObjBox.maxExtents.y;
+			mObjBox.minExtents.z = 0;
+			*/
+		}
+		mCoverPosition = position;
+
+	  // Object and World Boxes...
+		offset_x = Con::getFloatVariable("$maura");
+	  mObjBox.maxExtents.x = boxSize.x * 0.5f;
+	     mObjBox.maxExtents.x += offset_x;
+	  mObjBox.maxExtents.y = boxSize.y * 0.5f;
+	  mObjBox.maxExtents.z = boxSize.z; // * len_z;
+	  mObjBox.minExtents.x = -mObjBox.maxExtents.x;
+	    mObjBox.minExtents.x += offset_x;
+	  mObjBox.minExtents.y = -mObjBox.maxExtents.y;
+	  mObjBox.minExtents.z = 0.0f; // * len_z;
+
+	  resetWorldBox();
+
+	  // Setup the box for our convex object...
+	  mObjBox.getCenter(&mConvex.mCenter);
+	  mConvex.mSize.x = mObjBox.len_x() / 2.0f;
+	  mConvex.mSize.y = mObjBox.len_y() / 2.0f;
+	  mConvex.mSize.z = mObjBox.len_z() * len_z; // / 2.0f * len_z;
+
+	 // mConvex.mCenter.x += offset_x;
+
+	  // Initialize our scaled attributes as well...
+	  onScaleChanged();
+
+	   // Resize the PhysicsPlayer rep. should we have one
+	   if ( mPhysicsRep )
+		  mPhysicsRep->setSpacials( getPosition(), boxSize );
+	}
+	  if (isServerObject()) 
+		setMaskBits(MoveMask);
+}
 
 void Player::updateDamageLevel()
 {
@@ -4070,6 +4249,42 @@ void Player::pickActionAnimation()
    {
       pickBestMoveAction(PlayerData::SprintRootAnim, PlayerData::SprintRightAnim, &action, &forward);
    }
+   // Cover position code
+   if (mDamageState != Disabled && getCoverPosition() != 5)
+   {
+	   switch(getCoverPosition())
+	   {
+	   case 0:
+		   {
+		   action = PlayerData::StandHideAnim;
+		   break;
+		   }
+	   case 1:
+		   {
+		   action = PlayerData::StandRightAnim;
+		   break;
+		   }
+	   case 2:
+		   {
+		   action = PlayerData::StandLeftAnim;
+		   break;
+		   }
+	   case 3:
+		   {
+		   action = PlayerData::CrouchHideAnim;
+		   break;
+		   }
+	   case 4:
+		   {
+		   action = PlayerData::StandFireAnim;
+		   break;
+		   }
+	   case 5:
+		   {
+		   }
+	   }
+   }
+
    setActionThread(action,forward,false,false,fsp);
 }
 
@@ -6164,6 +6379,11 @@ U32 Player::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
 {
    U32 retMask = Parent::packUpdate(con, mask, stream);
 
+   if (stream->writeFlag(mask & MoveMask)) 
+     stream->writeInt(getCoverPosition(),7);
+   if (stream->writeFlag(mask & MoveMask))
+	 stream->writeInt(getPlayerPosition(),9);
+
    if (stream->writeFlag((mask & ImpactMask) && !(mask & InitialUpdateMask)))
       stream->writeInt(mImpactSound, PlayerData::ImpactBits);
 
@@ -6239,6 +6459,15 @@ U32 Player::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
 void Player::unpackUpdate(NetConnection *con, BitStream *stream)
 {
    Parent::unpackUpdate(con,stream);
+
+   if (stream->readFlag()) {		
+		S32 cpos = stream->readInt(7);		
+		setCoverPosition(cpos);	
+	}
+	if (stream->readFlag()) {
+		S32 pos = stream->readInt(9);
+		setPlayerPosition(pos);
+	}
 
    if (stream->readFlag())
       mImpactSound = stream->readInt(PlayerData::ImpactBits);
@@ -6755,6 +6984,28 @@ DefineEngineMethod( Player, getNumDeathAnimations, S32, ( ),,
    return count;
 }
 
+ConsoleMethod( Player, setPlayerPosition, void, 3, 3, "(1=stand, 2=crouch, 3=crawl)")
+{
+  S32 num = dAtof(argv[2]);
+
+  object->setPlayerPosition(dAtof(argv[2]));
+}
+
+ConsoleMethod( Player, getPlayerPosition, S32, 2, 2, "(1=stand, 2=crouch, 3=crawl)")
+{
+  return object->getPlayerPosition();
+}
+ConsoleMethod( Player, setCoverPosition, void, 3, 3, "(1=stand, 2=crouch, 3=crawl)")
+{
+  S32 num = dAtof(argv[2]);
+
+  object->setCoverPosition(dAtof(argv[2]));
+}
+
+ConsoleMethod( Player, getCoverPosition, S32, 2, 2, "(Refer to player.h for animation definitions)")
+{
+   return object->getCoverPosition();
+}
 //----------------------------------------------------------------------------
 void Player::consoleInit()
 {

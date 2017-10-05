@@ -435,6 +435,7 @@ class SimGroup: public SimSet
 
       friend class SimManager;
       friend class SimObject;
+	  friend class AIPathGroup;
 
    private:
 

@@ -49,6 +49,10 @@
 #include "math/mEase.h"
 #include "T3D/tsStatic.h"
 
+#ifndef _AIGROUP_H_
+#include "T3D/AIPathGroup.h"
+#endif
+#include "T3D/AIPathNode.h"
 
 IMPLEMENT_CONOBJECT( WorldEditor );
 
@@ -1420,6 +1424,32 @@ void WorldEditor::renderPaths(SimObject *obj)
          renderSplinePath(path);
 }
 
+//G.Notman Begin//
+void WorldEditor::renderAIPaths(SimObject* parent, SimObject *obj)
+{
+   if (obj == NULL)
+      return;
+   bool selected = false;
+
+   // Loop through subsets
+   if (SimSet *set = dynamic_cast<SimSet*>(obj))
+      for(SimSetIterator itr(set); *itr; ++itr) 
+	  {
+		 renderAIPaths(obj, *itr);
+		 if ((*itr)->isSelected())
+            renderPathAdjs(obj, *itr);
+	  }
+ }
+//G.Notman End//
+
+//G.Notman Begin//
+void WorldEditor::renderPathAdjs(SimObject* parent, SimObject* obj)
+{
+	if (AIPathGroup* group = dynamic_cast<AIPathGroup*>(parent))
+		if (AIPathNode* node = dynamic_cast<AIPathNode*>(obj))
+			group->renderPaths(node);
+}
+//G.Notman End//
 
 void WorldEditor::renderSplinePath(SimPath::Path *path)
 {
@@ -2416,6 +2446,11 @@ void WorldEditor::renderScene( const RectI &updateRect )
 
    // Render the paths
    renderPaths(Sim::findObject("MissionGroup"));
+   
+   // Render the AI Paths
+   //G.Notman Begin//
+   renderAIPaths(NULL, Sim::findObject("MissionGroup"));
+   //G.Notman End//
 
    // walk selected
    Selection* selection = getActiveSelectionSet();

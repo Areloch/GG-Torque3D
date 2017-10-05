@@ -1,0 +1,3215 @@
+//--- OBJECT WRITE BEGIN ---
+new SimGroup(MissionGroup) {
+   canSave = "1";
+   canSaveDynamicFields = "1";
+      enabled = "1";
+
+   new LevelInfo(TheLevelInfo) {
+      nearClip = "0.1";
+      visibleDistance = "1000";
+      visibleGhostDistance = "0";
+      decalBias = "0.0015";
+      fogColor = "0.6 0.6 0.7 1";
+      fogDensity = "0";
+      fogDensityOffset = "700";
+      fogAtmosphereHeight = "0";
+      canvasClearColor = "0 0 0 255";
+      ambientLightBlendPhase = "1";
+      ambientLightBlendCurve = "0 0 -1.000000 -1.000000";
+      advancedLightmapSupport = "0";
+      soundAmbience = "AudioAmbienceDefault";
+      soundDistanceModel = "Linear";
+      class = "DeathMatchGame";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+         allowCycling = "0";
+         desc0 = "Test mission for the Tactical AI Kit";
+         Duration = "1800";
+         enabled = "1";
+         endgamePause = "10";
+         endgameScore = "20";
+         generalVisibility = "1";
+         levelName = "TAIK Example";
+         missionColor = "150 150 150";
+   };
+   new SkyBox(theSky) {
+      Material = "DesertSkyMat";
+      drawBottom = "0";
+      fogBandHeight = "0";
+      position = "0 0 0";
+      rotation = "1 0 0 0";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+   };
+   new Sun(theSun) {
+      azimuth = "230.396";
+      elevation = "45";
+      color = "0.968628 0.901961 0.901961 1";
+      ambient = "0.078431 0.113725 0.156863 1";
+      brightness = "1";
+      castShadows = "1";
+      staticRefreshFreq = "250";
+      dynamicRefreshFreq = "8";
+      coronaEnabled = "1";
+      coronaScale = "0.5";
+      coronaTint = "1 1 1 1";
+      coronaUseLightColor = "1";
+      flareScale = "1";
+      attenuationRatio = "0 1 1";
+      shadowType = "PSSM";
+      texSize = "1024";
+      overDarkFactor = "3000 2000 1000 250";
+      shadowDistance = "400";
+      shadowSoftness = "0.25";
+      numSplits = "4";
+      logWeight = "0.96";
+      fadeStartDistance = "325";
+      lastSplitTerrainOnly = "0";
+      representedInLightmap = "0";
+      shadowDarkenColor = "0 0 0 -1";
+      includeLightmappedGeometryInShadow = "0";
+      position = "0 0 0";
+      rotation = "1 0 0 0";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+   };
+   new SimGroup(PlayerDropPoints) {
+      canSave = "1";
+      canSaveDynamicFields = "1";
+         enabled = "1";
+
+      new SpawnSphere() {
+         autoSpawn = "0";
+         spawnTransform = "0";
+         radius = "5";
+         sphereWeight = "1";
+         indoorWeight = "1";
+         outdoorWeight = "1";
+         isAIControlled = "0";
+         dataBlock = "SpawnSphereMarker";
+         position = "0 0 2";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            enabled = "1";
+            homingCount = "0";
+            lockCount = "0";
+      };
+   };
+   new GroundPlane() {
+      squareSize = "128";
+      scaleU = "25";
+      scaleV = "25";
+      Material = "Grid_512_Grey";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+         enabled = "1";
+         position = "0 0 0";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+   };
+   new AIPathGroup(AIPaths) {
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-49.5816 -41.0256 0.523882";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-45.1049 -34.5856 0.524314";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-35.7271 -40.0495 0.525127";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-40.7891 -46.2794 0.525559";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-36.893 -52.9082 0.526372";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-28.1023 -58.8108 0.526859";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-19.5977 -63.6857 0.526859";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-9.6572 -70.4417 0.526859";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-0.95433 -75.4866 0.526859";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "7.94522 -81.1342 0.526859";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "17.7494 -88.5058 0.526859";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "23.5068 -96.0515 0.526859";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "27.2619 -104.564 0.526859";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "21.3945 -112.221 0.526957";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "11.3215 -84.2348 0.529164";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "24.135 -85.0827 0.530312";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "17.1726 -77.0874 0.530799";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "7.76931 -70.5828 0.530805";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-3.93686 -65.0225 0.530805";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-12.3135 -57.4641 0.530805";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-15.5343 -66.9734 0.532615";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "3.14811 -65.5535 0.534358";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "12.6543 -74.7913 0.535187";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "19.0035 -82.64 0.53773";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "21.2305 -102.042 0.52208";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "14.7935 -97.8156 0.522567";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "12.3244 -105.641 0.523411";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "9.13774 -91.8716 0.528563";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "3.28824 -86.6842 0.528563";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-4.5037 -82.0266 0.528563";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-12.2122 -77.2454 0.528563";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-17.7552 -72.7844 0.528563";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-24.8505 -67.1232 0.528563";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-30.8099 -63.2369 0.528563";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-37.6219 -58.8607 0.528563";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-44.8072 -52.6866 0.528563";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-49.8237 -46.3565 0.528569";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-57.5434 -49.9937 0.530157";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-51.8008 -56.1746 0.530645";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-46.2236 -62.3772 0.530645";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-39.8125 -69.475 0.530645";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-32.5078 -74.4379 0.530645";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-24.5751 -79.3342 0.530645";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-17.7084 -84.0708 0.530645";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-11.0492 -88.6762 0.530645";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-5.49421 -93.1201 0.530645";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "2.65469 -99.8208 0.530645";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "13.052 -112.934 0.533396";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "3.01771 -117.02 0.533884";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-4.15917 -121.189 0.533888";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-13.8968 -121.938 0.533888";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-21.8772 -119.743 0.533888";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-28.9832 -114.962 0.533888";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-34.7206 -108.621 0.533888";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-38.8776 -102.846 0.533888";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-45.6376 -95.0891 0.533888";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-51.565 -89.2194 0.533888";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-55.2268 -81.6588 0.533905";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-55.1569 -73.8276 0.533905";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-54.9376 -64.5198 0.533905";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-57.0548 -59.268 0.534663";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-45.3183 -70.4833 0.536019";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-38.9264 -76.9289 0.536019";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-32.7506 -83.2436 0.536019";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-26.0772 -89.3857 0.536019";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-18.9811 -95.0473 0.536019";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-12.0683 -100.545 0.536019";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-5.3474 -105.89 0.536019";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "0.405043 -110.465 0.536344";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "8.11767 -110.197 0.537178";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-8.462 -110.702 0.539042";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-18.1845 -104.326 0.539529";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-25.5665 -99.4768 0.539529";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-33.7709 -92.4645 0.539529";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-42.7358 -84.4542 0.539529";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-47.8959 -79.8285 0.502445";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-28.1286 -106.466 0.502932";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-22.3133 -113.45 0.50407";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-13.7415 -114.353 0.504886";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-12.2907 -108.441 0.507971";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-23.2725 -107.672 0.512699";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-33.7758 -98.088 0.514286";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-29.2753 -47.1977 0.515894";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-24.9684 -39.7686 0.515894";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-19.7058 -31.4852 0.515894";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-15.1689 -24.485 0.515894";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-10.0073 -16.4281 0.515894";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-5.62631 -8.19929 0.515894";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-1.80729 -0.78292 0.515894";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "2.68568 7.94223 0.515894";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "6.39238 15.1405 0.515894";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "3.01148 23.0017 0.516017";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-4.58601 28.1969 0.516177";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-11.507 24.8081 0.516185";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-9.08764 16.1205 0.51634";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-2.76995 8.66464 0.516457";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "10.3544 3.91511 0.516457";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "16.1334 0.200577 0.516457";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "25.3988 -5.80331 0.516457";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "32.3335 -10.4398 0.516457";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "41.5119 -16.5764 0.516457";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "48.4467 -21.2129 0.516457";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "57.625 -27.3494 0.516457";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "64.5732 -31.9655 0.516457";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "70.4689 -27.6285 0.516772";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "65.4041 -19.5279 0.516794";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "54.6142 -19.8823 0.517";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "59.3571 -14.9968 0.518265";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "51.2918 -7.32043 0.518753";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "43.5675 -0.516957 0.518753";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "36.6071 4.51232 0.518753";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "29.6302 9.51867 0.518753";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "21.0586 15.6693 0.518753";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "12.6045 21.5613 0.518753";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "2.19485 28.0272 0.519078";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-4.76518 21.9246 0.520317";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-0.342693 19.12 0.521129";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "18.7995 10.8705 0.522506";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "13.6282 13.8264 0.524305";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "26.3594 1.46532 0.526561";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "32.8515 -2.54962 0.528857";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "41.2089 -8.29849 0.529669";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "49.5349 -14.0929 0.530482";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "52.2094 -36.1549 0.533417";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "46.6622 -43.9516 0.533417";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "41.0772 -51.7212 0.533417";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "32.8761 -63.049 0.533417";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "26.319 -72.2341 0.533417";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "25.8847 -80.0311 0.534987";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "30.069 -98.3527 0.537651";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "34.0635 -92.6475 0.538138";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "39.2166 -85.4738 0.538138";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "45.2515 -77.1211 0.538138";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "50.5679 -69.7627 0.538138";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "56.6028 -61.4099 0.538138";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "62.2067 -53.6538 0.538138";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "68.5288 -44.9033 0.538138";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "72.7435 -37.2089 0.538138";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "61.5907 -38.1033 0.539779";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "56.754 -46.0738 0.539779";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "51.6065 -54.4296 0.539779";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "46.5499 -62.5528 0.539779";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "40.901 -70.5769 0.539779";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "34.1387 -79.9176 0.539779";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "28.3835 -87.8671 0.539779";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "36.8603 -58.2117 0.512247";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "49.0687 -31.1421 0.514269";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "39.1329 -26.7252 0.515082";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "32.8467 -30.1474 0.516123";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "21.5984 -23.4934 0.516611";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "13.5789 -17.8363 0.516611";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "2.43689 -10.2358 0.516611";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "9.11152 -15.1961 0.518503";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "26.4204 -27.9218 0.519734";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "35.5354 -18.7185 0.522067";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "26.5932 -15.7957 0.52288";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "20.0275 -12.7598 0.524478";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "11.8324 -7.85924 0.524829";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "8.57111 -2.87567 0.526355";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "2.28806 -4.88414 0.528202";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "1.1716 -20.0722 0.529518";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "4.9609 -22.3405 0.529518";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "11.9079 -26.4989 0.529518";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "19.276 -30.9095 0.529518";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "26.2231 -35.0679 0.529518";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "32.9596 -39.1004 0.529518";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "39.9067 -43.2589 0.529518";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "46.3556 -38.6476 0.531788";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "36.5006 -33.4894 0.5326";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "13.1158 -38.2141 0.535082";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "8.83952 -45.0892 0.535082";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "4.11822 -52.8427 0.535082";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-0.454879 -60.3869 0.535407";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "10.2766 -62.5226 0.536754";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "13.907 -52.1889 0.537268";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "23.5894 -41.2054 0.537324";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "18.7675 -48.1671 0.539834";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "2.63822 -26.7093 0.503794";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-0.682437 -31.0844 0.504281";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-5.94795 -37.8678 0.504281";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-11.1718 -44.6833 0.504281";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-16.8846 -52.3595 0.504281";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-23.7015 -55.4851 0.505919";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-40.1707 -26.159 0.50886";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-37.1638 -18.6415 0.50886";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-32.9013 -9.81412 0.50886";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-29.7671 -4.54157 0.50886";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-25.7554 2.2073 0.50886";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-21.869 8.74527 0.50886";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-17.8572 15.4941 0.50886";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-12.7061 3.82215 0.512152";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-19.424 -7.70563 0.512639";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-25.1433 -17.7188 0.512639";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-31.6672 -30.6232 0.512964";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-18.5621 -41.7628 0.514553";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-9.54356 -28.8246 0.51504";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "7.69624 -34.45 0.517825";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "1.07069 -43.699 0.518312";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "-3.53008 -49.7423 0.518637";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "17.9506 -68.2149 0.52004";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "23.3159 -59.3251 0.520528";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+      new AIPathNode() {
+         isAIControlled = "0";
+         dataBlock = "PathNode";
+         position = "28.8872 -48.6942 0.520853";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+      };
+   };
+   new SimGroup(Spawn2) {
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "35.3557 -9.39722 0.0352882";
+         rotation = "0 0 1 224.297";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "23.5248 12.504 0.0155085";
+         rotation = "0 0 1 237.612";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "-4.17133 20.2433 0.0241867";
+         rotation = "0 0 1 205.093";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "13.2022 -16.6352 0.030401";
+         rotation = "0 0 1 210.114";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "36.9148 -18.15 0.0349338";
+         rotation = "0 0 1 219.518";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "49.8287 -23.1252 0.0373659";
+         rotation = "0 0 1 219.518";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "37.3058 1.84489 0.0393657";
+         rotation = "0 0 1 221.336";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "-0.0127272 4.93668 0.0272726";
+         rotation = "0 0 1 205.56";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "50.5274 -30.6251 0.0368278";
+         rotation = "0 0 1 219.518";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "4.12389 17.2564 0.0229254";
+         rotation = "0 0 1 205.093";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "61.8451 -19.5017 0.0384315";
+         rotation = "0 0 1 225.209";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "44.1777 -1.61091 0.0333714";
+         rotation = "0 0 1 224.731";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+   };
+   new SimGroup(CoverPoints) {
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-18.8745 -109.217 1.0106";
+         rotation = "0 0 1 34.3817";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-17.2164 -107.539 1.01578";
+         rotation = "0 0 1 216.799";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-28.366 -74.9739 1.02606";
+         rotation = "0 0 1 35.6067";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-25.7564 -76.7114 1.02975";
+         rotation = "0 0 1 35.6067";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-25.3359 -74.2151 1.03262";
+         rotation = "0 0 1 214.717";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-45.7697 -41.1722 1.03878";
+         rotation = "0 0 1 36.5076";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-43.7143 -42.5426 1.00321";
+         rotation = "0 0 1 36.5076";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-43.571 -39.8655 1.01794";
+         rotation = "0 0 1 215.173";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "13.541 -81.3248 1.02455";
+         rotation = "0 0 1 32.8162";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "14.4331 -79.1366 1.02919";
+         rotation = "0 0 1 211.492";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "10.6482 -22.4601 1.03438";
+         rotation = "0 0 1 33.7225";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "11.7804 -20.4359 1.03907";
+         rotation = "0 0 1 218.562";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "3.58218 -2.7442 1.00828";
+         rotation = "0 0 1 38.0017";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "4.84331 -0.807029 1.01201";
+         rotation = "0 0 1 215.695";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-4.59304 15.0395 1.02281";
+         rotation = "0 0 1 36.6065";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-2.85147 16.6526 1.02778";
+         rotation = "0 0 1 216.48";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "36.9392 -3.34457 1.03963";
+         rotation = "0 0 1 37.6227";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "37.7986 -1.14113 1.00607";
+         rotation = "0 0 1 209.07";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "44.6866 -33.9519 1.01356";
+         rotation = "0 0 1 210.454";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "42.6135 -35.3442 1.02299";
+         rotation = "0 0 1 35.6562";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "33.9184 -23.2739 1.03773";
+         rotation = "0 0 1 212.893";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            leftFirePos = "34.7581 -23.817 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "29.6259 -20.4116 1.00944";
+         rotation = "0 0 1 218.145";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            rightFirePos = "28.8395 -19.7939 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "28.3653 -22.3542 1.01332";
+         rotation = "0 0 1 29.6798";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            leftFirePos = "27.4965 -21.859 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "32.6435 -25.2048 1.01522";
+         rotation = "0 0 1 29.6798";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            rightFirePos = "33.5123 -25.7 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "22.9304 10.7702 1.01347";
+         rotation = "0 0 1 214.981";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            rightFirePos = "22.1111 11.3435 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "21.5038 8.93806 1.02086";
+         rotation = "0 0 1 37.3868";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            leftFirePos = "20.7092 9.54525 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "25.811 6.06794 1.03141";
+         rotation = "0 0 1 37.3868";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            rightFirePos = "26.6056 5.46075 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-26.0457 -55.8326 1.00712";
+         rotation = "0 0 1 214.558";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            leftFirePos = "-25.2221 -56.3998 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-30.2804 -53.0095 1.03845";
+         rotation = "0 0 1 214.558";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            rightFirePos = "-31.104 -52.4423 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-31.5673 -54.9412 1.00478";
+         rotation = "0 0 1 32.0156";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            leftFirePos = "-32.4152 -54.411 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-27.4874 -57.6529 1.01091";
+         rotation = "0 0 1 36.9969";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            rightFirePos = "-26.6887 -58.2547 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-6.51916 -77.5572 1.03491";
+         rotation = "0 0 1 30.471";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            leftFirePos = "-7.38105 -77.0501 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-5.2283 -75.6343 1.00995";
+         rotation = "0 0 1 215.695";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            rightFirePos = "-6.04043 -75.0508 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "17.4462 -103.664 1.0178";
+         rotation = "0 0 1 215.19";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            rightFirePos = "16.629 -103.088 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "21.6031 -106.437 1.02264";
+         rotation = "0 0 1 215.19";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            leftFirePos = "22.4203 -107.013 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "20.357 -108.383 1.02382";
+         rotation = "0 0 1 40.8696";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            rightFirePos = "21.1132 -109.037 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "16.138 -105.566 1.03182";
+         rotation = "0 0 1 40.8696";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            leftFirePos = "15.3818 -104.912 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-2.34756 -80.3366 1.02709";
+         rotation = "0 0 1 33.8818";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "0";
+            isCoverMarker = "1";
+            isTaken = "0";
+            rightFirePos = "-1.51737 -80.8941 2.00299";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-4.28773 17.6212 1.02607";
+         rotation = "0 0 1 212.958";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "3.0894 0.360339 1.03096";
+         rotation = "0 0 1 214.348";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "5.99198 -1.56638 1.03263";
+         rotation = "0 0 1 214.348";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "13.7204 -21.7286 1.03664";
+         rotation = "0 0 1 213.195";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "10.5559 -19.6238 1.03824";
+         rotation = "0 0 1 213.195";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "46.0441 -34.8548 1.01848";
+         rotation = "0 0 1 216.282";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "42.782 -32.6848 1.02006";
+         rotation = "0 0 1 216.282";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "39.6773 -2.39454 1.02229";
+         rotation = "0 0 1 217.699";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "36.5404 -0.303533 1.02378";
+         rotation = "0 0 1 217.699";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "14.5711 -82.0098 1.02219";
+         rotation = "0 0 1 35.3281";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "11.9159 -80.2358 1.02451";
+         rotation = "0 0 1 35.3281";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-17.3272 -110.243 1.02859";
+         rotation = "0 0 1 34.1195";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-20.5291 -108.109 1.03276";
+         rotation = "0 0 1 34.1195";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "-27.0832 -75.8344 1.03858";
+         rotation = "0 0 1 34.213";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "8.46398 -19.7403 1.02354";
+         rotation = "0 0 1 119.993";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "CoverPosMarker";
+         position = "14.5299 -23.6212 1.0285";
+         rotation = "0 0 -1 53.9535";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            fireOverThis = "1";
+            isCoverMarker = "1";
+            isTaken = "0";
+      };
+   };
+   new SimGroup(ConvexShapes) {
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      new ConvexShape() {
+         Material = "Grid_512_Orange";
+         position = "-3.73359 -78.0219 -0.256802";
+         rotation = "0 -0 -1 56.324";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         surface = "0 0 0 1 0 0 4.27268";
+         surface = "0 1 0 0 0 0 -0.928025";
+         surface = "0.707107 0 0 0.707106 0 3.10032 1.67233";
+         surface = "0 0.707107 -0.707107 0 0 -3.10032 1.67233";
+         surface = "0.5 0.5 -0.5 0.5 -0.662239 0 1.67233";
+         surface = "0.5 -0.5 0.5 0.5 0.662239 0 1.67233";
+      };
+      new ConvexShape() {
+         Material = "Grid_512_Orange";
+         position = "4.00346 -1.6332 0.818721";
+         rotation = "0 -0 -1 56.324";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         surface = "0 0 0 1 0 0 0.928025";
+         surface = "0 1 0 0 0 0 -0.928025";
+         surface = "0.707107 0 0 0.707107 0 3.10032 0";
+         surface = "0 0.707107 -0.707107 0 0 -3.10032 -1.13687e-13";
+         surface = "0.5 0.5 -0.5 0.5 -0.662239 0 -5.52437e-08";
+         surface = "0.5 -0.5 0.5 0.5 0.662239 0 -5.52437e-08";
+      };
+      new ConvexShape() {
+         Material = "Grid_512_Orange";
+         position = "11.5231 -21.6513 0.771383";
+         rotation = "0 -0 -1 56.324";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         surface = "0 0 0 1 0 0 0.928025";
+         surface = "0 1 0 0 0 0 -0.928025";
+         surface = "0.707107 0 0 0.707106 0 3.10032 0";
+         surface = "0 0.707107 -0.707107 0 0 -3.10032 -1.13687e-13";
+         surface = "0.5 0.5 -0.5 0.5 -0.662239 0 -5.52437e-08";
+         surface = "0.5 -0.5 0.5 0.5 0.662239 0 -5.52437e-08";
+      };
+      new ConvexShape() {
+         Material = "Grid_512_Orange";
+         position = "-3.41688 15.6376 0.803504";
+         rotation = "0 -0 -1 56.324";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         surface = "0 0 0 1 0 0 0.928025";
+         surface = "0 1 0 0 0 0 -0.928025";
+         surface = "0.707107 0 0 0.707107 0 3.10032 0";
+         surface = "0 0.707107 -0.707107 0 0 -3.10032 -1.13687e-13";
+         surface = "0.5 0.5 -0.5 0.5 -0.662239 0 -5.52437e-08";
+         surface = "0.5 -0.5 0.5 0.5 0.662239 0 -5.52437e-08";
+      };
+      new ConvexShape() {
+         Material = "Grid_512_Orange";
+         position = "37.507 -2.33213 0.928021";
+         rotation = "0 -0 -1 56.324";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         surface = "0 0 0 1 0 0 0.678263";
+         surface = "0 1 0 0 0 0 -0.928025";
+         surface = "0.707107 0 0 0.707107 0 3.10032 -0.124881";
+         surface = "0 0.707107 -0.707107 0 0 -3.10032 -0.124881";
+         surface = "0.5 0.5 -0.5 0.5 -0.662239 0 -0.124881";
+         surface = "0.5 -0.5 0.5 0.5 0.662239 0 -0.124881";
+      };
+      new ConvexShape() {
+         Material = "Grid_512_Orange";
+         position = "43.6861 -34.6729 0.928021";
+         rotation = "0 -0 -1 56.324";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         surface = "0 0 0 1 0 0 0.804152";
+         surface = "0 1 0 0 0 0 -0.928025";
+         surface = "0.707107 0 0 0.707107 0 3.10032 -0.0619365";
+         surface = "0 0.707107 -0.707107 0 0 -3.10032 -0.0619365";
+         surface = "0.5 0.5 -0.5 0.5 -0.662239 0 -0.0619366";
+         surface = "0.5 -0.5 0.5 0.5 0.662239 0 -0.0619366";
+      };
+      new ConvexShape() {
+         Material = "Grid_512_Orange";
+         position = "-44.1684 -40.8542 0.789378";
+         rotation = "0 -0 -1 56.324";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         surface = "0 0 0 1 0 0 0.928025";
+         surface = "0 1 0 0 0 0 -0.928025";
+         surface = "0.707107 0 0 0.707106 0 3.10032 0";
+         surface = "0 0.707107 -0.707107 0 0 -3.10032 -1.13687e-13";
+         surface = "0.5 0.5 -0.5 0.5 -0.662239 0 -5.52437e-08";
+         surface = "0.5 -0.5 0.5 0.5 0.662239 0 -5.52437e-08";
+      };
+      new ConvexShape() {
+         Material = "Grid_512_Orange";
+         position = "-26.3278 -74.9459 0.928021";
+         rotation = "0 -0 -1 56.324";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         surface = "0 0 0 1 0 0 0.7891";
+         surface = "0 1 0 0 0 0 -0.928025";
+         surface = "0.707107 0 0 0.707107 0 3.10032 -0.0694625";
+         surface = "0 0.707107 -0.707107 0 0 -3.10032 -0.0694625";
+         surface = "0.5 0.5 -0.5 0.5 -0.662239 0 -0.0694626";
+         surface = "0.5 -0.5 0.5 0.5 0.662239 0 -0.0694626";
+      };
+      new ConvexShape() {
+         Material = "Grid_512_Orange";
+         position = "14.0006 -80.2401 0.928021";
+         rotation = "0 -0 -1 56.324";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         surface = "0 0 0 1 0 0 0.821778";
+         surface = "0 1 0 0 0 0 -0.928025";
+         surface = "0.707107 0 0 0.707107 0 3.10032 -0.0531235";
+         surface = "0 0.707107 -0.707107 0 0 -3.10032 -0.0531235";
+         surface = "0.5 0.5 -0.5 0.5 -0.662239 0 -0.0531235";
+         surface = "0.5 -0.5 0.5 0.5 0.662239 0 -0.0531235";
+      };
+      new ConvexShape() {
+         Material = "Grid_512_Orange";
+         position = "-18.0857 -108.352 0.928021";
+         rotation = "0 -0 -1 56.324";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         surface = "0 0 0 1 0 0 0.793509";
+         surface = "0 1 0 0 0 0 -0.928025";
+         surface = "0.707107 0 0 0.707107 0 3.10032 -0.067258";
+         surface = "0 0.707107 -0.707107 0 0 -3.10032 -0.067258";
+         surface = "0.5 0.5 -0.5 0.5 -0.662239 0 -0.0672581";
+         surface = "0.5 -0.5 0.5 0.5 0.662239 0 -0.0672581";
+      };
+      new ConvexShape() {
+         Material = "Grid_512_Orange";
+         position = "64.3158 -25.2573 0.928023";
+         rotation = "0 -0 -1 56.324";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         surface = "0 0 0 1 0 0 4.27268";
+         surface = "0 1 0 0 0 0 -0.928025";
+         surface = "0.707107 0 0 0.707107 0 3.10032 1.67233";
+         surface = "0 0.707107 -0.707107 0 0 -3.10032 1.67233";
+         surface = "0.5 0.5 -0.5 0.5 -0.662239 0 1.67233";
+         surface = "0.5 -0.5 0.5 0.5 0.662239 0 1.67233";
+      };
+      new ConvexShape() {
+         Material = "Grid_512_Orange";
+         position = "31.1167 -22.796 0.928023";
+         rotation = "0 -0 -1 56.324";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         surface = "0 0 0 1 0 0 4.27268";
+         surface = "0 1 0 0 0 0 -0.928025";
+         surface = "0.707107 0 0 0.707106 0 3.10032 1.67233";
+         surface = "0 0.707107 -0.707107 0 0 -3.10032 1.67233";
+         surface = "0.5 0.5 -0.5 0.5 -0.662239 0 1.67233";
+         surface = "0.5 -0.5 0.5 0.5 0.662239 0 1.67233";
+      };
+      new ConvexShape() {
+         Material = "Grid_512_Orange";
+         position = "24.3367 8.44157 0.928023";
+         rotation = "0 -0 -1 56.324";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         surface = "0 0 0 1 0 0 4.27268";
+         surface = "0 1 0 0 0 0 -0.928025";
+         surface = "0.707107 0 0 0.707107 0 3.10032 1.67233";
+         surface = "0 0.707107 -0.707107 0 0 -3.10032 1.67233";
+         surface = "0.5 0.5 -0.5 0.5 -0.662239 0 1.67233";
+         surface = "0.5 -0.5 0.5 0.5 0.662239 0 1.67233";
+      };
+      new ConvexShape() {
+         Material = "Grid_512_Orange";
+         position = "-28.855 -55.351 0.928023";
+         rotation = "0 -0 -1 56.324";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         surface = "0 0 0 1 0 0 4.27268";
+         surface = "0 1 0 0 0 0 -0.928025";
+         surface = "0.707107 0 0 0.707106 0 3.10032 1.67233";
+         surface = "0 0.707107 -0.707107 0 0 -3.10032 1.67233";
+         surface = "0.5 0.5 -0.5 0.5 -0.662239 0 1.67233";
+         surface = "0.5 -0.5 0.5 0.5 0.662239 0 1.67233";
+      };
+      new ConvexShape() {
+         Material = "Grid_512_Orange";
+         position = "18.9267 -106.04 0.928023";
+         rotation = "0 -0 -1 56.324";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         surface = "0 0 0 1 0 0 4.27268";
+         surface = "0 1 0 0 0 0 -0.928025";
+         surface = "0.707107 0 0 0.707107 0 3.10032 1.67233";
+         surface = "0 0.707107 -0.707107 0 0 -3.10032 1.67233";
+         surface = "0.5 0.5 -0.5 0.5 -0.662239 0 1.67233";
+         surface = "0.5 -0.5 0.5 0.5 0.662239 0 1.67233";
+      };
+   };
+   new SimGroup(Spawn1) {
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "-47.3922 -45.1408 0.0227999";
+         rotation = "0 0 1 74.1379";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            Path = "Path1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "-47.7063 -57.4609 0.02369";
+         rotation = "0 0 1 55.1043";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "-32.954 -58.245 0.0253392";
+         rotation = "0 0 1 55.1043";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "-31.2227 -78.3816 0.0273855";
+         rotation = "0 0 1 40.8111";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "-16.9083 -84.8414 0.0287324";
+         rotation = "0 0 1 40.8111";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "-13.8593 -99.3617 0.0295409";
+         rotation = "0 0 1 40.8111";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "-23.9519 -108.338 0.0312781";
+         rotation = "0 0 1 30.8025";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "-14.3701 -114.051 0.0317105";
+         rotation = "0 0 1 30.8025";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "9.50785 -108.536 0.0161048";
+         rotation = "0 0 1 30.8025";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+      new StaticShape() {
+         isAIControlled = "0";
+         dataBlock = "SpawnMarker";
+         position = "16.1276 -97.4322 0.0177297";
+         rotation = "0 0 1 30.8025";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            respawns = "0";
+      };
+   };
+   new SimGroup(Paths) {
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      new Path(Path1) {
+         isLooping = "1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+
+         new Marker() {
+            seqNum = "0";
+            type = "Normal";
+            msToNext = "1000";
+            smoothingType = "Spline";
+            position = "-47.0603 -57.7701 0.0222935";
+            rotation = "0 0 1 106.876";
+            scale = "1 1 1";
+            canSave = "1";
+            canSaveDynamicFields = "1";
+               moveSpeed = "0.4";
+         };
+         new Marker() {
+            seqNum = "1";
+            type = "Normal";
+            msToNext = "1000";
+            smoothingType = "Spline";
+            position = "-35.3883 -72.7324 0.023106";
+            rotation = "0 0 1 142.043";
+            scale = "1 1 1";
+            canSave = "1";
+            canSaveDynamicFields = "1";
+               moveSpeed = "0.4";
+         };
+         new Marker() {
+            seqNum = "2";
+            type = "Normal";
+            msToNext = "1000";
+            smoothingType = "Spline";
+            position = "-22.549 -81.7729 0.0239184";
+            rotation = "0 0 1 28.4605";
+            scale = "1 1 1";
+            canSave = "1";
+            canSaveDynamicFields = "1";
+               moveSpeed = "0.4";
+         };
+         new Marker() {
+            seqNum = "3";
+            type = "Normal";
+            msToNext = "1000";
+            smoothingType = "Spline";
+            position = "-8.90906 -70.6891 0.0247309";
+            rotation = "0 0 1 35.7114";
+            scale = "1 1 1";
+            canSave = "1";
+            canSaveDynamicFields = "1";
+               moveSpeed = "0.4";
+               stopTime = "3000";
+         };
+         new Marker() {
+            seqNum = "4";
+            type = "Normal";
+            msToNext = "1000";
+            smoothingType = "Spline";
+            position = "1.37522 -78.3811 0.0255434";
+            rotation = "0 0 1 207.983";
+            scale = "1 1 1";
+            canSave = "1";
+            canSaveDynamicFields = "1";
+               moveSpeed = "0.4";
+         };
+         new Marker() {
+            seqNum = "5";
+            type = "Normal";
+            msToNext = "1000";
+            smoothingType = "Spline";
+            position = "-0.772548 -82.5109 0.0269727";
+            rotation = "0 0 -1 63.7203";
+            scale = "1 1 1";
+            canSave = "1";
+            canSaveDynamicFields = "1";
+               moveSpeed = "0.4";
+         };
+         new Marker() {
+            seqNum = "6";
+            type = "Normal";
+            msToNext = "1000";
+            smoothingType = "Spline";
+            position = "-10.4527 -77.7311 0.0285768";
+            rotation = "0 0 -1 63.7203";
+            scale = "1 1 1";
+            canSave = "1";
+            canSaveDynamicFields = "1";
+               moveSpeed = "0.4";
+         };
+         new Marker() {
+            seqNum = "7";
+            type = "Normal";
+            msToNext = "1000";
+            smoothingType = "Spline";
+            position = "-22.6147 -79.5702 0.0298259";
+            rotation = "0 0 1 6.94373";
+            scale = "1 1 1";
+            canSave = "1";
+            canSaveDynamicFields = "1";
+               moveSpeed = "0.4";
+         };
+         new Marker() {
+            seqNum = "8";
+            type = "Normal";
+            msToNext = "1000";
+            smoothingType = "Spline";
+            position = "-27.002 -77.3284 0.0320663";
+            rotation = "0 0 1 33.1572";
+            scale = "1 1 1";
+            canSave = "1";
+            canSaveDynamicFields = "1";
+               moveSpeed = "0.4";
+               stopTime = "5000";
+         };
+         new Marker() {
+            seqNum = "9";
+            type = "Normal";
+            msToNext = "1000";
+            smoothingType = "Spline";
+            position = "-31.6855 -75.292 0.0330131";
+            rotation = "0 0 -1 6.48151";
+            scale = "1 1 1";
+            canSave = "1";
+            canSaveDynamicFields = "1";
+               moveSpeed = "0.4";
+         };
+         new Marker() {
+            seqNum = "10";
+            type = "Normal";
+            msToNext = "1000";
+            smoothingType = "Spline";
+            position = "-48.3403 -73.9022 0.0380147";
+            rotation = "0 0 1 28.3232";
+            scale = "1 1 1";
+            canSave = "1";
+            canSaveDynamicFields = "1";
+               moveSpeed = "0.4";
+         };
+      };
+   };
+};
+//--- OBJECT WRITE END ---

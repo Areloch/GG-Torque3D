@@ -1,0 +1,1916 @@
+if(!isObject(GuiTAIKTextEditProfile)) new GuiControlProfile (GuiTAIKTextEditProfile)
+{
+   opaque = true;
+   fillColor = "255 255 255";
+   fillColorHL = "128 128 128";
+   border = -2;
+   bitmap = "core/art/gui/images/textEdit";
+   borderColor = "40 40 40 100";
+   fontColor = "0 0 0";
+   fontColorHL = "255 255 255";
+   fontColorNA = "128 128 128";
+   textOffset = "4 2";
+   autoSizeWidth = false;
+   autoSizeHeight = true;
+   tab = false;
+   canKeyFocus = true;
+};
+
+//--- OBJECT WRITE BEGIN ---
+new GuiControl(TAIKGui) {
+   canSaveDynamicFields = "1";
+   Profile = "GuiDefaultProfile";
+   HorizSizing = "right";
+   VertSizing = "bottom";
+   position = "0 0";
+   Extent = "1024 768";
+   MinExtent = "8 2";
+   canSave = "1";
+   Visible = "1";
+   tooltipprofile = "GuiToolTipProfile";
+   hovertime = "1000";
+      active = "1";
+      isContainer = "1";
+
+   new GuiWindowCtrl() {
+      canSaveDynamicFields = "0";
+      Profile = "GuiWindowProfile";
+      HorizSizing = "right";
+      VertSizing = "bottom";
+      position = "202 17";
+      Extent = "479 543";
+      MinExtent = "8 2";
+      canSave = "1";
+      Visible = "1";
+      tooltipprofile = "GuiToolTipProfile";
+      hovertime = "1000";
+      text = "Tactical AI Kit Creator";
+      maxLength = "1024";
+      resizeWidth = "0";
+      resizeHeight = "0";
+      canMove = "1";
+      canClose = "1";
+      canMinimize = "0";
+      canMaximize = "0";
+      minSize = "50 50";
+      closeCommand = "Canvas.popDialog(TAIKGui);";
+
+      new GuiControl(SpawnPane) {
+         canSaveDynamicFields = "0";
+         Profile = "GuiDefaultProfile";
+         HorizSizing = "right";
+         VertSizing = "bottom";
+         position = "19 59";
+         Extent = "441 465";
+         MinExtent = "8 2";
+         canSave = "1";
+         Visible = "1";
+         tooltipprofile = "GuiToolTipProfile";
+         hovertime = "1000";
+
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "10 183";
+            Extent = "175 30";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "HudDropSpawn();";
+            tooltipprofile = "GuiButtonProfile";
+            ToolTip = "Drops a spawn marker at the player\'s position, with the player\'s orientation";
+            hovertime = "1000";
+            text = "Drop spawn marker at player";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiTextCtrl(spawnteamtext) {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "10 8";
+            Extent = "67 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Spawn Team:";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "10 35";
+            Extent = "85 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Move Destination:";
+            maxLength = "1024";
+         };
+         new GuiRadioCtrl(Team0Radio) {
+            canSaveDynamicFields = "0";
+            Profile = "GuiRadioProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "89 0";
+            Extent = "54 30";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "setSpawnTeam(0);";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Team 0";
+            groupNum = "1";
+            buttonType = "RadioButton";
+            useInactiveState = "0";
+         };
+         new GuiRadioCtrl(Team1Radio) {
+            canSaveDynamicFields = "0";
+            Profile = "GuiRadioProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "147 0";
+            Extent = "53 30";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "setSpawnTeam(1);";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Team 1";
+            groupNum = "1";
+            buttonType = "RadioButton";
+            useInactiveState = "0";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "292 35";
+            Extent = "97 21";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "SetMoveDestVal(true);";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Set to player pos";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "393 35";
+            Extent = "43 21";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "SetMoveDestVal(false);";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "None";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiPopUpMenuCtrl(PathList) {
+            canSaveDynamicFields = "0";
+            Profile = "GuiPopUpMenuProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "73 105";
+            Extent = "112 21";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "SetPatrolPath();";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "None";
+            maxLength = "1024";
+            maxPopupHeight = "200";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "10 106";
+            Extent = "54 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Patrol Path:";
+            maxLength = "1024";
+         };
+         new GuiCheckBoxCtrl(HighPriorityCheck) {
+            canSaveDynamicFields = "0";
+            Profile = "GuiCheckBoxProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "103 55";
+            Extent = "171 30";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Variable = "$markerAddHighPriority";
+            tooltipprofile = "GuiCheckBoxProfile";
+            ToolTip = "Move to the provided location at all costs. NPCs will attack enemies, but won\'t react to threats until they arrive. Think beaches of Normandy.";
+            hovertime = "1000";
+            text = "Is high priority move destination";
+            groupNum = "-1";
+            buttonType = "ToggleButton";
+            useInactiveState = "0";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "10 136";
+            Extent = "106 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Number of respawns:";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "10 157";
+            Extent = "95 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "New AI per spawn:";
+            maxLength = "1024";
+         };
+         new GuiTextEditCtrl(RespawnCount) {
+            canSaveDynamicFields = "0";
+            Profile = "GUITAIKTextEditProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "121 136";
+            Extent = "22 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Variable = "$markeraddrespawncount";
+            tooltipprofile = "GuiDefaultProfile";
+            ToolTip = "If an enemy is killed, how many times can he respawn?";
+            hovertime = "500";
+            maxLength = "1024";
+            historySize = "0";
+            password = "0";
+            tabComplete = "0";
+            sinkAllKeyEvents = "0";
+            password = "0";
+            passwordMask = "*";
+         };
+         new GuiTextEditCtrl(spawnIncCount) {
+            canSaveDynamicFields = "0";
+            Profile = "GUITAIKTextEditProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "121 157";
+            Extent = "22 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Variable = "$markeraddspawninc";
+            tooltipprofile = "GuiDefaultProfile";
+            ToolTip = "The number of new NPCs that spawn per respawn. Good for respawning large amounts of enemies, but be careful how high you set this along with the respawn count.";
+            hovertime = "500";
+            maxLength = "1024";
+            historySize = "0";
+            password = "0";
+            tabComplete = "0";
+            sinkAllKeyEvents = "0";
+            password = "0";
+            passwordMask = "*";
+         };
+         new GuiTextCtrl(LastSpawnText) {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "15 437";
+            Extent = "276 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            maxLength = "1024";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "10 232";
+            Extent = "175 17";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "setUpSpawnPoints();";
+            tooltipprofile = "GuiToolTipProfile";
+            ToolTip = "Names the spawn markers and sets unused fields";
+            hovertime = "1000";
+            text = "Set up spawn points";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "318 432";
+            Extent = "112 22";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "setSpawnDefaults();";
+            tooltipprofile = "GuiButtonProfile";
+            hovertime = "1000";
+            text = "Reset defaults";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "10 253";
+            Extent = "175 17";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "setSpawnsVisible(1);";
+            tooltipprofile = "GuiButtonProfile";
+            ToolTip = "Shows spawn points with green markers";
+            hovertime = "1000";
+            text = "Show spawn points";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "10 274";
+            Extent = "175 17";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "setSpawnsVisible(0);";
+            tooltipprofile = "GuiButtonProfile";
+            ToolTip = "Restores spawn markers to being invisible";
+            hovertime = "1000";
+            text = "Hide spawn points";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiTextCtrl(MoveDest) {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "100 35";
+            Extent = "8 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Variable = "$markerAddMoveDest";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            maxLength = "1024";
+         };
+      };
+      new GuiControl(CoverPane) {
+         canSaveDynamicFields = "0";
+         Profile = "GuiDefaultProfile";
+         HorizSizing = "right";
+         VertSizing = "bottom";
+         position = "16 64";
+         Extent = "441 465";
+         MinExtent = "8 2";
+         canSave = "1";
+         Visible = "0";
+         tooltipprofile = "GuiToolTipProfile";
+         hovertime = "1000";
+
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "244 62";
+            Extent = "170 30";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "CommandToServer(\'SetCoverPos\',3);";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Pose player for vertical cover";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "15 26";
+            Extent = "170 30";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "setCoverVisible(1);";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Show Cover Points";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "15 62";
+            Extent = "170 30";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "setCoverVisible(0);";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Hide Cover Points";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "15 98";
+            Extent = "170 30";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "Setupcoverpoints();";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Set up Cover Points";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "244 26";
+            Extent = "170 30";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "CommandToServer(\'SetCoverPos\',0);";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Pose player for horizontal cover";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "244 98";
+            Extent = "170 30";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "CommandToServer(\'SetCoverPos\',5);";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Reset player cover pose";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "59 4";
+            Extent = "53 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "- Markers -";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "235 4";
+            Extent = "183 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "- Setup posing (for your assistance) -";
+            maxLength = "1024";
+         };
+         new GuiBitmapCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiDefaultProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "15 230";
+            Extent = "100 100";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            bitmap = "./taik/stCvrYes1.jpg";
+            wrap = "0";
+         };
+         new GuiBitmapCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiDefaultProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "222 230";
+            Extent = "100 100";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            bitmap = "./taik/stCvrNo1.jpg";
+            wrap = "0";
+         };
+         new GuiBitmapCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiDefaultProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "119 230";
+            Extent = "100 100";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            bitmap = "./taik/stCvrYes2.jpg";
+            wrap = "0";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "15 132";
+            Extent = "405 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "1) Use the buttons at the upper right to set the player\'s pose for the cover you want";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "28 148";
+            Extent = "45 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "to set up.";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "15 162";
+            Extent = "368 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "2) Move your player to the cover according to the reference pictures below.";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "15 181";
+            Extent = "209 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "3) Press ; (semicolon) to drop a cover point";
+            maxLength = "1024";
+         };
+         new GuiBitmapCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiDefaultProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "222 345";
+            Extent = "100 100";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            bitmap = "./taik/crCvrNo1.jpg";
+            wrap = "0";
+         };
+         new GuiBitmapCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiDefaultProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "119 345";
+            Extent = "100 100";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            bitmap = "./taik/crCvrYes1.jpg";
+            wrap = "0";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "15 202";
+            Extent = "331 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "4) Press the Set up Cover Points button above when you\'re finished.";
+            maxLength = "1024";
+         };
+         new GuiBitmapCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiDefaultProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "326 230";
+            Extent = "100 100";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            bitmap = "./taik/stCvrNo2.jpg";
+            wrap = "0";
+         };
+      };
+      new GuiControl(NavPane) {
+         canSaveDynamicFields = "0";
+         Profile = "GuiDefaultProfile";
+         HorizSizing = "right";
+         VertSizing = "bottom";
+         position = "19 59";
+         Extent = "441 465";
+         MinExtent = "8 2";
+         canSave = "1";
+         Visible = "0";
+         tooltipprofile = "GuiToolTipProfile";
+         hovertime = "1000";
+
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "12 35";
+            Extent = "100 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Adjacency Distance:";
+            maxLength = "1024";
+         };
+         new GuiSliderCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiSliderProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "119 35";
+            Extent = "237 25";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Variable = "$AiPaths::AdjDist";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            range = "0 20";
+            ticks = "80";
+            value = "8";
+         };
+         new GuiTextCtrl(LastNodeDist) {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "13 59";
+            Extent = "8 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "363 33";
+            Extent = "50 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Variable = "AIPaths::AdjDist";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "8";
+            maxLength = "1024";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "34 147";
+            Extent = "256 22";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "removeRecentNode();";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Safely remove most recent node in AIPaths";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "11 105";
+            Extent = "398 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Use these for nav node removal: *NEVER* delete a nav node from the world editor!";
+            maxLength = "1024";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "9 430";
+            Extent = "132 23";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "CommandToServer(\'DropNode\');";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Drop nav node at player";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "150 432";
+            Extent = "211 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "<-- This can be done in-game by pressing X";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "34 126";
+            Extent = "121 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Safely remove nav node:";
+            maxLength = "1024";
+         };
+         new GuiTextEditCtrl(RemoveNodeEntry) {
+            canSaveDynamicFields = "0";
+            Profile = "GUITAIKTextEditProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "161 126";
+            Extent = "72 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            ToolTip = "Enter the ID of the nav node you want to delete, and press remove";
+            hovertime = "1000";
+            maxLength = "1024";
+            historySize = "0";
+            password = "0";
+            tabComplete = "0";
+            sinkAllKeyEvents = "0";
+            password = "0";
+            passwordMask = "*";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "240 125";
+            Extent = "50 20";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "removeEnteredNode();";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Remove";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "184 7";
+            Extent = "74 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "-- Adjacency --";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "184 86";
+            Extent = "63 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "-- Removal --";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "143 190";
+            Extent = "143 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "-- Manual adjacency editing --";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "10 216";
+            Extent = "119 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Add adjacency between";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "10 241";
+            Extent = "138 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Remove adjacency between";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "186 216";
+            Extent = "18 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "and";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "209 241";
+            Extent = "18 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "and";
+            maxLength = "1024";
+         };
+         new GuiTextEditCtrl(AdjAdd1) {
+            canSaveDynamicFields = "0";
+            Profile = "GUITAIKTextEditProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "135 216";
+            Extent = "45 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            maxLength = "1024";
+            historySize = "0";
+            password = "0";
+            tabComplete = "0";
+            sinkAllKeyEvents = "0";
+            password = "0";
+            passwordMask = "*";
+         };
+         new GuiTextEditCtrl(AdjAdd2) {
+            canSaveDynamicFields = "0";
+            Profile = "GUITAIKTextEditProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "210 216";
+            Extent = "45 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            maxLength = "1024";
+            historySize = "0";
+            password = "0";
+            tabComplete = "0";
+            sinkAllKeyEvents = "0";
+            password = "0";
+            passwordMask = "*";
+         };
+         new GuiTextEditCtrl(AdjRem1) {
+            canSaveDynamicFields = "0";
+            Profile = "GUITAIKTextEditProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "156 240";
+            Extent = "45 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            maxLength = "1024";
+            historySize = "0";
+            password = "0";
+            tabComplete = "0";
+            sinkAllKeyEvents = "0";
+            password = "0";
+            passwordMask = "*";
+         };
+         new GuiTextEditCtrl(AdjRem2) {
+            canSaveDynamicFields = "0";
+            Profile = "GUITAIKTextEditProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "234 240";
+            Extent = "45 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            maxLength = "1024";
+            historySize = "0";
+            password = "0";
+            tabComplete = "0";
+            sinkAllKeyEvents = "0";
+            password = "0";
+            passwordMask = "*";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "263 214";
+            Extent = "61 21";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "createAdjacency();";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Add";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "287 239";
+            Extent = "61 21";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "removeAdjacency();";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Remove";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiBitmapCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiDefaultProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "12 268";
+            Extent = "416 158";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            bitmap = "./taik/nav1.jpg";
+            wrap = "0";
+         };
+      };
+      new GuiControl(PathPane) {
+         canSaveDynamicFields = "0";
+         Profile = "GuiDefaultProfile";
+         HorizSizing = "right";
+         VertSizing = "bottom";
+         position = "19 59";
+         Extent = "441 465";
+         MinExtent = "8 2";
+         canSave = "1";
+         Visible = "0";
+         tooltipprofile = "GuiToolTipProfile";
+         hovertime = "1000";
+
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "11 13";
+            Extent = "98 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Path you are editing:";
+            maxLength = "1024";
+         };
+         new GuiPopUpMenuCtrl(EditPathList) {
+            canSaveDynamicFields = "0";
+            Profile = "GuiPopUpMenuProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "117 12";
+            Extent = "95 22";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "setPathToAddTo();";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "None";
+            maxLength = "1024";
+            maxPopupHeight = "200";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "11 40";
+            Extent = "201 22";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "editornewpatrolpath();";
+            tooltipprofile = "GuiButtonProfile";
+            ToolTip = "Makes a new patrol path. Close and reopen this editor for it to show in the list.";
+            hovertime = "1000";
+            text = "Create new patrol path";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "11 94";
+            Extent = "72 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Stop time (ms):";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "11 117";
+            Extent = "95 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Move speed (0 - 1):";
+            maxLength = "1024";
+         };
+         new GuiTextEditCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GUITAIKTextEditProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "113 94";
+            Extent = "64 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Variable = "$pathAddStopTime";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            maxLength = "1024";
+            historySize = "0";
+            password = "0";
+            tabComplete = "0";
+            sinkAllKeyEvents = "0";
+            password = "0";
+            passwordMask = "*";
+         };
+         new GuiTextEditCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GUITAIKTextEditProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "113 117";
+            Extent = "64 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Variable = "$PathAddMoveSpeed";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            maxLength = "1024";
+            historySize = "0";
+            password = "0";
+            tabComplete = "0";
+            sinkAllKeyEvents = "0";
+            password = "0";
+            passwordMask = "*";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "11 149";
+            Extent = "167 26";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "CommandToServer(\'DropPathNode\');";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Create patrol path node";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "11 215";
+            Extent = "370 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "- The first node on the path should be very close to the path\'s spawn marker";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "11 233";
+            Extent = "384 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "- NPCs move *directly* from marker to marker, so make sure each node can see";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "18 249";
+            Extent = "90 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "the previous node.";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "11 265";
+            Extent = "389 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "- Pathfinding is used to go from the last node to the first node, so they don\'t need";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "18 281";
+            Extent = "88 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "to see each other.";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "11 298";
+            Extent = "334 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "- By default, only non-alert NPCs in their idle state follow patrol paths.";
+            maxLength = "1024";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "11 318";
+            Extent = "248 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "- A good \"walking\" move speed is around 0.2 to 0.4";
+            maxLength = "1024";
+         };
+      };
+      new GuiControl(ZonePane) {
+         canSaveDynamicFields = "0";
+         Profile = "GuiDefaultProfile";
+         HorizSizing = "right";
+         VertSizing = "bottom";
+         position = "19 59";
+         Extent = "441 473";
+         MinExtent = "8 2";
+         canSave = "1";
+         Visible = "0";
+         tooltipprofile = "GuiToolTipProfile";
+         hovertime = "1000";
+
+         new GuiCheckBoxCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiCheckBoxProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "349 7";
+            Extent = "84 30";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Variable = "$zoneSetup";
+            tooltipprofile = "GuiToolTipProfile";
+            ToolTip = "Check this to activate the zone adjacency editor";
+            hovertime = "1000";
+            text = "Set up Zones";
+            groupNum = "-1";
+            buttonType = "ToggleButton";
+            useInactiveState = "0";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "4 10";
+            Extent = "96 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Current setup zone:";
+            maxLength = "1024";
+         };
+         new GuiPopUpMenuCtrl(ZoneList) {
+            canSaveDynamicFields = "0";
+            Profile = "GuiPopUpMenuProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "108 9";
+            Extent = "83 21";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "setCurZone();";
+            tooltipprofile = "GuiToolTipProfile";
+            ToolTip = "Pick a zone to set up, or select one from the world editor.";
+            hovertime = "1000";
+            maxLength = "1024";
+            maxPopupHeight = "200";
+         };
+         new GuiTextCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "4 42";
+            Extent = "79 18";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            text = "Adjacent zones:";
+            maxLength = "1024";
+         };
+         new GuiTextListCtrl(AdjListText) {
+            canSaveDynamicFields = "0";
+            Profile = "GuiTextListProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "3 63";
+            Extent = "80 2";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            enumerate = "0";
+            resizeCell = "1";
+            columns = "0";
+            fitParentWidth = "1";
+            clipColumnText = "0";
+         };
+         new GuiBitmapCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiDefaultProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "123 36";
+            Extent = "306 389";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            tooltipprofile = "GuiToolTipProfile";
+            hovertime = "1000";
+            bitmap = "./taik/zones1.jpg";
+            wrap = "0";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "4 432";
+            Extent = "140 30";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "createAIZonesGroup();";
+            hovertime = "1000";
+            text = "Create AIZones Group";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+         new GuiButtonCtrl() {
+            canSaveDynamicFields = "0";
+            Profile = "GuiButtonProfile";
+            HorizSizing = "right";
+            VertSizing = "bottom";
+            position = "148 432";
+            Extent = "140 30";
+            MinExtent = "8 2";
+            canSave = "1";
+            Visible = "1";
+            Command = "setUpZones();";
+            hovertime = "1000";
+            text = "Name Zones";
+            groupNum = "-1";
+            buttonType = "PushButton";
+         };
+      };
+      new GuiButtonCtrl(spawnbutton) {
+         canSaveDynamicFields = "0";
+         Profile = "GuiButtonProfile";
+         HorizSizing = "right";
+         VertSizing = "bottom";
+         position = "6 30";
+         Extent = "91 30";
+         MinExtent = "8 2";
+         canSave = "1";
+         Visible = "1";
+         Command = "TAIKGui.setPane(\"Spawn\");";
+         tooltipprofile = "GuiToolTipProfile";
+         hovertime = "1000";
+         text = "Spawning";
+         groupNum = "-1";
+         buttonType = "PushButton";
+      };
+      new GuiButtonCtrl(coverbutton) {
+         canSaveDynamicFields = "0";
+         Profile = "GuiButtonProfile";
+         HorizSizing = "right";
+         VertSizing = "bottom";
+         position = "99 30";
+         Extent = "91 30";
+         MinExtent = "8 2";
+         canSave = "1";
+         Visible = "1";
+         Command = "TAIKGui.setPane(\"Cover\");";
+         tooltipprofile = "GuiToolTipProfile";
+         hovertime = "1000";
+         text = "Cover";
+         groupNum = "-1";
+         buttonType = "PushButton";
+      };
+      new GuiButtonCtrl(navbutton) {
+         canSaveDynamicFields = "0";
+         Profile = "GuiButtonProfile";
+         HorizSizing = "right";
+         VertSizing = "bottom";
+         position = "192 30";
+         Extent = "91 30";
+         MinExtent = "8 2";
+         canSave = "1";
+         Visible = "1";
+         Command = "TAIKGui.setPane(\"Nav\");";
+         tooltipprofile = "GuiToolTipProfile";
+         hovertime = "1000";
+         text = "Navigation";
+         groupNum = "-1";
+         buttonType = "PushButton";
+      };
+      new GuiButtonCtrl(pathbutton) {
+         canSaveDynamicFields = "0";
+         Profile = "GuiButtonProfile";
+         HorizSizing = "right";
+         VertSizing = "bottom";
+         position = "285 30";
+         Extent = "91 30";
+         MinExtent = "8 2";
+         canSave = "1";
+         Visible = "1";
+         Command = "TAIKGui.setPane(\"Path\");";
+         tooltipprofile = "GuiToolTipProfile";
+         hovertime = "1000";
+         text = "Patrol Paths";
+         groupNum = "-1";
+         buttonType = "PushButton";
+      };
+      new GuiButtonCtrl(zonebutton) {
+         canSaveDynamicFields = "0";
+         Profile = "GuiButtonProfile";
+         HorizSizing = "right";
+         VertSizing = "bottom";
+         position = "377 30";
+         Extent = "91 30";
+         MinExtent = "8 2";
+         canSave = "1";
+         Visible = "1";
+         Command = "TAIKGui.setPane(\"Zone\");";
+         tooltipprofile = "GuiToolTipProfile";
+         hovertime = "1000";
+         text = "Zones";
+         groupNum = "-1";
+         buttonType = "PushButton";
+      };
+   };
+};
+//--- OBJECT WRITE END ---
+
+function TAIKGui::onAdd(%this)
+{
+	%this.setPane("Spawn");
+	//MoveDest.setText("");
+	//LastSpawnText.setText("");
+}
+
+function TAIKGui::onWake(%this)
+{
+	if ($spawnTeam != 1)
+	  Team0Radio.performClick();
+	if ($spawnTeam == 1)
+	  Team1Radio.performClick();
+	
+	PathList.clear();
+	PathList.add("None",0);
+	for(%i=0;%i<Paths.getCount();%i++)
+	{
+		PathList.add(Paths.getObject(%i).getName(),Paths.getObject(%i).getId());
+	}
+	
+	EditPathList.clear();
+	EditPathList.add("None",0);
+	for(%i=0;%i<Paths.getCount();%i++)
+	{
+		EditPathList.add(Paths.getObject(%i).getName(),Paths.getObject(%i).getId());
+	}
+	
+	ZoneList.clear();
+	for(%i=0;%i<AIZones.getCount();%i++)
+	{
+		%zone = AIZones.getObject(%i);
+		if (%zone.getDatablock().getName() $= "AIZone")
+		{
+			ZoneList.add(%zone.getName(),%zone);
+		}
+	}
+	ZoneList.setSelected($curSetupZone);
+	
+	//if ($pathToAddTo)
+		EditPathList.setSelected($pathToAddTo);
+	//if ($markerAddPath)
+          $markerAddPath = 0;
+	  PathList.setSelected($markerAddPath);
+
+	getLastNavNodeDist();
+	refreshAdjList();
+}
+
+function TAIKGui::setPane(%this,%name)
+{
+	NavPane.setVisible(0);
+	ZonePane.setVisible(0);
+	CoverPane.setVisible(0);
+	PathPane.setVisible(0);
+	SpawnPane.setVisible(0);
+	%pane = %name @ "Pane";
+	%pane.setVisible(1);
+}
+
+function SetMoveDestVal(%bool)
+{
+	if (%bool == true)
+	{
+		$markerAddMoveDest = LocalClientConnection.player.getPosition();
+	}
+	else
+	{
+		$markerAddMoveDest = "";
+	}
+	MoveDest.setText($markerAddMoveDest);
+}
+
+function SetSpawnTeam(%val)
+{
+	$spawnTeam = %val;
+}
+
+function HudDropSpawn()
+{
+	CommandToServer('DropSpawn');
+	schedule(500,0,setLastSpawnText);
+}
+function setLastSpawnText()
+{
+	%string = "Last Dropped Spawn Node -- ID: " @ $LastSpawnNode @ " -- Index: " @ ($lastSpawnNode.getGroup().getCount() - 1);
+	warn(%string);
+	LastSpawnText.setText(%string);
+}
+
+function setPatrolPath()
+{
+	%pathId = PathList.getSelected();
+	//if (isObject(%pathId))
+		$markerAddPath = %pathId.getName();
+}
+
+function setPathToAddTo()
+{
+	%pathId = EditPathList.getSelected();
+	//if (isObject(%pathId))
+		$pathToAddTo = %pathId;
+}
+
+function setCoverVisible(%bool)
+{
+	if (%bool == true)
+	{
+		$makeVisibleCover = true;
+		for(%i = 0;%i < CoverPoints.getCount();%i++)
+		{
+			%obj = CoverPoints.getObject(%i);
+			%obj.setDatablock("CoverPosMarkerVisible");
+		}
+	}
+	else
+	{
+		$makeVisibleCover = true;
+		for(%i = 0;%i < CoverPoints.getCount();%i++)
+		{
+			%obj = CoverPoints.getObject(%i);
+			%obj.setDatablock("CoverPosMarker");
+		}
+	}
+}
+
+function setSpawnsVisible(%bool)
+{
+	if (%bool == true)
+	{
+		$makeVisibleSpawn = true;
+		for(%i = 0;%i < Spawn1.getCount();%i++)
+		{
+			%obj = Spawn1.getObject(%i);
+			%obj.setDatablock("CoverPosMarkerVisible");
+		}
+		for(%i = 0;%i < Spawn2.getCount();%i++)
+		{
+			%obj = Spawn2.getObject(%i);
+			%obj.setDatablock("CoverPosMarkerVisible");
+		}
+	}
+	else
+	{
+		$makeVisibleSpawns = true;
+		for(%i = 0;%i < Spawn1.getCount();%i++)
+		{
+			%obj = Spawn1.getObject(%i);
+			%obj.setDatablock("SpawnMarker");
+		}
+		for(%i = 0;%i < Spawn2.getCount();%i++)
+		{
+			%obj = Spawn2.getObject(%i);
+			%obj.setDatablock("SpawnMarker");
+		}
+	}
+}
+
+function setSpawnDefaults()
+{
+	MoveDest.setText("");
+	PathList.setSelected(0);
+	RespawnCount.setText("");
+	SpawnIncCount.setText("");
+	HighPriorityCheck.setValue(0);
+	Team0Radio.performClick();
+	LastSpawnText.setText("");
+}
+
+function getLastNavNodeDist()
+{
+	%node = $AIPaths::LastDroppedNode;
+	if (!isObject(%node))
+	{
+		LastNodeDist.setText("");
+	  return;
+	}
+	  
+	%dist = VectorDist(LocalClientConnection.player.getPosition(),%node.getPosition());
+	LastNodeDist.setText("Distance to most recently created nav node (" @ %node @ ") : " @ %dist);
+}
+
+function removeNavNode(%node)
+{
+	if (!isObject(%node))
+	  return;
+	  
+	AIPaths.removeObjectSafe(%node);
+  %node.schedule(200,delete);  
+}
+
+function removeEnteredNode()
+{
+	%node = RemoveNodeEntry.getText();
+	removeNavNode(%node);
+	if (isObject(%node))
+	  RemoveNodeEntry.setText("");
+}
+
+function removeRecentNode()
+{
+	%count = AIPaths.getCount();
+	%idx = %count - 1;
+	%node = AIPaths.getObject(%idx);
+	removeNavNode(%node);
+}
+
+function createAdjacency()
+{
+	if (!isObject(AdjAdd1.getText()) || !isObject(AdjAdd2.getText()))
+	{
+		return;
+	}
+	AIPaths.createAdjPair(AdjAdd1.getText(),AdjAdd2.getText());
+	AdjAdd1.setText("");
+	AdjAdd2.setText("");
+}
+
+function removeAdjacency()
+{
+	if (!isObject(AdjRem1.getText()) || !isObject(AdjRem2.getText()))
+	{
+	  return;
+	}
+	  
+	AIPaths.removeAdjPair(AdjRem1.getText(),AdjRem2.getText());
+	AdjRem1.setText("");
+	AdjRem2.setText("");
+}
+
+function EditorNewPatrolPath()
+{
+	NewAIPath();
+	EditPathList.add($pathToAddTo.getName(),$pathToAddTo);
+	EditPathList.setSelected($pathToAddTo);
+}
+
+function refreshAdjList()
+{
+	if (!$curSetupZone)
+	{
+		AdjListText.clear();
+	  return;
+	}
+
+	 AdjListText.clear();
+	for (%i = 0;%i < getWordCount($curSetupZone.adjacentZones);%i++)
+	{
+		%adj = getWord($curSetupZone.adjacentZones,%i);
+		%adj = %adj.getId();
+		error("a is " @ %adj);
+		if (isObject(%adj))
+		{
+			AdjListText.addRow(%adj.getId(),%adj.getName());
+		}
+	}
+}
+
+function setCurZone()
+{
+	%zone = ZoneList.getSelected();
+	$curSetupZone = %zone;
+	refreshAdjList();
+}
+
+function createAIZonesGroup()
+{
+  if (isObject(AIZones))
+    return;
+  new SimGroup(AIZones) {};
+  MissionGroup.add(AIZones);
+}

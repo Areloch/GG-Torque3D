@@ -99,6 +99,7 @@ AIPlayer::AIPlayer()
 
    mAimObject = 0;
    mAimLocationSet = false;
+   mAimSpeed = 0.2f;
    mTargetInLOS = false;
    mAimOffset = Point3F(0.0f, 0.0f, 0.0f);
 
@@ -204,7 +205,18 @@ void AIPlayer::onRemove()
  */
 void AIPlayer::setMoveSpeed( F32 speed )
 {
-   mMoveSpeed = getMax(0.0f, getMin( 1.0f, speed ));
+   //mMoveSpeed = getMax(0.0f, getMin( 1.0f, speed ));
+	mMoveSpeed = speed;
+}
+
+/**
+* Sets the speed coefficient for AI aiming, so their aim isn't so "snappy"
+*
+* @param aimSpeed The Coefficient. 0 is locked in place, 1 is what it was before TAIK came into town.
+*/
+void AIPlayer::setAimSpeed(F32 aimSpeed)
+{
+	mAimSpeed = aimSpeed;
 }
 
 /**
@@ -450,14 +462,14 @@ bool AIPlayer::getAIMove(Move *movePtr)
          else if( yawDiff < -M_PI_F )
             yawDiff += M_2PI_F;
 
-         movePtr->yaw = yawDiff;
+         movePtr->yaw = yawDiff * mAimSpeed;
 
          // Next do pitch.
          if (!mAimObject && !mAimLocationSet) 
          {
             // Level out if were just looking at our next way point.
             Point3F headRotation = getHeadRotation();
-            movePtr->pitch = -headRotation.x;
+            movePtr->pitch = -headRotation.x * mAimSpeed;
          }
          else 
          {
@@ -1461,4 +1473,22 @@ DefineEngineMethod( AIPlayer, getAiPose, S32, (),,
    "@return StandPose=0, CrouchPose=1, PronePose=2, SprintPose=3.\n")  
 {  
    return object->getAiPose();  
+}
+
+ConsoleMethod( AIPlayer, setAimSpeed, void, 3, 3, "( float speed )"
+              "Sets the aim speed for an AI object.")
+{
+   object->setAimSpeed( dAtof( argv[2] ) );
+}
+
+ConsoleMethod( AIPlayer, getAimSpeed, F32, 1, 2, "( float speed )"
+              "Gets the aim speed of an AI object.")
+{
+   return object->getAimSpeed();
+}
+
+ConsoleMethod( AIPlayer, isStopped, bool, 2, 2, "()"
+			  "Checks if the AI's moveState is ModeStop.")
+{
+	return object->isStopped();
 }

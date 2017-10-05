@@ -1,0 +1,100 @@
+First pass:  enumerate scene...
+
+Processing Node Bounds with parent ROOT
+Bounding box found
+Processing Node __mainTree with parent ROOT
+Found subtree starting at Node "__mainTree"
+
+Second pass:  put shape structure together...
+
+Adding detail named "detail0" of size 0 to subtree "__mainTree".
+Adding node "__mainTree" with parent "__mainTree" to subtree rooted on node "__mainTree".
+Adding node "__meshes" with parent "__mainTree" to subtree rooted on node "__mainTree".
+Adding node "muzzlePoint" with parent "__meshes" to subtree rooted on node "__mainTree".
+Adding node "ejectPoint" with parent "__meshes" to subtree rooted on node "__mainTree".
+Adding node "mountPoint" with parent "__meshes" to subtree rooted on node "__mainTree".
+Adding node "Root" with parent "__meshes" to subtree rooted on node "__mainTree".
+Adding node "gun0" with parent "Root" to subtree rooted on node "__mainTree".
+Attaching object to node.
+Adding object named "gun".
+Adding mesh of size 0 to object "gun".
+
+Third pass:  Collapsing unneeded nodes...
+
+Removing node "__mainTree"
+Removing node "__meshes"
+
+Add default object states...
+
+Adding object state to 1 detail level(s) of mesh "gun".
+Adding frame.
+Object is visible.
+Object offset transform for mesh dl=0:
+    scale:            x=1.00000, y=1.00000, z=1.00000
+    stretch rotation: x=0.00000, y=0.00000, z=0.00000, w=1.00000
+    translation:      x=0.00000, y=0.00000, z=0.00000
+    actual rotation:  x=0.00000, y=0.00000, z=0.00000, w=1.00000
+---------------------------------
+
+Add default node states...
+
+Adding node rotation at time 0.000000 for node "muzzlePoint".
+  rotation:     x=0.00000, y=0.00000, z=0.00000, w=1.00000
+---------------------------------
+Adding node translation at time 0.000000 for node "muzzlePoint".
+  translation:     x=0.00000, y=0.43480, z=0.04677
+---------------------------------
+Adding node rotation at time 0.000000 for node "ejectPoint".
+  rotation:     x=0.00000, y=0.00000, z=0.00000, w=1.00000
+---------------------------------
+Adding node translation at time 0.000000 for node "ejectPoint".
+  translation:     x=0.00000, y=0.04035, z=0.08196
+---------------------------------
+Adding node rotation at time 0.000000 for node "mountPoint".
+  rotation:     x=0.00000, y=0.00000, z=0.00000, w=1.00000
+---------------------------------
+Adding node translation at time 0.000000 for node "mountPoint".
+  translation:     x=0.00000, y=-0.11335, z=-0.06804
+---------------------------------
+Adding node rotation at time 0.000000 for node "Root".
+  rotation:     x=0.00000, y=0.00000, z=0.00000, w=1.00000
+---------------------------------
+Adding node translation at time 0.000000 for node "Root".
+  translation:     x=0.00000, y=0.00000, z=0.00000
+---------------------------------
+Adding node rotation at time 0.000000 for node "gun0".
+  rotation:     x=0.00000, y=0.00000, z=0.00000, w=1.00000
+---------------------------------
+Adding node translation at time 0.000000 for node "gun0".
+  translation:     x=0.00000, y=0.00000, z=0.00000
+---------------------------------
+
+Adding 0 sequences...
+
+
+Optimizing meshes...
+
+Optimizing mesh "gun" detail level 0.
+1945 verts before joining verts
+1945 verts after joining verts
+2290 faces before stripping
+Using Quick, dirty, & ugly stripping method.
+246 strips with average length 12.93 (range 3 to 156) and 398 reversals
+
+Shape Hierarchy:
+
+   Details:
+      detail0, Subtree 0, objectDetail 0, size 0
+
+   Subtrees:
+      Subtree 0
+         muzzlePoint
+         ejectPoint
+         mountPoint
+         Root
+            gun0 --> Object gun with following details:  0
+
+   Sequences:
+
+   Material list:
+   material #0: "MP5A2".

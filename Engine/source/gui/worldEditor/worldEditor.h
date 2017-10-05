@@ -184,6 +184,11 @@ class WorldEditor : public EditTSCtrl
       void renderObjectBox(SceneObject * obj, const ColorI & col);
       
    private:
+	  //G.Notman Begin//
+	  void renderAIPaths(SimObject* parent, SimObject *obj);
+	  void renderPathAdjs(SimObject* parent, SimObject *obj);
+	  //G.Notman End//
+
       SceneObject * getControlObject();
       bool collide(const Gui3DMouseEvent & event, SceneObject **hitObj );
 
