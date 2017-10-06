@@ -88,6 +88,9 @@ function execAI()
   exec("./aiZones.cs");
   exec("./aiManager.cs");
   exec("./aimPatterns.cs");
+  
+  new ArrayObject(WanderArray){};
+  new ArrayObject(PlayerArray){};
 }
 
 // Spawns enemy AI Players at every spawn point in the mission

@@ -178,7 +178,6 @@ datablock PlayerData(DefaultPlayerData)
    //exitingWater         = ExitingWaterLightSound;
 
    observeParameters = "0.5 4.5 4.5";
-   class = "armor";
    
    camoColor = "149 134 98"; 
 

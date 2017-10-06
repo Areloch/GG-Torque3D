@@ -235,7 +235,7 @@ function doThinkBasic()
 function WanderManagerThink()
 {
   // Make sure that a mission is running and the WanderManager exists
-  if (isObject(MissionGroup) && isObject(WanderArray))
+  if (isObject(MissionGroup))
   {
     %objectsPermitted = 0;
     // Look through the wander array and allow the first few on the list to wander

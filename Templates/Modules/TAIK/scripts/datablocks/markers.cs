@@ -3,24 +3,6 @@
 // Copyright GarageGames, LLC 2011
 //-----------------------------------------------------------------------------
 
-datablock MissionMarkerData(WayPointMarker)
-{
-   category = "Misc";
-   shapeFile = "data/FPSGameplay/art/shapes/octahedron.dts";
-};
-
-datablock MissionMarkerData(SpawnSphereMarker)
-{
-   category = "Misc";
-   shapeFile = "data/FPSGameplay/art/shapes/octahedron.dts";
-};
-
-datablock MissionMarkerData(CameraBookmarkMarker)
-{
-   category = "Misc";
-   shapeFile = "data/FPSGameplay/art/shapes/camera.dts";
-};
-
 datablock StaticShapeData(CoverPosMarker)
 {
    category = "Misc";

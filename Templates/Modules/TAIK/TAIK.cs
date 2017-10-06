@@ -38,7 +38,6 @@ function TAIK::create( %this )
    //server scripts
    exec("./scripts/server/commands.cs");
    exec("./scripts/server/gameCore.cs");
-   exec("./scripts/server/health.cs");
    exec("./scripts/server/player.cs");
    exec("./scripts/server/projectile.cs");
    exec("./scripts/server/weapon.cs");
@@ -52,7 +51,7 @@ function TAIK::create( %this )
    EWCreatorWindow.registerMissionObject( "AIPathGroup" );
    EWCreatorWindow.endGroup( "System" );
 
-   exec(".tools/worldEditor/scripts/editors/worldEditor.ed.cs");
+   exec("./tools/worldEditor/scripts/editors/worldEditor.ed.cs");
    
    // AI scripts
    exec("./scripts/server/ai/aiplayer/aiplayer.cs");
