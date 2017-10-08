@@ -1298,6 +1298,12 @@ void CodeBlock::dumpInstructions( U32 startIp, bool upToReturn )
             break;
          }
 
+         case OP_CALLFUNC_POINTER:
+         {
+            Con::printf("%i: OP_CALLFUNC_POINTER", ip - 1);
+            break;
+         }
+
          case OP_ADVANCE_STR:
          {
             Con::printf( "%i: OP_ADVANCE_STR", ip - 1 );

@@ -361,20 +361,22 @@ namespace Con
       /// 12/29/04 - BJG - 33->34 Removed some opcodes, part of namespace upgrade.
       /// 12/30/04 - BJG - 34->35 Reordered some things, further general shuffling.
       /// 11/03/05 - BJG - 35->36 Integrated new debugger code.
-      //  09/08/06 - THB - 36->37 New opcode for internal names
-      //  09/15/06 - THB - 37->38 Added unit conversions
-      //  11/23/06 - THB - 38->39 Added recursive internal name operator
-      //  02/15/07 - THB - 39->40 Bumping to 40 for TGB since the console has been
-      //                          majorly hacked without the version number being bumped
-      //  02/16/07 - THB - 40->41 newmsg operator
-      //  06/15/07 - THB - 41->42 script types
+      /// 09/08/06 - THB - 36->37 New opcode for internal names
+      /// 09/15/06 - THB - 37->38 Added unit conversions
+      /// 11/23/06 - THB - 38->39 Added recursive internal name operator
+      /// 02/15/07 - THB - 39->40 Bumping to 40 for TGB since the console has been
+      ///                         majorly hacked without the version number being bumped
+      /// 02/16/07 - THB - 40->41 newmsg operator
+      /// 06/15/07 - THB - 41->42 script types
       /// 07/31/07 - THB - 42->43 Patch from Andreas Kirsch: Added opcode to support nested new declarations.
       /// 09/12/07 - CAF - 43->44 remove newmsg operator
       /// 09/27/07 - RDB - 44->45 Patch from Andreas Kirsch: Added opcode to support correct void return
       /// 01/13/09 - TMS - 45->46 Added script assert
       /// 09/07/14 - jamesu - 46->47 64bit support
       /// 10/14/14 - jamesu - 47->48 Added opcodes to reduce reliance on strings in function calls
-      DSOVersion = 48,
+      /// 10/07/17 - JTH - 48->49 Added opcode for function pointers and revamp of interpreter 
+      ///                         from switch to function calls.
+      DSOVersion = 49,
 
       MaxLineLength = 512,  ///< Maximum length of a line of console input.
       MaxDataTypes = 256    ///< Maximum number of registered data types.
