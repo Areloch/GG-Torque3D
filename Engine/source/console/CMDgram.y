@@ -551,6 +551,8 @@ funcall_expr
      { $$ = FuncCallExprNode::alloc( $1.lineNumber, $3.value, $1.value, $5, false); }
    | expr '.' IDENT '(' expr_list_decl ')'
       { $1->append($5); $$ = FuncCallExprNode::alloc( $1->dbgLineNumber, $3.value, NULL, $1, true); }
+   | expr '(' expr_list_decl ')'
+      { $$ = FuncPointerCallExprNode::alloc( $1->dbgLineNumber, $1, $3); }
    ;
 
 assert_expr

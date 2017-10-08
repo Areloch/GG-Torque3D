@@ -175,6 +175,7 @@ private:
    OPCodeReturn op_loadimmed_ident(U32 &ip);
    OPCodeReturn op_callfunc_resolve(U32 &ip);
    OPCodeReturn op_callfunc(U32 &ip);
+   OPCodeReturn op_callfunc_pointer(U32 &ip);
    OPCodeReturn op_advance_str(U32 &ip);
    OPCodeReturn op_advance_str_appendchar(U32 &ip);
    OPCodeReturn op_advance_str_comma(U32 &ip);

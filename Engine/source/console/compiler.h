@@ -30,6 +30,8 @@
 #include <stdio.h>
 #endif
 
+#include <unordered_map>
+
 class Stream;
 class DataChunker;
 
@@ -142,6 +144,7 @@ namespace Compiler
 
       OP_CALLFUNC_RESOLVE,
       OP_CALLFUNC,
+      OP_CALLFUNC_POINTER,
 
       OP_ADVANCE_STR,
       OP_ADVANCE_STR_APPENDCHAR,
@@ -209,6 +212,7 @@ namespace Compiler
       Entry *list;
 
       char buf[256];
+      std::unordered_map<std::string, Entry*> hashTable;
 
       U32 add(const char *str, bool caseSens = true, bool tag = false);
       U32 addIntString(U32 value);

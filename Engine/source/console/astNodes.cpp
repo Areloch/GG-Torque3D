@@ -1193,6 +1193,51 @@ TypeReq FuncCallExprNode::getPreferredType()
    return TypeReqString;
 }
 
+//------------------------------------------------------------
+
+U32 FuncPointerCallExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
+{
+   // OP_PUSH_FRAME
+   // arg OP_PUSH arg OP_PUSH arg OP_PUSH
+   // eval all the args, then call the function.
+
+   // OP_CALLFUNC
+   // function
+   // namespace
+   // isDot
+
+   codeStream.emit(OP_PUSH_FRAME);
+   for (ExprNode *walk = args; walk; walk = (ExprNode *)walk->getNext())
+   {
+      TypeReq walkType = walk->getPreferredType();
+      if (walkType == TypeReqNone) walkType = TypeReqString;
+      ip = walk->compile(codeStream, ip, walkType);
+      switch (walk->getPreferredType())
+      {
+      case TypeReqFloat:
+         codeStream.emit(OP_PUSH_FLT);
+         break;
+      case TypeReqUInt:
+         codeStream.emit(OP_PUSH_UINT);
+         break;
+      default:
+         codeStream.emit(OP_PUSH);
+         break;
+      }
+   }
+
+   ip = funcPointer->compile(codeStream, ip, TypeReqString);
+   codeStream.emit(OP_CALLFUNC_POINTER);
+
+   if (type != TypeReqString)
+      codeStream.emit(conversionOp(TypeReqString, type));
+   return codeStream.tell();
+}
+
+TypeReq FuncPointerCallExprNode::getPreferredType()
+{
+   return TypeReqString;
+}
 
 //------------------------------------------------------------
 

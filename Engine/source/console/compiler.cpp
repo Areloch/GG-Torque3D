@@ -165,6 +165,10 @@ U32 CompilerStringTable::add(const char *str, bool caseSens, bool tag)
    newStr->len = len;
    newStr->tag = tag;
    dStrcpy(newStr->string, str);
+
+   // Put into the hash table.
+   hashTable[str] = newStr;
+
    return newStr->start;
 }
 

@@ -328,6 +328,16 @@ FuncCallExprNode *FuncCallExprNode::alloc( S32 lineNumber, StringTableEntry func
    return ret;
 }
 
+FuncPointerCallExprNode *FuncPointerCallExprNode::alloc( S32 lineNumber, ExprNode *funcPointer, ExprNode *args )
+{
+   FuncPointerCallExprNode *ret = (FuncPointerCallExprNode *)consoleAlloc(sizeof(FuncPointerCallExprNode));
+   constructInPlace(ret);
+   ret->dbgLineNumber = lineNumber;
+   ret->funcPointer = funcPointer;
+   ret->args = args;
+   return ret;
+}
+
 AssertCallExprNode *AssertCallExprNode::alloc( S32 lineNumber,  ExprNode *testExpr, const char *message )
 {
    #ifdef TORQUE_ENABLE_SCRIPTASSERTS      

@@ -446,6 +446,18 @@ struct FuncCallExprNode : ExprNode
    DBG_STMT_TYPE(FuncCallExprNode);
 };
 
+struct FuncPointerCallExprNode : ExprNode
+{
+   ExprNode *funcPointer;
+   ExprNode *args;
+
+   static FuncPointerCallExprNode *alloc(S32 lineNumber, ExprNode *stmt, ExprNode *args );
+
+   U32 compile(CodeStream &codeStream, U32 ip, TypeReq type);
+   TypeReq getPreferredType();
+   DBG_STMT_TYPE(FuncPointerCallExprNode);
+};
+
 struct AssertCallExprNode : ExprNode
 {
    ExprNode *testExpr;
