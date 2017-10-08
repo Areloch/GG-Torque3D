@@ -223,7 +223,6 @@ CodeInterpreter::CodeInterpreter(CodeBlock *cb) :
    mCallArgc(0),
    mCallArgv(nullptr),
    mSaveCodeBlock(nullptr),
-   mVal(nullptr),
    mRetValue(0),
    mCurrentInstruction(0)
 {
@@ -386,6 +385,7 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
    }
 
    U32 *code = mCodeBlock->code;
+
    while (true)
    {
       mCurrentInstruction = code[ip++];
@@ -403,9 +403,7 @@ ConsoleValueRef CodeInterpreter::exec(U32 ip,
       else if (ret == OPCodeReturn::breakContinue)
          goto breakContinueLabel;
    }
-
-   exitLabel:
-
+exitLabel:
    if (telDebuggerOn && setFrame < 0)
       TelDebugger->popStackFrame();
 
@@ -1451,8 +1449,8 @@ OPCodeReturn CodeInterpreter::op_loadvar_flt(U32 &ip)
 
 OPCodeReturn CodeInterpreter::op_loadvar_str(U32 &ip)
 {
-   mVal = gEvalState.getStringVariable();
-   STR.setStringValue(mVal);
+   StringTableEntry val = gEvalState.getStringVariable();
+   STR.setStringValue(val);
    return OPCodeReturn::success;
 }
 
@@ -1492,20 +1490,20 @@ OPCodeReturn CodeInterpreter::op_setcurobject(U32 &ip)
 {
    // Save the previous object for parsing vector fields.
    mPrevObject = mCurObject;
-   mVal = STR.getStringValue();
+   StringTableEntry val = STR.getStringValue();
 
    // Sim::findObject will sometimes find valid objects from
    // multi-component strings. This makes sure that doesn't
    // happen.
-   for (const char* check = mVal; *check; check++)
+   for (const char* check = val; *check; check++)
    {
       if (*check == ' ')
       {
-         mVal = "";
+         val = "";
          break;
       }
    }
-   mCurObject = Sim::findObject(mVal);
+   mCurObject = Sim::findObject(val);
    return OPCodeReturn::success;
 }
 
@@ -1597,8 +1595,8 @@ OPCodeReturn CodeInterpreter::op_loadfield_str(U32 &ip)
 {
    if (mCurObject)
    {
-      mVal = mCurObject->getDataField(mCurField, curFieldArray);
-      STR.setStringValue(mVal);
+      StringTableEntry val = mCurObject->getDataField(mCurField, curFieldArray);
+      STR.setStringValue(val);
    }
    else
    {

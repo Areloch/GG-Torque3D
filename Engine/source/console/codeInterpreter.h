@@ -251,7 +251,6 @@ private:
    U32 mCallArgc;
    ConsoleValueRef *mCallArgv;
    CodeBlock *mSaveCodeBlock;
-   StringTableEntry mVal;
    StringStackPtr mRetValue;
 
    // note: anything returned is pushed to CSTK and will be invalidated on the next exec()
