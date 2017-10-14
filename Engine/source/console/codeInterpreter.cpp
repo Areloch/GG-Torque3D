@@ -28,7 +28,6 @@
 #include "console/ICallMethod.h"
 #include "console/stringStack.h"
 #include "util/messaging/message.h"
-#include "core/frameAllocator.h"
 #include "core/strings/findMatch.h"
 #include "core/strings/stringUnit.h"
 #include "console/console.h"
@@ -41,6 +40,8 @@ using namespace Compiler;
 enum EvalConstants
 {
    MaxStackSize = 1024,
+   FieldBufferSizeString = 2048,
+   FieldBufferSizeNumeric = 128,
    MethodOnComponent = -2
 };
 
@@ -89,6 +90,8 @@ static void getFieldComponent(SimObject* object, StringTableEntry field, const c
 
       // Translate xyzw and rgba into the indexed component 
       // of the variable or field.
+      //
+      // Review: Should we use strncpy to prevent a buffer overflow?
       if (subField == xyzw[0] || subField == rgba[0])
          dStrcpy(val, StringUnit::getUnit(prevVal, 0, " \t\n"));
 
@@ -149,6 +152,8 @@ static void setFieldComponent(SimObject* object, StringTableEntry field, const c
 
    // Insert the value into the specified 
    // component of the string.
+   //
+   // Review: Should we use strncpy to prevent a buffer overflow?
    if (subField == xyzw[0] || subField == rgba[0])
       dStrcpy(val, StringUnit::setUnit(prevVal, 0, strValue, " \t\n"));
 
@@ -226,14 +231,10 @@ CodeInterpreter::CodeInterpreter(CodeBlock *cb) :
    mRetValue(0),
    mCurrentInstruction(0)
 {
-   // Frame allocator.
-   mWaterMark = FrameAllocator::getWaterMark();
-   mValBuffer = reinterpret_cast<char*>(FrameAllocator::alloc(sizeof(char) * VAL_BUFFER_SIZE));
 }
 
 CodeInterpreter::~CodeInterpreter()
 {
-   FrameAllocator::setWaterMark(mWaterMark);
 }
 
 void CodeInterpreter::init()
@@ -1569,8 +1570,10 @@ OPCodeReturn CodeInterpreter::op_loadfield_uint(U32 &ip)
    {
       // The field is not being retrieved from an object. Maybe it's
       // a special accessor?
-      getFieldComponent(mPrevObject, mPrevField, prevFieldArray, mCurField, mValBuffer);
-      intStack[_UINT + 1] = dAtoi(mValBuffer);
+      char buff[FieldBufferSizeNumeric];
+      memset(buff, 0, sizeof(buff));
+      getFieldComponent(mPrevObject, mPrevField, prevFieldArray, mCurField, buff);
+      intStack[_UINT + 1] = dAtoi(buff);
    }
    _UINT++;
    return OPCodeReturn::success;
@@ -1584,8 +1587,10 @@ OPCodeReturn CodeInterpreter::op_loadfield_flt(U32 &ip)
    {
       // The field is not being retrieved from an object. Maybe it's
       // a special accessor?
-      getFieldComponent(mPrevObject, mPrevField, prevFieldArray, mCurField, mValBuffer);
-      floatStack[_FLT + 1] = dAtof(mValBuffer);
+      char buff[FieldBufferSizeNumeric];
+      memset(buff, 0, sizeof(buff));
+      getFieldComponent(mPrevObject, mPrevField, prevFieldArray, mCurField, buff);
+      floatStack[_FLT + 1] = dAtof(buff);
    }
    _FLT++;
    return OPCodeReturn::success;
@@ -1602,8 +1607,10 @@ OPCodeReturn CodeInterpreter::op_loadfield_str(U32 &ip)
    {
       // The field is not being retrieved from an object. Maybe it's
       // a special accessor?
-      getFieldComponent(mPrevObject, mPrevField, prevFieldArray, mCurField, mValBuffer);
-      STR.setStringValue(mValBuffer);
+      char buff[FieldBufferSizeString];
+      memset(buff, 0, sizeof(buff));
+      getFieldComponent(mPrevObject, mPrevField, prevFieldArray, mCurField, buff);
+      STR.setStringValue(buff);
    }
    return OPCodeReturn::success;
 }

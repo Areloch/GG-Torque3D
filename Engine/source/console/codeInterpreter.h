@@ -25,7 +25,6 @@
 
 #include "console/codeBlock.h"
 #include "console/console.h"
-#include "core/frameAllocator.h"
 #include "console/consoleInternal.h"
 
 /// Frame data for a foreach/foreach$ loop.
@@ -260,13 +259,6 @@ private:
 
    static const S32 nsDocLength = 128;
    char mNSDocBlockClass[nsDocLength];
-
-   // The frame temp is used by the variable accessor ops (OP_SAVEFIELD_* and
-   // OP_LOADFIELD_*) to store temporary values for the fields.
-   static const S32 VAL_BUFFER_SIZE = 1024;
-   //FrameTemp<char> mValBuffer{VAL_BUFFER_SIZE};
-   char *mValBuffer;
-   U32 mWaterMark;
 };
 
 #endif
