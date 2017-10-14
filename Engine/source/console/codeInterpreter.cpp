@@ -277,6 +277,8 @@ void CodeInterpreter::init()
    gOpCodeArray[OP_MUL] = &CodeInterpreter::op_mul;
    gOpCodeArray[OP_DIV] = &CodeInterpreter::op_div;
    gOpCodeArray[OP_NEG] = &CodeInterpreter::op_neg;
+   gOpCodeArray[OP_INC] = &CodeInterpreter::op_inc;
+   gOpCodeArray[OP_DEC] = &CodeInterpreter::op_dec;
    gOpCodeArray[OP_SETCURVAR] = &CodeInterpreter::op_setcurvar;
    gOpCodeArray[OP_SETCURVAR_CREATE] = &CodeInterpreter::op_setcurvar_create;
    gOpCodeArray[OP_SETCURVAR_ARRAY] = &CodeInterpreter::op_setcurvar_array;
@@ -1361,6 +1363,56 @@ OPCodeReturn CodeInterpreter::op_neg(U32 &ip)
    return OPCodeReturn::success;
 }
 
+OPCodeReturn CodeInterpreter::op_inc(U32 &ip)
+{
+   StringTableEntry var = CodeToSTE(mCodeBlock->code, ip);
+   ip += 2;
+
+   // If a variable is set, then these must be NULL. It is necessary
+   // to set this here so that the vector parser can appropriately
+   // identify whether it's dealing with a vector.
+   mPrevField = NULL;
+   mPrevObject = NULL;
+   mCurObject = NULL;
+
+   gEvalState.setCurVarNameCreate(var);
+
+   // In order to let docblocks work properly with variables, we have
+   // clear the current docblock when we do an assign. This way it 
+   // won't inappropriately carry forward to following function decls.
+   mCurFNDocBlock = NULL;
+   mCurNSDocBlock = NULL;
+
+   gEvalState.setFloatVariable(gEvalState.getFloatVariable() + 1.0f);
+
+   return OPCodeReturn::success;
+}
+
+OPCodeReturn CodeInterpreter::op_dec(U32 &ip)
+{
+   StringTableEntry var = CodeToSTE(mCodeBlock->code, ip);
+   ip += 2;
+
+   // If a variable is set, then these must be NULL. It is necessary
+   // to set this here so that the vector parser can appropriately
+   // identify whether it's dealing with a vector.
+   mPrevField = NULL;
+   mPrevObject = NULL;
+   mCurObject = NULL;
+
+   gEvalState.setCurVarNameCreate(var);
+
+   // In order to let docblocks work properly with variables, we have
+   // clear the current docblock when we do an assign. This way it 
+   // won't inappropriately carry forward to following function decls.
+   mCurFNDocBlock = NULL;
+   mCurNSDocBlock = NULL;
+
+   gEvalState.setFloatVariable(gEvalState.getFloatVariable() - 1.0f);
+
+   return OPCodeReturn::success;
+}
+
 OPCodeReturn CodeInterpreter::op_setcurvar(U32 &ip)
 {
    mVar = CodeToSTE(mCodeBlock->code, ip);
@@ -2367,10 +2419,21 @@ OPCodeReturn CodeInterpreter::op_push_this(U32 &ip)
    ip += 2;
 
    // shorthand OP_SETCURVAR
-   // Note: we don't have to set all of the variables in OP_SETCURVAR
-   // as we know what we are doing since we are inlining op codes.
-   // We don't care about docblocks or vector parser in here.
+
+   // If a variable is set, then these must be NULL. It is necessary
+   // to set this here so that the vector parser can appropriately
+   // identify whether it's dealing with a vector.
+   mPrevField = NULL;
+   mPrevObject = NULL;
+   mCurObject = NULL;
+
    gEvalState.setCurVarName(varName);
+
+   // In order to let docblocks work properly with variables, we have
+   // clear the current docblock when we do an assign. This way it 
+   // won't inappropriately carry forward to following function decls.
+   mCurFNDocBlock = NULL;
+   mCurNSDocBlock = NULL;
 
    // shorthand OP_LOADVAR_STR (since objs can be by name we can't assume uint)
    STR.setStringValue(gEvalState.getStringVariable());

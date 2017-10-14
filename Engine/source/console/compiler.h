@@ -93,6 +93,9 @@ namespace Compiler
       OP_DIV,
       OP_NEG,
 
+      OP_INC,
+      OP_DEC,
+
       OP_SETCURVAR,
       OP_SETCURVAR_CREATE,
       OP_SETCURVAR_ARRAY,

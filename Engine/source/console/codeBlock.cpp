@@ -659,7 +659,7 @@ ConsoleValueRef CodeBlock::compileExec(StringTableEntry fileName, const char *in
    codeStream.emit(OP_RETURN);
    codeStream.emitCodeStream(&codeSize, &code, &lineBreakPairs);
    
-   //dumpInstructions(0, false);
+   dumpInstructions(0, false);
    
    consoleAllocReset();
 
@@ -1004,6 +1004,20 @@ void CodeBlock::dumpInstructions( U32 startIp, bool upToReturn )
          case OP_NEG:
          {
             Con::printf( "%i: OP_NEG", ip - 1 );
+            break;
+         }
+
+         case OP_INC:
+         {
+            Con::printf("%i: OP_INC varName=%s", ip - 1, CodeToSTE(code, ip));
+            ip += 2;
+            break;
+         }
+
+         case OP_DEC:
+         {
+            Con::printf("%i: OP_DEC varName=%s", ip - 1, CodeToSTE(code, ip));
+            ip += 2;
             break;
          }
 
