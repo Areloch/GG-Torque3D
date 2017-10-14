@@ -331,6 +331,7 @@ void CodeInterpreter::init()
    gOpCodeArray[OP_PUSH_UINT] = &CodeInterpreter::op_push_uint;
    gOpCodeArray[OP_PUSH_FLT] = &CodeInterpreter::op_push_flt;
    gOpCodeArray[OP_PUSH_VAR] = &CodeInterpreter::op_push_var;
+   gOpCodeArray[OP_PUSH_THIS] = &CodeInterpreter::op_push_this;
    gOpCodeArray[OP_PUSH_FRAME] = &CodeInterpreter::op_push_frame;
    gOpCodeArray[OP_ASSERT] = &CodeInterpreter::op_assert;
    gOpCodeArray[OP_BREAK] = &CodeInterpreter::op_break;
@@ -2357,6 +2358,27 @@ OPCodeReturn CodeInterpreter::op_push_var(U32 &ip)
       CSTK.pushValue(gEvalState.currentVariable->value);
    else
       CSTK.pushString("");
+   return OPCodeReturn::success;
+}
+
+OPCodeReturn CodeInterpreter::op_push_this(U32 &ip)
+{
+   StringTableEntry varName = CodeToSTE(mCodeBlock->code, ip);
+   ip += 2;
+
+   // shorthand OP_SETCURVAR
+   // Note: we don't have to set all of the variables in OP_SETCURVAR
+   // as we know what we are doing since we are inlining op codes.
+   // We don't care about docblocks or vector parser in here.
+   gEvalState.setCurVarName(varName);
+
+   // shorthand OP_LOADVAR_STR (since objs can be by name we can't assume uint)
+   STR.setStringValue(gEvalState.getStringVariable());
+
+   // shorthand OP_PUSH
+   STR.push();
+   CSTK.pushStringStackPtr(STR.getPreviousStringValuePtr());
+
    return OPCodeReturn::success;
 }
 

@@ -186,6 +186,7 @@ private:
    OPCodeReturn op_push_uint(U32 &ip);
    OPCodeReturn op_push_flt(U32 &ip);
    OPCodeReturn op_push_var(U32 &ip);
+   OPCodeReturn op_push_this(U32 &ip);
    OPCodeReturn op_push_frame(U32 &ip);
    OPCodeReturn op_assert(U32 &ip);
    OPCodeReturn op_break(U32 &ip);

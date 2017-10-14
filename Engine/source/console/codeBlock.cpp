@@ -1372,6 +1372,13 @@ void CodeBlock::dumpInstructions( U32 startIp, bool upToReturn )
             break;
          }
 
+         case OP_PUSH_THIS:
+         {
+            Con::printf("%i: OP_PUSH_THIS varName=%s", ip - 1, CodeToSTE(code, ip));
+            ip += 2;
+            break;
+         }
+
          case OP_PUSH_FRAME:
          {
             Con::printf( "%i: OP_PUSH_FRAME", ip - 1 );

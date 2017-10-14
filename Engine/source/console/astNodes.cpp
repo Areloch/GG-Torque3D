@@ -1156,6 +1156,24 @@ U32 FuncCallExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    precompileIdent(nameSpace);
    
    codeStream.emit(OP_PUSH_FRAME);
+   
+   // Try to optimize the this pointer call if it is a variable
+   // that we are loading.
+   if (callType == MethodCall)
+   {
+      // We cannot optimize array indices because it can have quite
+      // a bit of code to figure out the array index.
+      VarNode *var = dynamic_cast<VarNode*>(args);
+      if (var && !var->arrayIndex)
+      {
+         codeStream.emit(OP_PUSH_THIS);
+         codeStream.emitSTE(var->varName);
+
+         // inc args since we took care of first arg.
+         args = static_cast<ExprNode*>(args->getNext());
+      }
+   }
+   
    for(ExprNode *walk = args; walk; walk = (ExprNode *) walk->getNext())
    {
       TypeReq walkType = walk->getPreferredType();
@@ -1201,10 +1219,8 @@ U32 FuncPointerCallExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq typ
    // arg OP_PUSH arg OP_PUSH arg OP_PUSH
    // eval all the args, then call the function.
 
-   // OP_CALLFUNC
-   // function
-   // namespace
-   // isDot
+   // eval fn pointer
+   // OP_CALLFUNC_POINTER
 
    codeStream.emit(OP_PUSH_FRAME);
    for (ExprNode *walk = args; walk; walk = (ExprNode *)walk->getNext())
