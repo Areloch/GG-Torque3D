@@ -158,6 +158,7 @@ namespace Compiler
       OP_PUSH_UINT,     // Integer
       OP_PUSH_FLT,      // Float
       OP_PUSH_VAR,      // Variable
+      OP_PUSH_THIS,     // This pointer
       OP_PUSH_FRAME,    // Frame
 
       OP_ASSERT,
