@@ -1007,6 +1007,20 @@ void CodeBlock::dumpInstructions( U32 startIp, bool upToReturn )
             break;
          }
 
+         case OP_INC:
+         {
+            Con::printf("%i: OP_INC varName=%s", ip - 1, CodeToSTE(code, ip));
+            ip += 2;
+            break;
+         }
+
+         case OP_DEC:
+         {
+            Con::printf("%i: OP_DEC varName=%s", ip - 1, CodeToSTE(code, ip));
+            ip += 2;
+            break;
+         }
+
          case OP_SETCURVAR:
          {
             StringTableEntry var = CodeToSTE(code, ip);

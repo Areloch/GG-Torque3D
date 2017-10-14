@@ -132,6 +132,8 @@ private:
    OPCodeReturn op_mul(U32 &ip);
    OPCodeReturn op_div(U32 &ip);
    OPCodeReturn op_neg(U32 &ip);
+   OPCodeReturn op_inc(U32 &ip);
+   OPCodeReturn op_dec(U32 &ip);
    OPCodeReturn op_setcurvar(U32 &ip);
    OPCodeReturn op_setcurvar_create(U32 &ip);
    OPCodeReturn op_setcurvar_array(U32 &ip);

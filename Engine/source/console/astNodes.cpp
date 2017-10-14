@@ -1010,10 +1010,12 @@ static void getAssignOpTypeOp(S32 op, TypeReq &type, U32 &operand)
    switch(op)
    {
    case '+':
+   case opPLUSPLUS:
       type = TypeReqFloat;
       operand = OP_ADD;
       break;
    case '-':
+   case opMINUSMINUS:
       type = TypeReqFloat;
       operand = OP_SUB;
       break;
@@ -1056,48 +1058,86 @@ U32 AssignOpExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
 {
    
    // goes like this...
-   // eval expr as float or int
-   // if there's an arrayIndex
+   //
+   // IF no array index && (op == OPPLUSPLUS or op == OPMINUSMINUS)
+   //    if op == OPPLUSPLUS
+   //       OP_INC
+   //       varName
+   //    else if op == OPMINUSMINUS
+   //       OP_DEC
+   //       varName
+   //    else
+   //       OP_INVALID
+   //    endif
+   // ELSE
+   //    eval expr as float or int
+   //    if there's an arrayIndex
+   //       OP_LOADIMMED_IDENT
+   //       varName
+   //       OP_ADVANCE_STR
+   //       eval arrayIndex stringwise
+   //       OP_REWIND_STR
+   //       OP_SETCURVAR_ARRAY_CREATE
+   //    else
+   //       OP_SETCURVAR_CREATE
+   //       varName
+   //    endif
+   //    OP_LOADVAR_FLT or UINT
+   //    operand
+   //    OP_SAVEVAR_FLT or UINT
+   // ENDIF
+   //
+   // if subtype != type
+   //    convert type
+   // endif
    
-   // OP_LOADIMMED_IDENT
-   // varName
-   // OP_ADVANCE_STR
-   // eval arrayIndex stringwise
-   // OP_REWIND_STR
-   // OP_SETCURVAR_ARRAY_CREATE
-   
-   // else
-   // OP_SETCURVAR_CREATE
-   // varName
-   
-   // OP_LOADVAR_FLT or UINT
-   // operand
-   // OP_SAVEVAR_FLT or UINT
-   
+   precompileIdent(varName);
    // conversion OP if necessary.
    getAssignOpTypeOp(op, subType, operand);
-   precompileIdent(varName);
    
-   ip = expr->compile(codeStream, ip, subType);
-   if(!arrayIndex)
+   // ++ or -- optimization support for non indexed variables.
+   if ((!arrayIndex) && (op == opPLUSPLUS || op == opMINUSMINUS))
    {
-      codeStream.emit(OP_SETCURVAR_CREATE);
-      codeStream.emitSTE(varName);
+      if (op == opPLUSPLUS)
+      {
+         codeStream.emit(OP_INC);
+         codeStream.emitSTE(varName);
+      }
+      else if (op == opMINUSMINUS)
+      {
+         codeStream.emit(OP_DEC);
+         codeStream.emitSTE(varName);
+      }
+      else
+      {
+         // This should NEVER happen. This is just for sanity.
+         AssertISV(false, "Tried to use ++ or -- but something weird happened.");
+         codeStream.emit(OP_INVALID);
+      }
    }
    else
    {
-      codeStream.emit(OP_LOADIMMED_IDENT);
-      codeStream.emitSTE(varName);
-      
-      codeStream.emit(OP_ADVANCE_STR);
-      ip = arrayIndex->compile(codeStream, ip, TypeReqString);
-      codeStream.emit(OP_REWIND_STR);
-      codeStream.emit(OP_SETCURVAR_ARRAY_CREATE);
+      ip = expr->compile(codeStream, ip, subType);
+      if (!arrayIndex)
+      {
+         codeStream.emit(OP_SETCURVAR_CREATE);
+         codeStream.emitSTE(varName);
+      }
+      else
+      {
+         codeStream.emit(OP_LOADIMMED_IDENT);
+         codeStream.emitSTE(varName);
+
+         codeStream.emit(OP_ADVANCE_STR);
+         ip = arrayIndex->compile(codeStream, ip, TypeReqString);
+         codeStream.emit(OP_REWIND_STR);
+         codeStream.emit(OP_SETCURVAR_ARRAY_CREATE);
+      }
+      codeStream.emit((subType == TypeReqFloat) ? OP_LOADVAR_FLT : OP_LOADVAR_UINT);
+      codeStream.emit(operand);
+      codeStream.emit((subType == TypeReqFloat) ? OP_SAVEVAR_FLT : OP_SAVEVAR_UINT);
    }
-   codeStream.emit((subType == TypeReqFloat) ? OP_LOADVAR_FLT : OP_LOADVAR_UINT);
-   codeStream.emit(operand);
-   codeStream.emit((subType == TypeReqFloat) ? OP_SAVEVAR_FLT : OP_SAVEVAR_UINT);
-   if(subType != type)
+   if (subType != type)
       codeStream.emit(conversionOp(subType, type));
    return codeStream.tell();
 }

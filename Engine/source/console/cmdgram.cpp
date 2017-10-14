@@ -2101,11 +2101,11 @@ case 120:
     break;}
 case 121:
 #line 499 "cmdgram.y"
-{ yyval.asn.lineNumber = yyvsp[0].i.lineNumber; yyval.asn.token = '+'; yyval.asn.expr = FloatNode::alloc( yyvsp[0].i.lineNumber, 1 ); ;
+{ yyval.asn.lineNumber = yyvsp[0].i.lineNumber; yyval.asn.token = opPLUSPLUS; yyval.asn.expr = FloatNode::alloc( yyvsp[0].i.lineNumber, 1 ); ;
     break;}
 case 122:
 #line 501 "cmdgram.y"
-{ yyval.asn.lineNumber = yyvsp[0].i.lineNumber; yyval.asn.token = '-'; yyval.asn.expr = FloatNode::alloc( yyvsp[0].i.lineNumber, 1 ); ;
+{ yyval.asn.lineNumber = yyvsp[0].i.lineNumber; yyval.asn.token = opMINUSMINUS; yyval.asn.expr = FloatNode::alloc( yyvsp[0].i.lineNumber, 1 ); ;
     break;}
 case 123:
 #line 503 "cmdgram.y"

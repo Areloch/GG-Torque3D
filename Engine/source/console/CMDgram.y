@@ -496,9 +496,9 @@ class_name_expr
 
 assign_op_struct
    : opPLUSPLUS
-      { $$.lineNumber = $1.lineNumber; $$.token = '+'; $$.expr = FloatNode::alloc( $1.lineNumber, 1 ); }
+      { $$.lineNumber = $1.lineNumber; $$.token = opPLUSPLUS; $$.expr = FloatNode::alloc( $1.lineNumber, 1 ); }
    | opMINUSMINUS
-      { $$.lineNumber = $1.lineNumber; $$.token = '-'; $$.expr = FloatNode::alloc( $1.lineNumber, 1 ); }
+      { $$.lineNumber = $1.lineNumber; $$.token = opMINUSMINUS; $$.expr = FloatNode::alloc( $1.lineNumber, 1 ); }
    | opPLASN expr
       { $$.lineNumber = $1.lineNumber; $$.token = '+'; $$.expr = $2; }
    | opMIASN expr
