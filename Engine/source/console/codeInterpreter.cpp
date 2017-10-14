@@ -1383,7 +1383,14 @@ OPCodeReturn CodeInterpreter::op_inc(U32 &ip)
    mCurFNDocBlock = NULL;
    mCurNSDocBlock = NULL;
 
-   gEvalState.setFloatVariable(gEvalState.getFloatVariable() + 1.0f);
+   F64 val = gEvalState.getFloatVariable() + 1.0;
+   gEvalState.setFloatVariable(val);
+
+   // We gotta push val onto the stack. What if we have
+   // more expressions that have to use this.
+   // If we don't, we send out an op code to pop it.
+   floatStack[_FLT + 1] = val;
+   _FLT++;
 
    return OPCodeReturn::success;
 }
@@ -1408,7 +1415,14 @@ OPCodeReturn CodeInterpreter::op_dec(U32 &ip)
    mCurFNDocBlock = NULL;
    mCurNSDocBlock = NULL;
 
-   gEvalState.setFloatVariable(gEvalState.getFloatVariable() - 1.0f);
+   F64 val = gEvalState.getFloatVariable() - 1.0;
+   gEvalState.setFloatVariable(val);
+
+   // We gotta push val onto the stack. What if we have
+   // more expressions that have to use this.
+   // If we don't, we send out an op code to pop it.
+   floatStack[_FLT + 1] = val;
+   _FLT++;
 
    return OPCodeReturn::success;
 }

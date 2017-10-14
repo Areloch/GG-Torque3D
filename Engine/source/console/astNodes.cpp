@@ -1085,12 +1085,15 @@ U32 AssignOpExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    //    OP_LOADVAR_FLT or UINT
    //    operand
    //    OP_SAVEVAR_FLT or UINT
-   //    if subtype != type
-   //       convert type
-   //    endif
    // ENDIF
+   //
+   // if subtype != type
+   //    convert type
+   // endif
    
    precompileIdent(varName);
+   // conversion OP if necessary.
+   getAssignOpTypeOp(op, subType, operand);
    
    // ++ or -- optimization support for non indexed variables.
    if ((!arrayIndex) && (op == opPLUSPLUS || op == opMINUSMINUS))
@@ -1114,9 +1117,6 @@ U32 AssignOpExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    }
    else
    {
-      // conversion OP if necessary.
-      getAssignOpTypeOp(op, subType, operand);
-
       ip = expr->compile(codeStream, ip, subType);
       if (!arrayIndex)
       {
@@ -1136,9 +1136,9 @@ U32 AssignOpExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
       codeStream.emit((subType == TypeReqFloat) ? OP_LOADVAR_FLT : OP_LOADVAR_UINT);
       codeStream.emit(operand);
       codeStream.emit((subType == TypeReqFloat) ? OP_SAVEVAR_FLT : OP_SAVEVAR_UINT);
-      if (subType != type)
-         codeStream.emit(conversionOp(subType, type));
    }
+   if (subType != type)
+      codeStream.emit(conversionOp(subType, type));
    return codeStream.tell();
 }
 
