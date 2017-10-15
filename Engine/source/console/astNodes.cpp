@@ -1122,7 +1122,7 @@ U32 AssignOpExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    //    endif
    // ELSE
    //    eval expr as float or int
-   //    if there's an arrayIndex
+   //    if there's an arrayIndex and we don't short circuit
    //       OP_LOADIMMED_IDENT
    //       varName
    //       OP_ADVANCE_STR
@@ -1141,14 +1141,15 @@ U32 AssignOpExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    // if subtype != type
    //    convert type
    // endif
-   
-   precompileIdent(varName);
+
    // conversion OP if necessary.
    getAssignOpTypeOp(op, subType, operand);
    
    // ++ or -- optimization support for non indexed variables.
    if ((!arrayIndex) && (op == opPLUSPLUS || op == opMINUSMINUS))
    {
+      precompileIdent(varName);
+
       if (op == opPLUSPLUS)
       {
          codeStream.emit(OP_INC);
@@ -1169,7 +1170,29 @@ U32 AssignOpExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    else
    {
       ip = expr->compile(codeStream, ip, subType);
-      if (!arrayIndex)
+
+      bool shortCircuit = false;
+      if (arrayIndex)
+      {
+         // If we have a constant, shortcircuit the array logic.
+
+         IntNode *intNode = dynamic_cast<IntNode*>(arrayIndex);
+         StrConstNode *strNode = dynamic_cast<StrConstNode*>(arrayIndex);
+         if (intNode)
+         {
+            varName = StringTable->insert(avar("%s%d", varName, intNode->value));
+            shortCircuit = true;
+         }
+         else if (strNode)
+         {
+            varName = StringTable->insert(avar("%s%s", varName, strNode->str));
+            shortCircuit = true;
+         }
+      }
+
+      precompileIdent(varName);
+
+      if (!arrayIndex || shortCircuit)
       {
          codeStream.emit(OP_SETCURVAR_CREATE);
          codeStream.emitSTE(varName);
