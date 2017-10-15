@@ -692,7 +692,7 @@ TypeReq FloatUnaryExprNode::getPreferredType()
 
 U32 VarNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
 {
-   // if this has an arrayIndex...
+   // if this has an arrayIndex and we are not short circuiting from a constant.
    // OP_LOADIMMED_IDENT
    // varName
    // OP_ADVANCE_STR
@@ -709,18 +709,42 @@ U32 VarNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    if(type == TypeReqNone)
       return codeStream.tell();
    
-   precompileIdent(varName);
-
-   codeStream.emit(arrayIndex ? OP_LOADIMMED_IDENT : OP_SETCURVAR);
-   codeStream.emitSTE(varName);
-   
-   if(arrayIndex)
+   bool shortCircuit = false;
+   if (arrayIndex)
    {
+      // If we have a constant, shortcircuit the array logic.
+
+      IntNode *intNode = dynamic_cast<IntNode*>(arrayIndex);
+      StrConstNode *strNode = dynamic_cast<StrConstNode*>(arrayIndex);
+      if (intNode)
+      {
+         varName = StringTable->insert(avar("%s%d", varName, intNode->value));
+         shortCircuit = true;
+      }
+      else if (strNode)
+      {
+         varName = StringTable->insert(avar("%s%s", varName, strNode->str));
+         shortCircuit = true;
+      }
+   }
+
+   precompileIdent(varName);
+   
+   if(arrayIndex && !shortCircuit)
+   {
+      codeStream.emit(OP_LOADIMMED_IDENT);
+      codeStream.emitSTE(varName);
       codeStream.emit(OP_ADVANCE_STR);
       ip = arrayIndex->compile(codeStream, ip, TypeReqString);
       codeStream.emit(OP_REWIND_STR);
       codeStream.emit(OP_SETCURVAR_ARRAY);
    }
+   else
+   {
+      codeStream.emit(OP_SETCURVAR);
+      codeStream.emitSTE(varName);
+   }
+
    switch(type)
    {
    case TypeReqUInt:
