@@ -203,15 +203,8 @@ CodeInterpreter::CodeInterpreter(CodeBlock *cb) :
    mIterDepth(0),
    mCurFloatTable(nullptr),
    mCurStringTable(nullptr),
-   mCurStringTableLen(0),
    mThisFunctionName(nullptr),
    mPopFrame(false),
-   mTelDebuggerOn(false),
-   mVar(nullptr),
-   mObjParent(nullptr),
-   mFnName(nullptr),
-   mFnNamespace(nullptr),
-   mFnPackage(nullptr),
    mObjectCreationStackIndex(0),
    mCurrentNewObject(nullptr),
    mFailJump(0),
@@ -221,14 +214,11 @@ CodeInterpreter::CodeInterpreter(CodeBlock *cb) :
    mCurObject(nullptr),
    mSaveObject(nullptr),
    mNSEntry(nullptr),
-   mNS(nullptr),
    mCurFNDocBlock(nullptr),
    mCurNSDocBlock(nullptr),
-   mNSDocLength(0),
    mCallArgc(0),
    mCallArgv(nullptr),
    mSaveCodeBlock(nullptr),
-   mRetValue(0),
    mCurrentInstruction(0)
 {
 }
@@ -530,13 +520,11 @@ void CodeInterpreter::parseArgs(U32 &ip)
       ip = ip + (fnArgc * 2) + (2 + 6 + 1);
       mCurFloatTable = mCodeBlock->functionFloats;
       mCurStringTable = mCodeBlock->functionStrings;
-      mCurStringTableLen = mCodeBlock->functionStringsMaxLen;
    }
    else
    {
       mCurFloatTable = mCodeBlock->globalFloats;
       mCurStringTable = mCodeBlock->globalStrings;
-      mCurStringTableLen = mCodeBlock->globalStringsMaxLen;
 
       // If requested stack frame isn't available, request a new one
       // (this prevents assert failures when creating local
@@ -569,26 +557,26 @@ OPCodeReturn CodeInterpreter::op_func_decl(U32 &ip)
 
    if (!mExec.noCalls)
    {
-      mFnName = CodeToSTE(code, ip);
-      mFnNamespace = CodeToSTE(code, ip + 2);
-      mFnPackage = CodeToSTE(code, ip + 4);
+      StringTableEntry fnName = CodeToSTE(code, ip);
+      StringTableEntry fnNamespace = CodeToSTE(code, ip + 2);
+      StringTableEntry fnPackage = CodeToSTE(code, ip + 4);
       bool hasBody = (code[ip + 6] & 0x01) != 0;
       U32 lineNumber = code[ip + 6] >> 1;
 
       Namespace::unlinkPackages();
-      mNS = Namespace::find(mFnNamespace, mFnPackage);
-      mNS->addFunction(mFnName, mCodeBlock, hasBody ? ip : 0, mCurFNDocBlock ? dStrdup(mCurFNDocBlock) : NULL, lineNumber);// if no body, set the IP to 0
+      Namespace *ns = Namespace::find(fnNamespace, fnPackage);
+      ns->addFunction(fnName, mCodeBlock, hasBody ? ip : 0, mCurFNDocBlock ? dStrdup(mCurFNDocBlock) : NULL, lineNumber);// if no body, set the IP to 0
       if (mCurNSDocBlock)
       {
          // If we have a docblock before we declare the function in the script file,
          // this will attempt to set the doc block to the function.
          // See OP_DOCBLOCK_STR
-         if (mFnNamespace == StringTable->lookup(mNSDocBlockClass))
+         if (fnNamespace == StringTable->lookup(mNSDocBlockClass))
          {
             char *usageStr = dStrdup(mCurNSDocBlock);
             usageStr[dStrlen(usageStr)] = '\0';
-            mNS->mUsage = usageStr;
-            mNS->mCleanUpUsage = true;
+            ns->mUsage = usageStr;
+            ns->mCleanUpUsage = true;
             mCurNSDocBlock = NULL;
          }
       }
@@ -608,7 +596,7 @@ OPCodeReturn CodeInterpreter::op_create_object(U32 &ip)
    U32 *code = mCodeBlock->code;
 
    // Read some useful info.
-   mObjParent = CodeToSTE(code, ip);
+   StringTableEntry objParent = CodeToSTE(code, ip);
    bool isDataBlock = code[ip + 2];
    bool isInternal = code[ip + 3];
    bool isSingleton = code[ip + 4];
@@ -832,11 +820,11 @@ OPCodeReturn CodeInterpreter::op_create_object(U32 &ip)
       mCurrentNewObject->setFilename(mCodeBlock->name);
 
       // Does it have a parent object? (ie, the copy constructor : syntax, not inheriance)
-      if (*mObjParent)
+      if (*objParent)
       {
          // Find it!
          SimObject *parent;
-         if (Sim::findObject(mObjParent, parent))
+         if (Sim::findObject(objParent, parent))
          {
             // Con::printf(" - Parent object found: %s", parent->getClassName());
 
@@ -846,7 +834,7 @@ OPCodeReturn CodeInterpreter::op_create_object(U32 &ip)
          else
          {
             if (Con::gObjectCopyFailures == -1)
-               Con::errorf(ConsoleLogEntry::General, "%s: Unable to find parent object %s for %s.", mCodeBlock->getFileLine(ip), mObjParent, (const char*)mCallArgv[1]);
+               Con::errorf(ConsoleLogEntry::General, "%s: Unable to find parent object %s for %s.", mCodeBlock->getFileLine(ip), objParent, (const char*)mCallArgv[1]);
             else
                ++Con::gObjectCopyFailures;
 
@@ -1142,7 +1130,7 @@ OPCodeReturn CodeInterpreter::op_return_void(U32 &ip)
 
 OPCodeReturn CodeInterpreter::op_return(U32 &ip)
 {
-   mRetValue = STR.getStringValuePtr();
+   StringStackPtr retValue = STR.getStringValuePtr();
 
    if (mIterDepth > 0)
    {
@@ -1154,13 +1142,13 @@ OPCodeReturn CodeInterpreter::op_return(U32 &ip)
       }
 
       STR.rewind();
-      STR.setStringValue(StringStackPtrRef(mRetValue).getPtr(&STR)); // Not nice but works.
-      mRetValue = STR.getStringValuePtr();
+      STR.setStringValue(StringStackPtrRef(retValue).getPtr(&STR)); // Not nice but works.
+      retValue = STR.getStringValuePtr();
    }
 
    // Previously the return value was on the stack and would be returned using STR.getStringValue().
    // Now though we need to wrap it in a ConsoleValueRef 
-   mReturnValue.value = CSTK.pushStringStackPtr(mRetValue);
+   mReturnValue.value = CSTK.pushStringStackPtr(retValue);
 
    return OPCodeReturn::exitCode;
 }
@@ -1429,7 +1417,7 @@ OPCodeReturn CodeInterpreter::op_dec(U32 &ip)
 
 OPCodeReturn CodeInterpreter::op_setcurvar(U32 &ip)
 {
-   mVar = CodeToSTE(mCodeBlock->code, ip);
+   StringTableEntry var = CodeToSTE(mCodeBlock->code, ip);
    ip += 2;
 
    // If a variable is set, then these must be NULL. It is necessary
@@ -1439,7 +1427,7 @@ OPCodeReturn CodeInterpreter::op_setcurvar(U32 &ip)
    mPrevObject = NULL;
    mCurObject = NULL;
 
-   gEvalState.setCurVarName(mVar);
+   gEvalState.setCurVarName(var);
 
    // In order to let docblocks work properly with variables, we have
    // clear the current docblock when we do an assign. This way it 
@@ -1451,7 +1439,7 @@ OPCodeReturn CodeInterpreter::op_setcurvar(U32 &ip)
 
 OPCodeReturn CodeInterpreter::op_setcurvar_create(U32 &ip)
 {
-   mVar = CodeToSTE(mCodeBlock->code, ip);
+   StringTableEntry var = CodeToSTE(mCodeBlock->code, ip);
    ip += 2;
 
    // See OP_SETCURVAR
@@ -1459,7 +1447,7 @@ OPCodeReturn CodeInterpreter::op_setcurvar_create(U32 &ip)
    mPrevObject = NULL;
    mCurObject = NULL;
 
-   gEvalState.setCurVarNameCreate(mVar);
+   gEvalState.setCurVarNameCreate(var);
 
    // See OP_SETCURVAR for why we do this.
    mCurFNDocBlock = NULL;
@@ -1469,14 +1457,14 @@ OPCodeReturn CodeInterpreter::op_setcurvar_create(U32 &ip)
 
 OPCodeReturn CodeInterpreter::op_setcurvar_array(U32 &ip)
 {
-   mVar = STR.getSTValue();
+   StringTableEntry var = STR.getSTValue();
 
    // See OP_SETCURVAR
    mPrevField = NULL;
    mPrevObject = NULL;
    mCurObject = NULL;
 
-   gEvalState.setCurVarName(mVar);
+   gEvalState.setCurVarName(var);
 
    // See OP_SETCURVAR for why we do this.
    mCurFNDocBlock = NULL;
@@ -1486,14 +1474,14 @@ OPCodeReturn CodeInterpreter::op_setcurvar_array(U32 &ip)
 
 OPCodeReturn CodeInterpreter::op_setcurvar_array_create(U32 &ip)
 {
-   mVar = STR.getSTValue();
+   StringTableEntry var = STR.getSTValue();
 
    // See OP_SETCURVAR
    mPrevField = NULL;
    mPrevObject = NULL;
    mCurObject = NULL;
 
-   gEvalState.setCurVarNameCreate(mVar);
+   gEvalState.setCurVarNameCreate(var);
 
    // See OP_SETCURVAR for why we do this.
    mCurFNDocBlock = NULL;
@@ -1873,19 +1861,18 @@ OPCodeReturn CodeInterpreter::op_loadimmed_ident(U32 &ip)
 OPCodeReturn CodeInterpreter::op_callfunc_resolve(U32 &ip)
 {
    // This deals with a function that is potentially living in a namespace.
-   mFnNamespace = CodeToSTE(mCodeBlock->code, ip + 2);
-   mFnName = CodeToSTE(mCodeBlock->code, ip);
+   StringTableEntry fnNamespace = CodeToSTE(mCodeBlock->code, ip + 2);
+   StringTableEntry fnName = CodeToSTE(mCodeBlock->code, ip);
 
    // Try to look it up.
-   mNS = Namespace::find(mFnNamespace);
-   mNSEntry = mNS->lookup(mFnName);
+   mNSEntry = Namespace::find(fnNamespace)->lookup(fnName);
    if (!mNSEntry)
    {
       ip += 5;
       Con::warnf(ConsoleLogEntry::General,
          "%s: Unable to find function %s%s%s",
-         mCodeBlock->getFileLine(ip - 7), mFnNamespace ? mFnNamespace : "",
-         mFnNamespace ? "::" : "", mFnName);
+         mCodeBlock->getFileLine(ip - 7), fnNamespace ? fnNamespace : "",
+         fnNamespace ? "::" : "", fnName);
       STR.popFrame();
       CSTK.popFrame();
       return OPCodeReturn::success;
@@ -1907,7 +1894,7 @@ OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
 
    U32 *code = mCodeBlock->code;
 
-   mFnName = CodeToSTE(code, ip);
+   StringTableEntry fnName = CodeToSTE(code, ip);
 
    //if this is called from inside a function, append the ip and codeptr
    if (gEvalState.getStackDepth() > 0)
@@ -1919,18 +1906,15 @@ OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
    U32 callType = code[ip + 4];
 
    ip += 5;
-   CSTK.getArgcArgv(mFnName, &mCallArgc, &mCallArgv);
+   CSTK.getArgcArgv(fnName, &mCallArgc, &mCallArgv);
 
    const char *componentReturnValue = "";
+   Namespace *ns = NULL;
 
    if (callType == FuncCallExprNode::FunctionCall)
    {
       if (!mNSEntry)
-      {
-         mNSEntry = Namespace::global()->lookup(mFnName);
-         mNS = NULL;
-      }
-      mNS = NULL;
+         mNSEntry = Namespace::global()->lookup(fnName);
    }
    else if (callType == FuncCallExprNode::MethodCall)
    {
@@ -1941,14 +1925,14 @@ OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
          // Go back to the previous saved object.
          gEvalState.thisObject = mSaveObject;
 
-         Con::warnf(ConsoleLogEntry::General, "%s: Unable to find object: '%s' attempting to call function '%s'", mCodeBlock->getFileLine(ip - 4), (const char*)mCallArgv[1], mFnName);
+         Con::warnf(ConsoleLogEntry::General, "%s: Unable to find object: '%s' attempting to call function '%s'", mCodeBlock->getFileLine(ip - 4), (const char*)mCallArgv[1], fnName);
          STR.popFrame();
          CSTK.popFrame();
          STR.setStringValue("");
          return OPCodeReturn::success;
       }
 
-      bool handlesMethod = gEvalState.thisObject->handlesConsoleMethod(mFnName, &routingId);
+      bool handlesMethod = gEvalState.thisObject->handlesConsoleMethod(fnName, &routingId);
       if (handlesMethod && routingId == MethodOnComponent)
       {
          ICallMethod *pComponent = dynamic_cast<ICallMethod *>(gEvalState.thisObject);
@@ -1956,9 +1940,9 @@ OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
             componentReturnValue = pComponent->callMethodArgList(mCallArgc, mCallArgv, false);
       }
 
-      mNS = gEvalState.thisObject->getNamespace();
-      if (mNS)
-         mNSEntry = mNS->lookup(mFnName);
+      ns = gEvalState.thisObject->getNamespace();
+      if (ns)
+         mNSEntry = ns->lookup(fnName);
       else
          mNSEntry = NULL;
    }
@@ -1966,15 +1950,15 @@ OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
    {
       if (mExec.thisNamespace)
       {
-         mNS = mExec.thisNamespace->mParent;
-         if (mNS)
-            mNSEntry = mNS->lookup(mFnName);
+         ns = mExec.thisNamespace->mParent;
+         if (ns)
+            mNSEntry = ns->lookup(fnName);
          else
             mNSEntry = NULL;
       }
       else
       {
-         mNS = NULL;
+         ns = NULL;
          mNSEntry = NULL;
       }
    }
@@ -1991,12 +1975,12 @@ OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
    {
       if (!mExec.noCalls && !(routingId == MethodOnComponent))
       {
-         Con::warnf(ConsoleLogEntry::General, "%s: Unknown command %s.", mCodeBlock->getFileLine(ip - 6), mFnName);
+         Con::warnf(ConsoleLogEntry::General, "%s: Unknown command %s.", mCodeBlock->getFileLine(ip - 6), fnName);
          if (callType == FuncCallExprNode::MethodCall)
          {
             Con::warnf(ConsoleLogEntry::General, "  Object %s(%d) %s",
                gEvalState.thisObject->getName() ? gEvalState.thisObject->getName() : "",
-               gEvalState.thisObject->getId(), Con::getNamespaceList(mNS));
+               gEvalState.thisObject->getId(), Con::getNamespaceList(ns));
          }
       }
       STR.popFrame();
@@ -2015,7 +1999,7 @@ OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
    {
       ConsoleValueRef ret;
       if (mNSEntry->mFunctionOffset)
-         ret = mNSEntry->mCode->exec(mNSEntry->mFunctionOffset, mFnName, mNSEntry->mNamespace, mCallArgc, mCallArgv, false, mNSEntry->mPackage);
+         ret = mNSEntry->mCode->exec(mNSEntry->mFunctionOffset, fnName, mNSEntry->mNamespace, mCallArgc, mCallArgv, false, mNSEntry->mPackage);
 
       STR.popFrame();
       // Functions are assumed to return strings, so look ahead to see if we can skip the conversion
@@ -2043,20 +2027,20 @@ OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
    }
    else
    {
-      const char* nsName = mNS ? mNS->mName : "";
+      const char* nsName = ns ? ns->mName : "";
 #ifndef TORQUE_DEBUG
       // [tom, 12/13/2006] This stops tools functions from working in the console,
       // which is useful behavior when debugging so I'm ifdefing this out for debug builds.
       if (mNSEntry->mToolOnly && !Con::isCurrentScriptToolScript())
       {
-         Con::errorf(ConsoleLogEntry::Script, "%s: %s::%s - attempting to call tools only function from outside of tools.", mCodeBlock->getFileLine(ip - 6), nsName, mFnName);
+         Con::errorf(ConsoleLogEntry::Script, "%s: %s::%s - attempting to call tools only function from outside of tools.", mCodeBlock->getFileLine(ip - 6), nsName, fnName);
       }
       else
 #endif
       if ((mNSEntry->mMinArgs && S32(mCallArgc) < mNSEntry->mMinArgs) || (mNSEntry->mMaxArgs && S32(mCallArgc) > mNSEntry->mMaxArgs))
       {
          Con::warnf(ConsoleLogEntry::Script, "%s: %s::%s - wrong number of arguments (got %i, expected min %i and max %i).",
-            mCodeBlock->getFileLine(ip - 6), nsName, mFnName,
+            mCodeBlock->getFileLine(ip - 6), nsName, fnName,
             mCallArgc, mNSEntry->mMinArgs, mNSEntry->mMaxArgs);
          Con::warnf(ConsoleLogEntry::Script, "%s: usage: %s", mCodeBlock->getFileLine(ip - 6), mNSEntry->mUsage);
          STR.popFrame();
@@ -2126,7 +2110,7 @@ OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
          case Namespace::Entry::VoidCallbackType:
             mNSEntry->cb.mVoidCallbackFunc(gEvalState.thisObject, mCallArgc, mCallArgv);
             if (code[ip] != OP_STR_TO_NONE && Con::getBoolVariable("$Con::warnVoidAssignment", true))
-               Con::warnf(ConsoleLogEntry::General, "%s: Call to %s in %s uses result of void function call.", mCodeBlock->getFileLine(ip - 6), mFnName, mExec.functionName);
+               Con::warnf(ConsoleLogEntry::General, "%s: Call to %s in %s uses result of void function call.", mCodeBlock->getFileLine(ip - 6), fnName, mExec.functionName);
 
             STR.popFrame();
             CSTK.popFrame();
@@ -2167,12 +2151,11 @@ OPCodeReturn CodeInterpreter::op_callfunc(U32 &ip)
 OPCodeReturn CodeInterpreter::op_callfunc_pointer(U32 &ip)
 {
    // get function name. This is the 'function pointer'.
-   mFnName = StringTable->insert(STR.getStringValue());
+   StringTableEntry fnName = StringTable->insert(STR.getStringValue());
 
    U32 *code = mCodeBlock->code;
 
-   mNSEntry = Namespace::global()->lookup(mFnName);
-   mNS = NULL;
+   mNSEntry = Namespace::global()->lookup(fnName);
 
    //if this is called from inside a function, append the ip and codeptr
    if (gEvalState.getStackDepth() > 0)
@@ -2181,14 +2164,14 @@ OPCodeReturn CodeInterpreter::op_callfunc_pointer(U32 &ip)
       gEvalState.getCurrentFrame().ip = ip - 1;
    }
 
-   CSTK.getArgcArgv(mFnName, &mCallArgc, &mCallArgv);
+   CSTK.getArgcArgv(fnName, &mCallArgc, &mCallArgv);
 
 
    if (!mNSEntry || mExec.noCalls)
    {
       if (!mExec.noCalls)
       {
-         Con::warnf(ConsoleLogEntry::General, "%s: Unknown command %s.", mCodeBlock->getFileLine(ip - 6), mFnName);
+         Con::warnf(ConsoleLogEntry::General, "%s: Unknown command %s.", mCodeBlock->getFileLine(ip - 6), fnName);
       }
       STR.popFrame();
       CSTK.popFrame();
@@ -2203,7 +2186,7 @@ OPCodeReturn CodeInterpreter::op_callfunc_pointer(U32 &ip)
    {
       ConsoleValueRef ret;
       if (mNSEntry->mFunctionOffset)
-         ret = mNSEntry->mCode->exec(mNSEntry->mFunctionOffset, mFnName, mNSEntry->mNamespace, mCallArgc, mCallArgv, false, mNSEntry->mPackage);
+         ret = mNSEntry->mCode->exec(mNSEntry->mFunctionOffset, fnName, mNSEntry->mNamespace, mCallArgc, mCallArgv, false, mNSEntry->mPackage);
 
       STR.popFrame();
       // Functions are assumed to return strings, so look ahead to see if we can skip the conversion
@@ -2241,14 +2224,14 @@ OPCodeReturn CodeInterpreter::op_callfunc_pointer(U32 &ip)
       // which is useful behavior when debugging so I'm ifdefing this out for debug builds.
       if (mNSEntry->mToolOnly && !Con::isCurrentScriptToolScript())
       {
-         Con::errorf(ConsoleLogEntry::Script, "%s: %s::%s - attempting to call tools only function from outside of tools.", mCodeBlock->getFileLine(ip - 6), nsName, mFnName);
+         Con::errorf(ConsoleLogEntry::Script, "%s: %s::%s - attempting to call tools only function from outside of tools.", mCodeBlock->getFileLine(ip - 6), nsName, fnName);
       }
       else
 #endif
          if ((mNSEntry->mMinArgs && S32(mCallArgc) < mNSEntry->mMinArgs) || (mNSEntry->mMaxArgs && S32(mCallArgc) > mNSEntry->mMaxArgs))
          {
             Con::warnf(ConsoleLogEntry::Script, "%s: %s::%s - wrong number of arguments (got %i, expected min %i and max %i).",
-               mCodeBlock->getFileLine(ip - 6), nsName, mFnName,
+               mCodeBlock->getFileLine(ip - 6), nsName, fnName,
                mCallArgc, mNSEntry->mMinArgs, mNSEntry->mMaxArgs);
             Con::warnf(ConsoleLogEntry::Script, "%s: usage: %s", mCodeBlock->getFileLine(ip - 6), mNSEntry->mUsage);
             STR.popFrame();
@@ -2318,7 +2301,7 @@ OPCodeReturn CodeInterpreter::op_callfunc_pointer(U32 &ip)
             case Namespace::Entry::VoidCallbackType:
                mNSEntry->cb.mVoidCallbackFunc(gEvalState.thisObject, mCallArgc, mCallArgv);
                if (code[ip] != OP_STR_TO_NONE && Con::getBoolVariable("$Con::warnVoidAssignment", true))
-                  Con::warnf(ConsoleLogEntry::General, "%s: Call to %s in %s uses result of void function call.", mCodeBlock->getFileLine(ip - 6), mFnName, mExec.functionName);
+                  Con::warnf(ConsoleLogEntry::General, "%s: Call to %s in %s uses result of void function call.", mCodeBlock->getFileLine(ip - 6), fnName, mExec.functionName);
 
                STR.popFrame();
                CSTK.popFrame();

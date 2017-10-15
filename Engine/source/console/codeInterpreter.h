@@ -218,16 +218,8 @@ private:
    U32 mIterDepth;
    F64 *mCurFloatTable;
    char *mCurStringTable;
-   S32 mCurStringTableLen; ///< clint to ensure we dont overwrite it
    StringTableEntry mThisFunctionName;
    bool mPopFrame;
-   bool mTelDebuggerOn;
-
-   StringTableEntry mVar;
-   StringTableEntry mObjParent;
-   StringTableEntry mFnName;
-   StringTableEntry mFnNamespace;
-   StringTableEntry mFnPackage;
 
    // Add local object creation stack [7/9/2007 Black]
    static const U32 objectCreationStackSize = 32;
@@ -246,14 +238,11 @@ private:
    SimObject *mCurObject;
    SimObject *mSaveObject;
    Namespace::Entry *mNSEntry;
-   Namespace *mNS;
    StringTableEntry mCurFNDocBlock;
    StringTableEntry mCurNSDocBlock;
-   S32 mNSDocLength;
    U32 mCallArgc;
    ConsoleValueRef *mCallArgv;
    CodeBlock *mSaveCodeBlock;
-   StringStackPtr mRetValue;
 
    // note: anything returned is pushed to CSTK and will be invalidated on the next exec()
    ConsoleValueRef mReturnValue;
