@@ -30,6 +30,7 @@
 #include <stdio.h>
 #endif
 
+#include <string>
 #include <unordered_map>
 
 class Stream;
