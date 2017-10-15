@@ -934,7 +934,15 @@ U32 AssignExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
          subType = TypeReqString;
       }
    }
-   // if it's an array expr, the formula is:
+
+   //if we are an array index and we are gonna short circuit
+   // eval expr
+   // compute new varName
+   // OP_SETCURVAR_CREATE
+   // varName
+   // OP_SAVEVAR
+
+   //else if it's an array expr and we don't short circuit, the formula is:
    // eval expr
    // (push and pop if it's TypeReqString) OP_ADVANCE_STR
    // OP_LOADIMMED_IDENT
@@ -951,12 +959,31 @@ U32 AssignExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    // OP_SETCURVAR_CREATE
    // varname
    // OP_SAVEVAR
-   
-   precompileIdent(varName);
-   
+
    ip = expr->compile(codeStream, ip, subType);
 
-   if(arrayIndex)
+   bool shortCircuit = false;
+   if (arrayIndex)
+   {
+      // If we have a constant, shortcircuit the array logic.
+
+      IntNode *intNode = dynamic_cast<IntNode*>(arrayIndex);
+      StrConstNode *strNode = dynamic_cast<StrConstNode*>(arrayIndex);
+      if (intNode)
+      {
+         varName = StringTable->insert(avar("%s%d", varName, intNode->value));
+         shortCircuit = true;
+      }
+      else if (strNode)
+      {
+         varName = StringTable->insert(avar("%s%s", varName, strNode->str));
+         shortCircuit = true;
+      }
+   }
+
+   precompileIdent(varName);
+
+   if(arrayIndex && !shortCircuit)
    {
       if(subType == TypeReqString)
          codeStream.emit(OP_ADVANCE_STR);
