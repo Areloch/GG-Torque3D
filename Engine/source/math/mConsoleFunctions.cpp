@@ -30,6 +30,7 @@
 
 #include "console/engineAPI.h"
 
+#include "gfx/sim/debugDraw.h"
 
 DefineConsoleFunction( mSolveQuadratic, const char*, ( F32 a, F32 b, F32 c ),,
     "Solve a quadratic equation (2nd degree polynomial) of form a*x^2 + b*x + c = 0.\n"
@@ -342,6 +343,30 @@ DefineConsoleFunction( mIsPow2, bool, ( S32 v ),,
     "@ingroup Math" )
 {
    return isPow2( v );
+}
+
+DefineConsoleStaticMethod(DebugDrawing, drawLine, void, (Point3F start, Point3F end, LinearColorF color, S32 time), ,
+   "Adds two rotations together.\n"
+   "@param a Rotation one."
+   "@param b Rotation two."
+   "@returns v sum of both rotations."
+   "@ingroup Math")
+{
+   DebugDrawer *ddraw = DebugDrawer::get();
+   ddraw->drawLine(start, end, color);
+   ddraw->setLastTTL(time);
+}
+
+DefineConsoleStaticMethod(DebugDrawing, drawBox, void, (Point3F position, F32 size, LinearColorF color, S32 time), ,
+   "Adds two rotations together.\n"
+   "@param a Rotation one."
+   "@param b Rotation two."
+   "@returns v sum of both rotations."
+   "@ingroup Math")
+{
+   DebugDrawer *ddraw = DebugDrawer::get();
+   ddraw->drawBox(position - (Point3F(size, size, size) / 2), position + (Point3F(size, size, size) / 2), color);
+   ddraw->setLastTTL(time);
 }
 
 DefineConsoleFunction( mRandomDir, Point3F, (Point3F axis, F32 angleMin, F32 angleMax),,
