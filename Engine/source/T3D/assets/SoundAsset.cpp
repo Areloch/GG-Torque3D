@@ -20,8 +20,8 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef COMPONENT_ASSET_H
-#include "ComponentAsset.h"
+#ifndef SOUND_ASSET_H
+#include "SoundAsset.h"
 #endif
 
 #ifndef _ASSET_MANAGER_H_
@@ -45,21 +45,21 @@
 
 //-----------------------------------------------------------------------------
 
-IMPLEMENT_CONOBJECT(ComponentAsset);
+IMPLEMENT_CONOBJECT(SoundAsset);
 
-ConsoleType(ComponentAssetPtr, TypeComponentAssetPtr, ComponentAsset, ASSET_ID_FIELD_PREFIX)
+ConsoleType(SoundAssetPtr, TypeSoundAssetPtr, SoundAsset, ASSET_ID_FIELD_PREFIX)
 
 //-----------------------------------------------------------------------------
 
-ConsoleGetType(TypeComponentAssetPtr)
+ConsoleGetType(TypeSoundAssetPtr)
 {
    // Fetch asset Id.
-   return (*((AssetPtr<ComponentAsset>*)dptr)).getAssetId();
+   return (*((AssetPtr<SoundAsset>*)dptr)).getAssetId();
 }
 
 //-----------------------------------------------------------------------------
 
-ConsoleSetType(TypeComponentAssetPtr)
+ConsoleSetType(TypeSoundAssetPtr)
 {
    // Was a single argument specified?
    if (argc == 1)
@@ -68,7 +68,7 @@ ConsoleSetType(TypeComponentAssetPtr)
       const char* pFieldValue = argv[0];
 
       // Fetch asset pointer.
-      AssetPtr<ComponentAsset>* pAssetPtr = dynamic_cast<AssetPtr<ComponentAsset>*>((AssetPtrBase*)(dptr));
+      AssetPtr<SoundAsset>* pAssetPtr = dynamic_cast<AssetPtr<SoundAsset>*>((AssetPtrBase*)(dptr));
 
       // Is the asset pointer the correct type?
       if (pAssetPtr == NULL)
@@ -90,25 +90,18 @@ ConsoleSetType(TypeComponentAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-ComponentAsset::ComponentAsset() :
+SoundAsset::SoundAsset() :
+   mAcquireReferenceCount(0),
    mpOwningAssetManager(NULL),
-   mAssetInitialized(false),
-   mAcquireReferenceCount(0)
+   mAssetInitialized(false)
 {
    // Generate an asset definition.
    mpAssetDefinition = new AssetDefinition();
-
-   mComponentName = StringTable->lookup("");
-   mComponentClass = StringTable->lookup("");
-   mFriendlyName = StringTable->lookup("");
-   mComponentType = StringTable->lookup("");
-   mDescription = StringTable->lookup("");
-   mScriptFile = StringTable->EmptyString();
 }
 
 //-----------------------------------------------------------------------------
 
-ComponentAsset::~ComponentAsset()
+SoundAsset::~SoundAsset()
 {
    // If the asset manager does not own the asset then we own the
    // asset definition so delete it.
@@ -118,36 +111,16 @@ ComponentAsset::~ComponentAsset()
 
 //-----------------------------------------------------------------------------
 
-void ComponentAsset::initPersistFields()
+void SoundAsset::initPersistFields()
 {
    // Call parent.
    Parent::initPersistFields();
-
-   addField("componentName", TypeString, Offset(mComponentName, ComponentAsset), "Unique Name of the component. Defines the namespace of the scripts for the component.");
-   addField("componentClass", TypeString, Offset(mComponentClass, ComponentAsset), "Class of object this component uses.");
-   addField("friendlyName", TypeString, Offset(mFriendlyName, ComponentAsset), "The human-readble name for the component.");
-   addField("componentType", TypeString, Offset(mComponentType, ComponentAsset), "The category of the component for organizing in the editor.");
-   addField("description", TypeString, Offset(mDescription, ComponentAsset), "Simple description of the component.");
-
-   addField("scriptFile", TypeString, Offset(mScriptFile, ComponentAsset), "A script file with additional scripted functionality for this component.");
 }
 
 //------------------------------------------------------------------------------
 
-void ComponentAsset::copyTo(SimObject* object)
+void SoundAsset::copyTo(SimObject* object)
 {
    // Call to parent.
    Parent::copyTo(object);
-}
-
-void ComponentAsset::initializeAsset()
-{
-   if (Platform::isFile(mScriptFile))
-      Con::executeFile(mScriptFile, false, false);
-}
-
-void ComponentAsset::onAssetRefresh()
-{
-   if (Platform::isFile(mScriptFile))
-      Con::executeFile(mScriptFile, false, false);
 }

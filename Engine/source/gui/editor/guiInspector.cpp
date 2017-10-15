@@ -593,6 +593,13 @@ void GuiInspector::refresh()
    //Entity inspector group
    if (mTargets.first()->getClassRep()->isSubclassOf("Entity"))
    {
+      //Put the GameObject group before everything that'd be gameobject-effecting, for orginazational purposes
+      GuiInspectorGroup *gameObject = new GuiInspectorGroup("GameObject", this);
+
+      gameObject->registerObject();
+      mGroups.push_back(gameObject);
+      addObject(gameObject);
+
       GuiInspectorEntityGroup *components = new GuiInspectorEntityGroup("Components", this);
       if (components != NULL)
       {
@@ -601,6 +608,29 @@ void GuiInspector::refresh()
          addObject(components);
       }
 
+      Entity* selectedEntity = dynamic_cast<Entity*>(mTargets.first().getObject());
+
+      U32 compCount = selectedEntity->getComponentCount();
+      //Now, add the component groups
+      for (U32 c = 0; c < compCount; ++c)
+      {
+         Component* comp = selectedEntity->getComponent(c);
+
+         String compName;
+         if (comp->getFriendlyName() != StringTable->EmptyString())
+            compName = comp->getFriendlyName();
+         else
+            compName = comp->getComponentName();
+
+         GuiInspectorGroup *compGroup = new GuiInspectorComponentGroup(compName, this, comp);
+         if (compGroup != NULL)
+         {
+            compGroup->registerObject();
+            mGroups.push_back(compGroup);
+            addObject(compGroup);
+         }
+}
+
       //Mounting group override
       GuiInspectorGroup *mounting = new GuiInspectorMountingGroup("Mounting", this);
       if (mounting != NULL)
@@ -608,20 +638,6 @@ void GuiInspector::refresh()
          mounting->registerObject();
          mGroups.push_back(mounting);
          addObject(mounting);
-      }
-   }
-
-   if (mTargets.first()->getClassRep()->isSubclassOf("Component"))
-   {
-      //Build the component field groups as the component describes it
-      Component* comp = dynamic_cast<Component*>(mTargets.first().getPointer());
-
-      if (comp->getComponentFieldCount() > 0)
-      {
-         GuiInspectorComponentGroup *compGroup = new GuiInspectorComponentGroup("Component Fields", this);
-         compGroup->registerObject();
-         mGroups.push_back(compGroup);
-         addObject(compGroup);
       }
    }
 #endif

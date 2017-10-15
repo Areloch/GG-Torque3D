@@ -576,5 +576,20 @@ public:
    virtual void _populateMenu( GuiPopUpMenuCtrl *menu );
 };
 
+//-----------------------------------------------------------------------------
+// TypeAssetId GuiInspectorField Class
+//-----------------------------------------------------------------------------
+class GuiInspectorTypeAssetId : public GuiInspectorTypeFileName
+{
+   typedef GuiInspectorTypeFileName Parent;
+public:
 
+   //GuiBitmapButtonCtrl  *mShapeEdButton;
+
+   DECLARE_CONOBJECT(GuiInspectorTypeAssetId);
+   static void consoleInit();
+
+   virtual GuiControl* constructEditControl();
+   virtual bool updateRects();
+};
 #endif // _GUI_INSPECTOR_TYPES_H_

@@ -40,7 +40,7 @@
 #include "gui/editor/editorFunctions.h"
 #include "math/mEase.h"
 #include "math/mathTypes.h"
-
+#include "assets/assetFieldTypes.h"
 
 //-----------------------------------------------------------------------------
 // GuiInspectorTypeMenuBase
@@ -400,7 +400,7 @@ ConsoleDocClass( GuiInspectorTypeCheckBox,
 
 GuiControl* GuiInspectorTypeCheckBox::constructEditControl()
 {
-   if (mField && mField->flag.test(AbstractClassRep::FIELD_CustomInspectors))
+   if (mField && (mField->flag.test(AbstractClassRep::FIELD_CustomInspectors) || mField->flag.test(AbstractClassRep::FieldFlags::FIELD_ComponentInspectors)))
    {
       // This checkbox (bool field) is meant to be treated as a button.
       GuiControl* retCtrl = new GuiButtonCtrl();
@@ -423,32 +423,6 @@ GuiControl* GuiInspectorTypeCheckBox::constructEditControl()
       char szBuffer[512];
       dSprintf( szBuffer, 512, "%d.apply(%d.getValue());",getId(), button->getId() );
       button->setField("Command", szBuffer );
-
-      return retCtrl;
-   }
-   else if (mField && mField->flag.test(AbstractClassRep::FieldFlags::FIELD_ComponentInspectors))
-   {
-      // This checkbox (bool field) is meant to be treated as a button.
-      GuiControl* retCtrl = new GuiButtonCtrl();
-
-      // If we couldn't construct the control, bail!
-      if (retCtrl == NULL)
-         return retCtrl;
-
-      GuiButtonCtrl *button = dynamic_cast<GuiButtonCtrl*>(retCtrl);
-
-      // Let's make it look pretty.
-      retCtrl->setDataField(StringTable->insert("profile"), NULL, "InspectorTypeButtonProfile");
-      retCtrl->setField("text", "Click Here");
-
-      retCtrl->setScriptValue(getData());
-
-      _registerEditControl(retCtrl);
-
-      // Configure it to update our value when the popup is closed
-      char szBuffer[512];
-      dSprintf(szBuffer, 512, "%d.apply(%d.getValue());", getId(), button->getId());
-      button->setField("Command", szBuffer);
 
       return retCtrl;
    }
@@ -1720,4 +1694,82 @@ void GuiInspectorTypeSFXSourceName::consoleInit()
    Parent::consoleInit();
 
    ConsoleBaseType::getType( TypeSFXSourceName )->setInspectorFieldType( "GuiInspectorTypeSFXSourceName" );
+}
+
+
+//-----------------------------------------------------------------------------
+// GuiInspectorTypeAssetId
+//-----------------------------------------------------------------------------
+
+IMPLEMENT_CONOBJECT(GuiInspectorTypeAssetId);
+
+ConsoleDocClass(GuiInspectorTypeAssetId,
+   "@brief Inspector field type for Shapes\n\n"
+   "Editor use only.\n\n"
+   "@internal"
+);
+
+void GuiInspectorTypeAssetId::consoleInit()
+{
+   Parent::consoleInit();
+
+   ConsoleBaseType::getType(TypeAssetId)->setInspectorFieldType("GuiInspectorTypeAssetId");
+}
+
+GuiControl* GuiInspectorTypeAssetId::constructEditControl()
+{
+   // Create base filename edit controls
+   GuiControl *retCtrl = Parent::constructEditControl();
+   if (retCtrl == NULL)
+      return retCtrl;
+
+   // Change filespec
+   char szBuffer[512];
+   dSprintf(szBuffer, sizeof(szBuffer), "AssetBrowser.showDialog();");
+   mBrowseButton->setField("Command", szBuffer);
+
+   // Create "Open in ShapeEditor" button
+   /*mShapeEdButton = new GuiBitmapButtonCtrl();
+
+   dSprintf(szBuffer, sizeof(szBuffer), "ShapeEditorPlugin.open(%d.getText());", retCtrl->getId());
+   mShapeEdButton->setField("Command", szBuffer);
+
+   char bitmapName[512] = "tools/worldEditor/images/toolbar/shape-editor";
+   mShapeEdButton->setBitmap(bitmapName);
+
+   mShapeEdButton->setDataField(StringTable->insert("Profile"), NULL, "GuiButtonProfile");
+   mShapeEdButton->setDataField(StringTable->insert("tooltipprofile"), NULL, "GuiToolTipProfile");
+   mShapeEdButton->setDataField(StringTable->insert("hovertime"), NULL, "1000");
+   mShapeEdButton->setDataField(StringTable->insert("tooltip"), NULL, "Open this file in the Shape Editor");
+
+   mShapeEdButton->registerObject();
+   addObject(mShapeEdButton);*/
+
+   return retCtrl;
+}
+
+bool GuiInspectorTypeAssetId::updateRects()
+{
+   S32 dividerPos, dividerMargin;
+   mInspector->getDivider(dividerPos, dividerMargin);
+   Point2I fieldExtent = getExtent();
+   Point2I fieldPos = getPosition();
+
+   mCaptionRect.set(0, 0, fieldExtent.x - dividerPos - dividerMargin, fieldExtent.y);
+   mEditCtrlRect.set(fieldExtent.x - dividerPos + dividerMargin, 1, dividerPos - dividerMargin - 34, fieldExtent.y);
+
+   bool resized = mEdit->resize(mEditCtrlRect.point, mEditCtrlRect.extent);
+   if (mBrowseButton != NULL)
+   {
+      mBrowseRect.set(fieldExtent.x - 32, 2, 14, fieldExtent.y - 4);
+      resized |= mBrowseButton->resize(mBrowseRect.point, mBrowseRect.extent);
+   }
+
+   /*if (mShapeEdButton != NULL)
+   {
+   RectI shapeEdRect(fieldExtent.x - 16, 2, 14, fieldExtent.y - 4);
+   resized |= mShapeEdButton->resize(shapeEdRect.point, shapeEdRect.extent);
+   }*/
+
+   return resized;
 }

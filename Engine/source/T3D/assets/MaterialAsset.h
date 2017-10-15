@@ -1,4 +1,3 @@
-#pragma once
 //-----------------------------------------------------------------------------
 // Copyright (c) 2013 GarageGames, LLC
 //
@@ -20,8 +19,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
-#ifndef GAME_OBJECT_ASSET_H
-#define GAME_OBJECT_ASSET_H
+#ifndef MATERIALASSET_H
+#define MATERIALASSET_H
 
 #ifndef _ASSET_BASE_H_
 #include "assets/assetBase.h"
@@ -39,12 +38,16 @@
 #include "assets/assetFieldTypes.h"
 #endif
 
-#ifndef _GUI_INSPECTOR_TYPES_H_
-#include "gui/editor/guiInspectorTypes.h"
+#ifndef _GFXDEVICE_H_
+#include "gfx/gfxDevice.h"
 #endif
 
+#include "materials/matTextureTarget.h"
+#include "materials/materialDefinition.h"
+#include "materials/customMaterialDefinition.h"
+
 //-----------------------------------------------------------------------------
-class GameObjectAsset : public AssetBase
+class MaterialAsset : public AssetBase
 {
    typedef AssetBase Parent;
 
@@ -53,45 +56,75 @@ class GameObjectAsset : public AssetBase
    AssetDefinition*        mpAssetDefinition;
    U32                     mAcquireReferenceCount;
 
-   StringTableEntry mGameObjectName;
-   StringTableEntry mScriptFilePath;
-   StringTableEntry mTAMLFilePath;
+   String                  mShaderGraphFile;
+   String                  mScriptFile;
+   String                  mMatDefinitionName;
+
+   //
+   //BaseMatInstance*        mMatInstance;
+   //CustomMaterial*         mMaterial;
+   /*GFXShaderRef            mShader;
+   GFXShaderConstBufferRef mShaderConstBuffer;
+
+   struct constHandle
+   {
+      GFXShaderConstHandle* handle;
+      String handleName;
+
+      enum type
+      {
+         Bool=0,
+         Float,
+         Float2,
+         Float3,
+         Float4,
+         Texture2D,
+         Texture3D
+      }mType;
+
+      bool boolVal;
+      F32 floatVal;
+      Point2F float2Val;
+      Point3F float3Val;
+      Point4F float4Val;
+      GFXTextureObject* texture2DVal;
+      GFXTexHandle texture3DVal;
+   };
+
+   Vector<constHandle> mConstHandlesList;*/
+
+   //StringTableEntry mShaderFile;
+   //StringTableEntry mShaderGraphFile;
+
+   //String mDiffuseTexture;
+
+   //String mDiffuseText;
 
 public:
-   GameObjectAsset();
-   virtual ~GameObjectAsset();
+   MaterialAsset();
+   virtual ~MaterialAsset();
 
    /// Engine.
    static void initPersistFields();
    virtual void copyTo(SimObject* object);
 
+   virtual void initializeAsset();
+
+   void compileShader();
+
+   //void parseShaderData();
+   //void parseShaderGraph();
+
+   String getMaterialDefinitionName() { return mMatDefinitionName; }
+
    /// Declare Console Object.
-   DECLARE_CONOBJECT(GameObjectAsset);
+   DECLARE_CONOBJECT(MaterialAsset);
 
 protected:
-   virtual void            initializeAsset(void);
-   virtual void            onAssetRefresh(void);
+   virtual void            onAssetRefresh(void) {}
 };
 
-DefineConsoleType(TypeGameObjectAssetPtr, GameObjectAsset)
-
-
-//-----------------------------------------------------------------------------
-// TypeAssetId GuiInspectorField Class
-//-----------------------------------------------------------------------------
-class GuiInspectorTypeGameObjectAssetPtr : public GuiInspectorTypeFileName
-{
-   typedef GuiInspectorTypeFileName Parent;
-public:
-
-   GuiBitmapButtonCtrl  *mSMEdButton;
-
-   DECLARE_CONOBJECT(GuiInspectorTypeGameObjectAssetPtr);
-   static void consoleInit();
-
-   virtual GuiControl* constructEditControl();
-   virtual bool updateRects();
-};
+DefineConsoleType(TypeMaterialAssetPtr, MaterialAsset)
 
 #endif // _ASSET_BASE_H_
 

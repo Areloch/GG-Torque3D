@@ -20,8 +20,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
-#ifndef GAME_OBJECT_ASSET_H
-#define GAME_OBJECT_ASSET_H
+#ifndef PARTICLE_ASSET_H
+#define PARTICLE_ASSET_H
 
 #ifndef _ASSET_BASE_H_
 #include "assets/assetBase.h"
@@ -39,12 +39,10 @@
 #include "assets/assetFieldTypes.h"
 #endif
 
-#ifndef _GUI_INSPECTOR_TYPES_H_
 #include "gui/editor/guiInspectorTypes.h"
-#endif
 
 //-----------------------------------------------------------------------------
-class GameObjectAsset : public AssetBase
+class ParticleAsset : public AssetBase
 {
    typedef AssetBase Parent;
 
@@ -53,40 +51,39 @@ class GameObjectAsset : public AssetBase
    AssetDefinition*        mpAssetDefinition;
    U32                     mAcquireReferenceCount;
 
-   StringTableEntry mGameObjectName;
    StringTableEntry mScriptFilePath;
-   StringTableEntry mTAMLFilePath;
+   StringTableEntry mDatablockFilePath;
 
 public:
-   GameObjectAsset();
-   virtual ~GameObjectAsset();
+   ParticleAsset();
+   virtual ~ParticleAsset();
 
    /// Engine.
    static void initPersistFields();
    virtual void copyTo(SimObject* object);
 
    /// Declare Console Object.
-   DECLARE_CONOBJECT(GameObjectAsset);
+   DECLARE_CONOBJECT(ParticleAsset);
 
 protected:
-   virtual void            initializeAsset(void);
-   virtual void            onAssetRefresh(void);
+   virtual void            initializeAsset(void) {}
+   virtual void            onAssetRefresh(void) {}
 };
 
-DefineConsoleType(TypeGameObjectAssetPtr, GameObjectAsset)
+DefineConsoleType(TypeParticleAssetPtr, ParticleAsset)
 
 
 //-----------------------------------------------------------------------------
 // TypeAssetId GuiInspectorField Class
 //-----------------------------------------------------------------------------
-class GuiInspectorTypeGameObjectAssetPtr : public GuiInspectorTypeFileName
+class GuiInspectorTypeParticleAssetPtr : public GuiInspectorTypeFileName
 {
    typedef GuiInspectorTypeFileName Parent;
 public:
 
    GuiBitmapButtonCtrl  *mSMEdButton;
 
-   DECLARE_CONOBJECT(GuiInspectorTypeGameObjectAssetPtr);
+   DECLARE_CONOBJECT(GuiInspectorTypeParticleAssetPtr);
    static void consoleInit();
 
    virtual GuiControl* constructEditControl();

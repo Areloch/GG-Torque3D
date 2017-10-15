@@ -45,6 +45,10 @@
 #include "core/resource.h"
 #endif
 
+#ifndef _GUI_INSPECTOR_TYPES_H_
+#include "gui/editor/guiInspectorTypes.h"
+#endif
+
 //-----------------------------------------------------------------------------
 class ShapeAsset : public AssetBase
 {
@@ -78,11 +82,32 @@ public:
 
    Resource<TSShape> getShapeResource() { return mShape; }
 
+   String getShapeFilename() { return mFileName; }
+
+   U32 getShapeFilenameHash() { return _StringTable::hashString(mFileName); }
+
 protected:
    virtual void            onAssetRefresh(void);
 };
 
-DefineConsoleType(TypeShapeAssetPtr, ShapeAsset)
+DefineConsoleType(TypeShapeAssetPtr, S32)
+
+//-----------------------------------------------------------------------------
+// TypeAssetId GuiInspectorField Class
+//-----------------------------------------------------------------------------
+class GuiInspectorTypeShapeAssetPtr : public GuiInspectorTypeFileName
+{
+   typedef GuiInspectorTypeFileName Parent;
+public:
+
+   GuiBitmapButtonCtrl  *mShapeEdButton;
+
+   DECLARE_CONOBJECT(GuiInspectorTypeShapeAssetPtr);
+   static void consoleInit();
+
+   virtual GuiControl* constructEditControl();
+   virtual bool updateRects();
+};
 
 #endif
 
