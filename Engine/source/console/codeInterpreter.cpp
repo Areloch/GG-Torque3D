@@ -272,7 +272,9 @@ void CodeInterpreter::init()
    gOpCodeArray[OP_SETCURVAR] = &CodeInterpreter::op_setcurvar;
    gOpCodeArray[OP_SETCURVAR_CREATE] = &CodeInterpreter::op_setcurvar_create;
    gOpCodeArray[OP_SETCURVAR_ARRAY] = &CodeInterpreter::op_setcurvar_array;
+   gOpCodeArray[OP_SETCURVAR_ARRAY_VARLOOKUP] = &CodeInterpreter::op_setcurvar_array_varlookup;
    gOpCodeArray[OP_SETCURVAR_ARRAY_CREATE] = &CodeInterpreter::op_setcurvar_array_create;
+   gOpCodeArray[OP_SETCURVAR_ARRAY_CREATE_VARLOOKUP] = &CodeInterpreter::op_setcurvar_array_create_varlookup;
    gOpCodeArray[OP_LOADVAR_UINT] = &CodeInterpreter::op_loadvar_uint;
    gOpCodeArray[OP_LOADVAR_FLT] = &CodeInterpreter::op_loadvar_flt;
    gOpCodeArray[OP_LOADVAR_STR] = &CodeInterpreter::op_loadvar_str;
@@ -1472,6 +1474,34 @@ OPCodeReturn CodeInterpreter::op_setcurvar_array(U32 &ip)
    return OPCodeReturn::success;
 }
 
+OPCodeReturn CodeInterpreter::op_setcurvar_array_varlookup(U32 &ip)
+{
+   StringTableEntry arrayName = CodeToSTE(mCodeBlock->code, ip);
+   StringTableEntry arrayLookup = CodeToSTE(mCodeBlock->code, ip + 2);
+   ip += 4;
+
+   // See OP_SETCURVAR
+   mPrevField = NULL;
+   mPrevObject = NULL;
+   mCurObject = NULL;
+
+   // resolve arrayLookup to get the 'value'
+   // Note: we have to setCurVarNameCreate in case the var doesn't exist.
+   // this won't cause much of a performance hit since vars are hashed.
+   gEvalState.setCurVarNameCreate(arrayLookup);
+   StringTableEntry hash = gEvalState.currentVariable->getStringValue();
+
+   // Generate new array name.
+   StringTableEntry var = StringTable->insert(avar("%s%s", arrayName, hash));
+   gEvalState.setCurVarName(var);
+
+   // See OP_SETCURVAR for why we do this.
+   mCurFNDocBlock = NULL;
+   mCurNSDocBlock = NULL;
+
+   return OPCodeReturn::success;
+}
+
 OPCodeReturn CodeInterpreter::op_setcurvar_array_create(U32 &ip)
 {
    StringTableEntry var = STR.getSTValue();
@@ -1486,6 +1516,34 @@ OPCodeReturn CodeInterpreter::op_setcurvar_array_create(U32 &ip)
    // See OP_SETCURVAR for why we do this.
    mCurFNDocBlock = NULL;
    mCurNSDocBlock = NULL;
+   return OPCodeReturn::success;
+}
+
+OPCodeReturn CodeInterpreter::op_setcurvar_array_create_varlookup(U32 &ip)
+{
+   StringTableEntry arrayName = CodeToSTE(mCodeBlock->code, ip);
+   StringTableEntry arrayLookup = CodeToSTE(mCodeBlock->code, ip + 2);
+   ip += 4;
+
+   // See OP_SETCURVAR
+   mPrevField = NULL;
+   mPrevObject = NULL;
+   mCurObject = NULL;
+
+   // resolve arrayLookup to get the 'value'
+   // Note: we have to setCurVarNameCreate in case the var doesn't exist.
+   // this won't cause much of a performance hit since vars are hashed.
+   gEvalState.setCurVarNameCreate(arrayLookup);
+   StringTableEntry hash = gEvalState.currentVariable->getStringValue();
+
+   // Generate new array name.
+   StringTableEntry var = StringTable->insert(avar("%s%s", arrayName, hash));
+   gEvalState.setCurVarNameCreate(var);
+
+   // See OP_SETCURVAR for why we do this.
+   mCurFNDocBlock = NULL;
+   mCurNSDocBlock = NULL;
+
    return OPCodeReturn::success;
 }
 

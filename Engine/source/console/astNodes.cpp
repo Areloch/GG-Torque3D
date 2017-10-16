@@ -693,13 +693,19 @@ TypeReq FloatUnaryExprNode::getPreferredType()
 U32 VarNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
 {
    // if this has an arrayIndex and we are not short circuiting from a constant.
-   // OP_LOADIMMED_IDENT
-   // varName
-   // OP_ADVANCE_STR
-   // evaluate arrayIndex TypeReqString
-   // OP_REWIND_STR
-   // OP_SETCURVAR_ARRAY
-   // OP_LOADVAR (type)
+   //    if we are a var node
+   //    OP_SETCURVAR_ARRAY_VARLOOKUP
+   //    varName
+   //    varNodeVarName
+
+   //    else
+   //    OP_LOADIMMED_IDENT
+   //    varName
+   //    OP_ADVANCE_STR
+   //    evaluate arrayIndex TypeReqString
+   //    OP_REWIND_STR
+   //    OP_SETCURVAR_ARRAY
+   //    OP_LOADVAR (type)
    
    // else
    // OP_SETCURVAR
@@ -732,12 +738,27 @@ U32 VarNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    
    if(arrayIndex && !shortCircuit)
    {
-      codeStream.emit(OP_LOADIMMED_IDENT);
-      codeStream.emitSTE(varName);
-      codeStream.emit(OP_ADVANCE_STR);
-      ip = arrayIndex->compile(codeStream, ip, TypeReqString);
-      codeStream.emit(OP_REWIND_STR);
-      codeStream.emit(OP_SETCURVAR_ARRAY);
+      // Ok, lets try to optimize %var[%someothervar] as this is
+      // a common case for array usage.
+      VarNode *varNode = dynamic_cast<VarNode*>(arrayIndex);
+      if (varNode)
+      {
+         StringTableEntry varNodeVarName = StringTable->insert(varNode->varName);
+         precompileIdent(varNodeVarName);
+
+         codeStream.emit(OP_SETCURVAR_ARRAY_VARLOOKUP);
+         codeStream.emitSTE(varName);
+         codeStream.emitSTE(varNodeVarName);
+      }
+      else
+      {
+         codeStream.emit(OP_LOADIMMED_IDENT);
+         codeStream.emitSTE(varName);
+         codeStream.emit(OP_ADVANCE_STR);
+         ip = arrayIndex->compile(codeStream, ip, TypeReqString);
+         codeStream.emit(OP_REWIND_STR);
+         codeStream.emit(OP_SETCURVAR_ARRAY);
+      }
    }
    else
    {
@@ -969,12 +990,18 @@ U32 AssignExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    //else if it's an array expr and we don't short circuit, the formula is:
    // eval expr
    // (push and pop if it's TypeReqString) OP_ADVANCE_STR
-   // OP_LOADIMMED_IDENT
-   // varName
-   // OP_ADVANCE_STR
-   // eval array
-   // OP_REWIND_STR
-   // OP_SETCURVAR_ARRAY_CREATE
+   // if array lookup is varnode
+   //    OP_SETCURVAR_ARRAY_CREATE_VARLOOKUP
+   //    varName
+   //    varNodeVarName
+   // else
+   //    OP_LOADIMMED_IDENT
+   //    varName
+   //    OP_ADVANCE_STR
+   //    eval array
+   //    OP_REWIND_STR
+   //    OP_SETCURVAR_ARRAY_CREATE
+   // endif
    // OP_TERMINATE_REWIND_STR
    // OP_SAVEVAR
    
@@ -1012,13 +1039,29 @@ U32 AssignExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
       if(subType == TypeReqString)
          codeStream.emit(OP_ADVANCE_STR);
 
-      codeStream.emit(OP_LOADIMMED_IDENT);
-      codeStream.emitSTE(varName);
-      
-      codeStream.emit(OP_ADVANCE_STR);
-      ip = arrayIndex->compile(codeStream, ip, TypeReqString);
-      codeStream.emit(OP_REWIND_STR);
-      codeStream.emit(OP_SETCURVAR_ARRAY_CREATE);
+      // Ok, lets try to optimize %var[%someothervar] as this is
+      // a common case for array usage.
+      VarNode *varNode = dynamic_cast<VarNode*>(arrayIndex);
+      if (varNode)
+      {
+         StringTableEntry varNodeVarName = StringTable->insert(varNode->varName);
+         precompileIdent(varNodeVarName);
+
+         codeStream.emit(OP_SETCURVAR_ARRAY_CREATE_VARLOOKUP);
+         codeStream.emitSTE(varName);
+         codeStream.emitSTE(varNodeVarName);
+      }
+      else
+      {
+         codeStream.emit(OP_LOADIMMED_IDENT);
+         codeStream.emitSTE(varName);
+
+         codeStream.emit(OP_ADVANCE_STR);
+         ip = arrayIndex->compile(codeStream, ip, TypeReqString);
+         codeStream.emit(OP_REWIND_STR);
+         codeStream.emit(OP_SETCURVAR_ARRAY_CREATE);
+      }
+
       if(subType == TypeReqString)
          codeStream.emit(OP_TERMINATE_REWIND_STR);
    }
@@ -1123,12 +1166,18 @@ U32 AssignOpExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    // ELSE
    //    eval expr as float or int
    //    if there's an arrayIndex and we don't short circuit
-   //       OP_LOADIMMED_IDENT
-   //       varName
-   //       OP_ADVANCE_STR
-   //       eval arrayIndex stringwise
-   //       OP_REWIND_STR
-   //       OP_SETCURVAR_ARRAY_CREATE
+   //       if arrayIndex is a var node
+   //          OP_SETCURVAR_ARRAY_CREATE_VARLOOKUP
+   //          varName
+   //          varNodeVarName
+   //       else
+   //          OP_LOADIMMED_IDENT
+   //          varName
+   //          OP_ADVANCE_STR
+   //          eval arrayIndex stringwise
+   //          OP_REWIND_STR
+   //          OP_SETCURVAR_ARRAY_CREATE
+   //       endif
    //    else
    //       OP_SETCURVAR_CREATE
    //       varName
@@ -1199,13 +1248,28 @@ U32 AssignOpExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
       }
       else
       {
-         codeStream.emit(OP_LOADIMMED_IDENT);
-         codeStream.emitSTE(varName);
+         // Ok, lets try to optimize %var[%someothervar] as this is
+         // a common case for array usage.
+         VarNode *varNode = dynamic_cast<VarNode*>(arrayIndex);
+         if (varNode)
+         {
+            StringTableEntry varNodeVarName = StringTable->insert(varNode->varName);
+            precompileIdent(varNodeVarName);
 
-         codeStream.emit(OP_ADVANCE_STR);
-         ip = arrayIndex->compile(codeStream, ip, TypeReqString);
-         codeStream.emit(OP_REWIND_STR);
-         codeStream.emit(OP_SETCURVAR_ARRAY_CREATE);
+            codeStream.emit(OP_SETCURVAR_ARRAY_CREATE_VARLOOKUP);
+            codeStream.emitSTE(varName);
+            codeStream.emitSTE(varNodeVarName);
+         }
+         else
+         {
+            codeStream.emit(OP_LOADIMMED_IDENT);
+            codeStream.emitSTE(varName);
+
+            codeStream.emit(OP_ADVANCE_STR);
+            ip = arrayIndex->compile(codeStream, ip, TypeReqString);
+            codeStream.emit(OP_REWIND_STR);
+            codeStream.emit(OP_SETCURVAR_ARRAY_CREATE);
+         }
       }
       codeStream.emit((subType == TypeReqFloat) ? OP_LOADVAR_FLT : OP_LOADVAR_UINT);
       codeStream.emit(operand);

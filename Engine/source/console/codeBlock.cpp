@@ -1044,6 +1044,16 @@ void CodeBlock::dumpInstructions( U32 startIp, bool upToReturn )
             Con::printf( "%i: OP_SETCURVAR_ARRAY", ip - 1 );
             break;
          }
+
+         case OP_SETCURVAR_ARRAY_VARLOOKUP:
+         {
+            StringTableEntry arrayName = CodeToSTE(code, ip);
+            StringTableEntry arrayLookup = CodeToSTE(code, ip + 2);
+
+            Con::printf( "%i: OP_SETCURVAR_ARRAY_VARLOOKUP arrayName=%s arrayLookup=%s", ip - 1, arrayName, arrayLookup );
+            ip += 4;
+            break;
+         }
          
          case OP_SETCURVAR_ARRAY_CREATE:
          {
@@ -1051,6 +1061,16 @@ void CodeBlock::dumpInstructions( U32 startIp, bool upToReturn )
             break;
          }
          
+         case OP_SETCURVAR_ARRAY_CREATE_VARLOOKUP:
+         {
+            StringTableEntry arrayName = CodeToSTE(code, ip);
+            StringTableEntry arrayLookup = CodeToSTE(code, ip + 2);
+
+            Con::printf("%i: OP_SETCURVAR_ARRAY_CREATE_VARLOOKUP arrayName=%s arrayLookup=%s", ip - 1, arrayName, arrayLookup);
+            ip += 4;
+            break;
+         }
+
          case OP_LOADVAR_UINT:
          {
             Con::printf( "%i: OP_LOADVAR_UINT", ip - 1 );

@@ -137,7 +137,9 @@ private:
    OPCodeReturn op_setcurvar(U32 &ip);
    OPCodeReturn op_setcurvar_create(U32 &ip);
    OPCodeReturn op_setcurvar_array(U32 &ip);
+   OPCodeReturn op_setcurvar_array_varlookup(U32 &ip);
    OPCodeReturn op_setcurvar_array_create(U32 &ip);
+   OPCodeReturn op_setcurvar_array_create_varlookup(U32 &ip);
    OPCodeReturn op_loadvar_uint(U32 &ip);
    OPCodeReturn op_loadvar_flt(U32 &ip);
    OPCodeReturn op_loadvar_str(U32 &ip);
