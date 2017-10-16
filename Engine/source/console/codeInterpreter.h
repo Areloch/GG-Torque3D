@@ -154,6 +154,8 @@ private:
    OPCodeReturn op_setcurfield(U32 &ip);
    OPCodeReturn op_setcurfield_array(U32 &ip);
    OPCodeReturn op_setcurfield_type(U32 &ip);
+   OPCodeReturn op_setcurfield_this(U32 &ip);
+   OPCodeReturn op_setcurfield_array_var(U32 &ip);
    OPCodeReturn op_loadfield_uint(U32 &ip);
    OPCodeReturn op_loadfield_flt(U32 &ip);
    OPCodeReturn op_loadfield_str(U32 &ip);
@@ -239,6 +241,7 @@ private:
    SimObject *mPrevObject;
    SimObject *mCurObject;
    SimObject *mSaveObject;
+   SimObject *mThisObject;
    Namespace::Entry *mNSEntry;
    StringTableEntry mCurFNDocBlock;
    StringTableEntry mCurNSDocBlock;

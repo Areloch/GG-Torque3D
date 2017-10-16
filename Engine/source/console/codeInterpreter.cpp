@@ -213,6 +213,7 @@ CodeInterpreter::CodeInterpreter(CodeBlock *cb) :
    mPrevObject(nullptr),
    mCurObject(nullptr),
    mSaveObject(nullptr),
+   mThisObject(nullptr),
    mNSEntry(nullptr),
    mCurFNDocBlock(nullptr),
    mCurNSDocBlock(nullptr),
@@ -289,6 +290,8 @@ void CodeInterpreter::init()
    gOpCodeArray[OP_SETCURFIELD] = &CodeInterpreter::op_setcurfield;
    gOpCodeArray[OP_SETCURFIELD_ARRAY] = &CodeInterpreter::op_setcurfield_array;
    gOpCodeArray[OP_SETCURFIELD_TYPE] = &CodeInterpreter::op_setcurfield_type;
+   gOpCodeArray[OP_SETCURFIELD_ARRAY_VAR] = &CodeInterpreter::op_setcurfield_array_var;
+   gOpCodeArray[OP_SETCURFIELD_THIS] = &CodeInterpreter::op_setcurfield_this;
    gOpCodeArray[OP_LOADFIELD_UINT] = &CodeInterpreter::op_loadfield_uint;
    gOpCodeArray[OP_LOADFIELD_FLT] = &CodeInterpreter::op_loadfield_flt;
    gOpCodeArray[OP_LOADFIELD_STR] = &CodeInterpreter::op_loadfield_str;
@@ -493,6 +496,8 @@ void CodeInterpreter::parseArgs(U32 &ip)
       gEvalState.pushFrame(mThisFunctionName, mExec.thisNamespace);
       mPopFrame = true;
 
+      StringTableEntry thisPointer = StringTable->insert("%this");
+
       for (S32 i = 0; i < wantedArgc; i++)
       {
          StringTableEntry var = Compiler::CodeToSTE(code, ip + (2 + 6 + 1) + (i * 2));
@@ -516,6 +521,16 @@ void CodeInterpreter::parseArgs(U32 &ip)
          default:
             gEvalState.setStringVariable(ref);
             break;
+         }
+
+         if (var == thisPointer)
+         {
+            // %this gets optimized as it is flagged as a constant.
+            // Since it is guarenteed to be constant, we can then perform optimizations.
+            gEvalState.currentVariable->mIsConstant = true;
+
+            // Store a reference to the this pointer object.
+            mThisObject = Sim::findObject(gEvalState.getStringVariable());
          }
       }
 
@@ -1672,6 +1687,34 @@ OPCodeReturn CodeInterpreter::op_setcurfield_type(U32 &ip)
    if (mCurObject)
       mCurObject->setDataFieldType(mCodeBlock->code[ip], mCurField, curFieldArray);
    ip++;
+   return OPCodeReturn::success;
+}
+
+OPCodeReturn CodeInterpreter::op_setcurfield_array_var(U32 &ip)
+{
+   StringTableEntry var = CodeToSTE(mCodeBlock->code, ip);
+   ip += 2;
+
+   // We set the current var name (create it as well in case if it doesn't exist,
+   // otherwise we will crash).
+   gEvalState.setCurVarNameCreate(var);
+
+   // Then load the var and copy the contents to the current field array
+   dStrncpy(curFieldArray, gEvalState.currentVariable->getStringValue(), sizeof(curFieldArray));
+
+   return OPCodeReturn::success;
+}
+
+OPCodeReturn CodeInterpreter::op_setcurfield_this(U32 &ip)
+{
+   // set the 'this pointer' as the current object.
+   mCurObject = mThisObject;
+
+   mPrevField = mCurField;
+   dStrcpy(prevFieldArray, curFieldArray);
+   mCurField = CodeToSTE(mCodeBlock->code, ip);
+   curFieldArray[0] = 0;
+   ip += 2;
    return OPCodeReturn::success;
 }
 
