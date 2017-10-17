@@ -1511,9 +1511,6 @@ U32 SlotAccessNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    }
    else
    {
-      StringTableEntry varName;
-      bool arrayVarLookup = isSimpleVarLookup(arrayExpr, varName);
-
       if (arrayExpr)
       {
          // eval array
@@ -1523,11 +1520,8 @@ U32 SlotAccessNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
          // OP_SETCURFIELDARRAY
          // total add of 4 + array precomp
 
-         if (!arrayVarLookup)
-         {
-            ip = arrayExpr->compile(codeStream, ip, TypeReqString);
-            codeStream.emit(OP_ADVANCE_STR);
-         }
+         ip = arrayExpr->compile(codeStream, ip, TypeReqString);
+         codeStream.emit(OP_ADVANCE_STR);
       }
       ip = objectExpr->compile(codeStream, ip, TypeReqString);
       codeStream.emit(OP_SETCUROBJECT);
@@ -1538,16 +1532,8 @@ U32 SlotAccessNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
 
       if (arrayExpr)
       {
-         if (arrayVarLookup)
-         {
-            codeStream.emit(OP_SETCURFIELD_ARRAY_VAR);
-            codeStream.emitSTE(varName);
-         }
-         else
-         {
-            codeStream.emit(OP_TERMINATE_REWIND_STR);
-            codeStream.emit(OP_SETCURFIELD_ARRAY);
-         }
+         codeStream.emit(OP_TERMINATE_REWIND_STR);
+         codeStream.emit(OP_SETCURFIELD_ARRAY);
       }
    }
    
