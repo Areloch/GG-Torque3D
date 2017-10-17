@@ -1457,6 +1457,27 @@ TypeReq AssertCallExprNode::getPreferredType()
 
 //------------------------------------------------------------
 
+inline bool arrayLookup(ExprNode *arrayExpr, StringTableEntry &varName)
+{
+   VarNode *var = dynamic_cast<VarNode*>(arrayExpr);
+   if (var)
+   {
+      StringTableEntry arrayVar = StringTable->insert(var->varName);
+      precompileIdent(arrayVar);
+      varName = arrayVar;
+      return true;
+   }
+   return false;
+}
+
+inline bool isThisVar(ExprNode *objectExpr)
+{
+   VarNode *thisVar = dynamic_cast<VarNode*>(objectExpr);
+   if (thisVar && thisVar->varName == StringTable->insert("%this"))
+      return true;
+   return false;
+}
+
 U32 SlotAccessNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
 {
    if(type == TypeReqNone)
@@ -1464,29 +1485,69 @@ U32 SlotAccessNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    
    precompileIdent(slotName);
 
-   if(arrayExpr)
+   // check if object is %this. If we are, we can do additional optimizations.
+   if (false) //isThisVar(objectExpr))
    {
-      // eval array
-      // OP_ADVANCE_STR
-      // evaluate object expression sub (OP_SETCURFIELD)
-      // OP_TERMINATE_REWIND_STR
-      // OP_SETCURFIELDARRAY
-      // total add of 4 + array precomp
-      
-      ip = arrayExpr->compile(codeStream, ip, TypeReqString);
-      codeStream.emit(OP_ADVANCE_STR);
-   }
-   ip = objectExpr->compile(codeStream, ip, TypeReqString);
-   codeStream.emit(OP_SETCUROBJECT);
-   
-   codeStream.emit(OP_SETCURFIELD);
-   
-   codeStream.emitSTE(slotName);
+      codeStream.emit(OP_SETCURFIELD_THIS);
+      codeStream.emitSTE(slotName);
 
-   if(arrayExpr)
+      if (arrayExpr)
+      {
+         // Is the array a simple variable? If so, we can optimize that.
+         StringTableEntry varName;
+         if (arrayLookup(arrayExpr, varName))
+         {
+            codeStream.emit(OP_SETCURFIELD_ARRAY_VAR);
+            codeStream.emitSTE(varName);
+         }
+         else
+         {
+            // Less optimized array setting.
+            ip = arrayExpr->compile(codeStream, ip, TypeReqString);
+            codeStream.emit(OP_SETCURFIELD_ARRAY);
+         }
+      }
+   }
+   else
    {
-      codeStream.emit(OP_TERMINATE_REWIND_STR);
-      codeStream.emit(OP_SETCURFIELD_ARRAY);
+      StringTableEntry varName;
+      bool arrayVarLookup = arrayLookup(arrayExpr, varName);
+
+      if (arrayExpr)
+      {
+         // eval array
+         // OP_ADVANCE_STR
+         // evaluate object expression sub (OP_SETCURFIELD)
+         // OP_TERMINATE_REWIND_STR
+         // OP_SETCURFIELDARRAY
+         // total add of 4 + array precomp
+
+         //if (!arrayVarLookup)
+         {
+            ip = arrayExpr->compile(codeStream, ip, TypeReqString);
+            codeStream.emit(OP_ADVANCE_STR);
+         }
+      }
+      ip = objectExpr->compile(codeStream, ip, TypeReqString);
+      codeStream.emit(OP_SETCUROBJECT);
+
+      codeStream.emit(OP_SETCURFIELD);
+
+      codeStream.emitSTE(slotName);
+
+      if (arrayExpr)
+      {
+         //if (arrayVarLookup)
+         //{
+           // codeStream.emit(OP_SETCURFIELD_ARRAY_VAR);
+           // codeStream.emitSTE(varName);
+         //}
+         //else
+         {
+            codeStream.emit(OP_TERMINATE_REWIND_STR);
+            codeStream.emit(OP_SETCURFIELD_ARRAY);
+         }
+      }
    }
    
    switch(type)
