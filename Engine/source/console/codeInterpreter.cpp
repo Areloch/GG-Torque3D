@@ -1495,6 +1495,9 @@ OPCodeReturn CodeInterpreter::op_setcurvar_array_varlookup(U32 &ip)
    StringTableEntry arrayLookup = CodeToSTE(mCodeBlock->code, ip + 2);
    ip += 4;
 
+   STR.setStringValue(arrayName);
+   STR.advance();
+
    // See OP_SETCURVAR
    mPrevField = NULL;
    mPrevObject = NULL;
@@ -1504,10 +1507,13 @@ OPCodeReturn CodeInterpreter::op_setcurvar_array_varlookup(U32 &ip)
    // Note: we have to setCurVarNameCreate in case the var doesn't exist.
    // this won't cause much of a performance hit since vars are hashed.
    gEvalState.setCurVarNameCreate(arrayLookup);
-   StringTableEntry hash = gEvalState.currentVariable->getStringValue();
+   StringTableEntry hash = gEvalState.getStringVariable();
+
+   STR.setStringValue(hash);
+   STR.rewind();
 
    // Generate new array name.
-   StringTableEntry var = StringTable->insert(avar("%s%s", arrayName, hash));
+   StringTableEntry var = STR.getSTValue();
    gEvalState.setCurVarName(var);
 
    // See OP_SETCURVAR for why we do this.
@@ -1545,14 +1551,20 @@ OPCodeReturn CodeInterpreter::op_setcurvar_array_create_varlookup(U32 &ip)
    mPrevObject = NULL;
    mCurObject = NULL;
 
+   STR.setStringValue(arrayName);
+   STR.advance();
+
    // resolve arrayLookup to get the 'value'
    // Note: we have to setCurVarNameCreate in case the var doesn't exist.
    // this won't cause much of a performance hit since vars are hashed.
    gEvalState.setCurVarNameCreate(arrayLookup);
-   StringTableEntry hash = gEvalState.currentVariable->getStringValue();
+   StringTableEntry hash = gEvalState.getStringVariable();
+
+   STR.setStringValue(hash);
+   STR.rewind();
 
    // Generate new array name.
-   StringTableEntry var = StringTable->insert(avar("%s%s", arrayName, hash));
+   StringTableEntry var = STR.getSTValue();
    gEvalState.setCurVarNameCreate(var);
 
    // See OP_SETCURVAR for why we do this.

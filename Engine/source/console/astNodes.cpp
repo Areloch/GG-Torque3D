@@ -741,7 +741,7 @@ U32 VarNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
       // Ok, lets try to optimize %var[%someothervar] as this is
       // a common case for array usage.
       VarNode *varNode = dynamic_cast<VarNode*>(arrayIndex);
-      if (varNode)
+      if (varNode && !varNode->arrayIndex)
       {
          StringTableEntry varNodeVarName = StringTable->insert(varNode->varName);
          precompileIdent(varNodeVarName);
@@ -1036,13 +1036,13 @@ U32 AssignExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
 
    if(arrayIndex && !shortCircuit)
    {
-      if(subType == TypeReqString)
+      if (subType == TypeReqString)
          codeStream.emit(OP_ADVANCE_STR);
 
       // Ok, lets try to optimize %var[%someothervar] as this is
       // a common case for array usage.
       VarNode *varNode = dynamic_cast<VarNode*>(arrayIndex);
-      if (varNode)
+      if (varNode && !varNode->arrayIndex)
       {
          StringTableEntry varNodeVarName = StringTable->insert(varNode->varName);
          precompileIdent(varNodeVarName);
@@ -1062,7 +1062,7 @@ U32 AssignExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
          codeStream.emit(OP_SETCURVAR_ARRAY_CREATE);
       }
 
-      if(subType == TypeReqString)
+      if (subType == TypeReqString)
          codeStream.emit(OP_TERMINATE_REWIND_STR);
    }
    else
@@ -1251,7 +1251,7 @@ U32 AssignOpExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
          // Ok, lets try to optimize %var[%someothervar] as this is
          // a common case for array usage.
          VarNode *varNode = dynamic_cast<VarNode*>(arrayIndex);
-         if (varNode)
+         if (varNode && !varNode->arrayIndex)
          {
             StringTableEntry varNodeVarName = StringTable->insert(varNode->varName);
             precompileIdent(varNodeVarName);
