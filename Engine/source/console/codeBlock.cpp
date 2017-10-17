@@ -1152,6 +1152,22 @@ void CodeBlock::dumpInstructions( U32 startIp, bool upToReturn )
             break;
          }
 
+         case OP_SETCURFIELD_ARRAY_VAR:
+         {
+            StringTableEntry var = CodeToSTE(code, ip);
+            Con::printf( "%i: OP_SETCURFIELD_ARRAY_VAR var=%s", ip - 1, var );
+            ip += 2;
+            break;
+         }
+
+         case OP_SETCURFIELD_THIS:
+         {
+            StringTableEntry curField = CodeToSTE(code, ip);
+            Con::printf("%i: OP_SETCURFIELD_THIS field=%s", ip - 1, curField);
+            ip += 2;
+            break;
+         }
+
          case OP_SETCURFIELD_TYPE:
          {
             U32 type = code[ ip ];
