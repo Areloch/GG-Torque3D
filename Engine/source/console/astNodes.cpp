@@ -1457,10 +1457,11 @@ TypeReq AssertCallExprNode::getPreferredType()
 
 //------------------------------------------------------------
 
-inline bool arrayLookup(ExprNode *arrayExpr, StringTableEntry &varName)
+inline bool isSimpleVarLookup(ExprNode *arrayExpr, StringTableEntry &varName)
 {
+   // No double arrays allowed for optimization.
    VarNode *var = dynamic_cast<VarNode*>(arrayExpr);
-   if (var)
+   if (var && !var->arrayIndex)
    {
       StringTableEntry arrayVar = StringTable->insert(var->varName);
       precompileIdent(arrayVar);
@@ -1486,7 +1487,7 @@ U32 SlotAccessNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    precompileIdent(slotName);
 
    // check if object is %this. If we are, we can do additional optimizations.
-   if (false) //isThisVar(objectExpr))
+   if (isThisVar(objectExpr))
    {
       codeStream.emit(OP_SETCURFIELD_THIS);
       codeStream.emitSTE(slotName);
@@ -1495,7 +1496,7 @@ U32 SlotAccessNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
       {
          // Is the array a simple variable? If so, we can optimize that.
          StringTableEntry varName;
-         if (arrayLookup(arrayExpr, varName))
+         if (isSimpleVarLookup(arrayExpr, varName))
          {
             codeStream.emit(OP_SETCURFIELD_ARRAY_VAR);
             codeStream.emitSTE(varName);
@@ -1511,7 +1512,7 @@ U32 SlotAccessNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    else
    {
       StringTableEntry varName;
-      bool arrayVarLookup = arrayLookup(arrayExpr, varName);
+      bool arrayVarLookup = isSimpleVarLookup(arrayExpr, varName);
 
       if (arrayExpr)
       {
@@ -1522,7 +1523,7 @@ U32 SlotAccessNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
          // OP_SETCURFIELDARRAY
          // total add of 4 + array precomp
 
-         //if (!arrayVarLookup)
+         if (!arrayVarLookup)
          {
             ip = arrayExpr->compile(codeStream, ip, TypeReqString);
             codeStream.emit(OP_ADVANCE_STR);
@@ -1537,12 +1538,12 @@ U32 SlotAccessNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
 
       if (arrayExpr)
       {
-         //if (arrayVarLookup)
-         //{
-           // codeStream.emit(OP_SETCURFIELD_ARRAY_VAR);
-           // codeStream.emitSTE(varName);
-         //}
-         //else
+         if (arrayVarLookup)
+         {
+            codeStream.emit(OP_SETCURFIELD_ARRAY_VAR);
+            codeStream.emitSTE(varName);
+         }
+         else
          {
             codeStream.emit(OP_TERMINATE_REWIND_STR);
             codeStream.emit(OP_SETCURFIELD_ARRAY);
