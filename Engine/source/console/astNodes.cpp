@@ -42,28 +42,6 @@ struct Token
 };
 #include "console/cmdgram.h"
 
-inline bool isSimpleVarLookup(ExprNode *arrayExpr, StringTableEntry &varName)
-{
-   // No double arrays allowed for optimization.
-   VarNode *var = dynamic_cast<VarNode*>(arrayExpr);
-   if (var && !var->arrayIndex)
-   {
-      StringTableEntry arrayVar = StringTable->insert(var->varName);
-      Compiler::precompileIdent(arrayVar);
-      varName = arrayVar;
-      return true;
-   }
-   return false;
-}
-
-inline bool isThisVar(ExprNode *objectExpr)
-{
-   VarNode *thisVar = dynamic_cast<VarNode*>(objectExpr);
-   if (thisVar && thisVar->varName == StringTable->insert("%this"))
-      return true;
-   return false;
-}
-
 namespace Compiler
 {
    U32 compileBlock(StmtNode *block, CodeStream &codeStream, U32 ip)
@@ -71,6 +49,69 @@ namespace Compiler
       for(StmtNode *walk = block; walk; walk = walk->getNext())
          ip = walk->compileStmt(codeStream, ip);
       return codeStream.tell();
+   }
+
+   inline bool isSimpleVarLookup(ExprNode *arrayExpr, StringTableEntry &varName)
+   {
+      if (arrayExpr == nullptr)
+      {
+         varName = StringTable->insert("");
+         return false;
+      }
+
+      // No double arrays allowed for optimization.
+      VarNode *var = dynamic_cast<VarNode*>(arrayExpr);
+      if (var && !var->arrayIndex)
+      {
+         StringTableEntry arrayVar = StringTable->insert(var->varName);
+         precompileIdent(arrayVar);
+         varName = arrayVar;
+         return true;
+      }
+      return false;
+   }
+
+   // Do not allow 'recursive' %this optimizations. It can lead to weird bytecode
+   // generation since we can only optimize one expression at a time.
+   static bool OnlyOneThisOptimization = false;
+
+   inline bool isThisVar(ExprNode *objectExpr)
+   {
+      // If we are currently optimizing a this var, don't allow extra optimization.
+      if (objectExpr == nullptr || OnlyOneThisOptimization)
+         return false;
+
+      VarNode *thisVar = dynamic_cast<VarNode*>(objectExpr);
+      if (thisVar && thisVar->varName == StringTable->insert("%this"))
+         return true;
+      return false;
+   }
+
+   inline void optimizeThisPointer(CodeStream &codeStream, ExprNode *arrayExpr, U32 &ip, StringTableEntry slotName)
+   {
+      OnlyOneThisOptimization = true;
+
+      codeStream.emit(OP_SETCURFIELD_THIS);
+      codeStream.emitSTE(slotName);
+
+      if (arrayExpr)
+      {
+         // Is the array a simple variable? If so, we can optimize that.
+         StringTableEntry varName;
+         if (isSimpleVarLookup(arrayExpr, varName))
+         {
+            codeStream.emit(OP_SETCURFIELD_ARRAY_VAR);
+            codeStream.emitSTE(varName);
+         }
+         else
+         {
+            // Less optimized array setting.
+            ip = arrayExpr->compile(codeStream, ip, TypeReqString);
+            codeStream.emit(OP_SETCURFIELD_ARRAY);
+         }
+      }
+
+      OnlyOneThisOptimization = false;
    }
 }
 
@@ -1479,25 +1520,7 @@ U32 SlotAccessNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    // check if object is %this. If we are, we can do additional optimizations.
    if (isThisVar(objectExpr))
    {
-      codeStream.emit(OP_SETCURFIELD_THIS);
-      codeStream.emitSTE(slotName);
-
-      if (arrayExpr)
-      {
-         // Is the array a simple variable? If so, we can optimize that.
-         StringTableEntry varName;
-         if (isSimpleVarLookup(arrayExpr, varName))
-         {
-            codeStream.emit(OP_SETCURFIELD_ARRAY_VAR);
-            codeStream.emitSTE(varName);
-         }
-         else
-         {
-            // Less optimized array setting.
-            ip = arrayExpr->compile(codeStream, ip, TypeReqString);
-            codeStream.emit(OP_SETCURFIELD_ARRAY);
-         }
-      }
+      optimizeThisPointer(codeStream, arrayExpr, ip, slotName);
    }
    else
    {
@@ -1606,31 +1629,40 @@ U32 SlotAssignNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    // convert to return type if necessary.
    
    precompileIdent(slotName);
-   
+
    ip = valueExpr->compile(codeStream, ip, TypeReqString);
-   codeStream.emit(OP_ADVANCE_STR);
-   if(arrayExpr)
+
+   if (isThisVar(objectExpr))
    {
-      ip = arrayExpr->compile(codeStream, ip, TypeReqString);
-      codeStream.emit(OP_ADVANCE_STR);
-   }
-   if(objectExpr)
-   {
-      ip = objectExpr->compile(codeStream, ip, TypeReqString);
-      codeStream.emit(OP_SETCUROBJECT);
+      optimizeThisPointer(codeStream, arrayExpr, ip, slotName);
    }
    else
-      codeStream.emit(OP_SETCUROBJECT_NEW);
-   codeStream.emit(OP_SETCURFIELD);
-   codeStream.emitSTE(slotName);
-
-   if(arrayExpr)
    {
+      codeStream.emit(OP_ADVANCE_STR);
+      if (arrayExpr)
+      {
+         ip = arrayExpr->compile(codeStream, ip, TypeReqString);
+         codeStream.emit(OP_ADVANCE_STR);
+      }
+      if (objectExpr)
+      {
+         ip = objectExpr->compile(codeStream, ip, TypeReqString);
+         codeStream.emit(OP_SETCUROBJECT);
+      }
+      else
+         codeStream.emit(OP_SETCUROBJECT_NEW);
+      codeStream.emit(OP_SETCURFIELD);
+      codeStream.emitSTE(slotName);
+
+      if (arrayExpr)
+      {
+         codeStream.emit(OP_TERMINATE_REWIND_STR);
+         codeStream.emit(OP_SETCURFIELD_ARRAY);
+      }
+
       codeStream.emit(OP_TERMINATE_REWIND_STR);
-      codeStream.emit(OP_SETCURFIELD_ARRAY);
    }
 
-   codeStream.emit(OP_TERMINATE_REWIND_STR);
    codeStream.emit(OP_SAVEFIELD_STR);
 
    if(typeID != -1)
@@ -1680,20 +1712,28 @@ U32 SlotAssignOpNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    precompileIdent(slotName);
    
    ip = valueExpr->compile(codeStream, ip, subType);
-   if(arrayExpr)
+
+   if (isThisVar(objectExpr))
    {
-      ip = arrayExpr->compile(codeStream, ip, TypeReqString);
-      codeStream.emit(OP_ADVANCE_STR);
+      optimizeThisPointer(codeStream, arrayExpr, ip, slotName);
    }
-   ip = objectExpr->compile(codeStream, ip, TypeReqString);
-   codeStream.emit(OP_SETCUROBJECT);
-   codeStream.emit(OP_SETCURFIELD);
-   codeStream.emitSTE(slotName);
-   
-   if(arrayExpr)
+   else
    {
-      codeStream.emit(OP_TERMINATE_REWIND_STR);
-      codeStream.emit(OP_SETCURFIELD_ARRAY);
+      if (arrayExpr)
+      {
+         ip = arrayExpr->compile(codeStream, ip, TypeReqString);
+         codeStream.emit(OP_ADVANCE_STR);
+      }
+      ip = objectExpr->compile(codeStream, ip, TypeReqString);
+      codeStream.emit(OP_SETCUROBJECT);
+      codeStream.emit(OP_SETCURFIELD);
+      codeStream.emitSTE(slotName);
+
+      if (arrayExpr)
+      {
+         codeStream.emit(OP_TERMINATE_REWIND_STR);
+         codeStream.emit(OP_SETCURFIELD_ARRAY);
+      }
    }
    codeStream.emit((subType == TypeReqFloat) ? OP_LOADFIELD_FLT : OP_LOADFIELD_UINT);
    codeStream.emit(operand);
