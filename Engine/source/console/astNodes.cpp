@@ -42,6 +42,27 @@ struct Token
 };
 #include "console/cmdgram.h"
 
+inline bool isSimpleVarLookup(ExprNode *arrayExpr, StringTableEntry &varName)
+{
+   // No double arrays allowed for optimization.
+   VarNode *var = dynamic_cast<VarNode*>(arrayExpr);
+   if (var && !var->arrayIndex)
+   {
+      StringTableEntry arrayVar = StringTable->insert(var->varName);
+      Compiler::precompileIdent(arrayVar);
+      varName = arrayVar;
+      return true;
+   }
+   return false;
+}
+
+inline bool isThisVar(ExprNode *objectExpr)
+{
+   VarNode *thisVar = dynamic_cast<VarNode*>(objectExpr);
+   if (thisVar && thisVar->varName == StringTable->insert("%this"))
+      return true;
+   return false;
+}
 
 namespace Compiler
 {
@@ -740,12 +761,9 @@ U32 VarNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    {
       // Ok, lets try to optimize %var[%someothervar] as this is
       // a common case for array usage.
-      VarNode *varNode = dynamic_cast<VarNode*>(arrayIndex);
-      if (varNode && !varNode->arrayIndex)
+      StringTableEntry varNodeVarName;
+      if (isSimpleVarLookup(arrayIndex, varNodeVarName))
       {
-         StringTableEntry varNodeVarName = StringTable->insert(varNode->varName);
-         precompileIdent(varNodeVarName);
-
          codeStream.emit(OP_SETCURVAR_ARRAY_VARLOOKUP);
          codeStream.emitSTE(varName);
          codeStream.emitSTE(varNodeVarName);
@@ -1041,12 +1059,9 @@ U32 AssignExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
 
       // Ok, lets try to optimize %var[%someothervar] as this is
       // a common case for array usage.
-      VarNode *varNode = dynamic_cast<VarNode*>(arrayIndex);
-      if (varNode && !varNode->arrayIndex)
+      StringTableEntry varNodeVarName;
+      if (isSimpleVarLookup(arrayIndex, varNodeVarName))
       {
-         StringTableEntry varNodeVarName = StringTable->insert(varNode->varName);
-         precompileIdent(varNodeVarName);
-
          codeStream.emit(OP_SETCURVAR_ARRAY_CREATE_VARLOOKUP);
          codeStream.emitSTE(varName);
          codeStream.emitSTE(varNodeVarName);
@@ -1250,12 +1265,9 @@ U32 AssignOpExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
       {
          // Ok, lets try to optimize %var[%someothervar] as this is
          // a common case for array usage.
-         VarNode *varNode = dynamic_cast<VarNode*>(arrayIndex);
-         if (varNode && !varNode->arrayIndex)
+         StringTableEntry varNodeVarName;
+         if (isSimpleVarLookup(arrayIndex, varNodeVarName))
          {
-            StringTableEntry varNodeVarName = StringTable->insert(varNode->varName);
-            precompileIdent(varNodeVarName);
-
             codeStream.emit(OP_SETCURVAR_ARRAY_CREATE_VARLOOKUP);
             codeStream.emitSTE(varName);
             codeStream.emitSTE(varNodeVarName);
@@ -1456,28 +1468,6 @@ TypeReq AssertCallExprNode::getPreferredType()
 }
 
 //------------------------------------------------------------
-
-inline bool isSimpleVarLookup(ExprNode *arrayExpr, StringTableEntry &varName)
-{
-   // No double arrays allowed for optimization.
-   VarNode *var = dynamic_cast<VarNode*>(arrayExpr);
-   if (var && !var->arrayIndex)
-   {
-      StringTableEntry arrayVar = StringTable->insert(var->varName);
-      precompileIdent(arrayVar);
-      varName = arrayVar;
-      return true;
-   }
-   return false;
-}
-
-inline bool isThisVar(ExprNode *objectExpr)
-{
-   VarNode *thisVar = dynamic_cast<VarNode*>(objectExpr);
-   if (thisVar && thisVar->varName == StringTable->insert("%this"))
-      return true;
-   return false;
-}
 
 U32 SlotAccessNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
 {
