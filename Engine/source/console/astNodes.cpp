@@ -91,23 +91,36 @@ namespace Compiler
    {
       OnlyOneThisOptimization = true;
 
+
+      // Is the array a simple variable? If so, we can optimize that.
+      StringTableEntry varName = nullptr;
+      bool simple = false;
+
+      if (arrayExpr)
+      {
+         simple = isSimpleVarLookup(arrayExpr, varName);
+         if (!simple)
+         {
+            // Less optimized array setting.
+            codeStream.emit(OP_ADVANCE_STR);
+            ip = arrayExpr->compile(codeStream, ip, TypeReqString);
+         }
+      }
+
       codeStream.emit(OP_SETCURFIELD_THIS);
       codeStream.emitSTE(slotName);
 
       if (arrayExpr)
       {
-         // Is the array a simple variable? If so, we can optimize that.
-         StringTableEntry varName;
-         if (isSimpleVarLookup(arrayExpr, varName))
+         if (simple)
          {
             codeStream.emit(OP_SETCURFIELD_ARRAY_VAR);
             codeStream.emitSTE(varName);
          }
          else
          {
-            // Less optimized array setting.
-            ip = arrayExpr->compile(codeStream, ip, TypeReqString);
             codeStream.emit(OP_SETCURFIELD_ARRAY);
+            codeStream.emit(OP_TERMINATE_REWIND_STR);
          }
       }
 
