@@ -317,6 +317,7 @@ void CodeInterpreter::init()
    gOpCodeArray[OP_CALLFUNC_RESOLVE] = &CodeInterpreter::op_callfunc_resolve;
    gOpCodeArray[OP_CALLFUNC] = &CodeInterpreter::op_callfunc;
    gOpCodeArray[OP_CALLFUNC_POINTER] = &CodeInterpreter::op_callfunc_pointer;
+   gOpCodeArray[OP_CALLFUNC_THIS] = &CodeInterpreter::op_callfunc_this;
    gOpCodeArray[OP_ADVANCE_STR] = &CodeInterpreter::op_advance_str;
    gOpCodeArray[OP_ADVANCE_STR_APPENDCHAR] = &CodeInterpreter::op_advance_str_appendchar;
    gOpCodeArray[OP_ADVANCE_STR_COMMA] = &CodeInterpreter::op_advance_str_comma;
@@ -2447,6 +2448,199 @@ OPCodeReturn CodeInterpreter::op_callfunc_pointer(U32 &ip)
          }
    }
 
+
+   return OPCodeReturn::success;
+}
+
+OPCodeReturn CodeInterpreter::op_callfunc_this(U32 &ip)
+{
+   U32 *code = mCodeBlock->code;
+
+   StringTableEntry fnName = CodeToSTE(code, ip);
+
+   //if this is called from inside a function, append the ip and codeptr
+   if (gEvalState.getStackDepth() > 0)
+   {
+      gEvalState.getCurrentFrame().code = mCodeBlock;
+      gEvalState.getCurrentFrame().ip = ip - 1;
+   }
+
+   ip += 2;
+   CSTK.getArgcArgv(fnName, &mCallArgc, &mCallArgv);
+
+   Namespace *ns = mThisObject->getNamespace();
+   if (ns)
+      mNSEntry = ns->lookup(fnName);
+   else
+      mNSEntry = NULL;
+
+   if (!mNSEntry || mExec.noCalls)
+   {
+      if (!mExec.noCalls)
+      {
+         Con::warnf(ConsoleLogEntry::General, "%s: Unknown command %s.", mCodeBlock->getFileLine(ip - 6), fnName);
+         Con::warnf(ConsoleLogEntry::General, "  Object %s(%d) %s",
+            mThisObject->getName() ? mThisObject->getName() : "",
+            mThisObject->getId(), Con::getNamespaceList(ns));
+      }
+      STR.popFrame();
+      CSTK.popFrame();
+
+      STR.setStringValue("");
+      return OPCodeReturn::success;
+   }
+
+   // ConsoleFunctionType is for any function defined by script.
+   // Any 'callback' type is an engine function that is exposed to script.
+   if (mNSEntry->mType == Namespace::Entry::ConsoleFunctionType)
+   {
+      ConsoleValueRef ret;
+      if (mNSEntry->mFunctionOffset)
+         ret = mNSEntry->mCode->exec(mNSEntry->mFunctionOffset, fnName, mNSEntry->mNamespace, mCallArgc, mCallArgv, false, mNSEntry->mPackage);
+
+      STR.popFrame();
+      // Functions are assumed to return strings, so look ahead to see if we can skip the conversion
+      if (code[ip] == OP_STR_TO_UINT)
+      {
+         ip++;
+         intStack[++_UINT] = (U32)((S32)ret);
+      }
+      else if (code[ip] == OP_STR_TO_FLT)
+      {
+         ip++;
+         floatStack[++_FLT] = (F32)ret;
+      }
+      else if (code[ip] == OP_STR_TO_NONE)
+      {
+         STR.setStringValue(ret.getStringValue());
+         ip++;
+      }
+      else
+         STR.setStringValue((const char*)ret);
+
+      // This will clear everything including returnValue
+      CSTK.popFrame();
+      //STR.clearFunctionOffset();
+   }
+   else
+   {
+      Namespace::Entry::CallbackUnion * nsCb = &mNSEntry->cb;
+      const char * nsUsage = mNSEntry->mUsage;
+      const char* nsName = ns ? ns->mName : "";
+#ifndef TORQUE_DEBUG
+      // [tom, 12/13/2006] This stops tools functions from working in the console,
+      // which is useful behavior when debugging so I'm ifdefing this out for debug builds.
+      if (mNSEntry->mToolOnly && !Con::isCurrentScriptToolScript())
+      {
+         Con::errorf(ConsoleLogEntry::Script, "%s: %s::%s - attempting to call tools only function from outside of tools.", mCodeBlock->getFileLine(ip - 6), nsName, fnName);
+      }
+      else
+#endif
+         if ((mNSEntry->mMinArgs && S32(mCallArgc) < mNSEntry->mMinArgs) || (mNSEntry->mMaxArgs && S32(mCallArgc) > mNSEntry->mMaxArgs))
+         {
+            Con::warnf(ConsoleLogEntry::Script, "%s: %s::%s - wrong number of arguments (got %i, expected min %i and max %i).",
+               mCodeBlock->getFileLine(ip - 6), nsName, fnName,
+               mCallArgc, mNSEntry->mMinArgs, mNSEntry->mMaxArgs);
+            Con::warnf(ConsoleLogEntry::Script, "%s: usage: %s", mCodeBlock->getFileLine(ip - 6), mNSEntry->mUsage);
+            STR.popFrame();
+            CSTK.popFrame();
+         }
+         else
+         {
+            switch (mNSEntry->mType)
+            {
+            case Namespace::Entry::StringCallbackType:
+            {
+               const char *ret = mNSEntry->cb.mStringCallbackFunc(mThisObject, mCallArgc, mCallArgv);
+               STR.popFrame();
+               CSTK.popFrame();
+               if (ret != STR.getStringValue())
+                  STR.setStringValue(ret);
+               //else
+               //   sSTR.setLen(dStrlen(ret));
+               break;
+            }
+            case Namespace::Entry::IntCallbackType:
+            {
+               S32 result = mNSEntry->cb.mIntCallbackFunc(mThisObject, mCallArgc, mCallArgv);
+               STR.popFrame();
+               CSTK.popFrame();
+               if (code[ip] == OP_STR_TO_UINT)
+               {
+                  ip++;
+                  intStack[++_UINT] = result;
+                  break;
+               }
+               else if (code[ip] == OP_STR_TO_FLT)
+               {
+                  ip++;
+                  floatStack[++_FLT] = result;
+                  break;
+               }
+               else if (code[ip] == OP_STR_TO_NONE)
+                  ip++;
+               else
+                  STR.setIntValue(result);
+               break;
+            }
+            case Namespace::Entry::FloatCallbackType:
+            {
+               F64 result = mNSEntry->cb.mFloatCallbackFunc(mThisObject, mCallArgc, mCallArgv);
+               STR.popFrame();
+               CSTK.popFrame();
+               if (code[ip] == OP_STR_TO_UINT)
+               {
+                  ip++;
+                  intStack[++_UINT] = (S64)result;
+                  break;
+               }
+               else if (code[ip] == OP_STR_TO_FLT)
+               {
+                  ip++;
+                  floatStack[++_FLT] = result;
+                  break;
+               }
+               else if (code[ip] == OP_STR_TO_NONE)
+                  ip++;
+               else
+                  STR.setFloatValue(result);
+               break;
+            }
+            case Namespace::Entry::VoidCallbackType:
+               mNSEntry->cb.mVoidCallbackFunc(mThisObject, mCallArgc, mCallArgv);
+               if (code[ip] != OP_STR_TO_NONE && Con::getBoolVariable("$Con::warnVoidAssignment", true))
+                  Con::warnf(ConsoleLogEntry::General, "%s: Call to %s in %s uses result of void function call.", mCodeBlock->getFileLine(ip - 6), fnName, mExec.functionName);
+
+               STR.popFrame();
+               CSTK.popFrame();
+               STR.setStringValue("");
+               break;
+            case Namespace::Entry::BoolCallbackType:
+            {
+               bool result = mNSEntry->cb.mBoolCallbackFunc(mThisObject, mCallArgc, mCallArgv);
+               STR.popFrame();
+               CSTK.popFrame();
+               if (code[ip] == OP_STR_TO_UINT)
+               {
+                  ip++;
+                  intStack[++_UINT] = result;
+                  break;
+               }
+               else if (code[ip] == OP_STR_TO_FLT)
+               {
+                  ip++;
+                  floatStack[++_FLT] = result;
+                  break;
+               }
+               else if (code[ip] == OP_STR_TO_NONE)
+                  ip++;
+               else
+                  STR.setIntValue(result);
+               break;
+            }
+            }
+         }
+   }
 
    return OPCodeReturn::success;
 }

@@ -1350,7 +1350,16 @@ void CodeBlock::dumpInstructions( U32 startIp, bool upToReturn )
 
          case OP_CALLFUNC_POINTER:
          {
-            Con::printf("%i: OP_CALLFUNC_POINTER", ip - 1);
+            Con::printf( "%i: OP_CALLFUNC_POINTER", ip - 1 );
+            break;
+         }
+
+         case OP_CALLFUNC_THIS:
+         {
+            StringTableEntry fnName = CodeToSTE(code, ip);
+            Con::printf( "%i: OP_CALLFUNC_THIS name=%s ", ip - 1, fnName );
+
+            ip += 2;
             break;
          }
 

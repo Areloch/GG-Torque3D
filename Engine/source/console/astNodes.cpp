@@ -91,7 +91,6 @@ namespace Compiler
    {
       OnlyOneThisOptimization = true;
 
-
       // Is the array a simple variable? If so, we can optimize that.
       StringTableEntry varName = nullptr;
       bool simple = false;
@@ -1401,6 +1400,8 @@ U32 FuncCallExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
    
    codeStream.emit(OP_PUSH_FRAME);
    
+   bool isThisCall = false;
+
    // Try to optimize the this pointer call if it is a variable
    // that we are loading.
    if (callType == MethodCall)
@@ -1410,6 +1411,11 @@ U32 FuncCallExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
       VarNode *var = dynamic_cast<VarNode*>(args);
       if (var && !var->arrayIndex)
       {
+         precompileIdent(var->varName);
+
+         // Are we a %this call?
+         isThisCall = (var->varName == StringTable->insert("%this"));
+
          codeStream.emit(OP_PUSH_THIS);
          codeStream.emitSTE(var->varName);
 
@@ -1436,15 +1442,24 @@ U32 FuncCallExprNode::compile(CodeStream &codeStream, U32 ip, TypeReq type)
             break;
       }
    }
-   if(callType == MethodCall || callType == ParentCall)
-      codeStream.emit(OP_CALLFUNC);
-   else
-      codeStream.emit(OP_CALLFUNC_RESOLVE);
 
-   codeStream.emitSTE(funcName);
-   codeStream.emitSTE(nameSpace);
+   if (isThisCall)
+   {
+      codeStream.emit(OP_CALLFUNC_THIS);
+      codeStream.emitSTE(funcName);
+   }
+   else
+   {
+      if (callType == MethodCall || callType == ParentCall)
+         codeStream.emit(OP_CALLFUNC);
+      else
+         codeStream.emit(OP_CALLFUNC_RESOLVE);
+
+      codeStream.emitSTE(funcName);
+      codeStream.emitSTE(nameSpace);
+      codeStream.emit(callType);
+   }
    
-   codeStream.emit(callType);
    if(type != TypeReqString)
       codeStream.emit(conversionOp(TypeReqString, type));
    return codeStream.tell();
