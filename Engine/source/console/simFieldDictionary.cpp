@@ -336,13 +336,13 @@ SimFieldDictionaryIterator::SimFieldDictionaryIterator(SimFieldDictionary * dict
 
 SimFieldDictionary::Entry* SimFieldDictionaryIterator::operator++()
 {
-   if(!mDictionary || mHashIndex >= SimFieldDictionary::HashTableSize)
+   std::vector<SimFieldDictionary::Entry> &vec = mDictionary->mHashTable[mHashIndex];
+
+   if(!mDictionary || vec.size() == 0 || mHashIndex >= SimFieldDictionary::HashTableSize)
    {
       mEntry = NULL;
       return NULL;
    }
-
-   std::vector<SimFieldDictionary::Entry> &vec = mDictionary->mHashTable[mHashIndex];
 
    ++mVecIndex;
    if (mVecIndex < vec.size())
