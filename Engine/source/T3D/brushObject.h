@@ -36,98 +36,10 @@
 #include "console/SimXMLDocument.h"
 #endif
 
+#include "math/util/CSG.h"
+
 class BaseMatInstance;
-
-
-//-----------------------------------------------------------------------------
-// This class implements a basic SceneObject that can exist in the world at a
-// 3D position and render itself. There are several valid ways to render an
-// object in Torque. This class implements the preferred rendering method which
-// is to submit a MeshRenderInst along with a Material, vertex buffer,
-// primitive buffer, and transform and allow the RenderMeshMgr handle the
-// actual setup and rendering for you.
-//-----------------------------------------------------------------------------
-class Brush
-{
-public:
-   struct Edge
-   {
-      U32 p0;
-      U32 p1;
-   };
-
-   struct Triangle
-   {
-      U32 p0;
-      U32 p1;
-      U32 p2;
-
-      U32 operator [](U32 index) const
-      {
-         AssertFatal(index >= 0 && index <= 2, "index out of range");
-         return *((&p0) + index);
-      }
-   };
-
-   struct FaceUV
-   {
-      S32 matID;
-      Point2F offset;
-      Point2F scale;
-      float zRot;
-      bool horzFlip;
-      bool vertFlip;
-
-      FaceUV()
-      {
-         matID = 0;
-         offset = Point2F::Zero;
-         scale = Point2F::One;
-         zRot = 0;
-         horzFlip = vertFlip = false;
-      }
-   };
-
-   struct Face
-   {
-      Vector< Edge > edges;
-      Vector< U32 > points;
-      Vector< U32 > winding;
-      Vector< Point2F > texcoords;
-      Vector< Triangle > triangles;
-      Point3F tangent;
-      Point3F normal;
-      Point3F centroid;
-      F32 area;
-      S32 id;
-      U32 materialId;
-      FaceUV uvs;
-      PlaneF plane;
-   };
-   
-   struct Geometry
-   {
-      void generate(const Vector< PlaneF > &planes, const Vector< Point3F > &tangentss, const Vector< Brush::FaceUV > &uvs);
-
-      Vector< Point3F > points;
-      Vector< Face > faces;
-   };
-
-   Geometry mGeometry;
-
-   Vector< PlaneF > mPlanes;
-
-   Vector< MatrixF > mSurfaces;
-
-   Vector<FaceUV> mSurfaceUVs;
-
-   Vector< Point3F > mFaceCenters;
-
-   Box3F mBounds;
-
-   void updateGeometry();
-   void updateBounds(bool recenter);
-};
+class brushEditorTool;
 
 GFXDeclareVertexFormat(BrushVert)
 {
@@ -139,9 +51,31 @@ GFXDeclareVertexFormat(BrushVert)
 };
 typedef BrushVert VertexType;
 
+struct Brush
+{
+   std::vector<CSGUtils::csgjs_polygon> mCSG;
+   CSGUtils::csgjs_model mCSGModel;
+
+   bool mIsSubtract;
+
+   // The name of the Material we will use for rendering
+   String            mMaterialName;
+
+   // The actual Material instance
+   BaseMatInstance*  mMaterialInst;
+
+   // The GFX vertex and primitive buffers
+   GFXVertexBufferHandle< VertexType > mVertexBuffer;
+   GFXPrimitiveBufferHandle            mPrimitiveBuffer;
+
+   U32 mVertCount;
+   U32 mPrimCount;
+};
+
 class BrushObject : public SceneObject
 {
    typedef SceneObject Parent;
+   friend class brushEditorTool;
 
    // Networking masks
    // We need to implement a mask specifically to handle
@@ -157,82 +91,7 @@ class BrushObject : public SceneObject
    };
 
 public:
-   //--------------------------------------------------------------------------
-   // Rendering variables
-   //--------------------------------------------------------------------------
-   // The name of the Material we will use for rendering
-   String            mMaterialName;
-   // The actual Material instance
-   BaseMatInstance*  mMaterialInst;
-
-   struct SurfaceMaterials
-   {
-      // The name of the Material we will use for rendering
-      String            mMaterialName;
-      // The actual Material instance
-      BaseMatInstance*  mMaterialInst;
-
-      SurfaceMaterials()
-      {
-         mMaterialName = "";
-         mMaterialInst = NULL;
-      }
-   };
-
-   Vector<SurfaceMaterials> mSurfaceMaterials;
-
-   struct BufferSet
-   {
-      U32 surfaceMaterialId;
-
-      U32 vertCount;
-      U32 primCount;
-
-      struct Buffers
-      {
-         U32 vertStart;
-         U32 primStart;
-         U32 vertCount;
-         U32 primCount;
-
-         Vector<VertexType> vertData;
-         Vector<U32> primData;
-
-         GFXVertexBufferHandle< VertexType > vertexBuffer;
-         GFXPrimitiveBufferHandle            primitiveBuffer;
-
-         Buffers()
-         {
-            vertStart = 0;
-            primStart = 0;
-            vertCount = 0;
-            primCount = 0;
-
-            vertexBuffer = NULL;
-            primitiveBuffer = NULL;
-         }
-      };
-
-      Vector<Buffers> buffers;
-
-      BufferSet()
-      {
-         Buffers newBuffer;
-         buffers.push_back(newBuffer);
-
-         surfaceMaterialId = 0;
-
-         vertCount = 0;
-         primCount = 0;
-      }
-   };
-
-   Vector<BufferSet>    mBuffers;
-
    Vector<Brush> mBrushes;
-
-   U32 mVertCount;
-   U32 mPrimCount;
 
    StringTableEntry		         mBrushFile;
    SimObjectPtr<SimXMLDocument>  mXMLReader;
@@ -275,7 +134,7 @@ public:
    // object and applying it to the client object
    void unpackUpdate(NetConnection *conn, BitStream *stream);
 
-   virtual bool castRay(const Point3F &start, const Point3F &end, RayInfo *info);
+   bool castRay(const Point3F &start, const Point3F &end, RayInfo *info);
 
    //--------------------------------------------------------------------------
    // Object Rendering
@@ -296,25 +155,8 @@ public:
    // This is the function that allows this object to submit itself for rendering
    void prepRenderImage(SceneRenderState *state);
 
-   void _renderDebug(ObjectRenderInst *ri, SceneRenderState *state, BaseMatInstance *mat);
-
-   void addBrush(Point3F center, const Vector<MatrixF> surfaces, const Vector<Brush::FaceUV> uvs);
-
-   void addBoxBrush(Point3F center);
-
    void loadBrushFile();
    void saveBrushFile();
-
-   U32 findBufferSetByMaterial(U32 matId)
-   {
-      for (U32 i = 0; i < mBuffers.size(); i++)
-      {
-         if (mBuffers[i].surfaceMaterialId == matId)
-            return i;
-      }
-
-      return -1;
-   }
 };
 
 #endif // _BRUSH_OBJECT_H_

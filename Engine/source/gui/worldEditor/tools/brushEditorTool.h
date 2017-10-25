@@ -31,11 +31,36 @@
 #include "T3D/BrushObject.h"
 #endif
 
+#include "math/util/CSG.h"
+
 class Brush;
 
 class BrushEditorTool : public EditorTool
 {
    typedef EditorTool Parent;
+
+   struct EditBrush
+   {
+      std::vector<CSGUtils::csgjs_polygon> mCSG;
+      CSGUtils::csgjs_model mCSGModel;
+
+      bool mIsSubtract;
+
+      Box3F mBounds;
+
+      // The name of the Material we will use for rendering
+      String            mMaterialName;
+
+      // The actual Material instance
+      BaseMatInstance*  mMaterialInst;
+
+      // The GFX vertex and primitive buffers
+      GFXVertexBufferHandle< VertexType > mVertexBuffer;
+      GFXPrimitiveBufferHandle            mPrimitiveBuffer;
+
+      U32 mVertCount;
+      U32 mPrimCount;
+   };
 
 private:
    struct BrushSelection
@@ -52,6 +77,7 @@ private:
       U32 brush;
       U32 vert;
    };
+
    Vector<BrushSelection> mSelectedBrushes;
    Vector<FaceSelection> mSelectedFaces;
    Vector<VertSelection> mVertBrushes;
@@ -60,12 +86,130 @@ private:
 
    bool mMouseDown;
 
-   bool mCreateMode;
-   S32 mCreateStage;
+   Vector<EditBrush> mBrushes;
 
-   BrushObject* mBrushObjHL;
-   S32 mBrushHL;
-   S32 mFaceHL;
+   BrushObject* mBrushObj;
+
+   //Convex generation geometry
+   struct Geometry
+   {
+      struct Edge
+      {
+         U32 p0;
+         U32 p1;
+      };
+
+      struct Triangle
+      {
+         U32 p0;
+         U32 p1;
+         U32 p2;
+
+         U32 operator [](U32 index) const
+         {
+            AssertFatal(index >= 0 && index <= 2, "index out of range");
+            return *((&p0) + index);
+         }
+      };
+
+      struct Face
+      {
+         Vector< Edge > edges;
+         Vector< U32 > points;
+         Vector< U32 > winding;
+         Vector< Point2F > texcoords;
+         Vector< Triangle > triangles;
+         Point3F tangent;
+         Point3F normal;
+         Point3F centroid;
+         F32 area;
+         S32 id;
+      };
+
+      void generate(const Vector< PlaneF > &planes, const Vector< Point3F > &tangents);
+
+      void getSurfaceTriangles(S32 surfId, Vector< Point3F > *outPoints, Vector< Point2F > *outCoords, bool worldSpace);
+      void getSurfaceVerts(U32 faceId, Vector< Point3F > *outPoints, Vector< Point2F > *outCoords, bool worldSpace);
+      S32 getFaceId(U32 surfId);
+
+      Vector< Point3F > points;
+      Vector< Face > faces;
+
+      Vector<MatrixF> surfaces;
+
+      MatrixF worldTransform;
+      Point3F scale;
+   };
+   Geometry mGeometry;
+
+   //
+   //Compiling stuff
+   struct SurfaceMaterials
+   {
+      // The name of the Material we will use for rendering
+      String            mMaterialName;
+      // The actual Material instance
+      BaseMatInstance*  mMaterialInst;
+
+      SurfaceMaterials()
+      {
+         mMaterialName = "";
+         mMaterialInst = NULL;
+      }
+   };
+
+   Vector<SurfaceMaterials> mSurfaceMaterials;
+
+   struct BufferSet
+   {
+      U32 surfaceMaterialId;
+
+      U32 vertCount;
+      U32 primCount;
+
+      struct Buffers
+      {
+         U32 vertStart;
+         U32 primStart;
+         U32 vertCount;
+         U32 primCount;
+
+         Vector<VertexType> vertData;
+         Vector<U32> primData;
+
+         GFXVertexBufferHandle< VertexType > vertexBuffer;
+         GFXPrimitiveBufferHandle            primitiveBuffer;
+
+         Buffers()
+         {
+            vertStart = 0;
+            primStart = 0;
+            vertCount = 0;
+            primCount = 0;
+
+            vertexBuffer = NULL;
+            primitiveBuffer = NULL;
+         }
+      };
+
+      Vector<Buffers> buffers;
+
+      BufferSet()
+      {
+         Buffers newBuffer;
+         buffers.push_back(newBuffer);
+
+         surfaceMaterialId = 0;
+
+         vertCount = 0;
+         primCount = 0;
+      }
+   };
+
+   Vector<BufferSet>    mBuffers;
+
+   U32 mPrimCount;
+   U32 mVertCount;
 
 public:
    BrushEditorTool();
@@ -82,9 +226,6 @@ public:
    //Called when the tool is deactivated on the World Editor
    virtual void onDeactivated();
 
-   //
-   static bool _cursorCastCallback(RayInfo* ri);
-   bool _cursorCast(const Gui3DMouseEvent &event, BrushObject **hitShape, S32 *hitBrush, S32 *hitFace);
    //
    virtual bool onMouseMove(const Gui3DMouseEvent &);
    virtual bool onMouseDown(const Gui3DMouseEvent &);
@@ -107,9 +248,23 @@ public:
    //
    virtual void render();
 
-   bool carveAction();
+   //
+   void compileGeometry();
+   void processBrushes();
 
-   bool addBoxBrush(Box3F);
+   U32 findBufferSetByMaterial(U32 matId)
+   {
+      for (U32 i = 0; i < mBuffers.size(); i++)
+      {
+         if (mBuffers[i].surfaceMaterialId == matId)
+            return i;
+      }
+
+      return -1;
+   }
+
+   //Creation functions
+   EditBrush addBoxBrush(Box3F, bool);
 };
 
 #endif

@@ -62,369 +62,6 @@ GFXImplementVertexFormat(BrushVert)
    addElement("TEXCOORD", GFXDeclType_Float2, 0);
 };
 
-void Brush::updateGeometry()
-{
-   mPlanes.clear();
-
-   for (S32 i = 0; i < mSurfaces.size(); i++)
-      mPlanes.push_back(PlaneF(mSurfaces[i].getPosition(), mSurfaces[i].getUpVector()));
-
-   Vector< Point3F > tangents;
-   for (S32 i = 0; i < mSurfaces.size(); i++)
-      tangents.push_back(mSurfaces[i].getRightVector());
-
-   mGeometry.generate(mPlanes, tangents, mSurfaceUVs);
-
-   AssertFatal(mGeometry.faces.size() <= mSurfaces.size(), "Got more faces than planes?");
-
-   const Vector< Face > &faceList = mGeometry.faces;
-   const Vector< Point3F > &pointList = mGeometry.points;
-
-   // Reset our surface center points.
-
-   for (S32 i = 0; i < faceList.size(); i++)
-      mSurfaces[faceList[i].id].setPosition(faceList[i].centroid);
-
-   mPlanes.clear();
-
-   for (S32 i = 0; i < mSurfaces.size(); i++)
-      mPlanes.push_back(PlaneF(mSurfaces[i].getPosition(), mSurfaces[i].getUpVector()));
-
-   // Update bounding box.   
-   updateBounds(false);
-}
-
-void Brush::updateBounds(bool recenter)
-{
-   if (mGeometry.points.size() == 0)
-      return;
-
-   Vector<Point3F> &pointListOS = mGeometry.points;
-   U32 pointCount = pointListOS.size();
-
-   Point3F volumnCenter(0, 0, 0);
-   F32 areaSum = 0.0f;
-
-   F32 faceCount = mGeometry.faces.size();
-
-   for (S32 i = 0; i < faceCount; i++)
-   {
-      volumnCenter += mGeometry.faces[i].centroid * mGeometry.faces[i].area;
-      areaSum += mGeometry.faces[i].area;
-   }
-
-   if (areaSum == 0.0f)
-      return;
-
-   volumnCenter /= areaSum;
-
-   mBounds.minExtents = mBounds.maxExtents = Point3F::Zero;
-   mBounds.setCenter(volumnCenter);
-
-   for (S32 i = 0; i < pointCount; i++)
-      mBounds.extend(pointListOS[i]);
-
-   bool tmp = true;
-   //resetWorldBox();
-}
-
-void Brush::Geometry::generate(const Vector< PlaneF > &planes, const Vector< Point3F > &tangents, const Vector< Brush::FaceUV > &uvs)
-{
-   PROFILE_SCOPE(Brush_Geometry_generate);
-
-   points.clear();
-   faces.clear();
-
-   AssertFatal(planes.size() == tangents.size(), "ConvexShape - incorrect plane/tangent count.");
-
-#ifdef TORQUE_ENABLE_ASSERTS
-   for (S32 i = 0; i < planes.size(); i++)
-   {
-      F32 dt = mDot(planes[i], tangents[i]);
-      AssertFatal(mIsZero(dt, 0.0001f), "ConvexShape - non perpendicular input vectors.");
-      AssertFatal(planes[i].isUnitLength() && tangents[i].isUnitLength(), "ConvexShape - non unit length input vector.");
-   }
-#endif
-
-   const U32 planeCount = planes.size();
-
-   Point3F linePt, lineDir;
-
-   for (S32 i = 0; i < planeCount; i++)
-   {
-      Vector< MathUtils::Line > collideLines;
-
-      // Find the lines defined by the intersection of this plane with all others.
-
-      for (S32 j = 0; j < planeCount; j++)
-      {
-         if (i == j)
-            continue;
-
-         if (planes[i].intersect(planes[j], linePt, lineDir))
-         {
-            collideLines.increment();
-            MathUtils::Line &line = collideLines.last();
-            line.origin = linePt;
-            line.direction = lineDir;
-         }
-      }
-
-      if (collideLines.empty())
-         continue;
-
-      // Find edges and points defined by the intersection of these lines.
-      // As we find them we fill them into our working ConvexShape::Face
-      // structure.
-
-      Face newFace;
-
-      for (S32 j = 0; j < collideLines.size(); j++)
-      {
-         Vector< Point3F > collidePoints;
-
-         for (S32 k = 0; k < collideLines.size(); k++)
-         {
-            if (j == k)
-               continue;
-
-            MathUtils::LineSegment segment;
-            MathUtils::mShortestSegmentBetweenLines(collideLines[j], collideLines[k], &segment);
-
-            F32 dist = (segment.p0 - segment.p1).len();
-
-            if (dist < 0.0005f)
-            {
-               S32 l = 0;
-               for (; l < planeCount; l++)
-               {
-                  if (planes[l].whichSide(segment.p0) == PlaneF::Front)
-                     break;
-               }
-
-               if (l == planeCount)
-                  collidePoints.push_back(segment.p0);
-            }
-         }
-
-         //AssertFatal( collidePoints.size() <= 2, "A line can't collide with more than 2 other lines in a convex shape..." );
-
-         if (collidePoints.size() != 2)
-            continue;
-
-         // Push back collision points into our points vector
-         // if they are not duplicates and determine the id
-         // index for those points to be used by Edge(s).    
-
-         const Point3F &pnt0 = collidePoints[0];
-         const Point3F &pnt1 = collidePoints[1];
-         S32 idx0 = -1;
-         S32 idx1 = -1;
-
-         for (S32 k = 0; k < points.size(); k++)
-         {
-            if (pnt0.equal(points[k]))
-            {
-               idx0 = k;
-               break;
-            }
-         }
-
-         for (S32 k = 0; k < points.size(); k++)
-         {
-            if (pnt1.equal(points[k]))
-            {
-               idx1 = k;
-               break;
-            }
-         }
-
-         if (idx0 == -1)
-         {
-            points.push_back(pnt0);
-            idx0 = points.size() - 1;
-         }
-
-         if (idx1 == -1)
-         {
-            points.push_back(pnt1);
-            idx1 = points.size() - 1;
-         }
-
-         // Construct the Face::Edge defined by this collision.
-
-         S32 localIdx0 = newFace.points.push_back_unique(idx0);
-         S32 localIdx1 = newFace.points.push_back_unique(idx1);
-
-         newFace.edges.increment();
-         Brush::Edge &newEdge = newFace.edges.last();
-         newEdge.p0 = localIdx0;
-         newEdge.p1 = localIdx1;
-      }
-
-      if (newFace.points.size() < 3)
-         continue;
-
-      //AssertFatal( newFace.points.size() == newFace.edges.size(), "ConvexShape - face point count does not equal edge count." );
-
-
-      // Fill in some basic Face information.
-
-      newFace.id = i;
-      newFace.normal = planes[i];
-      newFace.tangent = tangents[i];
-
-
-      // Make a working array of Point3Fs on this face.
-
-      U32 pntCount = newFace.points.size();
-      Point3F *workPoints = new Point3F[pntCount];
-
-      for (S32 j = 0; j < pntCount; j++)
-         workPoints[j] = points[newFace.points[j]];
-
-
-      // Calculate the average point for calculating winding order.
-
-      Point3F averagePnt = Point3F::Zero;
-
-      for (S32 j = 0; j < pntCount; j++)
-         averagePnt += workPoints[j];
-
-      averagePnt /= pntCount;
-
-
-      // Sort points in correct winding order.
-
-      U32 *vertMap = new U32[pntCount];
-
-      MatrixF quadMat(true);
-      quadMat.setPosition(averagePnt);
-      quadMat.setColumn(0, newFace.tangent);
-      quadMat.setColumn(1, mCross(newFace.normal, newFace.tangent));
-      quadMat.setColumn(2, newFace.normal);
-      quadMat.inverse();
-
-      // Transform working points into quad space 
-      // so we can work with them as 2D points.
-
-      for (S32 j = 0; j < pntCount; j++)
-         quadMat.mulP(workPoints[j]);
-
-      MathUtils::sortQuadWindingOrder(true, workPoints, vertMap, pntCount);
-
-      // Save points in winding order.
-
-      for (S32 j = 0; j < pntCount; j++)
-         newFace.winding.push_back(vertMap[j]);
-
-      // Calculate the area and centroid of the face.
-
-      newFace.area = 0.0f;
-      for (S32 j = 0; j < pntCount; j++)
-      {
-         S32 k = (j + 1) % pntCount;
-         const Point3F &p0 = workPoints[vertMap[j]];
-         const Point3F &p1 = workPoints[vertMap[k]];
-
-         // Note that this calculation returns positive area for clockwise winding
-         // and negative area for counterclockwise winding.
-         newFace.area += p0.y * p1.x;
-         newFace.area -= p0.x * p1.y;
-      }
-
-      //AssertFatal( newFace.area > 0.0f, "ConvexShape - face area was not positive." );
-      if (newFace.area > 0.0f)
-         newFace.area /= 2.0f;
-
-      F32 factor;
-      F32 cx = 0.0f, cy = 0.0f;
-
-      for (S32 j = 0; j < pntCount; j++)
-      {
-         S32 k = (j + 1) % pntCount;
-         const Point3F &p0 = workPoints[vertMap[j]];
-         const Point3F &p1 = workPoints[vertMap[k]];
-
-         factor = p0.x * p1.y - p1.x * p0.y;
-         cx += (p0.x + p1.x) * factor;
-         cy += (p0.y + p1.y) * factor;
-      }
-
-      factor = 1.0f / (newFace.area * 6.0f);
-      newFace.centroid.set(cx * factor, cy * factor, 0.0f);
-      quadMat.inverse();
-      quadMat.mulP(newFace.centroid);
-
-      delete[] workPoints;
-      workPoints = NULL;
-
-      // Make polygons / triangles for this face.
-
-      const U32 polyCount = pntCount - 2;
-
-      newFace.triangles.setSize(polyCount);
-
-      for (S32 j = 0; j < polyCount; j++)
-      {
-         Brush::Triangle &poly = newFace.triangles[j];
-
-         poly.p0 = vertMap[0];
-
-         if (j == 0)
-         {
-            poly.p1 = vertMap[1];
-            poly.p2 = vertMap[2];
-         }
-         else
-         {
-            poly.p1 = vertMap[1 + j];
-            poly.p2 = vertMap[2 + j];
-         }
-      }
-
-      delete[] vertMap;
-
-
-      // Calculate texture coordinates for each point in this face.
-
-      const Point3F binormal = mCross(newFace.normal, newFace.tangent);
-      PlaneF planey(newFace.centroid - 0.5f * binormal, binormal);
-      PlaneF planex(newFace.centroid - 0.5f * newFace.tangent, newFace.tangent);
-
-      newFace.texcoords.setSize(newFace.points.size());
-
-      for (S32 j = 0; j < newFace.points.size(); j++)
-      {
-         F32 x = planex.distToPlane(points[newFace.points[j]]);
-         F32 y = planey.distToPlane(points[newFace.points[j]]);
-
-         newFace.texcoords[j].set(-x, -y);
-      }
-
-      // Data verification tests.
-#ifdef TORQUE_ENABLE_ASSERTS
-      //S32 triCount = newFace.triangles.size();
-      //S32 edgeCount = newFace.edges.size();
-      //AssertFatal( triCount == edgeCount - 2, "ConvexShape - triangle/edge count do not match." );
-
-      /*
-      for ( S32 j = 0; j < triCount; j++ )
-      {
-      F32 area = MathUtils::mTriangleArea( points[ newFace.points[ newFace.triangles[j][0] ] ],
-      points[ newFace.points[ newFace.triangles[j][1] ] ],
-      points[ newFace.points[ newFace.triangles[j][2] ] ] );
-      AssertFatal( area > 0.0f, "ConvexShape - triangle winding bad." );
-      }*/
-#endif
-
-
-      // Done with this Face.
-
-      faces.push_back(newFace);
-   }
-}
-
 //-----------------------------------------------------------------------------
 // Object setup and teardown
 //-----------------------------------------------------------------------------
@@ -437,22 +74,11 @@ BrushObject::BrushObject()
    // Set it as a "static" object that casts shadows
    mTypeMask |= StaticObjectType | StaticShapeObjectType;
 
-   // Make sure we the Material instance to NULL
-   // so we don't try to access it incorrectly
-   mMaterialInst = NULL;
-
    mBrushFile = "";
 }
 
 BrushObject::~BrushObject()
 {
-   for (U32 i = 0; i < mSurfaceMaterials.size(); i++)
-   {
-      if (mSurfaceMaterials[i].mMaterialInst)
-         SAFE_DELETE(mSurfaceMaterials[i].mMaterialInst);
-   }
-   if (mMaterialInst)
-      SAFE_DELETE(mMaterialInst);
 }
 
 //-----------------------------------------------------------------------------
@@ -464,11 +90,6 @@ void BrushObject::initPersistFields()
    addField("brushFile", TypeFilename, Offset(mBrushFile, BrushObject),
       "The name of the material used to render the mesh.");
    endGroup("Brush");
-
-   addGroup("Rendering");
-   addField("material", TypeMaterialName, Offset(mMaterialName, BrushObject),
-      "The name of the material used to render the mesh.");
-   endGroup("Rendering");
 
    // SceneObject already handles exposing the transform
    Parent::initPersistFields();
@@ -506,7 +127,7 @@ void BrushObject::onRemove()
 
 void BrushObject::loadBrushFile()
 {
-   mBrushes.clear();
+   /*mBrushes.clear();
    mSurfaceMaterials.clear();
    U32 BUFFER_SIZE = 65000;
 
@@ -633,7 +254,7 @@ void BrushObject::loadBrushFile()
 
             reader->popElement();*/
 
-            uv.matID = 0;
+            /*uv.matID = 0;
             uv.offset = Point2F(0, 0);
             uv.scale = Point2F(0, 0);
             uv.zRot = 0;
@@ -769,13 +390,13 @@ void BrushObject::loadBrushFile()
 
    U32 loadTime = endTimestamp - timestamp;
 
-   bool tmp = true;
+   bool tmp = true;*/
 }
 
 void BrushObject::saveBrushFile()
 {
    //prep an xml document reader so we can save to our brush file
-   SimXMLDocument *xmlrdr = new SimXMLDocument();
+   /*SimXMLDocument *xmlrdr = new SimXMLDocument();
    xmlrdr->registerObject();
 
    xmlrdr->pushNewElement("BrushObject");
@@ -864,12 +485,12 @@ void BrushObject::saveBrushFile()
       xmlrdr->popElement();
    }
 
-   xmlrdr->saveFile(mBrushFile);
+   xmlrdr->saveFile(mBrushFile);*/
 }
 
 bool BrushObject::castRay(const Point3F &start, const Point3F &end, RayInfo *info)
 {
-   if (mBrushes.empty())
+   /*if (mBrushes.empty())
       return false;
 
    for (U32 b = 0; b < mBrushes.size(); b++)
@@ -922,7 +543,7 @@ bool BrushObject::castRay(const Point3F &start, const Point3F &end, RayInfo *inf
                }*/
 
                //we have our point, check if it's inside the planar bounds of the line segment
-               VectorF v0 = t2 - t0;
+               /*VectorF v0 = t2 - t0;
                VectorF v1 = t1 - t0;
                VectorF v2 = pnt - t1;
 
@@ -957,7 +578,7 @@ bool BrushObject::castRay(const Point3F &start, const Point3F &end, RayInfo *inf
                   break;
             }
             */
-            if (validHit)
+            /*if (validHit)
             {
                tmin = t;
                hitFace = i;
@@ -978,7 +599,7 @@ bool BrushObject::castRay(const Point3F &start, const Point3F &end, RayInfo *inf
 
          return true;
       }
-   }
+   }*/
 
    return false;
 }
@@ -1005,7 +626,7 @@ U32 BrushObject::packUpdate(NetConnection *conn, U32 mask, BitStream *stream)
       mathWrite(*stream, getScale());
    }
 
-   if (stream->writeFlag(mask & UpdateMask))
+   /*if (stream->writeFlag(mask & UpdateMask))
    {
       stream->writeInt(mSurfaceMaterials.size(), 32);
 
@@ -1013,7 +634,7 @@ U32 BrushObject::packUpdate(NetConnection *conn, U32 mask, BitStream *stream)
          stream->write(mSurfaceMaterials[i].mMaterialName);
 
       stream->writeString(mBrushFile);
-   }
+   }*/
 
    return retMask;
 }
@@ -1031,7 +652,7 @@ void BrushObject::unpackUpdate(NetConnection *conn, BitStream *stream)
       setTransform(mObjToWorld);
    }
 
-   if (stream->readFlag()) // UpdateMask
+   /*if (stream->readFlag()) // UpdateMask
    {
       mSurfaceMaterials.clear();
       U32 materialCount = stream->readInt(32);
@@ -1052,7 +673,7 @@ void BrushObject::unpackUpdate(NetConnection *conn, BitStream *stream)
 
       //if (dStrcmp(oldBrushFile,mBrushFile))
       //   loadBrushFile();
-   }
+   }*/
 }
 
 void BrushObject::updateBounds(bool recenter)
@@ -1062,19 +683,23 @@ void BrushObject::updateBounds(bool recenter)
 
    mObjBox.set(Point3F::Zero, Point3F::Zero);
 
+   Vector<Point3F> points;
    for (U32 i = 0; i < mBrushes.size(); i++)
    {
-      if (mBrushes[i].mGeometry.points.size() == 0)
-         return;
+      for (U32 v = 0; v < mBrushes[i].mCSGModel.vertices.size(); v++)
+      {
+         Point3F vPos;
+         vPos.x = mBrushes[i].mCSGModel.vertices[v].pos.x;
+         vPos.y = mBrushes[i].mCSGModel.vertices[v].pos.y;
+         vPos.z = mBrushes[i].mCSGModel.vertices[v].pos.z;
 
-      Vector<Point3F> &pointListOS = mBrushes[i].mGeometry.points;
-      U32 pointCount = pointListOS.size();
-
-      for (S32 i = 0; i < pointCount; i++)
-         mObjBox.extend(pointListOS[i]);
-
-      resetWorldBox();
+         points.push_back(vPos);
+      }
    }
+
+   mObjBox = Box3F::aroundPoints(points.address(), points.size());
+
+   resetWorldBox();
 }
 
 void BrushObject::writeFields(Stream &stream, U32 tabStop)
@@ -1099,110 +724,13 @@ bool BrushObject::writeField(StringTableEntry fieldname, const char *value)
 //-----------------------------------------------------------------------------
 // Object Rendering
 //-----------------------------------------------------------------------------
-void BrushObject::addBoxBrush(Point3F center)
-{
-   Brush newBrush;
-
-   // X Axis
-   static const Point3F cubeTangents[6] =
-   {
-      Point3F(1, 0, 0),
-      Point3F(-1, 0, 0),
-      Point3F(1, 0, 0),
-      Point3F(-1, 0, 0),
-      Point3F(0, 1, 0),
-      Point3F(0, -1, 0)
-   };
-
-   // Y Axis
-   static const Point3F cubeBinormals[6] =
-   {
-      Point3F(0, 1, 0),
-      Point3F(0, 1, 0),
-      Point3F(0, 0, -1),
-      Point3F(0, 0, -1),
-      Point3F(0, 0, -1),
-      Point3F(0, 0, -1)
-   };
-
-   // Z Axis
-   static const Point3F cubeNormals[6] =
-   {
-      Point3F(0, 0, 1),
-      Point3F(0, 0, -1),
-      Point3F(0, 1, 0),
-      Point3F(0, -1, 0),
-      Point3F(-1, 0, 0),
-      Point3F(1, 0, 0),
-   };
-
-   {
-      for (S32 i = 0; i < 6; i++)
-      {
-         newBrush.mSurfaces.increment();
-         MatrixF &surf = newBrush.mSurfaces.last();
-
-         surf.identity();
-
-         surf.setColumn(0, cubeTangents[i]);
-         surf.setColumn(1, cubeBinormals[i]);
-         surf.setColumn(2, cubeNormals[i]);
-         surf.setPosition(cubeNormals[i] * 0.5f + center);
-
-         newBrush.mSurfaceUVs.increment();
-      }
-   }
-
-   /*for (S32 i = 0; i < 6; i++)
-   {
-      newBrush.mSurfaces.increment();
-      MatrixF &surf = newBrush.mSurfaces.last();
-
-      surf.identity();
-
-      surf.setColumn(0, cubeTangents[i]);
-      surf.setColumn(1, cubeBinormals[i]);
-      surf.setColumn(2, cubeNormals[i]);
-      surf.setPosition((cubeNormals[i] * 0.5f));
-
-      newBrush.mSurfaceUVs.increment();
-      Brush::FaceUV &uv = newBrush.mSurfaceUVs.last();
-      uv.horzFlip = mRandF() > 0.5;
-      uv.vertFlip = mRandF() > 0.5;
-      uv.matID = mRandI(0, mSurfaceMaterials.size()-1);
-      uv.offset = Point2F(mRandF(), mRandF());
-      uv.scale = Point2F(mRandF(0.1, 2), mRandF(0.1, 2));
-      uv.zRot = mRandF(0, 360);
-   }*/
-
-   newBrush.updateGeometry();
-
-   mBrushes.push_back(newBrush);
-}
-
-void BrushObject::addBrush(Point3F center, const Vector<MatrixF> surfaces, const Vector<Brush::FaceUV> uvs)
-{
-   Brush newBrush;
-
-   newBrush.mSurfaces = surfaces;
-
-   newBrush.mSurfaceUVs = uvs;
-
-   newBrush.updateGeometry();
-
-   mBrushes.push_back(newBrush);
-}
-
 void BrushObject::createGeometry()
 {
    // Server does not need to generate vertex/prim buffers.
    if (isServerObject())
       return;
 
-   //if (updateCollision)
-   //   _updateCollision();
-
-   for (U32 i = 0; i < mBuffers.size(); i++)
+   /*for (U32 i = 0; i < mBuffers.size(); i++)
    {
       for (U32 b = 0; b < mBuffers[i].buffers.size(); b++)
       {
@@ -1242,13 +770,13 @@ void BrushObject::createGeometry()
 
          buffers.primitiveBuffer.unlock();
       }
-   }
+   }*/
 }
 
 void BrushObject::updateMaterials()
 {
    // Server does not need to load materials
-   if (isServerObject())
+   /*if (isServerObject())
       return;
 
    for (U32 i = 0; i < mSurfaceMaterials.size(); i++)
@@ -1266,13 +794,13 @@ void BrushObject::updateMaterials()
 
       if (!mSurfaceMaterials[i].mMaterialInst)
          Con::errorf("BrushObject::updateMaterial - no Material called '%s'", mSurfaceMaterials[i].mMaterialName.c_str());
-   }
+   }*/
 }
 
 void BrushObject::prepRenderImage(SceneRenderState *state)
 {
    // Do a little prep work if needed
-   if (mBuffers.empty() || !state)
+   /*if (mBuffers.empty() || !state)
       createGeometry();
 
    // If we don't have a material instance after the override then 
@@ -1372,216 +900,90 @@ void BrushObject::prepRenderImage(SceneRenderState *state)
          // Submit our RenderInst to the RenderPassManager
          state->getRenderPass()->addInst(ri);
       }
-   }
-}
+   }*/
 
-void BrushObject::_renderDebug(ObjectRenderInst *ri, SceneRenderState *state, BaseMatInstance *mat)
-{
-   GFXDrawUtil *drawer = GFX->getDrawUtil();
+   // Get a handy pointer to our RenderPassmanager
+   RenderPassManager *renderPass = state->getRenderPass();
 
-   GFX->setTexture(0, NULL);
+   // Set up our transforms
+   MatrixF objectToWorld = getRenderTransform();
+   objectToWorld.scale(getScale());
 
    for (U32 i = 0; i < mBrushes.size(); i++)
    {
-      const Vector< Point3F > &pointList = mBrushes[i].mGeometry.points;
-      const Vector< Brush::Face > &faceList = mBrushes[i].mGeometry.faces;
+      MeshRenderInst *ri = renderPass->allocInst<MeshRenderInst>();
 
-      // Render world box.
-      if (false)
+      // Set our RenderInst as a standard mesh render
+      ri->type = RenderPassManager::RIT_Mesh;
+
+      // Calculate our sorting point
+      if (state)
       {
-         Box3F wbox = Box3F::Zero;
-         
-         for (U32 s = 0; s < faceList.size(); s++)
-         {
-            for (U32 p = 0; p < faceList[s].points.size(); p++)
-            {
-               wbox.extend(pointList[faceList[s].points[p]]);
-            }
-         }
+         // Calculate our sort point manually.
+         const Box3F& rBox = getRenderWorldBox();
+         ri->sortDistSq = rBox.getSqDistanceToPoint(state->getCameraPosition());
+      }
+      else
+         ri->sortDistSq = 0.0f;
 
-         GFXStateBlockDesc desc;
-         desc.setCullMode(GFXCullNone);
-         desc.setFillModeWireframe();
-         drawer->drawCube(desc, wbox, ColorI::WHITE);
+      // Set up our transforms
+      //MatrixF objectToWorld = getRenderTransform();
+      //objectToWorld.scale(getScale());
+
+      ri->objectToWorld = renderPass->allocUniqueXform(objectToWorld);
+      //ri->objectToWorld = renderPass->allocUniqueXform(MatrixF::Identity);
+      ri->worldToCamera = renderPass->allocSharedXform(RenderPassManager::View);
+      ri->projection = renderPass->allocSharedXform(RenderPassManager::Projection);
+
+      // Make sure we have an up-to-date backbuffer in case
+      // our Material would like to make use of it
+      // NOTICE: SFXBB is removed and refraction is disabled!
+      //ri->backBuffTex = GFX->getSfxBackBuffer();
+
+      // Set our Material
+      /*Material *material;
+
+      if (!Sim::findObject(mBrushes[i].mMaterialName, material))
+         Sim::findObject("WarningMaterial", material);
+
+      mBrushes[i].mMaterialInst = material->createMatInstance();*/
+
+      ri->matInst = MATMGR->getWarningMatInstance();// state->getOverrideMaterial(mBrushes[i].mMaterialInst ? mBrushes[i].mMaterialInst : MATMGR->getWarningMatInstance());
+      if (ri->matInst == NULL)
+         continue; //if we still have no valid mat, skip out
+
+                     // If we need lights then set them up.
+      if (ri->matInst->isForwardLit())
+      {
+         LightQuery query;
+         query.init(getWorldSphere());
+         query.getLights(ri->lights, 8);
       }
 
-      // Render Edges.
-      if (true)
+      if (ri->matInst->getMaterial()->isTranslucent())
       {
-         GFXTransformSaver saver;
-         //GFXFrustumSaver fsaver;
-
-         MatrixF xfm(getRenderTransform());
-         xfm.scale(getScale());
-         GFX->multWorld(xfm);
-
-         GFXStateBlockDesc desc;
-         desc.setZReadWrite(true, false);
-         desc.setBlend(true);
-         GFX->setStateBlockByDesc(desc);
-
-         //MathUtils::getZBiasProjectionMatrix( 0.01f, state->getFrustum(), )
-
-         const Point3F &camFvec = state->getCameraTransform().getForwardVector();
-
-         for (S32 f = 0; f < faceList.size(); f++)
-         {
-            const Brush::Face &face = faceList[f];
-
-            for (U32 tri = 0; tri < face.triangles.size(); tri++)
-            {
-               PrimBuild::begin(GFXLineList, 6);
-
-               PrimBuild::color(ColorI::WHITE * 0.8f);
-
-               U32 p0 = face.triangles[tri].p0;
-               U32 p1 = face.triangles[tri].p1;
-               U32 p2 = face.triangles[tri].p2;
-
-               PrimBuild::vertex3fv(pointList[face.triangles[tri].p0]);
-               PrimBuild::vertex3fv(pointList[face.triangles[tri].p1]);
-               PrimBuild::vertex3fv(pointList[face.triangles[tri].p1]);
-               PrimBuild::vertex3fv(pointList[face.triangles[tri].p2]);
-               PrimBuild::vertex3fv(pointList[face.triangles[tri].p2]);
-               PrimBuild::vertex3fv(pointList[face.triangles[tri].p0]);
-
-               PrimBuild::end();
-            }
-         }
+         ri->translucentSort = true;
+         ri->type = RenderPassManager::RIT_Translucent;
       }
 
-      ColorI faceColorsx[4] =
-      {
-         ColorI(255, 0, 0),
-         ColorI(0, 255, 0),
-         ColorI(0, 0, 255),
-         ColorI(255, 0, 255)
-      };
+      // Set up our vertex buffer and primitive buffer
+      ri->vertBuff = &mBrushes[i].mVertexBuffer;
+      ri->primBuff = &mBrushes[i].mPrimitiveBuffer;
 
-      MatrixF objToWorld(mObjToWorld);
-      objToWorld.scale(mObjScale);
+      ri->prim = renderPass->allocPrim();
+      ri->prim->type = GFXTriangleList;
+      ri->prim->minIndex = 0;
+      ri->prim->startIndex = 0;
+      ri->prim->numPrimitives = mBrushes[i].mPrimCount;
+      ri->prim->startVertex = 0;
+      ri->prim->numVertices = mBrushes[i].mVertCount;
 
-      // Render faces centers/colors.
-      if (false)
-      {
-         GFXStateBlockDesc desc;
-         desc.setCullMode(GFXCullNone);
+      // We sort by the material then vertex buffer.
+      ri->defaultKey = ri->matInst->getStateHint();
+      ri->defaultKey2 = (uintptr_t)ri->vertBuff; // Not 64bit safe!
 
-         Point3F size(0.1f);
-
-         for (S32 f = 0; f < faceList.size(); f++)
-         {
-            ColorI color = faceColorsx[f % 4];
-            S32 div = (f / 4) * 4;
-            if (div > 0)
-               color /= div;
-            color.alpha = 255;
-
-            Point3F pnt;
-            objToWorld.mulP(faceList[f].centroid, &pnt);
-            drawer->drawCube(desc, size, pnt, color, NULL);
-         }
-      }
-
-      // Render winding order.
-      if (false)
-      {
-         GFXStateBlockDesc desc;
-         desc.setCullMode(GFXCullNone);
-         desc.setZReadWrite(true, false);
-         GFX->setStateBlockByDesc(desc);
-
-         U32 pointCount = 0;
-         for (S32 f = 0; f < faceList.size(); f++)
-            pointCount += faceList[f].winding.size();
-
-         PrimBuild::begin(GFXLineList, pointCount * 2);
-
-         for (S32 f = 0; f < faceList.size(); f++)
-         {
-            for (S32 j = 0; j < faceList[f].winding.size(); j++)
-            {
-               Point3F p0 = pointList[faceList[f].points[faceList[f].winding[j]]];
-               Point3F p1 = p0 + mBrushes[i].mSurfaces[faceList[f].id].getUpVector() * 0.75f * (Point3F::One / mObjScale);
-
-               objToWorld.mulP(p0);
-               objToWorld.mulP(p1);
-
-               ColorI color = faceColorsx[j % 4];
-               S32 div = (j / 4) * 4;
-               if (div > 0)
-                  color /= div;
-               color.alpha = 255;
-
-               PrimBuild::color(color);
-               PrimBuild::vertex3fv(p0);
-               PrimBuild::color(color);
-               PrimBuild::vertex3fv(p1);
-            }
-         }
-
-         PrimBuild::end();
-      }
-
-      // Render Points.
-      if (false)
-      {
-         /*
-         GFXTransformSaver saver;
-
-         MatrixF xfm( getRenderTransform() );
-         xfm.scale( getScale() );
-         GFX->multWorld( xfm );
-
-         GFXStateBlockDesc desc;
-         Point3F size( 0.05f );
-         */
-      }
-
-      // Render surface transforms.
-      if (false)
-      {
-         GFXStateBlockDesc desc;
-         desc.setBlend(false);
-         desc.setZReadWrite(true, true);
-
-         F32 mNormalLength = 10;
-
-         Point3F scale(mNormalLength);
-
-         for (S32 s = 0; s < faceList.size(); s++)
-         {
-            MatrixF objToWorld(mObjToWorld);
-            objToWorld.scale(mObjScale);
-
-            //MatrixF faceSurface;
-            
-            Point3F average = Point3F::Zero;
-            for (U32 p = 0; p < faceList[s].points.size(); p++)
-            {
-               average += pointList[faceList[s].points[p]];
-               drawer->drawCube(desc, Box3F(pointList[faceList[s].points[p]] - Point3F(0.1, 0.1, 0.1), 
-                  pointList[faceList[s].points[p]] + Point3F(0.1, 0.1, 0.1)), ColorI(0, 255, 0));
-            }
-            average /= faceList[s].points.size();
-
-            //MatrixF renderMat;
-            //renderMat.mul(objToWorld, mBrushes[i].mSurfaces[s]);
-
-            //renderMat.setPosition(renderMat.getPosition() + renderMat.getUpVector() * 0.001f);
-
-            Point3F normal = faceList[s].normal;
-            normal.normalize();
-
-            //drawer->drawCube(desc, Box3F(average - Point3F(0.1, 0.1, 0.1), average + Point3F(0.1, 0.1, 0.1)), ColorI(0, 255, 0));
-
-            drawer->drawLine(average, average + normal, ColorI(0, 0, 255));
-
-            drawer->drawLine(average, average + faceList[s].tangent, ColorI(255, 0, 0));
-
-            //drawer->drawTransform(desc, renderMat, &scale, NULL);
-         }
-      }
+                                                   // Submit our RenderInst to the RenderPassManager
+      state->getRenderPass()->addInst(ri);
    }
 }
 
@@ -1593,7 +995,7 @@ DefineEngineMethod(BrushObject, postApply, void, (), ,
 
 DefineEngineFunction(makeBrushFile, void, (String fileName), ("levels/brushFileTest.brush"), "")
 {
-   U32 size = 10;
+   /*U32 size = 10;
 
    BrushObject* newBrushObj = new BrushObject();
    newBrushObj->registerObject();
@@ -1623,9 +1025,9 @@ DefineEngineFunction(makeBrushFile, void, (String fileName), ("levels/brushFileT
       }
    }*/
 
-   newBrushObj->addBoxBrush(Point3F(0,0,0));
+  /* newBrushObj->addBoxBrush(Point3F(0,0,0));
 
    newBrushObj->mBrushFile = "levels/brushFileTest.brush";
 
-   newBrushObj->saveBrushFile();
+   newBrushObj->saveBrushFile();*/
 }
