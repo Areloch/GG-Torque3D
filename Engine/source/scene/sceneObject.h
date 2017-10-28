@@ -20,6 +20,11 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
+// Arcane-FX for MIT Licensed Open Source version of Torque 3D from GarageGames
+// Copyright (C) 2015 Faust Logic, Inc.
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
+
 #ifndef _SCENEOBJECT_H_
 #define _SCENEOBJECT_H_
 
@@ -499,6 +504,9 @@ class SceneObject : public NetObject, private SceneContainer::Link, public Proce
       /// @param   scale   Scaling values
       virtual void setScale( const VectorF &scale );
 
+      /// Sets the forward vector of the object
+      void setForwardVector(VectorF newForward, VectorF upVector = VectorF(0, 0, 1));
+
       /// This sets the render transform for this object
       /// @param   mat   New render transform
       virtual void setRenderTransform(const MatrixF &mat);
@@ -778,6 +786,23 @@ class SceneObject : public NetObject, private SceneContainer::Link, public Proce
    // Note: This was placed in SceneObject to both ShapeBase and TSStatic could support it.
    public:
       GFXTextureObject* mAccuTex;
+      //   mSelectionFlags field keeps track of flags related to object selection.
+      //     PRE_SELECTED marks an object as pre-selected (object under cursor)
+      //     SELECTED marks an object as selected (a target)
+   protected:
+      U8 mSelectionFlags;
+   public:
+      enum { 
+         SELECTED      = BIT(0), 
+         PRE_SELECTED  = BIT(1), 
+      };
+      virtual void setSelectionFlags(U8 flags) { mSelectionFlags = flags; }
+      U8 getSelectionFlags() const { return mSelectionFlags; }
+      bool needsSelectionHighlighting() const { return (mSelectionFlags != 0); }
+      //   This should only return true if the object represents an independent camera
+      //   as opposed to something like a Player that has a built-in camera that requires
+      //   special calculations to determine the view transform.
+      virtual bool isCamera() const { return false; }
 };
 
 #endif  // _SCENEOBJECT_H_

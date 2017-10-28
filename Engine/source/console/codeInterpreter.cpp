@@ -813,6 +813,7 @@ OPCodeReturn CodeInterpreter::op_create_object(U32 &ip)
             Con::errorf(ConsoleLogEntry::General, "%s: Unable to instantiate non-datablock class %s.", mCodeBlock->getFileLine(ip), (const char*)mCallArgv[1]);
             // Clean up...
             delete object;
+            mCurrentNewObject = NULL;
             ip = mFailJump;
             return OPCodeReturn::success;
          }
@@ -848,6 +849,14 @@ OPCodeReturn CodeInterpreter::op_create_object(U32 &ip)
 
             mCurrentNewObject->setCopySource(parent);
             mCurrentNewObject->assignFieldsFrom(parent);
+            // copy any substitution statements
+            SimDataBlock* parent_db = dynamic_cast<SimDataBlock*>(parent);
+            if (parent_db)
+            {
+               SimDataBlock* currentNewObject_db = dynamic_cast<SimDataBlock*>(mCurrentNewObject);
+               if (currentNewObject_db)
+                  currentNewObject_db->copySubstitutionsFrom(parent_db);
+            }
          }
          else
          {
@@ -905,6 +914,38 @@ OPCodeReturn CodeInterpreter::op_create_object(U32 &ip)
       {
          mCurrentNewObject->setModStaticFields(true);
          mCurrentNewObject->setModDynamicFields(true);
+      }
+   }
+   else
+   {
+      mCurrentNewObject->reloadReset(); // AFX (reload-reset)
+                                       // Does it have a parent object? (ie, the copy constructor : syntax, not inheriance)
+      if (*objParent)
+      {
+         // Find it!
+         SimObject *parent;
+         if (Sim::findObject(objParent, parent))
+         {
+            // Con::printf(" - Parent object found: %s", parent->getClassName());
+
+            // temporarily block name change
+            SimObject::preventNameChanging = true;
+            mCurrentNewObject->setCopySource(parent);
+            mCurrentNewObject->assignFieldsFrom(parent);
+            // restore name changing
+            SimObject::preventNameChanging = false;
+
+            // copy any substitution statements
+            SimDataBlock* parent_db = dynamic_cast<SimDataBlock*>(parent);
+            if (parent_db)
+            {
+               SimDataBlock* currentNewObject_db = dynamic_cast<SimDataBlock*>(mCurrentNewObject);
+               if (currentNewObject_db)
+                  currentNewObject_db->copySubstitutionsFrom(parent_db);
+            }
+         }
+         else
+            Con::errorf(ConsoleLogEntry::General, "%d: Unable to find parent object %s for %s.", lineNumber, objParent, (const char*)mCallArgv[1]);
       }
    }
 
