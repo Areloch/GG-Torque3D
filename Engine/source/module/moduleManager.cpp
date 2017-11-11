@@ -70,7 +70,8 @@ S32 QSORT_CALLBACK moduleDefinitionVersionIdSort( const void* a, const void* b )
 ModuleManager::ModuleManager() :
     mEnforceDependencies(true),
     mEchoInfo(true),
-    mDatabaseLocks( 0 )
+    mDatabaseLocks( 0 ),
+   mIgnoreLoadedGroups(false)
 {
     // Set module extension.
     dStrcpy( mModuleExtension, MODULE_MANAGER_MODULE_DEFINITION_EXTENSION );
@@ -1986,7 +1987,7 @@ bool ModuleManager::registerModule( const char* pModulePath, const char* pModule
     }
 
     // Is the module group already loaded?
-    if ( findGroupLoaded( moduleGroup ) != NULL )
+    if ( findGroupLoaded( moduleGroup ) != NULL && !mIgnoreLoadedGroups)
     {
         // Yes, so warn.
         Con::warnf( "Module Manager: Found module: '%s' but it is in a module group '%s' which has already been loaded.",

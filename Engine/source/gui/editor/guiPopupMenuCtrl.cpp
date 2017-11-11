@@ -181,4 +181,16 @@ void GuiPopupMenuTextListCtrl::onCellHighlighted(Point2I cell)
       Point2I globalpoint = localToGlobalCoord(globalbounds.point);
       globalbounds.point = globalpoint;
    }
+
+   S32 selectionIndex = cell.y;
+
+   if (selectionIndex != -1)
+   {
+      GuiMenuBar::MenuItem *list = mMenu->firstMenuItem;
+
+      if (list->isSubmenu && list->submenu->popupMenu != nullptr)
+      {
+         list->submenu->popupMenu->showPopup(getRoot(), mCellSize.x + 200, mCellSize.y);
+      }
+   }
 }

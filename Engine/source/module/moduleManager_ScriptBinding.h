@@ -46,6 +46,16 @@ DefineEngineMethod(ModuleManager, scanModules, bool, (const char* pRootPath, boo
 
 //-----------------------------------------------------------------------------
 
+DefineEngineMethod(ModuleManager, registerModule, bool, (const char* pModulePath, const char* pModuleFile), ("", ""),
+   "Unregister the specified module.\n"
+   "@param moduleId The module Id to unregister.\n"
+   "@param versionId The version Id to unregister.\n"
+   "@return Whether the module was unregister or not.\n")
+{
+   // Unregister the module.
+   return object->registerModule(pModulePath, pModuleFile);
+}
+
 DefineEngineMethod(ModuleManager, unregisterModule, bool, (const char* pModuleId, bool versionId), ("", false),
    "Unregister the specified module.\n"
    "@param moduleId The module Id to unregister.\n"
@@ -341,4 +351,15 @@ DefineEngineMethod(ModuleManager, removeListener, void, (const char* listenerObj
     }
 
     object->removeListener( pListener );
+}
+
+//-----------------------------------------------------------------------------
+
+DefineEngineMethod(ModuleManager, ignoreLoadedGroups, void, (bool doIgnore), (false),
+   "Checks whether a module merge using the modules in the source path can current happen or not.\n"
+   "@param mergeSourcePath The path where modules to be merged are located.\n"
+   "@return Whether a module merge using the modules in the source path can current happen or not.\n")
+{
+   // Check whether the merge modules can current happen or not.
+   return object->setIgnoreLoadedGroups(doIgnore);
 }

@@ -120,6 +120,7 @@ private:
     char                        mModuleExtension[256];
     Taml                        mTaml;
     SimSet                      mNotificationListeners;
+    bool                        mIgnoreLoadedGroups;
 
     // Module definition entry.
     struct ModuleDefinitionEntry : public typeModuleDefinitionVector
@@ -161,6 +162,7 @@ public:
     bool scanModules( const char* pPath, const bool rootOnly = false );
 
     /// Module unregister.
+    bool registerModule(const char* pModulePath, const char* pModuleFile);
     bool unregisterModule( const char* pModuleId, const U32 versionId );
 
     /// Module (un)loading.
@@ -188,10 +190,11 @@ public:
     void addListener( SimObject* pListener );
     void removeListener( SimObject* pListener );
 
+    void setIgnoreLoadedGroups(bool doIgnore) { mIgnoreLoadedGroups = doIgnore; }
+
 private:
     void clearDatabase( void );
     bool removeModuleDefinition( ModuleDefinition* pModuleDefinition );
-    bool registerModule( const char* pModulePath, const char* pModuleFile );
 
     void raiseModulePreLoadNotifications( ModuleDefinition* pModuleDefinition );
     void raiseModulePostLoadNotifications( ModuleDefinition* pModuleDefinition );

@@ -33,6 +33,7 @@
 class GuiMenuBar;
 class GuiMenuTextListCtrl;
 class WindowInputGenerator;
+class PopupMenu;
 
 class GuiMenuBackgroundCtrl : public GuiControl
 {
@@ -125,6 +126,8 @@ public:
 
 		Menu *nextMenu;
 		MenuItem *firstMenuItem;
+
+      PopupMenu* popupMenu;
 	};
 	
 	GuiMenuBackgroundCtrl *mBackground;

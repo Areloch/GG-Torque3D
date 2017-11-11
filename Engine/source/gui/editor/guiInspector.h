@@ -89,6 +89,9 @@ public:
       else
          return nullptr;
    }
+
+   S32 getComponentGroupTargetId() { return mComponentGroupTargetId; }
+   void setComponentGroupTargetId(S32 compId) { mComponentGroupTargetId = compId; }
    
    /// Return the number of objects being inspected by this GuiInspector.
    U32 getNumInspectObjects() const { return mTargets.size(); }
@@ -154,6 +157,8 @@ protected:
    SimObjectPtr<GuiInspectorField> mHLField;
    String mGroupFilters;   
    bool mShowCustomFields;
+
+   S32 mComponentGroupTargetId;
    
    void refresh();
 };

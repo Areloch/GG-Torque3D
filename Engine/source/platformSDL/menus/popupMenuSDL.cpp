@@ -119,6 +119,7 @@ S32 PopupMenu::insertSubMenu(S32 pos, const char *title, PopupMenu *submenu)
    item->isSubmenu = true;
    item->submenu = submenu->mData->mMenuGui;
    item->submenuParentMenu = this->mData->mMenuGui;
+   item->submenu->popupMenu = submenu;
 
    return pos;
 }

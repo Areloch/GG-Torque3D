@@ -55,7 +55,8 @@ GuiInspector::GuiInspector()
    mOverDivider( false ),
    mMovingDivider( false ),
    mHLField( NULL ),
-   mShowCustomFields( true )
+   mShowCustomFields( true ),
+   mComponentGroupTargetId(-1)
 {
    mPadding = 1;
 }
