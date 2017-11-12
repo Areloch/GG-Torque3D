@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright (c) 2012 GarageGames, LLC
+// Copyright (c) 2013 GarageGames, LLC
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to
@@ -20,32 +20,26 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#pragma once
+#ifndef _AUTOLOAD_ASSETS_H_
+#include "assets/autoloadAssets.h"
+#endif
 
-#include "gui/editor/guiMenuBar.h"
-#include "platformSDL/menus/PlatformSDLPopupMenuData.h"
-#include "platform/menus/popupMenu.h"
+#ifndef _CONSOLETYPES_H_
+#include "console/consoleTypes.h"
+#endif
 
-class GuiPlatformGenericMenuBar : public GuiMenuBar
+//-----------------------------------------------------------------------------
+
+IMPLEMENT_CONOBJECT(AutoloadAssets);
+
+//-----------------------------------------------------------------------------
+
+void AutoloadAssets::initPersistFields()
 {
-   typedef GuiMenuBar Parent;
-public:
-   DECLARE_CONOBJECT(GuiPlatformGenericMenuBar);
+   // Call Parent.
+   Parent::initPersistFields();
 
-   virtual void menuItemSelected(Menu *menu, MenuItem *item)
-   {
-      AssertFatal(menu && item, "");
-
-      PopupMenu *popupMenu = PlatformPopupMenuData::mMenuMap[menu];
-      AssertFatal(popupMenu, "");
-
-      popupMenu->handleSelect(item->id);
-
-      Parent::menuItemSelected(menu, item);
-   }
-
-protected:
-   /// menu id / item id
-   Map<CompoundKey<U32, U32>, String> mCmds;
-
-};
+   addField("Path", TypeString, Offset(mPath, AutoloadAssets), "");
+   addField("AssetType", TypeString, Offset(mAssetType, AutoloadAssets), "");
+   addField("Recurse", TypeBool, Offset(mRecurse, AutoloadAssets), "");
+}
