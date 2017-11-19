@@ -90,13 +90,8 @@ ConsoleSetType(TypeExampleAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-ExampleAsset::ExampleAsset() :
-mpOwningAssetManager(NULL),
-mAssetInitialized(false),
-mAcquireReferenceCount(0)
+ExampleAsset::ExampleAsset()
 {
-   // Generate an asset definition.
-   mpAssetDefinition = new AssetDefinition();
 }
 
 //-----------------------------------------------------------------------------

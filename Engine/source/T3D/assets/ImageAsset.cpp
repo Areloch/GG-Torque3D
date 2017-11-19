@@ -90,14 +90,8 @@ ConsoleSetType(TypeImageAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-ImageAsset::ImageAsset() :
-   mAcquireReferenceCount(0),
-   mpOwningAssetManager(NULL),
-   mAssetInitialized(false)
+ImageAsset::ImageAsset()
 {
-   // Generate an asset definition.
-   mpAssetDefinition = new AssetDefinition();
-
    mImageFileName = StringTable->EmptyString();
 
    mImage = NULL;
@@ -136,7 +130,7 @@ void ImageAsset::copyTo(SimObject* object)
    Parent::copyTo(object);
 }
 
-void ImageAsset::initializeAsset()
+void ImageAsset::loadImage()
 {
    SAFE_DELETE(mImage);
 
@@ -156,6 +150,16 @@ void ImageAsset::initializeAsset()
          return;
       }
    }
-   
+
    mIsValidImage = false;
+}
+
+void ImageAsset::initializeAsset()
+{
+   loadImage();
+}
+
+void ImageAsset::onAssetRefresh()
+{
+   loadImage();
 }

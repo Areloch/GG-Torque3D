@@ -90,14 +90,8 @@ ConsoleSetType(TypeStateMachineAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-StateMachineAsset::StateMachineAsset() :
-   mAcquireReferenceCount(0),
-   mpOwningAssetManager(NULL),
-   mAssetInitialized(false)
+StateMachineAsset::StateMachineAsset()
 {
-   // Generate an asset definition.
-   mpAssetDefinition = new AssetDefinition();
-
    mStateMachineFileName = StringTable->EmptyString();
 }
 

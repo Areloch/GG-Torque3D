@@ -90,13 +90,8 @@ ConsoleSetType(TypeShapeAnimationAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-ShapeAnimationAsset::ShapeAnimationAsset() :
-mAcquireReferenceCount(0),
-mpOwningAssetManager(NULL),
-mAssetInitialized(false)
+ShapeAnimationAsset::ShapeAnimationAsset()
 {
-   // Generate an asset definition.
-   mpAssetDefinition = new AssetDefinition();
 }
 
 //-----------------------------------------------------------------------------

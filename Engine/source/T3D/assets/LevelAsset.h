@@ -44,14 +44,12 @@ class LevelAsset : public AssetBase
 {
    typedef AssetBase Parent;
 
-   AssetManager*           mpOwningAssetManager;
-   bool                    mAssetInitialized;
-   AssetDefinition*        mpAssetDefinition;
-   U32                     mAcquireReferenceCount;
-
    StringTableEntry        mLevelFile;
    StringTableEntry        mLevelDescription;
    StringTableEntry        mPreviewImage;
+
+   bool                    mIsSubLevel;
+   StringTableEntry        mMainLevelAsset;
 
 public:
    LevelAsset();

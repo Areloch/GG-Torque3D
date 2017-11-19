@@ -108,14 +108,8 @@ ConsoleSetType(TypeMaterialAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-MaterialAsset::MaterialAsset() :
-mAcquireReferenceCount(0),
-mpOwningAssetManager(NULL),
-mAssetInitialized(false)
+MaterialAsset::MaterialAsset()
 {
-   // Generate an asset definition.
-   mpAssetDefinition = new AssetDefinition();
-
    mShaderGraphFile = "";
    mScriptFile = "";
    mMatDefinitionName = "";
@@ -261,6 +255,24 @@ void MaterialAsset::initializeAsset()
    //mRTParamsPropSC = mShader->getShaderConstHandle("$rtParams0");
    //mVolumeStartPropSC = mShader->getShaderConstHandle("$volumeStart");
    //mVolumeSizePropSC = mShader->getShaderConstHandle("$volumeSize");
+}
+
+void MaterialAsset::onAssetRefresh()
+{
+   if (Platform::isFile(mScriptFile))
+      Con::executeFile(mScriptFile, false, false);
+
+   if (!mMatDefinitionName.isEmpty())
+   {
+      Material* matDef;
+      if (!Sim::findObject(mMatDefinitionName.c_str(), matDef))
+      {
+         Con::errorf("MaterialAsset: Unable to find the Material %s", mMatDefinitionName.c_str());
+         return;
+      }
+
+      matDef->reload();
+   }
 }
 
 /*void MaterialAsset::parseShaderData()

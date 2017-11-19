@@ -113,9 +113,23 @@ function AssetBrowser::editAsset(%this)
    
    if(%assetType $= "MaterialAsset")
    {
-      Canvas.pushDialog(ShaderEditor); 
-      ShaderEditorGraph.loadGraph(%assetDef.shaderGraph);
-      $ShaderGen::targetShaderFile = filePath(%assetDef.shaderGraph) @"/"@fileBase(%assetDef.shaderGraph);
+      if(EditorSettings.materialEditMode $= "MaterialEditor")
+      {
+         %assetDef.materialDefinitionName.reload();
+         
+         EditorGui.setEditor(MaterialEditorPlugin);
+         
+         MaterialEditorGui.currentMaterial = %assetDef.materialDefinitionName;
+         MaterialEditorGui.setActiveMaterial( %assetDef.materialDefinitionName );
+         
+         AssetBrowser.hideDialog();
+      }
+      else
+      {
+         Canvas.pushDialog(ShaderEditor); 
+         ShaderEditorGraph.loadGraph(%assetDef.shaderGraph);
+         $ShaderGen::targetShaderFile = filePath(%assetDef.shaderGraph) @"/"@fileBase(%assetDef.shaderGraph);
+      }
    }
    else if(%assetType $= "StateMachineAsset")
    {
@@ -157,10 +171,31 @@ function AssetBrowser::editAsset(%this)
       
       EditorOpenFileInTorsion(makeFullPath(%scriptFile), 0);
    }
+   else if(%assetType $= "ScriptAsset")
+   {
+      %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
+      %scriptFile = %assetDef.scriptFilePath;
+      
+      EditorOpenFileInTorsion(makeFullPath(%scriptFile), 0);
+   }
    else if(%assetType $= "ShapeAsset")
    {
       %this.hideDialog();
       ShapeEditorPlugin.openShapeAsset(EditAssetPopup.assetId);  
+   }
+   else if(%assetType $= "LevelAsset")
+   {
+      schedule( 1, 0, "EditorOpenMission", %assetDef.LevelFile);
+   }
+   else if(%assetType $= "GUIAsset")
+   {
+      if(!isObject(%assetDef.assetName))
+      {
+         exec(%assetDef.GUIFilePath);
+         exec(%assetDef.mScriptFilePath);
+      }
+      
+      GuiEditContent(%assetDef.assetName);
    }
 }
 

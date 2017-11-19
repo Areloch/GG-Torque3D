@@ -79,7 +79,9 @@ public:
 
 protected:
    virtual void            initializeAsset(void);
-   virtual void            onAssetRefresh(void) {}
+   virtual void            onAssetRefresh(void);
+
+   void loadImage();
 };
 
 DefineConsoleType(TypeImageAssetPtr, ImageAsset)

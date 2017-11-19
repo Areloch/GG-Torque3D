@@ -90,14 +90,8 @@ ConsoleSetType(TypeParticleAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-ParticleAsset::ParticleAsset() :
-   mpOwningAssetManager(NULL),
-   mAssetInitialized(false),
-   mAcquireReferenceCount(0)
+ParticleAsset::ParticleAsset()
 {
-   // Generate an asset definition.
-   mpAssetDefinition = new AssetDefinition();
-
    mScriptFilePath = StringTable->EmptyString();
    mDatablockFilePath = StringTable->EmptyString();
 }

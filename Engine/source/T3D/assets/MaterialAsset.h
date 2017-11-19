@@ -51,11 +51,6 @@ class MaterialAsset : public AssetBase
 {
    typedef AssetBase Parent;
 
-   AssetManager*           mpOwningAssetManager;
-   bool                    mAssetInitialized;
-   AssetDefinition*        mpAssetDefinition;
-   U32                     mAcquireReferenceCount;
-
    String                  mShaderGraphFile;
    String                  mScriptFile;
    String                  mMatDefinitionName;
@@ -109,6 +104,7 @@ public:
    virtual void copyTo(SimObject* object);
 
    virtual void initializeAsset();
+   virtual void onAssetRefresh(void);
 
    void compileShader();
 
@@ -119,9 +115,6 @@ public:
 
    /// Declare Console Object.
    DECLARE_CONOBJECT(MaterialAsset);
-
-protected:
-   virtual void            onAssetRefresh(void) {}
 };
 
 DefineConsoleType(TypeMaterialAssetPtr, MaterialAsset)

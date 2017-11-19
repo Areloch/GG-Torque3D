@@ -28,6 +28,13 @@ function ESettingsWindow::startup( %this )
 
 function ESettingsWindow::onWake( %this )
 {
+   %this.editorSettings = new ScriptObject();
+   
+   %this.addPage("AxisGizmo", "Axis Gizmo");  
+   %this.addPage("CameraSettings", "CameraSettings");
+   %this.addPage("GeneralSettings", "General Settings");
+   %this.addPage("ObjectEditor", "Object Editor");
+   %this.addPage("RenderSettings", "Render Settings");
 }
 
 function ESettingsWindow::hideDialog( %this )
@@ -51,16 +58,29 @@ function ESettingsWindow::ToggleVisibility()
 
 function ESettingsWindow::addTabPage( %this, %page )
 {
-   ESettingsWindowTabBook.add( %page );
-   ESettingsWindowList.addRow( ESettingsWindowTabBook.getSelectedPage(), %page.text );
+}
+
+function ESettingsWindow::addPage(%this, %pageName, %pageText)
+{
+   if(!isObject(%this.pageList))
+      %this.pageList = new ArrayObject();
+      
+   ESettingsWindowList.addRow( %this.pageList.count(), %pageText );
    ESettingsWindowList.sort(0);
+   
+   %idx = ESettingsWindowList.findTextIndex(%pageText);
+   %textIdx = ESettingsWindowList.findTextIndex(%pageText);
+   %this.pageList.insert(%pageName, "", %textIdx);   
 }
 
 //-----------------------------------------------------------------------------
 
 function ESettingsWindowList::onSelect( %this, %id, %text )
 {
-   ESettingsWindowTabBook.selectPage( %id );
+   //ESettingsWindowTabBook.selectPage( %id );
+   %text = ESettingsWindow.pageList.getKey(%id);
+   %pageCommand = "ESettingsWindow.on" @ ESettingsWindow.pageList.getKey(%id) @ "PageSelect();";
+   eval(%pageCommand);
 }
 
 //-----------------------------------------------------------------------------
@@ -139,4 +159,65 @@ function ESettingsWindowColorButton::apply( %this, %color )
 {
    %this.getParent().apply(%color);
    echo("ESettingsWindowColorButton::apply(): " @ %color);
+}
+
+function ESettingsWindow::onAxisGizmoPageSelect(%this)
+{
+   EditorSettingsInspector.clearFields();
+   
+   EditorSettingsInspector.startGroup("Gizmo");
+   EditorSettingsInspector.addField("mouseRotateScalar", "Rotate Scalar", "float", "", "", "", EditorSettings);
+   EditorSettingsInspector.addField("mouseScaleScalar", "Scale Scalar", "float", "", "", "", EditorSettings);
+   EditorSettingsInspector.addField("renderWhenUsed", "Render Manipulated", "bool", "", "", "", EditorSettings);
+   EditorSettingsInspector.addField("renderInfoText", "Render Tool Text", "bool", "", "", "", EditorSettings);
+   EditorSettingsInspector.endGroup();
+   
+   EditorSettingsInspector.startGroup("Grid");
+   EditorSettingsInspector.addField("renderPlane", "Render Plane", "bool", "", "", "", EditorSettings);
+   EditorSettingsInspector.addField("renderPlaneHashes", "Render Plane Hashes", "bool", "", "", "", EditorSettings);
+   EditorSettingsInspector.addField("planeDim", "Plane Size", "float", "", "", "", EditorSettings);
+   EditorSettingsInspector.addField("gridColor", "Plane Color", "color", "", "", "", EditorSettings);
+   EditorSettingsInspector.endGroup();
+}
+
+function ESettingsWindow::onCameraSettingsPageSelect(%this)
+{
+   EditorSettingsInspector.clearFields();
+   
+   EditorSettingsInspector.startGroup("Mouse Control");
+   EditorSettingsInspector.addField("mouseRotateScalar", "Invert Y Axis", "bool", "", "", "", EditorSettings);
+   EditorSettingsInspector.addField("mouseScaleScalar", "Invert X Axis", "bool", "", "", "", EditorSettings);
+   EditorSettingsInspector.endGroup();
+
+   /*EditorSettingsInspector.startGroup("Grid");
+   EditorSettingsInspector.addField("renderPlane", "Render Plane", "bool", "", "", EditorSettings);
+   EditorSettingsInspector.addField("renderPlaneHashes", "Render Plane Hashes", "bool", "", "", EditorSettings);
+   EditorSettingsInspector.addField("planeDim", "Plane Size", "float", "", "", EditorSettings);
+   EditorSettingsInspector.addField("gridColor", "Plane Color", "color", "", "", EditorSettings);
+   EditorSettingsInspector.endGroup();*/
+}
+
+function ESettingsWindow::onGeneralSettingsPageSelect(%this)
+{
+   EditorSettingsInspector.clearFields();
+   
+   EditorSettingsInspector.startGroup("Paths");
+   EditorSettingsInspector.addField("newLevelTemplatePath", "New Level", "filename", "", "", "", EditorSettings);
+   EditorSettingsInspector.addField("TorsionPath", "Torsion Path", "fileName", "", "", "", EditorSettings);
+   EditorSettingsInspector.endGroup();
+   
+   EditorSettingsInspector.startGroup("Asset Edit Modes");
+   EditorSettingsInspector.addField("materialEditMode", "Material Edit Mode", "list", "", "MaterialEditor", "MaterialEditor,ShaderGraphEditor", EditorSettings);
+   //EditorSettingsInspector.addField("TorsionPath", "Torsion Path", "fileName", "", "", "", EditorSettings);
+   EditorSettingsInspector.endGroup();
+}
+
+function ESettingsWindow::onRenderSettingsPageSelect(%this)
+{
+   EditorSettingsInspector.clearFields();
+   
+   EditorSettingsInspector.startGroup("Render Mode");
+   EditorSettingsInspector.addField("renderMode", "Renderer Mode", "list", "", "Deferred", "Forward,Deferred", EditorSettings);
+   EditorSettingsInspector.addField("lightingModel", "Lighting Model", "list", "", "PBR", "Legacy,PBR", EditorSettings);
+   EditorSettingsInspector.endGroup();
 }

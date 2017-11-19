@@ -44,11 +44,6 @@ class ComponentAsset : public AssetBase
 {
    typedef AssetBase Parent;
 
-   AssetManager*           mpOwningAssetManager;
-   bool                    mAssetInitialized;
-   AssetDefinition*        mpAssetDefinition;
-   U32                     mAcquireReferenceCount;
-
    StringTableEntry mComponentName;
    StringTableEntry mComponentClass;
    StringTableEntry mFriendlyName;

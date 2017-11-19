@@ -89,13 +89,8 @@ ConsoleSetType(TypeScriptAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-ScriptAsset::ScriptAsset() :
-   mpOwningAssetManager(NULL),
-   mAssetInitialized(false),
-   mAcquireReferenceCount(0)
+ScriptAsset::ScriptAsset()
 {
-   // Generate an asset definition.
-   mpAssetDefinition = new AssetDefinition();
    mScriptFilePath = StringTable->EmptyString();
 }
 

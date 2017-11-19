@@ -90,14 +90,8 @@ ConsoleSetType(TypeGUIAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-GUIAsset::GUIAsset() :
-   mpOwningAssetManager(NULL),
-   mAssetInitialized(false),
-   mAcquireReferenceCount(0)
+GUIAsset::GUIAsset()
 {
-   // Generate an asset definition.
-   mpAssetDefinition = new AssetDefinition();
-
    mScriptFilePath = StringTable->EmptyString();
    mGUIFilePath = StringTable->EmptyString();
 }

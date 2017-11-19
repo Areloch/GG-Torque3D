@@ -90,14 +90,8 @@ ConsoleSetType(TypeLevelAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-LevelAsset::LevelAsset() :
-   mAcquireReferenceCount(0),
-   mpOwningAssetManager(NULL),
-   mAssetInitialized(false)
+LevelAsset::LevelAsset()
 {
-   // Generate an asset definition.
-   mpAssetDefinition = new AssetDefinition();
-
    mLevelFile = StringTable->EmptyString();
    mLevelDescription = StringTable->EmptyString();
    mPreviewImage = StringTable->EmptyString();

@@ -198,7 +198,7 @@ DefineConsoleFunction( enumColladaForImport, bool, (const char * shapePath, cons
       for (S32 j = 0; j < libraryMats->getMaterial_array().getCount(); j++)
       {
          domMaterial* mat = libraryMats->getMaterial_array()[j];
-         tree->insertItem(matsID, _GetNameOrId(mat), _GetNameOrId(mat), "", 0, 0);
+         tree->insertItem(matsID, _GetNameOrId(mat), "", "", 0, 0);
       }
    }
 
@@ -255,6 +255,17 @@ DefineConsoleFunction( enumColladaForImport, bool, (const char * shapePath, cons
       tree->setDataField(StringTable->insert("_upAxis"), 0, "Y_AXIS");
    else
       tree->setDataField(StringTable->insert("_upAxis"), 0, "Z_AXIS");
+
+   StringBuilder shapesStr;
+   shapesStr.format("%i", stats.numMeshes);
+   StringBuilder materialsStr;
+   materialsStr.format("%i", stats.numMaterials);
+   StringBuilder animationsStr;
+   animationsStr.format("%i", stats.numClips);
+
+   tree->setItemValue(nodesID, shapesStr.data());
+   tree->setItemValue(matsID, materialsStr.data());
+   tree->setItemValue(animsID, animationsStr.data());
 
    return true;
 }

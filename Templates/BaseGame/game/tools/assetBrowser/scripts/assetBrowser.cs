@@ -44,72 +44,7 @@ function AssetBrowser::onWake(%this)
    %this.importAssetFinalListArray = new ArrayObject();
 }
 
-function AssetBrowser::buildPopupMenus(%this)
-{
-   if( !isObject( AddNewModulePopup ) )
-      new PopupMenu( AddNewModulePopup )
-      {
-         superClass = "MenuBuilder";
-         isPopup = true;
-         
-         item[ 0 ] = "Create New Module" TAB "" TAB "Canvas.pushDialog(AssetBrowser_AddPackage); AssetBrowser_addPackageWindow.selectWindow();";
-      };
-      
-   if( !isObject( EditAssetPopup ) )
-      new PopupMenu( EditAssetPopup )
-      {
-         superClass = "MenuBuilder";
-         isPopup = true;
-
-         item[ 0 ] = "Edit Asset" TAB "" TAB "AssetBrowser.editAsset();";
-         item[ 1 ] = "Rename Asset" TAB "" TAB "AssetBrowser.renameAsset();";
-         item[ 2 ] = "Refresh Asset" TAB "" TAB "AssetBrowser.refreshAsset();";
-         item[ 3 ] = "Asset Properties" TAB "" TAB "AssetBrowser.editAssetInfo();";
-         //item[ 4 ] = "----" TAB "" TAB "";
-         item[ 4 ] = "Re-Import Asset" TAB "" TAB "AssetBrowser.reImportAsset();";
-         //item[ 6 ] = "----" TAB "" TAB "";
-         item[ 5 ] = "Delete Asset" TAB "" TAB "AssetBrowser.deleteAsset();";
-
-         jumpFileName = "";
-         jumpLineNumber = "";
-      };
-      
-   if( !isObject( AddNewAssetPopup ) )
-      new PopupMenu( AddNewAssetPopup )
-      {
-         superClass = "MenuBuilder";
-         isPopup = true;
-         
-         item[ 0 ] = "Create Component" TAB "" TAB "Canvas.pushDialog(AssetBrowser_newComponentAsset); AssetBrowser_newComponentAsset-->NewComponentPackageList.setText(AssetBrowser.selectedModule);";
-
-         //item[ 0 ] = "Create Component" TAB "" TAB "AssetBrowser.createNewComponentAsset(\"NewComponent\");";
-         item[ 1 ] = "Create Material" TAB "" TAB "createNewMaterialAsset(\"NewMaterial\", AssetBrowser.selectedModule);";
-         item[ 2 ] = "Create State Machine" TAB "" TAB "createNewStateMachineAsset(\"NewStateMachine\", AssetBrowser.selectedModule);";
-           item[ 3 ] = "Create Shape" TAB "" TAB "AssetBrowser.createNewAsset(\"Shape\", AssetBrowser.selectedModule);";
-         item[ 4 ] = "Create GUI" TAB "" TAB "AssetBrowser.createNewGUIAsset(\"NewGUI\", AssetBrowser.selectedModule);";
-         item[ 5 ] = "Create Level" TAB "" TAB "AssetBrowser.createNewLevelAsset(\"NewLevel\", AssetBrowser.selectedModule);";
-         item[ 6 ] = "Create Post Effect" TAB "" TAB "AssetBrowser.createNewPostEffectAsset(\"NewPostEffect\", AssetBrowser.selectedModule);";
-           item[ 7 ] = "Create Shape Animation" TAB "" TAB "AssetBrowser.createNewShapeAnimationAsset(\"NewShapeAnimation\", AssetBrowser.selectedModule);";
-           item[ 8 ] = "Create Sound" TAB "" TAB "AssetBrowser.createNewSoundAsset(\"NewSound\", AssetBrowser.selectedModule);";
-         item[ 9 ] = "Create Script" TAB "" TAB "AssetBrowser.createNewScriptAsset(\"NewScript\", AssetBrowser.selectedModule);";
-         item[ 10 ] = "Create Game Object" TAB "" TAB "AssetBrowser.createNewGameObjectAsset(\"NewGameObject\", AssetBrowser.selectedModule);";
-            item[ 11 ] = "Create Image" TAB "" TAB "AssetBrowser.createNewImageAsset(\"NewImage\", AssetBrowser.selectedModule);";
-         item[ 12 ] = "Create Particle Effect" TAB "" TAB "AssetBrowser.createNewParticleEffectAsset(\"NewParticleEffect\", AssetBrowser.selectedModule);";
-      };
-      
-   if( !isObject( AddNewComponentAssetPopup ) )
-      new PopupMenu( AddNewComponentAssetPopup )
-      {
-         superClass = "MenuBuilder";
-         isPopup = true;
-
-         item[ 0 ] = "Create Component" TAB "" TAB "Canvas.pushDialog(AssetBrowser_newComponentAsset); AssetBrowser_newComponentAsset-->NewComponentPackageList.setText(AssetBrowser.selectedModule);";
-         //item[ 0 ] = "Create Component" TAB "" TAB "AssetBrowser.editAsset();";
-      };
-}
-
 //Drag-Drop functionality
-
 function AssetBrowser::selectAsset( %this, %asset )
 {
    if(AssetBrowser.selectCallback !$= "")
@@ -156,20 +91,8 @@ function AssetBrowser::showDialog( %this, %AssetTypeFilter, %selectCallback, %ta
    AssetBrowser.loadFilters();
 }
 
-/*function AssetBrowser::showTerrainDialog( %this, %selectCallback, %returnType)
-{
-   %this.showDialogBase(%selectCallback, %returnType, true);
-}*/
-
-/*function AssetBrowser::showDialogBase( %this, %AssetTypeFilter, %selectCallback, %targetObj, %fieldName, %returnType)
-{
-   
-}*/
-
 function AssetBrowser::hideDialog( %this )
 {
-   //AssetBrowser.breakdown();
-   
    AssetBrowser.setVisible(1);
    AssetBrowserWindow.setVisible(1);
    Canvas.popDialog(AssetBrowser_addPackage);
@@ -183,6 +106,8 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
    %assetDesc = AssetDatabase.acquireAsset(%asset);
    %assetName = AssetDatabase.getAssetName(%asset);
    %previewImage = "core/art/warnmat";
+   
+   AssetPreviewArray.empty();
       
    // it may seem goofy why the checkbox can't be instanciated inside the container
    // reason being its because we need to store the checkbox ctrl in order to make changes
@@ -283,36 +208,6 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
    }
    else
    {
-      %previewButton = new GuiBitmapButtonCtrl()
-      {
-         className = "AssetPreviewControl";
-         internalName = %assetName;
-         HorizSizing = "right";
-         VertSizing = "bottom";
-         profile = "ToolsGuiButtonProfile";
-         position = "10 4";
-         extent = %previewSize;
-         buttonType = "PushButton";
-         bitmap = "";
-         Command = "";
-         text = "Loading...";
-         useStates = false;
-         
-         new GuiBitmapButtonCtrl()
-         {
-               HorizSizing = "right";
-               VertSizing = "bottom";
-               profile = "ToolsGuiButtonProfile";
-               position = "0 0";
-               extent = %previewSize;
-               Variable = "";
-               buttonType = "toggleButton";
-               bitmap = "tools/materialEditor/gui/cubemapBtnBorder";
-               groupNum = "0";
-               text = "";
-            }; 
-      }; 
-  
       if(%assetType $= "ComponentAsset")
       {
          %assetPath = "data/" @ %moduleName @ "/components/" @ %assetName @ ".cs";
@@ -372,6 +267,10 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
       {
          %previewImage = "tools/assetBrowser/art/guiIcon";
       }
+      else if(%assetType $= "ScriptAsset")
+      {
+         %previewImage = "tools/assetBrowser/art/scriptIcon";
+      }
       else if(%assetType $= "MaterialAsset")
       {
          %previewImage = "";
@@ -395,6 +294,36 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
          if(%previewImage $= "")
             %previewImage = "tools/assetBrowser/art/materialIcon";
       }
+      
+      %previewButton = new GuiBitmapButtonCtrl()
+      {
+         className = "AssetPreviewControl";
+         internalName = %assetName;
+         HorizSizing = "right";
+         VertSizing = "bottom";
+         profile = "ToolsGuiButtonProfile";
+         position = "10 4";
+         extent = %previewSize;
+         buttonType = "PushButton";
+         bitmap = %previewImage;
+         Command = "";
+         text = "";
+         useStates = false;
+         
+         new GuiBitmapButtonCtrl()
+         {
+               HorizSizing = "right";
+               VertSizing = "bottom";
+               profile = "ToolsGuiButtonProfile";
+               position = "0 0";
+               extent = %previewSize;
+               Variable = "";
+               buttonType = "toggleButton";
+               bitmap = "tools/materialEditor/gui/cubemapBtnBorder";
+               groupNum = "0";
+               text = "";
+            }; 
+      }; 
    }
    
    %previewBorder = new GuiButtonCtrl(){
@@ -440,7 +369,7 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
 function AssetBrowser::loadImages( %this, %materialNum )
 {
    // this will save us from spinning our wheels in case we don't exist
-   if( !AssetBrowser.visible )
+   /*if( !AssetBrowser.visible )
       return;
    
    // this schedule is here to dynamically load images
@@ -455,11 +384,11 @@ function AssetBrowser::loadImages( %this, %materialNum )
    
    %materialNum++;
    
-   if( %materialNum < AssetPreviewArray.count() )
+   /*if( %materialNum < AssetPreviewArray.count() )
    {
       %tempSchedule = %this.schedule(64, "loadImages", %materialNum);
       MatEdScheduleArray.add( %tempSchedule, %materialNum );
-   }
+   }*/
 }
 
 function AssetBrowser::clearMaterialFilters( %this )
@@ -477,7 +406,21 @@ function AssetBrowser::loadFilters( %this )
    AssetBrowser-->filterTree.buildIconTable(":tools/classIcons/prefab");
 
    AssetBrowser-->filterTree.insertItem(0, "Assets");
+   
+   //First, build our our list of active modules
+   %modulesList = ModuleDatabase.findModules(true);
+   
+   for(%i=0; %i < getWordCount(%modulesList); %i++)
+   {
+      %moduleName = getWord(%modulesList, %i).ModuleId;
+      
+      %moduleItemId = AssetBrowser-->filterTree.findItemByName(%moduleName);
+		
+		if(%moduleItemId == 0)
+		   %moduleItemId = AssetBrowser-->filterTree.insertItem(1, %moduleName, "", "", 1, 1); 
+   }
 
+   //Next, go through and list the asset categories
    %assetQuery = new AssetQuery();
    %numAssetsFound = AssetDatabase.findAllAssets(%assetQuery);
    
@@ -636,6 +579,15 @@ function AssetBrowser::updateSelection( %this, %asset, %moduleName )
    $prevSelectedMaterialHL = %material;
 }
 
+//
+function AssetBrowser::CreateNewModule(%this)
+{
+   Canvas.pushDialog(AssetBrowser_AddPackage); 
+   AssetBrowser_addPackageWindow.selectWindow();  
+   
+   AssetBrowser_addPackageWindow.callbackFunction = "AssetBrowser.loadFilters();";
+}
+//
 //needs to be deleted with the persistence manager and needs to be blanked out of the matmanager
 //also need to update instances... i guess which is the tricky part....
 function AssetBrowser::showDeleteDialog( %this )
@@ -783,22 +735,16 @@ function AssetBrowser::changeAsset(%this)
    eval(%cmd);
 }
 
-function AssetBrowser::refreshAsset(%this)
+function AssetBrowser::refreshAsset(%this, %assetId)
 {
-   //Find out what type it is
-   %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
-   %assetType = %assetDef.getClassName();
+   if(%assetId $= "")
+   {
+      //if we have no passed-in asset ID, we're probably going through the popup menu, so get our edit popup id  
+      %assetId = EditAssetPopup.assetId;
+   }
    
-   if(%assetType $= "ComponentAsset")
-   {
-      //reload the script file
-      exec(%assetDef.scriptFile);
-   }
-   else if(%assetType $= "GameObjectAsset")
-   {
-      //reload the script file
-      exec(%assetDef.scriptFilePath);
-   }
+   AssetDatabase.refreshAsset(%assetId);
+   AssetBrowser.refreshPreviews();
 }
 
 /*function AssetBrowser::reImportAsset(%this)
@@ -873,6 +819,11 @@ function AssetListPanel::onRightMouseDown(%this)
 //
 //
 //
+function AssetBrowser::refreshPreviews(%this)
+{
+   AssetBrowserFilterTree.onSelect(AssetBrowser.selectedItem);
+}
+
 function AssetBrowserFilterTree::onSelect(%this, %itemId)
 {
 	if(%itemId == 1)
@@ -886,6 +837,8 @@ function AssetBrowserFilterTree::onSelect(%this, %itemId)
       AssetBrowser.selectedModule = %this.getItemText(%parentId);//looks like we have one of the categories selected, not the module. Nab the parent so we have the correct thing!
    else
       AssetBrowser.selectedModule = %this.getItemText(%itemId);
+      
+   AssetBrowser.selectedItem = %itemId;
 	
 	//alright, we have a module or sub-filter selected, so now build our asset list based on that filter!
 	echo("Asset Browser Filter Tree selected filter #:" @ %itemId);
@@ -990,7 +943,7 @@ function AssetBrowserFilterTree::onRightMouseDown(%this, %itemId)
       if(%this.getParentItem(%itemId) == 1)
       {
          //yep, module, push the all-inclusive popup  
-         AddNewAssetPopup.showPopup(Canvas); 
+         EditModulePopup.showPopup(Canvas); 
          //also set the module value for creation info
          AssetBrowser.selectedModule = %this.getItemText(%itemId);
       }
@@ -1103,6 +1056,7 @@ function AssetBrowser::reloadModules(%this)
    
    //ModuleDatabase.loadGroup("Game");
 }
+//
 
 function AssetPreviewButton::onMouseDragged(%this)
 {
@@ -1243,6 +1197,8 @@ function EWorldEditor::onControlDropped( %this, %payload, %position )
       EWorldEditor.clearSelection();
       EWorldEditor.selectObject(%GO);
    }
+   
+   EWorldEditor.isDirty = true;
 }
 
 function GuiInspectorTypeShapeAssetPtr::onControlDropped( %this, %payload, %position )
@@ -1265,6 +1221,8 @@ function GuiInspectorTypeShapeAssetPtr::onControlDropped( %this, %payload, %posi
       
       //Inspector.refresh();
    }
+   
+   EWorldEditor.isDirty= true;
 }
 
 function GuiInspectorTypeImageAssetPtr::onControlDropped( %this, %payload, %position )
@@ -1279,6 +1237,8 @@ function GuiInspectorTypeImageAssetPtr::onControlDropped( %this, %payload, %posi
    {
       echo("DROPPED A IMAGE ON AN IMAGE ASSET COMPONENT FIELD!");  
    }
+   
+   EWorldEditor.isDirty = true;
 }
 
 function GuiInspectorTypeMaterialAssetPtr::onControlDropped( %this, %payload, %position )
@@ -1293,4 +1253,16 @@ function GuiInspectorTypeMaterialAssetPtr::onControlDropped( %this, %payload, %p
    {
       echo("DROPPED A MATERIAL ON A MATERIAL ASSET COMPONENT FIELD!");  
    }
+   
+   EWorldEditor.isDirty = true;
+}
+
+function AssetBrowserFilterTree::onControlDropped( %this, %payload, %position )
+{
+   if( !%payload.parentGroup.isInNamespaceHierarchy( "AssetPreviewControlType_AssetDrop" ) )
+      return;
+      
+   %assetType = %payload.dragSourceControl.parentGroup.assetType;
+   
+   echo("DROPPED A " @ %assetType @ " ON THE ASSET BROWSER NAVIGATION TREE!");
 }

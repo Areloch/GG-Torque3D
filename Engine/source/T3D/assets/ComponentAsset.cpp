@@ -90,14 +90,8 @@ ConsoleSetType(TypeComponentAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-ComponentAsset::ComponentAsset() :
-   mpOwningAssetManager(NULL),
-   mAssetInitialized(false),
-   mAcquireReferenceCount(0)
+ComponentAsset::ComponentAsset()
 {
-   // Generate an asset definition.
-   mpAssetDefinition = new AssetDefinition();
-
    mComponentName = StringTable->lookup("");
    mComponentClass = StringTable->lookup("");
    mFriendlyName = StringTable->lookup("");

@@ -90,14 +90,8 @@ ConsoleSetType(TypePostEffectAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-PostEffectAsset::PostEffectAsset() :
-   mAcquireReferenceCount(0),
-   mpOwningAssetManager(NULL),
-   mAssetInitialized(false)
+PostEffectAsset::PostEffectAsset()
 {
-   // Generate an asset definition.
-   mpAssetDefinition = new AssetDefinition();
-
    mScriptFile = StringTable->EmptyString();
 }
 

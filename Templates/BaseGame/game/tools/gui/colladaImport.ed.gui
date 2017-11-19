@@ -1609,7 +1609,7 @@ function ColladaImportDlg::loadLights(%this)
    }
 }
 
-function updateTSShapeLoadProgress(%progress, %msg)
+/*function updateTSShapeLoadProgress(%progress, %msg)
 {
    // Check if the loading GUI is visible and use that instead of the
    // separate import progress GUI if possible
@@ -1666,7 +1666,7 @@ function updateTSShapeLoadProgress(%progress, %msg)
    }
 
    Canvas.repaint(33);
-}
+}*/
 
 
 // Convert all COLLADA models that match the given pattern (defaults to *) to DTS

@@ -145,6 +145,12 @@ function ShapeEditorPlugin::onWorldEditorStartup(%this)
    }
 }
 
+function ShapeEditorPlugin::openShapeAsset(%this, %assetId)
+{
+   %asset = AssetDatabase.acquireAsset(%assetId);
+   %this.open(%asset.fileName);
+}
+
 function ShapeEditorPlugin::open(%this, %filename)
 {
    if ( !%this.isActivated )

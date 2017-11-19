@@ -44,20 +44,24 @@
 #ifndef __RESOURCE_H__
 #include "core/resource.h"
 #endif
+#ifndef _ASSET_PTR_H_
+#include "assets/assetPtr.h"
+#endif 
+#ifndef MATERIALASSET_H
+#include "MaterialAsset.h"
+#endif
 
 //-----------------------------------------------------------------------------
 class ShapeAsset : public AssetBase
 {
    typedef AssetBase Parent;
 
-   AssetManager*           mpOwningAssetManager;
-   bool                    mAssetInitialized;
-   AssetDefinition*        mpAssetDefinition;
-   U32                     mAcquireReferenceCount;
-
 protected:
    StringTableEntry   mFileName;
    Resource<TSShape>	 mShape;
+
+   Vector<StringTableEntry> mMaterialAssetIds;
+   Vector<AssetPtr<MaterialAsset>> mMaterialAssets;
 
 public:
    ShapeAsset();
@@ -66,6 +70,8 @@ public:
    /// Engine.
    static void initPersistFields();
    virtual void copyTo(SimObject* object);
+
+   virtual void setDataField(StringTableEntry slotName, const char *array, const char *value);
 
    virtual void initializeAsset();
 

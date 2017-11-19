@@ -24,6 +24,12 @@ function AssetBrowser_addPackageWindow::onGainFirstResponder(%this)
    %this-->packageName.setFirstResponder();
 }
 
+function AssetBrowser_addPackageWindow::close()
+{
+   Canvas.popDialog(AssetBrowser_addPackage);  
+   eval(AssetBrowser_addPackageWindow.callbackFunction);
+}
+
 function AssetBrowser_addPackageWindow::CreateNewPackage(%this)
 {
    %newPackageName = %this-->packageName.getText();
@@ -34,6 +40,7 @@ function AssetBrowser_addPackageWindow::CreateNewPackage(%this)
    echo("Creating a new package named: " @ %newPackageName);
    
    %moduleFilePath = "data/" @ %newPackageName;
+   %moduleDefinitionFilePath = %moduleFilePath @ "/" @ %newPackageName @ ".module";
    %moduleScriptFilePath = %moduleFilePath @ "/" @ %newPackageName @ ".cs";
    
    %newPackage = new ModuleDefinition()
@@ -52,7 +59,7 @@ function AssetBrowser_addPackageWindow::CreateNewPackage(%this)
       };
    };
    
-   TAMLWrite(%newPackage, %moduleFilePath @ "/" @ %newPackageName @ ".module"); 
+   TAMLWrite(%newPackage, %moduleDefinitionFilePath); 
    
    //Now generate the script file for it
    %file = new FileObject();
@@ -68,15 +75,18 @@ function AssetBrowser_addPackageWindow::CreateNewPackage(%this)
 	}
    
    //force a refresh of our modules list
+   ModuleDatabase.ignoreLoadedGroups(true);
    ModuleDatabase.scanModules();
-   %success = ModuleDatabase.loadExplicit(%newPackageName);
-   
-   Canvas.popDialog(AssetBrowser_addPackage);
+   %success = ModuleDatabase.loadExplicit(%newPackageName, 1);
+   ModuleDatabase.ignoreLoadedGroups(false);
    
    //force a reload of the package lists
    NewAssetPackageList.refresh();
    GameObjectPackageList.refresh();
    ImportAssetPackageList.refresh();
+   
+   Canvas.popDialog(AssetBrowser_addPackage);
+   eval(AssetBrowser_addPackageWindow.callbackFunction);
 }
 
 function AssetBrowserPackageList::onWake(%this)

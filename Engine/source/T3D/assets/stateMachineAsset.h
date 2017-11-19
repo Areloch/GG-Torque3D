@@ -46,11 +46,6 @@ class StateMachineAsset : public AssetBase
 {
    typedef AssetBase Parent;
 
-   AssetManager*           mpOwningAssetManager;
-   bool                    mAssetInitialized;
-   AssetDefinition*        mpAssetDefinition;
-   U32                     mAcquireReferenceCount;
-
    StringTableEntry mStateMachineFileName;
 
 public:

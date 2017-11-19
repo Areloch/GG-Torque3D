@@ -27,7 +27,7 @@ function CreateAssetButton::onClick(%this)
 function AssetBrowser_newAsset::onWake(%this)
 {
    NewAssetPackageList.refresh();
-   NewComponentParentClass.setText("Component");
+   //NewComponentParentClass.setText("Component");
 }
 
 function NewAssetTypeList::onWake(%this)
@@ -65,43 +65,135 @@ function NewAssetPackageBtn::onClick(%this)
    AssetBrowser_addPackageWindow.selectWindow();
 }
 
+function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
+{
+   Canvas.pushDialog(AssetBrowser_newAsset);
+   
+   AssetBrowser_newAssetWindow.text = "New" SPC %assetType SPC "Asset";
+   
+   NewAssetPropertiesInspector.clear();
+   
+   NewAssetPackageList.setText(%moduleName);
+   
+   //get rid of the old one if we had one.
+   if(isObject(%this.newAssetSettings))
+      %this.newAssetSettings.delete();
+   
+   %this.newAssetSettings = new ScriptObject();
+   
+   %this.newAssetSettings.assetType = %assetType;
+   %this.newAssetSettings.moduleName = %moduleName;
+   
+   NewAssetPropertiesInspector.startGroup("General");
+   NewAssetPropertiesInspector.addField("assetName", "New Asset Name", "String",  "Name of the new asset", "New" @ %assetType, "", %this.newAssetSettings);
+   //NewAssetPropertiesInspector.addField("AssetType", "New Asset Type", "List",  "Type of the new asset", %assetType, "Component,Image,Material,Shape,Sound,State Machine", %newAssetSettings);
+   
+   NewAssetPropertiesInspector.addField("friendlyName", "Friendly Name", "String",  "Human-readable name of new asset", "", "", %this.newAssetSettings);
+      
+   NewAssetPropertiesInspector.addField("description", "Description", "Command",  "Description of the new asset", "", "", %this.newAssetSettings);   
+   NewAssetPropertiesInspector.endGroup();
+   
+   if(%assetType $= "ComponentAsset")
+   {
+      NewAssetPropertiesInspector.startGroup("Components");
+      NewAssetPropertiesInspector.addField("parentClass", "New Asset Parent Class", "String",  "Name of the new asset's parent class", %assetType, "", %this.newAssetSettings);
+      NewAssetPropertiesInspector.addField("componentGroup", "Component Group", "String",  "Name of the group of components this component asset belongs to", "", "", %this.newAssetSettings);
+      NewAssetPropertiesInspector.addField("componentName", "Component Name", "String",  "Name of the new component", "", "", %this.newAssetSettings);
+      NewAssetPropertiesInspector.endGroup();
+   }
+   else if(%assetType $= "LevelAsset")
+   {
+      NewAssetPropertiesInspector.startGroup("Level");
+      NewAssetPropertiesInspector.addField("levelDescription", "Level Description", "Command",  "Description of the level", "", "", %this.newAssetSettings);
+      NewAssetPropertiesInspector.addField("levelPreviewImage", "LevePreviewImage", "Image",  "Preview Image for the level", "", "", %this.newAssetSettings);
+      NewAssetPropertiesInspector.endGroup();
+   }
+   else if(%assetType $= "ScriptAsset")
+   {
+      NewAssetPropertiesInspector.startGroup("Script");
+      NewAssetPropertiesInspector.addField("isServerScript", "Is Server Script", "bool",  "Is this script used on the server?", "1", "", %this.newAssetSettings);
+      NewAssetPropertiesInspector.endGroup();
+   }
+   
+   return;
+   
+   if(%moduleName $= "")
+   {
+      Canvas.pushDialog(AssetBrowser_selectPackage);
+   }
+   else
+   {
+      AssetBrowser.SelectedModule = %moduleName;
+      
+      if(%assetType $= "MaterialAsset")
+      {
+         createNewMaterialAsset("NewMaterial", %moduleName);
+      }
+      else if(%assetType $= "StateMachineAsset")
+      {
+         createNewStateMachineAsset("NewStateMachine", %moduleName);
+      }
+      else if(%assetType $= "ScriptAsset")
+      {
+         createNewScriptAsset("NewScriptAsset", %moduleName);
+      }
+   }
+}
+
+//We do a quick validation that mandatory fields are filled in before passing along to the asset-type specific function
 function CreateNewAsset()
 {
-   %assetName = NewAssetName.getText();
+   %assetName = AssetBrowser.newAssetSettings.assetName;
    
    if(%assetName $= "")
 	{
-		error("Attempted to make a new asset with no name!");
-		Canvas.popDialog(AssetBrowser_newAsset);
-		return;
-	}
-	
-	if(NewAssetTypeList.getText() $= "")
-	{
-	   error("Attempted to make a new asset with no type!");
-		Canvas.popDialog(AssetBrowser_newAsset);
+	   MessageBoxOK( "Error", "Attempted to make a new asset with no name!");
 		return;
 	}
 	
 	//get the selected module data
    %moduleName = NewAssetPackageList.getText();
    
-   %path = "data/" @ %moduleName;
+   if(%moduleName $= "")
+	{
+	   MessageBoxOK( "Error", "Attempted to make a new asset with no module!");
+		return;
+	}
 	
-	%assetType = NewAssetTypeList.getText();
-	if(%assetType $= "Component")
+	AssetBrowser.newAssetSettings.moduleName = %moduleName;
+	
+   %assetType = AssetBrowser.newAssetSettings.assetType;
+	if(%assetType $= "")
 	{
-	   Canvas.popDialog(AssetBrowser_newComponentAsset); 
-	   AssetBrowser_newComponentAsset-->AssetBrowserPackageList.setText(AssetBrowser.selectedModule);
-	   //%assetFilePath = createNewComponentAsset(%assetName, %path);
+	   MessageBoxOK( "Error", "Attempted to make a new asset with no type!");
+		return;
 	}
-	else if(%assetType $= "Material")
+	
+	if(%assetType $= "ComponentAsset")
 	{
-	   %assetFilePath = createNewMaterialAsset(%assetName, %path);
+	   //Canvas.popDialog(AssetBrowser_newComponentAsset); 
+	   //AssetBrowser_newComponentAsset-->AssetBrowserPackageList.setText(AssetBrowser.selectedModule);
+	   %assetFilePath = createNewComponentAsset(%assetName, %path);
 	}
-	else if(%assetType $= "State Machine")
+	else if(%assetType $= "MaterialAsset")
 	{
-	   %assetFilePath = createNewStateMachineAsset(%assetName, %path);
+	   %assetFilePath = createNewMaterialAsset();
+	}
+	else if(%assetType $= "StateMachineAsset")
+	{
+	   %assetFilePath = createNewStateMachineAsset();
+	}
+	else if(%assetType $= "GUIAsset")
+	{
+	   %assetFilePath = createNewGUIAsset();
+	}
+	else if(%assetType $= "LevelAsset")
+	{
+	   %assetFilePath = createNewLevelAsset();
+	}
+	else if(%assetType $= "ScriptAsset")
+	{
+	   %assetFilePath = createNewScriptAsset();
 	}
 	
 	Canvas.popDialog(AssetBrowser_newAsset);
@@ -115,13 +207,10 @@ function CreateNewAsset()
 
 function createNewComponentAsset()
 {
-   %moduleName = AssetBrowser_newComponentAssetWindow-->NewComponentPackageList.getText();
+   %moduleName = AssetBrowser.newAssetSettings.moduleName;
    %modulePath = "data/" @ %moduleName;
-   
-   if(%modulePath $= "")
-      %modulePath = "data/" @ AssetBrowser.selectedModule;
       
-   %assetName = NewComponentName.getText();
+   %assetName = AssetBrowser.newAssetSettings.assetName;
    
    %tamlpath = %modulePath @ "/components/" @ %assetName @ ".asset.taml";
    %scriptPath = %modulePath @ "/components/" @ %assetName @ ".cs";
@@ -130,11 +219,11 @@ function createNewComponentAsset()
    {
       AssetName = %assetName;
       versionId = 1;
-      componentName = NewComponentName.getText();
-      componentClass = ParentComponentList.getText();
-      friendlyName = NewComponentFriendlyName.getText();
-      componentType = NewComponentGroup.getText();
-      description = NewComponentDescription.getText();
+      componentName = AssetBrowser.newAssetSettings.componentName;
+      componentClass = AssetBrowser.newAssetSettings.parentClass;
+      friendlyName = AssetBrowser.newAssetSettings.friendlyName;
+      componentType = AssetBrowser.newAssetSettings.componentGroup;
+      description = AssetBrowser.newAssetSettings.description;
       scriptFile = %scriptPath;
    };
    
@@ -168,7 +257,7 @@ function createNewComponentAsset()
 	return %tamlpath;
 }
 
-function createNewMaterialAsset(%assetName, %moduleName)
+function createNewMaterialAsset()
 {
    %assetName = NewAssetName.getText();
    
@@ -198,7 +287,46 @@ function createNewMaterialAsset(%assetName, %moduleName)
 	return %tamlpath;
 }
 
-function createNewStateMachineAsset(%assetName, %moduleName)
+function createNewScriptAsset()
+{
+   %moduleName = AssetBrowser.newAssetSettings.moduleName;
+   %modulePath = "data/" @ %selectedModule;
+      
+   %assetName = AssetBrowser.newAssetSettings.assetName;      
+   
+   %tamlpath = "data/" @ %moduleName @ "/scripts/" @ %assetName @ ".asset.taml";
+   %scriptPath = "data/" @ %moduleName @ "/scripts/" @ %assetName @ ".cs";
+   
+   %asset = new ScriptAsset()
+   {
+      AssetName = %assetName;
+      versionId = 1;
+      scriptFilePath = %scriptPath;
+   };
+   
+   TamlWrite(%asset, %tamlpath);
+   
+   %moduleDef = ModuleDatabase.findModule(%moduleName, 1);
+	AssetDatabase.addDeclaredAsset(%moduleDef, %tamlpath);
+
+	AssetBrowser.loadFilters();
+	
+	%treeItemId = AssetBrowserFilterTree.findItemByName(%moduleName);
+	%smItem = AssetBrowserFilterTree.findChildItemByName(%treeItemId, "Scripts");
+	
+	AssetBrowserFilterTree.onSelect(%smItem);
+	
+	%file = new FileObject();
+   
+   if(%file.openForWrite(%scriptPath))
+	{
+		%file.close();
+	}
+   
+	return %tamlpath;
+}
+
+function createNewStateMachineAsset()
 {
    if(%assetName $= "")
       %assetName = NewAssetName.getText();
@@ -256,15 +384,12 @@ function createNewStateMachineAsset(%assetName, %moduleName)
 	return %tamlpath;
 }
 
-function AssetBrowser::createNewGUIAsset(%this, %newAssetName, %selectedModule)
+function createNewGUIAsset()
 {
-   %moduleName = %selectedModule;
+   %moduleName = AssetBrowser.newAssetSettings.moduleName;
    %modulePath = "data/" @ %selectedModule;
-   
-   if(%modulePath $= "")
-      %modulePath = "data/" @ AssetBrowser.selectedModule;
       
-   %assetName = %newAssetName;
+   %assetName = AssetBrowser.newAssetSettings.assetName;
    
    %tamlpath = "data/" @ %moduleName @ "/GUIs/" @ %assetName @ ".asset.taml";
    %guipath = %modulePath @ "/GUIs/" @ %assetName @ ".gui";
@@ -313,6 +438,45 @@ function AssetBrowser::createNewGUIAsset(%this, %newAssetName, %selectedModule)
 	
 	%treeItemId = AssetBrowserFilterTree.findItemByName(%moduleName);
 	%smItem = AssetBrowserFilterTree.findChildItemByName(%treeItemId, "GUIs");
+	
+	AssetBrowserFilterTree.onSelect(%smItem);
+	
+	return %tamlpath;
+}
+
+function createNewLevelAsset()
+{
+   %moduleName = AssetBrowser.newAssetSettings.moduleName;
+   %modulePath = "data/" @ %moduleName;
+   
+   %assetName = AssetBrowser.newAssetSettings.assetName;
+   
+   %tamlpath = %modulePath @ "/levels/" @ %assetName @ ".asset.taml";
+   %levelPath = %modulePath @ "/levels/" @ %assetName @ ".mis";
+   
+   %asset = new LevelAsset()
+   {
+      AssetName = %assetName;
+      versionId = 1;
+      LevelFile = %levelPath;
+      LevelDescription = AssetBrowser.newAssetSettings.levelDescription;
+      PreviewImage = AssetBrowser.newAssetSettings.levelPreviewImage;
+   };
+   
+   TamlWrite(%asset, %tamlpath);
+   
+   if(!pathCopy("tools/levels/BlankRoom.mis", %levelPath, false))
+   {
+      echo("Unable to copy template level file!");
+   }
+
+	%moduleDef = ModuleDatabase.findModule(%moduleName, 1);
+	AssetDatabase.addDeclaredAsset(%moduleDef, %tamlpath);
+
+	AssetBrowser.loadFilters();
+	
+	%treeItemId = AssetBrowserFilterTree.findItemByName(%moduleName);
+	%smItem = AssetBrowserFilterTree.findChildItemByName(%treeItemId, "Levels");
 	
 	AssetBrowserFilterTree.onSelect(%smItem);
 	

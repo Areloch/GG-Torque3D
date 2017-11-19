@@ -167,6 +167,10 @@ void GuiVariableInspector::addField(const char* name, const char* label, const c
       fieldTypeMask = TypeColorF;
    else if (newField.mFieldTypeName == StringTable->insert("ease"))
       fieldTypeMask = TypeEaseF;
+   else if (newField.mFieldTypeName == StringTable->insert("command"))
+      fieldTypeMask = TypeCommand;
+   else if (newField.mFieldTypeName == StringTable->insert("filename"))
+      fieldTypeMask = TypeStringFilename;
    else
       fieldTypeMask = -1;
 

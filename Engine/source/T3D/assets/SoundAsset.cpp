@@ -90,13 +90,8 @@ ConsoleSetType(TypeSoundAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-SoundAsset::SoundAsset() :
-   mAcquireReferenceCount(0),
-   mpOwningAssetManager(NULL),
-   mAssetInitialized(false)
+SoundAsset::SoundAsset()
 {
-   // Generate an asset definition.
-   mpAssetDefinition = new AssetDefinition();
 }
 
 //-----------------------------------------------------------------------------

@@ -90,14 +90,8 @@ ConsoleSetType(TypeGameObjectAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-GameObjectAsset::GameObjectAsset() :
-   mpOwningAssetManager(NULL),
-   mAssetInitialized(false),
-   mAcquireReferenceCount(0)
+GameObjectAsset::GameObjectAsset()
 {
-   // Generate an asset definition.
-   mpAssetDefinition = new AssetDefinition();
-
    mGameObjectName = StringTable->lookup("");
    mScriptFilePath = StringTable->lookup("");
    mTAMLFilePath = StringTable->lookup("");

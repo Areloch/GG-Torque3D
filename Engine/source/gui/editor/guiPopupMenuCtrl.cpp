@@ -59,7 +59,8 @@ void GuiPopupMenuBackgroundCtrl::onMouseDragged(const GuiEvent &event)
 
 void GuiPopupMenuBackgroundCtrl::close()
 {
-   getRoot()->removeObject(this);
+   if(getRoot())
+      getRoot()->removeObject(this);
 
    mMenuBarCtrl = nullptr;
 }

@@ -152,10 +152,10 @@ function MenuBuilder::onAdd(%this)
    }
 }
 
-function MenuBuilder::onRemove(%this)
+/*function MenuBuilder::onRemove(%this)
 {
    %this.removeFromMenuBar();
-}
+}*/
 
 //////////////////////////////////////////////////////////////////////////
 

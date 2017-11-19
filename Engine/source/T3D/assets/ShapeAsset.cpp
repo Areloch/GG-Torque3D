@@ -92,10 +92,7 @@ ConsoleSetType(TypeShapeAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-ShapeAsset::ShapeAsset() :
-mpOwningAssetManager(NULL),
-mAssetInitialized(false),
-mAcquireReferenceCount(0)
+ShapeAsset::ShapeAsset()
 {
 }
 
@@ -116,7 +113,25 @@ void ShapeAsset::initPersistFields()
    // Call parent.
    Parent::initPersistFields();
 
-   addField("fileName", TypeFilename, Offset(mFileName, ShapeAsset), "Path to the script file we want to execute");
+   addField("fileName", TypeFilename, Offset(mFileName, ShapeAsset), "Path to the shape file we want to render");
+
+   addGroup("Internal");
+
+   endGroup("Internal");
+}
+
+void ShapeAsset::setDataField(StringTableEntry slotName, const char *array, const char *value)
+{
+   Parent::setDataField(slotName, array, value);
+
+   //Now, if it's a material slot of some fashion, set it up
+   StringTableEntry matSlotName = StringTable->insert("materialAsset");
+   if (String(slotName).startsWith(matSlotName))
+   {
+      StringTableEntry matId = StringTable->insert(value);
+
+      mMaterialAssetIds.push_back(matId);
+   }
 }
 
 void ShapeAsset::initializeAsset()
@@ -132,6 +147,36 @@ void ShapeAsset::initializeAsset()
 
 bool ShapeAsset::loadShape()
 {
+   mMaterialAssets.clear();
+   mMaterialAssetIds.clear();
+
+   //First, load any material, animation, etc assets we may be referencing in our asset
+   // Find any asset dependencies.
+   AssetManager::typeAssetDependsOnHash::Iterator assetDependenciesItr = mpOwningAssetManager->getDependedOnAssets()->find(mpAssetDefinition->mAssetId);
+
+   // Does the asset have any dependencies?
+   if (assetDependenciesItr != mpOwningAssetManager->getDependedOnAssets()->end())
+   {
+      // Iterate all dependencies.
+      while (assetDependenciesItr != mpOwningAssetManager->getDependedOnAssets()->end() && assetDependenciesItr->key == mpAssetDefinition->mAssetId)
+      {
+         StringTableEntry assetType = mpOwningAssetManager->getAssetType(assetDependenciesItr->value);
+
+         if (assetType == StringTable->insert("MaterialAsset"))
+         {
+            mMaterialAssetIds.push_back(assetDependenciesItr->value);
+
+            //Force the asset to become initialized if it hasn't been already
+            AssetPtr<MaterialAsset> matAsset = assetDependenciesItr->value;
+
+            mMaterialAssets.push_back(matAsset);
+         }
+
+         // Next dependency.
+         assetDependenciesItr++;
+      }
+   }
+
    mShape = ResourceManager::get().load(mFileName);
 
    if (!mShape)
@@ -153,4 +198,8 @@ void ShapeAsset::copyTo(SimObject* object)
 
 void ShapeAsset::onAssetRefresh(void)
 {
+   if (dStrcmp(mFileName, "") == 0)
+      return;
+
+   loadShape();
 }

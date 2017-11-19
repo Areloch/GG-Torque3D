@@ -122,6 +122,17 @@ package Tools
          if( isFunction( %initializeFunction ) )
             call( %initializeFunction );
       }
+      
+      //Now, go through and load any tool-group modules
+      ModuleDatabase.setModuleExtension("module");
+      
+      //Any common tool modules
+      ModuleDatabase.scanModules( "tools", false );
+      ModuleDatabase.LoadGroup( "Tool" );
+      
+      //Do any tools that come in with a gameplay package. These are usually specialized tools
+      //ModuleDatabase.scanModules( "data", false );
+      //ModuleDatabase.LoadGroup( "Tool" );
 
       // Popuplate the default SimObject icons that 
       // are used by the various editors.
@@ -214,11 +225,34 @@ package Tools
    }
 };
 
+function EditorCreateFakeGameSession(%fileName)
+{
+   // Create a local game server and connect to it.
+   if(isObject(ServerGroup))
+      ServerGroup.delete();
+      
+   new SimGroup(ServerGroup);
+   
+   if(isObject(ServerConnection))
+      ServerConnection.delete();
+      
+   new GameConnection(ServerConnection);
+
+   // This calls GameConnection::onConnect.
+   ServerConnection.connectLocal();
+
+   $instantGroup = ServerGroup;
+   
+   $Game::MissionGroup = "MissionGroup";
+
+   exec(%file);
+}
+
 function fastLoadWorldEdit(%val)
 {
    if(%val)
    {
-      if(!$Tools::loaded)
+      /*if(!$Tools::loaded)
       {
          onStart();
       }
@@ -248,11 +282,176 @@ function fastLoadWorldEdit(%val)
          LocalClientConnection.camera = %cam;
          
          %cam.setPosition("0 0 0");
+         
+         if ( !physicsPluginPresent() )
+         {
+            physicsInit("bullet");
+            physicsInitWorld("server");
+            physicsInitWorld("client");
+            
+            physicsStartSimulation("server");
+            physicsStartSimulation("client");
+         }
       }
       else
       {        
          toggleEditor(true);
+      }*/
+      
+      if(!$Tools::loaded)
+      {
+         onStart();
       }
+      
+      /*if( EditorIsDirty())
+      {
+         // "EditorSaveBeforeLoad();", "getLoadFilename(\"*.mis\", \"EditorDoLoadMission\");"
+         if(MessageBox("Mission Modified", "Would you like to save changes to the current mission \"" @
+            $Server::MissionFile @ "\" before opening a new mission?", SaveDontSave, Question) == $MROk)
+         {
+            if(! EditorSaveMission())
+               return;
+         }
+      }
+
+      if(%filename $= "")
+         %filename = "tools/levels/BlankRoom.mis";
+         
+      if(%filename $= "")
+      {
+         %dlg = new OpenFileDialog()
+         {
+            Filters        = $Pref::WorldEditor::FileSpec;
+            DefaultPath    = EditorSettings.value("LevelInformation/levelsDirectory");
+            ChangePath     = false;
+            MustExist      = true;
+         };
+               
+         %ret = %dlg.Execute();
+         if(%ret)
+         {
+            // Immediately override/set the levelsDirectory
+            EditorSettings.setValue( "LevelInformation/levelsDirectory", collapseFilename(filePath( %dlg.FileName )) );
+            %filename = %dlg.FileName;
+         }
+         
+         %dlg.delete();
+         
+         if(! %ret)
+            return;
+      }
+         
+      // close the current editor, it will get cleaned up by MissionCleanup
+      if( isObject( "Editor" ) )
+         Editor.close( LoadingGui );
+
+      EditorClearDirty();
+
+      // If we haven't yet connnected, create a server now.
+      // Otherwise just load the mission.
+
+      if( !$missionRunning )
+         activatePackage( "BootEditor" );
+
+      EditorCreateFakeGameSession(%filename);
+      
+      pushInstantGroup();
+
+      // recreate and open the editor
+      Editor::create();
+      MissionCleanup.add( Editor );
+      MissionCleanup.add( Editor.getUndoManager() );
+      EditorGui.loadingMission = true;
+      Editor.open();
+
+      popInstantGroup();
+      
+      if(!isObject(Observer))
+      {
+         datablock CameraData(Observer) {};
+      }
+      
+      %cam = new Camera()
+      {
+         datablock = Observer;
+      };
+      
+      %cam.scopeToClient(LocalClientConnection);
+      
+      LocalClientConnection.setCameraObject(%cam);
+      LocalClientConnection.setControlObject(%cam);
+      
+      LocalClientConnection.camera = %cam;
+      
+      %cam.setPosition("0 0 0");
+      
+      if ( !physicsPluginPresent() )
+      {
+         physicsInit("bullet");
+         physicsInitWorld("server");
+         physicsInitWorld("client");
+         
+         physicsStartSimulation("server");
+         physicsStartSimulation("client");
+      }*/
+      
+      %timerId = startPrecisionTimer();
+      
+      if( GuiEditorIsActive() )
+         toggleGuiEditor(1);
+         
+      if( !$missionRunning )
+      {
+         // Flag saying, when level is chosen, launch it with the editor open.
+         ChooseLevelDlg.launchInEditor = true;
+         Canvas.pushDialog( ChooseLevelDlg );         
+      }
+      else
+      {
+         pushInstantGroup();
+         
+         if ( !isObject( Editor ) )
+         {
+            Editor::create();
+            MissionCleanup.add( Editor );
+            MissionCleanup.add( Editor.getUndoManager() );
+         }
+         
+         if( EditorIsActive() )
+         {
+            if (theLevelInfo.type $= "DemoScene") 
+            {
+               commandToServer('dropPlayerAtCamera');
+               Editor.close("SceneGui");   
+            } 
+            else 
+            {
+               Editor.close("PlayGui");
+            }
+         }
+         else
+         {
+            canvas.pushDialog( EditorLoadingGui );
+            canvas.repaint();
+            
+            Editor.open();
+			
+            // Cancel the scheduled event to prevent
+            // the level from cycling after it's duration
+            // has elapsed.
+            cancel($Game::Schedule);
+            
+            if (theLevelInfo.type $= "DemoScene")
+               commandToServer('dropCameraAtPlayer', true);
+               
+            canvas.popDialog(EditorLoadingGui);
+         }
+         
+         popInstantGroup();
+      }
+      
+      %elapsed = stopPrecisionTimer( %timerId );
+      warn( "Time spent in toggleEditor() : " @ %elapsed / 1000.0 @ " s" );
    }
 }
 

@@ -2369,6 +2369,13 @@ S32 AssetManager::findAssetLooseFile( AssetQuery* pAssetQuery, const char* pLoos
 
 //-----------------------------------------------------------------------------
 
+AssetManager::typeAssetDependsOnHash* AssetManager::getDependedOnAssets()
+{
+   // Find any asset dependencies.
+   return &mAssetDependsOn;
+}
+//-----------------------------------------------------------------------------
+
 bool AssetManager::scanDeclaredAssets( const char* pPath, const char* pExtension, const bool recurse, ModuleDefinition* pModuleDefinition )
 {
     // Debug Profiling.
