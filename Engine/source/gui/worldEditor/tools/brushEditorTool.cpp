@@ -25,8 +25,12 @@ BrushEditorTool::BrushEditorTool()
    mUseKeyInput = true;
 
    mMouseDown = false;
+   mDragging = false;
 
    mBrushObj = nullptr;
+
+   mSelectedBrush = -1;
+   mSelectedFace = -1;
 }
 
 bool BrushEditorTool::onAdd()
@@ -94,6 +98,8 @@ bool BrushEditorTool::onMouseMove(const Gui3DMouseEvent &e)
    }
    */
 
+   mWorldEditor->getGizmo()->on3DMouseMove(e);
+
    return true;
 }
 bool BrushEditorTool::onMouseDown(const Gui3DMouseEvent &e)
@@ -123,13 +129,68 @@ bool BrushEditorTool::onMouseDown(const Gui3DMouseEvent &e)
          compileGeometry();
       }
    }
+   else
+   {
+      //normal clicks
+      //see if we clicked on a brush
+      mSelectedBrush = -1;
+      mSelectedFace = -1;
+      F32 t = 1;
+
+      for (U32 i = 0; i < mBrushes.size(); i++)
+      {
+         Point3F normal;
+         F32 tempT;
+         if (mBrushes[i].mBounds.collideLine(e.pos, e.pos + e.vec * 10000.0f, &tempT, &normal))
+         {
+            if (tempT < t)
+            {
+               t = tempT;
+               mSelectedBrush = i;
+            }
+         }
+      }
+
+      if (mSelectedBrush != -1)
+      {
+         //mWorldEditor->getGizmo()->getProfile()->flags = 0;
+         MatrixF trans = MatrixF(true);
+         trans.setPosition(mBrushes[mSelectedBrush].mBounds.getCenter());
+
+         mWorldEditor->getGizmo()->set(trans, mBrushes[mSelectedBrush].mBounds.getCenter(), Point3F(1,1,1));
+      }
+   }
 
    mWorldEditor->getGizmo()->on3DMouseDown(e);
    return true;
 }
 bool BrushEditorTool::onMouseDragged(const Gui3DMouseEvent &e)
 {
-   
+   mWorldEditor->getGizmo()->on3DMouseDragged(e);
+
+   mDragging = true;
+
+   if (mSelectedBrush != -1)
+   {
+      Point3F delta = mWorldEditor->getGizmo()->getOffset();
+
+      mBrushes[mSelectedBrush].mBounds.setCenter(mWorldEditor->getGizmo()->getPosition());
+
+      for (U32 i = 0; i < mBrushes[mSelectedBrush].mCSG.size(); i++)
+      {
+         mBrushes[mSelectedBrush].mCSG[i].plane.normal.x += delta.x;
+         mBrushes[mSelectedBrush].mCSG[i].plane.normal.y += delta.y;
+         mBrushes[mSelectedBrush].mCSG[i].plane.normal.z += delta.z;
+
+         for (U32 v = 0; v < mBrushes[mSelectedBrush].mCSG[i].vertices.size(); v++)
+         {
+            mBrushes[mSelectedBrush].mCSG[i].vertices[v].pos.x += delta.x;
+            mBrushes[mSelectedBrush].mCSG[i].vertices[v].pos.y += delta.y;
+            mBrushes[mSelectedBrush].mCSG[i].vertices[v].pos.z += delta.z;
+         }
+      }
+   }
+
    return true;
 }
 
@@ -141,6 +202,11 @@ bool BrushEditorTool::onMouseUp(const Gui3DMouseEvent &e)
    mWorldEditor->mouseUnlock();
 
    mMouseDown = false;
+   mDragging = false;
+
+   mWorldEditor->getGizmo()->on3DMouseUp(e);
+
+   compileGeometry();
    
    return true;
 }
@@ -199,6 +265,56 @@ bool BrushEditorTool::onInputEvent(const InputEventInfo &e)
 
    Con::executef(this, "onKeyPress", e.ascii, e.modifier);
    return true;
+}
+
+//
+void BrushEditorTool::updateGizmo()
+{
+   GizmoProfile* gizProfile = mWorldEditor->getGizmo()->getProfile();
+   gizProfile->restoreDefaultState();
+
+   const GizmoMode &mode = gizProfile->mode;
+   S32 &flags = gizProfile->flags;
+   GizmoAlignment &align = gizProfile->alignment;
+
+   U8 keys = Input::getModifierKeys();
+
+   /*bool mCtrlDown = keys & (SI_LCTRL | SI_LSHIFT);
+
+   bool altDown = keys & (SI_LALT);
+
+   if (altDown)
+   {
+      flags = 0;
+      return;
+   }
+
+   if (mSelectedFace != -1)
+   {
+      align = Object;
+      flags |= GizmoProfile::CanRotateUniform;
+      flags &= ~GizmoProfile::CanRotateScreen;
+   }
+   else
+   {
+      flags &= ~GizmoProfile::CanRotateUniform;
+      flags |= GizmoProfile::CanRotateScreen;
+   }
+
+   if (mSelectedFace != -1 && mode == ScaleMode)
+      flags &= ~GizmoProfile::CanScaleZ;
+   else
+      flags |= GizmoProfile::CanScaleZ;
+
+   if (mSelectedFace != -1 && mode == MoveMode)
+   {
+      if (mCtrlDown)
+         flags &= ~(GizmoProfile::CanTranslateX | GizmoProfile::CanTranslateY | GizmoProfile::PlanarHandlesOn);
+      else
+         flags |= (GizmoProfile::CanTranslateX | GizmoProfile::CanTranslateY | GizmoProfile::PlanarHandlesOn);
+   }*/
+
+   flags |= (GizmoProfile::CanTranslateX | GizmoProfile::CanTranslateY | GizmoProfile::CanTranslateZ | GizmoProfile::PlanarHandlesOn);
 }
 
 //
@@ -759,6 +875,26 @@ void BrushEditorTool::compileGeometry()
 //
 void BrushEditorTool::render()
 {
+   GFXDrawUtil *drawer = GFX->getDrawUtil();
+
+   GFXStateBlockDesc desc;
+   desc.setCullMode(GFXCullNone);
+   desc.setFillModeWireframe();
+
+   for (U32 i = 0; i < mBrushes.size(); i++)
+   {
+      if (mBrushes[i].mIsSubtract)
+      {
+         drawer->drawCube(desc, mBrushes[i].mBounds, ColorI(255,215,0));
+      }
+   }
+
+   if (mSelectedBrush != -1)
+   {
+      drawer->drawCube(desc, mBrushes[mSelectedBrush].mBounds, ColorI(255, 20, 147));
+   }
+
+   mWorldEditor->getGizmo()->renderGizmo(mWorldEditor->getLastCameraQuery().cameraMatrix, mWorldEditor->getLastCameraQuery().fov);
    /*if (mBrushObjHL)
    {
       GFXDrawUtil *drawer = GFX->getDrawUtil();

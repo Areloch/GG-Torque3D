@@ -406,6 +406,8 @@ class WorldEditor : public EditTSCtrl
 
       void updateGuiInfo();
 
+      void updateGizmo();
+
       //
       void renderScene(const RectI & updateRect);
 

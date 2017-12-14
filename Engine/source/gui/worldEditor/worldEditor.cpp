@@ -2361,6 +2361,14 @@ void WorldEditor::updateGuiInfo()
    Con::executef( obj ? obj : this, "onGuiUpdate", buf );
 }
 
+void WorldEditor::updateGizmo()
+{
+   if (mActiveEditorTool != nullptr)
+   {
+      mActiveEditorTool->updateGizmo();
+   }
+}
+
 //------------------------------------------------------------------------------
 
 static void findObjectsCallback( SceneObject *obj, void *val )

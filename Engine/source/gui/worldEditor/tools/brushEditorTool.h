@@ -85,6 +85,10 @@ private:
    RayInfo mLastRayInfo;
 
    bool mMouseDown;
+   bool mDragging;
+
+   S32 mSelectedBrush;
+   S32 mSelectedFace;
 
    Vector<EditBrush> mBrushes;
 
@@ -244,6 +248,9 @@ public:
 
    //
    virtual bool onInputEvent(const InputEventInfo &);
+
+   //
+   void updateGizmo();
 
    //
    virtual void render();

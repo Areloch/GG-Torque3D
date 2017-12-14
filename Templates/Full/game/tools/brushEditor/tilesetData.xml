@@ -1,0 +1,11 @@
+<TilesetData>
+    <TileElements>
+        <TileElement Name="Default Tree" shapeFile="art/shape/trees/defaulttree/defaulttree.dae"/>
+        <TileElement Name="Default Tree 2" shapeFile="art/shape/trees/defaulttree/defaulttree.dae"/>
+    </TileElements>
+    <TileSets>
+        <Tileset Name="Test Tileset">
+            <SetElement TileElement="Default Tree"/>
+        </Tileset>
+    </TileSets>
+</TilesetData>

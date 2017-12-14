@@ -132,5 +132,10 @@ bool EditorTool::onInputEvent(const InputEventInfo &e)
    return true;
 }
 
+void EditorTool::updateGizmo()
+{
+
+}
+
 //
 void render(SceneRenderState *);

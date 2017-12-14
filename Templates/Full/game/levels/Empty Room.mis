@@ -1,82 +1,152 @@
 //--- OBJECT WRITE BEGIN ---
 new SimGroup(MissionGroup) {
+   canSave = "1";
    canSaveDynamicFields = "1";
-      Enabled = "1";
+      enabled = "1";
 
    new LevelInfo(theLevelInfo) {
+      nearClip = "0.1";
       visibleDistance = "1000";
+      visibleGhostDistance = "0";
+      decalBias = "0.0015";
       fogColor = "0.6 0.6 0.7 1";
       fogDensity = "0";
       fogDensityOffset = "700";
       fogAtmosphereHeight = "0";
       canvasClearColor = "0 0 0 255";
-         canSaveDynamicFields = "1";
-         levelName = "Empty Room";
+      ambientLightBlendPhase = "1";
+      ambientLightBlendCurve = "0 0 -1 -1";
+      advancedLightmapSupport = "0";
+      soundAmbience = "AudioAmbienceDefault";
+      soundDistanceModel = "Linear";
+      canSave = "1";
+      canSaveDynamicFields = "1";
          desc0 = "An empty room ready to be populated with Torque objects.";
-         Enabled = "1";
+         enabled = "1";
+         levelName = "Empty Room";
    };
    new SkyBox(theSky) {
-      canSaveDynamicFields = "1";
-      Position = "0 0 0";
-      rotation = "1 0 0 0";
-      scale = "1 1 1";
       Material = "BlackSkyMat";
       drawBottom = "0";
       fogBandHeight = "0";
-   };
-   new Sun(theSun) {
-      canSaveDynamicFields = "1";
-      Position = "0 0 0";
+      position = "0 0 0";
       rotation = "1 0 0 0";
       scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+   };
+   new Sun(theSun) {
       azimuth = "230.396";
       elevation = "45";
       color = "0.968628 0.901961 0.901961 1";
       ambient = "0.078431 0.113725 0.156863 1";
+      brightness = "1";
       castShadows = "1";
+      staticRefreshFreq = "250";
+      dynamicRefreshFreq = "8";
+      coronaEnabled = "1";
+      coronaScale = "0.5";
+      coronaTint = "1 1 1 1";
+      coronaUseLightColor = "1";
+      flareScale = "1";
       attenuationRatio = "0 1 1";
       shadowType = "PSSM";
       texSize = "1024";
       overDarkFactor = "3000 2000 1000 250";
-      shadowDistance = "400";
+      shadowDistance = "200";
       shadowSoftness = "0.25";
       numSplits = "4";
       logWeight = "0.96";
-      fadeStartDistance = "325";
+      fadeStartDistance = "125";
       lastSplitTerrainOnly = "0";
+      representedInLightmap = "0";
+      shadowDarkenColor = "0 0 0 -1";
+      includeLightmappedGeometryInShadow = "0";
+      position = "0 0 0";
+      rotation = "1 0 0 0";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
    };
    new SimGroup(PlayerDropPoints) {
+      canSave = "1";
       canSaveDynamicFields = "1";
-         Enabled = "1";
+         enabled = "1";
 
       new SpawnSphere() {
-         canSaveDynamicFields = "1";
-         Position = "0 0 2";
-         rotation = "1 0 0 0";
-         scale = "1 1 1";
-         dataBlock = "SpawnSphereMarker";
-         radius = "5";
-         spawnClass = "";
-         spawnDatablock = "";
          autoSpawn = "0";
+         spawnTransform = "0";
+         radius = "5";
          sphereWeight = "1";
          indoorWeight = "1";
          outdoorWeight = "1";
-            Enabled = "1";
+         isAIControlled = "0";
+         dataBlock = "SpawnSphereMarker";
+         position = "0 0 3.89932";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+         canSave = "1";
+         canSaveDynamicFields = "1";
+            enabled = "1";
             homingCount = "0";
             lockCount = "0";
       };
    };
    new GroundPlane() {
-      canSaveDynamicFields = "1";
-      Position = "0 0 0";
-      rotation = "1 0 0 0";
-      scale = "1 1 1";
       squareSize = "128";
       scaleU = "12";
       scaleV = "12";
       Material = "BlankWhite";
-         Enabled = "1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+         enabled = "1";
+         position = "0 0 0";
+         rotation = "1 0 0 0";
+         scale = "1 1 1";
+   };
+   new ConvexShape() {
+      Material = "Grid512_Orange_Mat";
+      isSubtract = "1";
+      position = "0.14867 -0.0230371 1";
+      rotation = "1 0 0 0";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      surface = "0 0 0 1 0 0 0.5";
+      surface = "0 1 0 0 0 0 -0.5";
+      surface = "0.707107 0 0 0.707106 0 0.5 0";
+      surface = "0 0.707107 -0.707107 0 0 -0.5 -2.84217e-14";
+      surface = "0.5 0.5 -0.5 0.5 -0.5 0 -9.93411e-08";
+      surface = "0.5 -0.5 0.5 0.5 0.5 0 -9.93411e-08";
+   };
+   new ConvexShape() {
+      Material = "Grid512_Grey_Mat";
+      isSubtract = "0";
+      position = "0 0 0.5";
+      rotation = "1 0 0 0";
+      scale = "0.540372 2.41764 1.47742";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+
+      surface = "0 0 0 1 0 0 0.5";
+      surface = "0 1 0 0 0 0 -0.5";
+      surface = "0.707107 0 0 0.707107 0 0.5 0";
+      surface = "0 0.707107 -0.707107 0 0 -0.5 -2.84217e-14";
+      surface = "0.5 0.5 -0.5 0.5 -0.5 0 -9.93411e-08";
+      surface = "0.5 -0.5 0.5 0.5 0.5 0 -9.93411e-08";
+   };
+   new Item() {
+      static = "0";
+      rotate = "0";
+      isAIControlled = "0";
+      dataBlock = "RyderAmmo";
+      position = "17.2244 5.42737 0.223161";
+      rotation = "0 0 -1 10.158";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+         count = "1";
    };
 };
 //--- OBJECT WRITE END ---

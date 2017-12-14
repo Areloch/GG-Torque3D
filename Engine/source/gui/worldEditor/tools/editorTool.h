@@ -82,6 +82,9 @@ public:
    virtual bool onInputEvent(const InputEventInfo &);
 
    //
+   virtual void updateGizmo();
+
+   //
    virtual void render(){}
 };
 
