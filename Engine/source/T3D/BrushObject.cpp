@@ -686,14 +686,19 @@ void BrushObject::updateBounds(bool recenter)
    Vector<Point3F> points;
    for (U32 i = 0; i < mBrushes.size(); i++)
    {
-      for (U32 v = 0; v < mBrushes[i].mCSGModel.vertices.size(); v++)
-      {
-         Point3F vPos;
-         vPos.x = mBrushes[i].mCSGModel.vertices[v].pos.x;
-         vPos.y = mBrushes[i].mCSGModel.vertices[v].pos.y;
-         vPos.z = mBrushes[i].mCSGModel.vertices[v].pos.z;
+      std::vector<CSGPolygon> polies = mBrushes[i].mCSG.toPolygons();
 
-         points.push_back(vPos);
+      for (U32 p = 0; p < polies.size(); p++)
+      {
+         for (U32 v = 0; v < polies[p].vertices.size(); v++)
+         {
+            Point3F vPos;
+            vPos.x = polies[p].vertices[v].position.x;
+            vPos.y = polies[p].vertices[v].position.y;
+            vPos.z = polies[p].vertices[v].position.z;
+
+            points.push_back(vPos);
+         }
       }
    }
 

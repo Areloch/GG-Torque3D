@@ -31,7 +31,7 @@
 #include "T3D/BrushObject.h"
 #endif
 
-#include "math/util/CSG.h"
+#include "math/util/csg.hpp"
 
 class Brush;
 
@@ -41,8 +41,8 @@ class BrushEditorTool : public EditorTool
 
    struct EditBrush
    {
-      std::vector<CSGUtils::csgjs_polygon> mCSG;
-      CSGUtils::csgjs_model mCSGModel;
+      CSG mCSG;
+      CSGModel mCSGModel;
 
       bool mIsSubtract;
 

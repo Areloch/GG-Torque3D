@@ -1095,7 +1095,7 @@ void ConvexShape::_updateGeometry( bool updateCollision )
 
       mPrimitiveBuffer.unlock();
    }*/
-   if (mCSGModel.vertices.size() != 0)
+   /*if (mCSGModel.vertices.size() != 0)
    {
       mPrimCount = mCSGModel.indices.size() / 3;
       mVertCount = mCSGModel.vertices.size();
@@ -1236,7 +1236,7 @@ void ConvexShape::_updateGeometry( bool updateCollision )
       }
 
       mPrimitiveBuffer.unlock();
-   }
+   }*/
 }
 
 void ConvexShape::_updateCollision()
@@ -1914,7 +1914,7 @@ poly.p2 = vertMap[2];
 void ConvexShape::updateCSG()
 {
    //Use the geometry to set up our CSG data
-   mCSG.clear();
+   /*mCSG.clear();
 
    for (U32 i = 0; i < mGeometry.faces.size(); i++)
    {
@@ -1923,7 +1923,7 @@ void ConvexShape::updateCSG()
       if (faceId == -1)
          continue;
 
-      std::vector<CSGUtils::csgjs_vertex> facePoly;
+      std::vector<CSGVertex> facePoly;
 
       Vector<Point3F> facePoints;
       Vector<Point2F> faceCoords;
@@ -1933,10 +1933,10 @@ void ConvexShape::updateCSG()
 
       for (U32 v = 0; v < facePoints.size(); v++)
       {
-         CSGUtils::csgjs_vertex vert;
-         vert.pos.x = facePoints[v].x;
-         vert.pos.y = facePoints[v].y;
-         vert.pos.z = facePoints[v].z;
+         CSGVertex vert;
+         vert.position.x = facePoints[v].x;
+         vert.position.y = facePoints[v].y;
+         vert.position.z = facePoints[v].z;
 
          vert.normal.x = faceNorm.x;
          vert.normal.y = faceNorm.y;
@@ -1957,7 +1957,7 @@ void ConvexShape::updateCSG()
       if (!Sim::findObject("MissionGroup", missionGroup))
          return;
 
-      CSGUtils::csgjs_model myCSG = CSGUtils::csgjs_modelFromPolygons(mCSG);
+      CSG myCSG = CSG::fromPolygons(mCSG);
 
       for (SimGroup::iterator itr = missionGroup->begin(); itr != missionGroup->end(); itr++)
       {
@@ -1971,9 +1971,9 @@ void ConvexShape::updateCSG()
          if (!mWorldBox.isOverlapped(subtractingMesh->getWorldBox()))
             continue;
 
-         CSGUtils::csgjs_model subtractCSG = CSGUtils::csgjs_modelFromPolygons(subtractingMesh->mCSG);
+         CSG subtractCSG = CSG::fromPolygons(subtractingMesh->mCSG);
 
-         myCSG = CSGUtils::csgjs_difference(subtractCSG, myCSG);
+         myCSG = subtractCSG.csg_subtract(myCSG);
       }
 
       mCSGModel = myCSG;

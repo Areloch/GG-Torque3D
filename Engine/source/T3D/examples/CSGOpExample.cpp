@@ -128,22 +128,22 @@ bool CSGOpExample::onAdd()
    };
 
    //Test the CSGOps
-   for (U32 i = 0; i < 6; i++)
+   /*for (U32 i = 0; i < 6; i++)
    {
-      std::vector<CSGUtils::csgjs_vertex> facePoly;
+      std::vector<CSGVertex> facePoly;
 
       for (U32 v = 0; v < 4; v++)
       {
-         CSGUtils::csgjs_vertex vert;
-         vert.pos.x = faceVerts[i][v].x;
-         vert.pos.y = faceVerts[i][v].y;
-         vert.pos.z = faceVerts[i][v].z;
+         CSGVertex vert;
+         vert.position.x = faceVerts[i][v].x;
+         vert.position.y = faceVerts[i][v].y;
+         vert.position.z = faceVerts[i][v].z;
 
          facePoly.insert(facePoly.end(), vert);
       }
 
       mCSG.insert(mCSG.end(), facePoly);
-   }
+   }*/
 
    return true;
 }
@@ -387,13 +387,13 @@ void CSGOpExample::prepRenderImage( SceneRenderState *state )
 
 void CSGOpExample::updateCSG()
 {
-   if (!mIsSubtract)
+   /*if (!mIsSubtract)
    {
       SimGroup* missionGroup;
       if (!Sim::findObject("MissionGroup", missionGroup))
          return;
 
-      CSGUtils::csgjs_model myCSG = CSGUtils::csgjs_modelFromPolygons(mCSG);
+      CSG myCSG = CSG::fromPolygons(mCSG);
 
       for (SimGroup::iterator itr = missionGroup->begin(); itr != missionGroup->end(); itr++)
       {
@@ -404,15 +404,15 @@ void CSGOpExample::updateCSG()
          if (!subtractingMesh->mIsSubtract)
             continue;
 
-         CSGUtils::csgjs_model subtractCSG = CSGUtils::csgjs_modelFromPolygons(subtractingMesh->mCSG);
+         CSG subtractCSG = CSG::fromPolygons(subtractingMesh->mCSG);
 
-         myCSG = CSGUtils::csgjs_union(myCSG, subtractCSG);
+         myCSG = myCSG.csg_union(subtractCSG);
       }
 
-      std::vector<CSGUtils::csgjs_polygon> finishedPolies = CSGUtils::csgjs_modelToPolygons(myCSG);
+      std::vector<CSGPolygon> finishedPolies = myCSG.toPolygons();
 
       bool tmp = true;
-   }
+   }*/
 }
 
 DefineEngineMethod( CSGOpExample, postApply, void, (),,

@@ -36,7 +36,7 @@
 #include "console/SimXMLDocument.h"
 #endif
 
-#include "math/util/CSG.h"
+#include "math/util/csg.hpp"
 
 class BaseMatInstance;
 class brushEditorTool;
@@ -53,8 +53,8 @@ typedef BrushVert VertexType;
 
 struct Brush
 {
-   std::vector<CSGUtils::csgjs_polygon> mCSG;
-   CSGUtils::csgjs_model mCSGModel;
+   CSG mCSG;
+   CSGModel mCSGModel;
 
    bool mIsSubtract;
 

@@ -32,7 +32,7 @@
 #include "gfx/gfxPrimitiveBuffer.h"
 #endif
 
-#include "math/util/CSG.h"
+#include "math/util/csg.hpp"
 
 class BaseMatInstance;
 
@@ -71,7 +71,7 @@ class CSGOpExample : public SceneObject
    // The actual Material instance
    BaseMatInstance*  mMaterialInst;
 
-   std::vector<CSGUtils::csgjs_polygon> mCSG;
+   CSG mCSG;
 
    bool mIsSubtract;
 

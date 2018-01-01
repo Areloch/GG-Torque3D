@@ -36,7 +36,7 @@
 #include "collision/convex.h"
 #endif
 
-#include "math/util/CSG.h"
+#include "math/util/csg.hpp"
 
 class ConvexShape;
 
@@ -147,8 +147,8 @@ public:
    // This is only indirectly enforced by trucation when serializing.
    static const S32 smMaxSurfaces = 100;
 
-   std::vector<CSGUtils::csgjs_polygon> mCSG;
-   CSGUtils::csgjs_model mCSGModel;
+   std::vector<CSGPolygon> mCSG;
+   CSG mCSGModel;
    bool mIsSubtract;
 
 public:
