@@ -86,6 +86,16 @@ function AssetBrowser::showDialog( %this, %AssetTypeFilter, %selectCallback, %ta
    AssetBrowserWindow.setVisible(1);
    AssetBrowserWindow.selectWindow();
    
+   if(%selectCallback $= "")
+   {
+      //we're not in selection mode, so just hide the select button
+      %this-->SelectButton.setHidden(true);  
+   }
+   else
+   {
+      %this-->SelectButton.setHidden(false); 
+   }
+   
    //AssetBrowser_importAssetWindow.setVisible(0);
    //AssetBrowser_importAssetConfigWindow.setVisible(0);
    AssetBrowser.loadFilters();
@@ -350,7 +360,7 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
    
    %previewNameCtrl = new GuiTextEditCtrl(){
          position = 0 SPC %previewSize.y + %previewBounds - 16;
-         profile = ToolsGuiDefaultProfile; //"ToolsGuiTextEditCenterProfile";
+         profile = ToolsGuiTextEditCenterProfile;
          extent = %previewSize.x + %previewBounds SPC 16;
          text = %assetName;
          originalAssetName = %assetName; //special internal field used in renaming assets
@@ -765,24 +775,6 @@ function AssetBrowser::refreshAsset(%this, %assetId)
    }
 }*/
 
-function AssetBrowser::deleteAsset(%this)
-{
-   //Find out what type it is
-   %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
-   %assetType = %assetDef.getClassName();
-   
-   MessageBoxOKCancel("Warning!", "This will delete the selected asset and the files associated to it, do you wish to continue?", 
-      "confirmDeleteAsset", "");
-      
-   %this.confirmDeleteAsset();
-}
-
-function AssetBrowser::confirmDeleteAsset(%this)
-{
-   AssetDatabase.deleteAsset(EditAssetPopup.assetId, true);
-   %this.loadFilters();
-}
-
 function AssetBrowser::reImportAsset(%this)
 {
    //Find out what type it is
@@ -812,13 +804,26 @@ function AssetPreviewButton::onRightClick(%this)
 {
    AssetBrowser.selectedAssetPreview = %this.getParent();
    EditAssetPopup.assetId = %this.getParent().moduleName @ ":" @ %this.getParent().assetName;
+   %assetType = %this.getParent().assetType;
    
    //Do some enabling/disabling of options depending on asset type
-   if(true)
+   EditAssetPopup.enableItem(0, true);
+   EditAssetPopup.enableItem(7, true);
+   
+   //Is it an editable type?
+   if(%assetType $= "ImageAsset" || %assetType $= "GameObjectAsset" || %assetType $= "SoundAsset")
    {
       EditAssetPopup.enableItem(0, false);
+   }
+   
+   //Is it an importable type?
+   if(%assetType $= "GameObjectAsset" || %assetType $= "ComponentAsset" || %assetType $= "GUIAsset" || %assetType $= "LevelAsset"
+       || %assetType $= "MaterialAsset" || %assetType $= "ParticleAsset"  || %assetType $= "PostEffectAsset" || %assetType $= "ScriptAsset"
+       || %assetType $= "StateMachineAsset")
+   {
       EditAssetPopup.enableItem(7, false);
    }
+   
    EditAssetPopup.showPopup(Canvas);  
 }
 
@@ -1305,6 +1310,28 @@ function AssetBrowserFilterTree::onControlDropped( %this, %payload, %position )
       return;
       
    %assetType = %payload.dragSourceControl.parentGroup.assetType;
+   %assetName = %payload.dragSourceControl.parentGroup.assetName;
+   %moduleName = %payload.dragSourceControl.parentGroup.moduleName;
    
    echo("DROPPED A " @ %assetType @ " ON THE ASSET BROWSER NAVIGATION TREE!");
+   
+   %item = %this.getItemAtPosition(%position);
+   
+   echo("DROPPED IT ON ITEM " @ %item);
+   
+   %parent = %this.getParentItem(%item);
+   
+   if(%parent == 1)
+   {
+      //we're a module entry, cool
+      %targetModuleName = %this.getItemText(%item);
+      echo("DROPPED IT ON MODULE " @ %targetModuleName);   
+      
+      if(%moduleName !$= %targetModuleName)
+      {
+         //we're trying to move the asset to a different module!
+         MessageBoxYesNo( "Move Asset", "Do you wish to move asset " @ %assetName @ " to module " @ %targetModuleName @ "?", 
+               "AssetBrowser.moveAsset("@%assetName@", "@%targetModuleName@");", "");  
+      }
+   }
 }

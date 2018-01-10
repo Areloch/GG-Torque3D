@@ -96,6 +96,8 @@ private:
 
    Signal< void(MatrixF*) > onTransformSet;
 
+   S32                       mLifetimeMS;
+
 protected:
 
    virtual void   processTick(const Move* move);
@@ -139,6 +141,8 @@ public:
    S32 mPredictionCount;            ///< Number of ticks to predict
 
    Move lastMove;
+
+   S32      mStartTimeMS;
 
    //
    Entity();

@@ -125,6 +125,12 @@ function AssetBrowser::buildPopupMenus(%this)
          Item[ 7 ] = "Delete Module" TAB "" TAB "AssetBrowser.deleteModule();";
       };
    }
+   
+   //Some assets are not yet ready/implemented, so disable their creation here
+   AddNewArtAssetPopup.enableItem(8, false); //post effect
+   AddNewArtAssetPopup.enableItem(12, false); //particle effect
+   
+   AddNewScriptAssetPopup.enableItem(2, false); //state machine
 }
 
 function AddNewScriptAssetPopupMenu::onSelectItem(%this, %id, %text)

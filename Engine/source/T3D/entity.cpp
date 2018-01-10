@@ -120,6 +120,8 @@ Entity::Entity()
 
    mInitialized = false;
 
+   mLifetimeMS = 0;
+
    mGameObjectAssetId = StringTable->insert("");
 
 }
@@ -148,6 +150,10 @@ void Entity::initPersistFields()
    addField("LocalRotation", TypeMatrixRotation, Offset(mMount.xfm, Entity), "Rotation we are mounted at ( object space of our mount object ).");
 
    endGroup("Transform");
+
+   addGroup("Misc");
+   addField("LifetimeMS", TypeS32, Offset(mLifetimeMS, Entity), "Object world orientation.");
+   endGroup("Misc");
 
    addGroup("GameObject");
    addProtectedField("gameObjectName", TypeGameObjectAssetPtr, Offset(mGameObjectAsset, Entity), &_setGameObject, &defaultProtectedGetFn,
@@ -243,6 +249,9 @@ bool Entity::onAdd()
       //We can shortcut the initialization here because stuff generally ghosts down in order, and onPostAdd isn't called on ghosts.
       onPostAdd();
    }
+
+   if (mLifetimeMS != 0)
+      mStartTimeMS = Platform::getRealMilliseconds();
 
    return true;
 }
@@ -429,6 +438,14 @@ void Entity::processTick(const Move* move)
       mDelta.rot[1] = mRot.asQuatF();
 
       setTransform(getPosition(), mRot);
+
+      //Lifetime test
+      if (mLifetimeMS != 0)
+      {
+         S32 currentTime = Platform::getRealMilliseconds();
+         if (currentTime - mStartTimeMS >= mLifetimeMS)
+            deleteObject();
+      }
    }
 }
 

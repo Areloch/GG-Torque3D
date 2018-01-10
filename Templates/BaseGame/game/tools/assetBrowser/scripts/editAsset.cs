@@ -249,7 +249,23 @@ function AssetBrowser::duplicateAsset(%this)
 {
    %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
    
-   
-   
    %this.setupCreateNewAsset(%assetDef.getClassName(), AssetBrowser.selectedModule);
+}
+
+function AssetBrowser::deleteAsset(%this)
+{
+   //Find out what type it is
+   %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
+   %assetType = %assetDef.getClassName();
+   
+   MessageBoxOKCancel("Warning!", "This will delete the selected asset and the files associated to it, do you wish to continue?", 
+      "confirmDeleteAsset", "");
+      
+   %this.confirmDeleteAsset();
+}
+
+function AssetBrowser::confirmDeleteAsset(%this)
+{
+   AssetDatabase.deleteAsset(EditAssetPopup.assetId, false);
+   %this.loadFilters();
 }
