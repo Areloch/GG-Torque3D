@@ -284,10 +284,10 @@ struct CSGNode
       if (back)
          back->invert();
 
-      /*if (front)
+      if (front)
          front.swap(back);
       else if (back)
-         back.swap(front);*/
+         back.swap(front);
    }
 
    std::vector<CSGPolygon> clipPolygons(const std::vector<CSGPolygon> &polyList)

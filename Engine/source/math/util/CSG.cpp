@@ -123,7 +123,6 @@ CSGModel CSG::toModel() const
       }
    }
    return model;
-   return model;
 }
 
 CSG CSG::csg_union(const CSG &csg)
