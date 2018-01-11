@@ -36,8 +36,6 @@
 #include "collision/convex.h"
 #endif
 
-#include "math/util/csg.hpp"
-
 class ConvexShape;
 
 // Crap name, but whatcha gonna do.
@@ -147,10 +145,6 @@ public:
    // This is only indirectly enforced by trucation when serializing.
    static const S32 smMaxSurfaces = 100;
 
-   std::vector<CSGPolygon> mCSG;
-   CSG mCSGModel;
-   bool mIsSubtract;
-
 public:
    
    ConvexShape();
@@ -196,8 +190,6 @@ public:
       Geometry& getGeometry() { return mGeometry; }
       Vector<MatrixF>& getSurfaces() { return mSurfaces; }
       void getSurfaceTriangles( S32 surfId, Vector< Point3F > *outPoints, Vector< Point2F > *outCoords, bool worldSpace );
-      void getSurfaceVerts(U32 faceId, Vector< Point3F > *outPoints, Vector< Point2F > *outCoords, bool worldSpace);
-      S32 getFaceId(U32 surfId);
 
    /// @}
 
@@ -205,8 +197,6 @@ public:
    /// @{
 
       void renderFaceEdges( S32 faceid, const ColorI &color = ColorI::WHITE, F32 lineWidth = 1.0f );
-
-      void updateCSG();
 
    /// @}
 
