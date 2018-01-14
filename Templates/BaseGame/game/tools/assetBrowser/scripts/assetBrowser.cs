@@ -105,7 +105,7 @@ function AssetBrowser::hideDialog( %this )
 {
    AssetBrowser.setVisible(1);
    AssetBrowserWindow.setVisible(1);
-   Canvas.popDialog(AssetBrowser_addPackage);
+   Canvas.popDialog(AssetBrowser_addModule);
    Canvas.popDialog(ImportAssetWindow);
    
    Canvas.popDialog(AssetBrowser);
@@ -279,7 +279,10 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
       }
       else if(%assetType $= "ScriptAsset")
       {
-         %previewImage = "tools/assetBrowser/art/scriptIcon";
+         if(%assetDesc.isServerSide)
+            %previewImage = "tools/assetBrowser/art/serverScriptIcon";
+         else
+            %previewImage = "tools/assetBrowser/art/clientScriptIcon";
       }
       else if(%assetType $= "MaterialAsset")
       {
@@ -356,6 +359,7 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
          groupNum = "0";
          useMouseEvents = true;
          text = "";
+         icon = %previewImage;
    };
    
    %previewNameCtrl = new GuiTextEditCtrl(){
@@ -405,14 +409,6 @@ function AssetBrowser::loadImages( %this, %materialNum )
    }*/
 }
 
-function AssetBrowser::clearMaterialFilters( %this )
-{
-   for( %i = AssetBrowser.staticFilterObjects; %i < AssetBrowser-->filterArray.getCount(); %i++ )
-      AssetBrowser-->filterArray.getObject(%i).getObject(0).setStateOn(0);
-      
-   AssetBrowser.loadFilter( "", "" );
-}
-
 function AssetBrowser::loadFilters( %this )
 {
    AssetBrowser-->filterTree.clear();
@@ -451,7 +447,7 @@ function AssetBrowser::loadFilters( %this )
 		if(%moduleName $= "CoreComponentsModule")
 		   continue;
 		
-		//first, see if this module package is listed already
+		//first, see if this module Module is listed already
 		%moduleItemId = AssetBrowser-->filterTree.findItemByName(%moduleName);
 		
 		if(%moduleItemId == 0)
@@ -533,74 +529,28 @@ function AssetBrowser::updateSelection( %this, %asset, %moduleName )
    // after we move away from the material. eg: if we remove a field from the material,
    // the empty checkbox will still be there until you move fro and to the material again
    
-   %isMaterialBorder = 0;
-   eval("%isMaterialBorder = isObject(AssetBrowser-->"@%asset@"Border);");
-   if( %isMaterialBorder )
+   %isAssetBorder = 0;
+   eval("%isAssetBorder = isObject(AssetBrowser-->"@%asset@"Border);");
+   if( %isAssetBorder )
    {
       eval( "AssetBrowser-->"@%asset@"Border.setStateOn(1);");
    }
       
-   %isMaterialBorderPrevious = 0;
-   eval("%isMaterialBorderPrevious = isObject(AssetBrowser-->"@$prevSelectedMaterialHL@"Border);");
-   if( %isMaterialBorderPrevious )
+   %isAssetBorderPrevious = 0;
+   eval("%isAssetBorderPrevious = isObject(AssetBrowser-->"@%this.prevSelectedMaterialHL@"Border);");
+   if( %isAssetBorderPrevious )
    {
-      eval( "AssetBrowser-->"@$prevSelectedMaterialHL@"Border.setStateOn(0);");
+      eval( "AssetBrowser-->"@%this.prevSelectedMaterialHL@"Border.setStateOn(0);");
    }
    
-   //AssetBrowser-->materialCategories.deleteAllObjects();
    AssetBrowser.selectedMaterial = %asset;
    AssetBrowser.selectedAsset = %moduleName@":"@%asset;
    AssetBrowser.selectedAssetDef = AssetDatabase.acquireAsset(AssetBrowser.selectedAsset);
-   AssetBrowser.selectedPreviewImagePath = %previewImagePath;
-   //AssetBrowser-->previewSelectionText.setText( %asset );
-   //AssetBrowser-->previewSelection.setBitmap( %previewImagePath );
+   //AssetBrowser.selectedPreviewImagePath = %previewImagePath;
    
-   // running through the existing list of categorynames in the left, so yes
-   // some might exist on the left only temporary if not given a home
-   /*for( %i = AssetBrowser.staticFilterObjects; %i < AssetBrowser-->filterArray.getCount() ; %i++ )
-   {
-      %filter = AssetBrowser-->filterArray.getObject(%i).getObject(0).filter;
-      
-      %checkbox = new GuiCheckBoxCtrl(){
-         materialName = %material.name;
-         Profile = "ToolsGuiCheckBoxListProfile";
-         position = "5 2";
-         Extent = "118 18";
-         Command = "AssetBrowser.updateMaterialTags( $ThisControl.materialName, $ThisControl.getText(), $ThisControl.getValue() );";
-         text = %filter;
-      };
-      
-      AssetBrowser-->materialCategories.add( %checkbox );
-      // crawl through material for categories in order to check or not
-      %filterFound = 0;
-      for( %j = 0; %material.getFieldValue("materialTag" @ %j) !$= ""; %j++ )
-      {
-         %tag = %material.getFieldValue("materialTag" @ %j);
-         
-         if( %tag  $= %filter )
-         {
-            %filterFound = 1;
-            break;
-         }
-      }
-      
-      if( %filterFound  )
-         %checkbox.setStateOn(1);
-      else
-         %checkbox.setStateOn(0);
-   }*/
-   
-   $prevSelectedMaterialHL = %material;
+   %this.prevSelectedMaterialHL = %asset;
 }
 
-//
-function AssetBrowser::CreateNewModule(%this)
-{
-   Canvas.pushDialog(AssetBrowser_AddPackage); 
-   AssetBrowser_addPackageWindow.selectWindow();  
-   
-   AssetBrowser_addPackageWindow.callbackFunction = "AssetBrowser.loadFilters();";
-}
 //
 //needs to be deleted with the persistence manager and needs to be blanked out of the matmanager
 //also need to update instances... i guess which is the tricky part....
@@ -749,32 +699,6 @@ function AssetBrowser::changeAsset(%this)
    eval(%cmd);
 }
 
-function AssetBrowser::refreshAsset(%this, %assetId)
-{
-   if(%assetId $= "")
-   {
-      //if we have no passed-in asset ID, we're probably going through the popup menu, so get our edit popup id  
-      %assetId = EditAssetPopup.assetId;
-   }
-   
-   AssetDatabase.refreshAsset(%assetId);
-   AssetBrowser.refreshPreviews();
-}
-
-/*function AssetBrowser::reImportAsset(%this)
-{
-   %this.isReImportingAsset = true;
-   %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
-   %assetType = %assetDef.getAssetType();
-   
-   if(%assetType $= "Model" || %assetType $= "Image" || %assetType $= "Sound")
-   {
-      %this.onBeginDropFiles();
-      %this.onDropFile(%assetDef.originalFilePath);
-      %this.endDropFiles();
-   }
-}*/
-
 function AssetBrowser::reImportAsset(%this)
 {
    //Find out what type it is
@@ -793,13 +717,11 @@ function AssetBrowser::reImportAsset(%this)
       %module = AssetDatabase.getAssetModule(EditAssetPopup.assetId);
       
       //get the selected module data
-      ImportAssetPackageList.setText(%module.ModuleId);
+      ImportAssetModuleList.setText(%module.ModuleId);
    }
 }
 
-//
-//
-//
+//------------------------------------------------------------------------------
 function AssetPreviewButton::onRightClick(%this)
 {
    AssetBrowser.selectedAssetPreview = %this.getParent();
@@ -832,9 +754,7 @@ function AssetListPanel::onRightMouseDown(%this)
    AddNewAssetPopup.showPopup(Canvas);
 }
 
-//
-//
-//
+//------------------------------------------------------------------------------
 function AssetBrowser::refreshPreviews(%this)
 {
    AssetBrowserFilterTree.onSelect(AssetBrowser.selectedItem);
@@ -889,7 +809,7 @@ function AssetBrowserFilterTree::onSelect(%this, %itemId)
 	//module name per our selected filter:
 	%moduleItemId = %this.getParentItem(%itemId);
 	
-	//check if we've selected a package
+	//check if we've selected a Module
 	if(%moduleItemId == 1)
 	{
 	   %FilterModuleName = %this.getItemText(%itemId);
@@ -975,7 +895,7 @@ function AssetBrowserFilterTree::onRightMouseDown(%this, %itemId)
          {
             AddNewComponentAssetPopup.showPopup(Canvas);
             //Canvas.popDialog(AssetBrowser_newComponentAsset); 
-	         //AssetBrowser_newComponentAsset-->AssetBrowserPackageList.setText(AssetBrowser.selectedModule);
+	         //AssetBrowser_newComponentAsset-->AssetBrowserModuleList.setText(AssetBrowser.selectedModule);
          }
          else
          {
@@ -1000,7 +920,7 @@ function AssetBrowserSearchFilterText::onWake( %this )
       %this.setText( %filter );*/
 }
 
-//---------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 function AssetBrowserSearchFilterText::onGainFirstResponder( %this )
 {
@@ -1081,6 +1001,9 @@ function AssetPreviewButton::onMouseDragged(%this)
    %payload.className = "AssetPreviewControl";
    %payload.position = "0 0";
    %payload.dragSourceControl = %this;
+   %payload.bitmap = %this.icon;
+   %payload.extent.x /= 2;
+   %payload.extent.y /= 2;
    
    %xOffset = getWord( %payload.extent, 0 ) / 2;
    %yOffset = getWord( %payload.extent, 1 ) / 2;
@@ -1235,6 +1158,38 @@ function EWorldEditor::onControlDropped( %this, %payload, %position )
       
       EWorldEditor.clearSelection();
       EWorldEditor.selectObject(%GO);
+   }
+   else if(%assetType $= "ComponentAsset")
+   {
+      %newEntity = new Entity()
+      {
+         position = %pos;
+      };
+      
+      %assetDef = AssetDatabase.acquireAsset(%module @ ":" @ %asset);
+      
+      if(%assetDef.componentClass $= "Component")
+         eval("$tmpVar = new " @ %assetDef.componentClass @ "() { class = " @ %assetDef.componentName @ "; }; %newEntity.add($tmpVar);");
+      else
+         eval("$tmpVar = new " @ %assetDef.componentClass @ "() {}; %newEntity.add($tmpVar);");
+         
+      MissionGroup.add(%newEntity);
+      
+      EWorldEditor.clearSelection();
+      EWorldEditor.selectObject(%newEntity);
+   }
+   else if(%assetType $= "ScriptAsset") //do we want to do it this way?
+   {
+      %newEntity = new Entity()
+      {
+         position = %pos;
+         class = %asset;
+      };
+
+      MissionGroup.add(%newEntity);
+      
+      EWorldEditor.clearSelection();
+      EWorldEditor.selectObject(%newEntity);
    }
    
    EWorldEditor.isDirty = true;

@@ -1,9 +1,9 @@
-function GameObjectPackageList::onWake(%this)
+function GameObjectModuleList::onWake(%this)
 {
    %this.refresh();
 }
 
-function GameObjectPackageList::refresh(%this)
+function GameObjectModuleList::refresh(%this)
 {
    %this.clear();
    
@@ -20,8 +20,8 @@ function GameObjectPackageList::refresh(%this)
 
 function GameObjectCreatorPkgBtn::onClick(%this)
 {
-   Canvas.pushDialog(AssetBrowser_AddPackage);
-   AssetBrowser_addPackageWindow.selectWindow();
+   Canvas.pushDialog(AssetBrowser_AddModule);
+   AssetBrowser_addModuleWindow.selectWindow();
 }
 
 function GameObjectCreateBtn::onClick(%this)
@@ -62,13 +62,14 @@ function GameObjectCreateBtn::onClick(%this)
 	%selectedEntity = GameObjectCreator.selectedEntity;
 
 	%selectedEntity.class = %className;
-	%selectedEntity.gameObjectAsset = %className;
 	Inspector.inspect(%selectedEntity);
 	
 	if(%createNew)
 	{
       //get the selected module data
-      %moduleName = GameObjectPackageList.getText();
+      %moduleName = GameObjectModuleList.getText();
+      
+      %selectedEntity.gameObjectAsset = %moduleName @ ":" @ %className;
       
       %path = "data/" @ %moduleName @ "/gameObjects/";
       
@@ -91,7 +92,6 @@ function GameObjectCreateBtn::onClick(%this)
       
       %asset = new GameObjectAsset()
       {
-         AssetId = %className @ "Asset";
          AssetName = %className;
          VersionId = 1;
          gameObjectName=%className;
@@ -117,6 +117,8 @@ function GameObjectCreateBtn::onClick(%this)
 	   %moduleDef = AssetDatabase.getAssetModule(%assetId);
 	   %moduleName = %moduleDef.ModuleId;
 	   %path = "data/" @ %moduleName @ "/gameObjects/";
+	   
+	   %selectedEntity.gameObjectAsset = %moduleName @ ":" @ %className;
 	   
 	   %tamlPath = %path  @ %className @ ".taml";
 	   TamlWrite(%selectedEntity, %tamlpath);

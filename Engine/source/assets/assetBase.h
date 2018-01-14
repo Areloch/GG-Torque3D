@@ -91,6 +91,8 @@ public:
    inline StringTableEntry getAssetType(void) const                          { return mpAssetDefinition->mAssetType; }
    inline void             setAssetTags(const char* pAssetTags)              { if (mpOwningAssetManager == NULL) mpAssetDefinition->mAssetTags = StringTable->insert(pAssetTags); }
    inline StringTableEntry getAssetTags(void) const                          { return mpAssetDefinition->mAssetTags; }
+   inline void             setAssetVirtualPath(const char* pAssetVirtualPath) { if (mpOwningAssetManager == NULL) mpAssetDefinition->mAssetVirtualPath = StringTable->insert(pAssetVirtualPath); }
+   inline StringTableEntry getAssetVirtualPath(void) const { return mpAssetDefinition->mAssetVirtualPath; }
 
    inline S32              getAcquiredReferenceCount(void) const             { return mAcquireReferenceCount; }
    inline bool             getOwned(void) const                              { return mpOwningAssetManager != NULL; }
@@ -139,6 +141,10 @@ protected:
    static bool             setAssetTags(void *obj, const char *array, const char *data) { static_cast<AssetBase*>(obj)->setAssetTags(data); return false; }
    static const char*      getAssetTags(void* obj, const char* data) { return static_cast<AssetBase*>(obj)->getAssetTags(); }
    static bool             writeAssetTags(void* obj, StringTableEntry pFieldName) { return static_cast<AssetBase*>(obj)->getAssetTags() != StringTable->EmptyString(); }
+
+   static bool             setAssetVirtualPath(void *obj, const char *array, const char *data) { static_cast<AssetBase*>(obj)->setAssetVirtualPath(data); return false; }
+   static const char*      getAssetVirtualPath(void* obj, const char* data) { return static_cast<AssetBase*>(obj)->getAssetVirtualPath(); }
+   static bool             writeAssetVirtualPath(void* obj, StringTableEntry pFieldName) { return static_cast<AssetBase*>(obj)->getAssetVirtualPath() != StringTable->EmptyString(); }
 
 private:
    void                    acquireAssetReference(void);

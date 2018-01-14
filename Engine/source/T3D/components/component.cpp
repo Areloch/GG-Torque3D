@@ -31,6 +31,7 @@
 #include "console/engineAPI.h"
 #include "sim/netConnection.h"
 #include "console/consoleInternal.h"
+#include "T3D/assets/MaterialAsset.h"
 
 #define DECLARE_NATIVE_COMPONENT( ComponentType )                   \
 	 Component* staticComponentTemplate = new ComponentType; \
@@ -480,7 +481,7 @@ void Component::addComponentField(const char *fieldName, const char *desc, const
    else if (fieldType == StringTable->insert("vector"))
       fieldTypeMask = TypePoint3F;
    else if (fieldType == StringTable->insert("material"))
-      fieldTypeMask = TypeMaterialName;
+      fieldTypeMask = TypeMaterialAssetPtr;
    else if (fieldType == StringTable->insert("image"))
       fieldTypeMask = TypeImageFilename;
    else if (fieldType == StringTable->insert("shape"))

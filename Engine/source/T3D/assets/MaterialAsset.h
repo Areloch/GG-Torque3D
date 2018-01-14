@@ -42,6 +42,10 @@
 #include "gfx/gfxDevice.h"
 #endif
 
+#ifndef _GUI_INSPECTOR_TYPES_H_
+#include "gui/editor/guiInspectorTypes.h"
+#endif
+
 #include "materials/matTextureTarget.h"
 #include "materials/materialDefinition.h"
 #include "materials/customMaterialDefinition.h"
@@ -118,6 +122,23 @@ public:
 };
 
 DefineConsoleType(TypeMaterialAssetPtr, MaterialAsset)
+
+//-----------------------------------------------------------------------------
+// TypeAssetId GuiInspectorField Class
+//-----------------------------------------------------------------------------
+class GuiInspectorTypeMaterialAssetPtr : public GuiInspectorTypeFileName
+{
+   typedef GuiInspectorTypeFileName Parent;
+public:
+
+   GuiBitmapButtonCtrl  *mSMEdButton;
+
+   DECLARE_CONOBJECT(GuiInspectorTypeMaterialAssetPtr);
+   static void consoleInit();
+
+   virtual GuiControl* constructEditControl();
+   virtual bool updateRects();
+};
 
 #endif // _ASSET_BASE_H_
 

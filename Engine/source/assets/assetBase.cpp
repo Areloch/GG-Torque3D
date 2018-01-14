@@ -51,6 +51,7 @@ StringTableEntry assetAutoUnloadField = StringTable->insert("AssetAutoUnload");
 StringTableEntry assetInternalField = StringTable->insert("AssetInternal");
 StringTableEntry assetPrivateField = StringTable->insert("AssetPrivate");
 StringTableEntry assetTagsField = StringTable->insert("AssetTags");
+StringTableEntry assetVirtualPathField = StringTable->insert("AssetVirtualPath");
 
 //-----------------------------------------------------------------------------
 
@@ -89,6 +90,7 @@ void AssetBase::initPersistFields()
    addProtectedField(assetPrivateField, TypeBool, 0, &defaultProtectedNotSetFn, &getAssetPrivate, &defaultProtectedNotWriteFn, "Whether the asset is private or not.");
 
    addProtectedField(assetTagsField, TypeString, 0, &setAssetTags, &getAssetTags, &writeAssetTags, "The tags for this asset.  These are utilized to help categorize and organize assets.");
+   addProtectedField(assetVirtualPathField, TypeString, 0, &setAssetVirtualPath, &getAssetVirtualPath, &writeAssetVirtualPath, "The virtual path for this asset.  This is utilized to help categorize and organize assets.");
 }
 
 //------------------------------------------------------------------------------

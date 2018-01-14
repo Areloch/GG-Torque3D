@@ -26,7 +26,7 @@ function CreateAssetButton::onClick(%this)
 
 function AssetBrowser_newAsset::onWake(%this)
 {
-   NewAssetPackageList.refresh();
+   NewAssetModuleList.refresh();
    //NewComponentParentClass.setText("Component");
 }
 
@@ -59,10 +59,10 @@ function NewAssetTypeList::onSelected(%this)
    }
 }
 
-function NewAssetPackageBtn::onClick(%this)
+function NewAssetModuleBtn::onClick(%this)
 {
-   Canvas.pushDialog(AssetBrowser_AddPackage);
-   AssetBrowser_addPackageWindow.selectWindow();
+   Canvas.pushDialog(AssetBrowser_AddModule);
+   AssetBrowser_addModuleWindow.selectWindow();
 }
 
 function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
@@ -73,7 +73,7 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
    
    NewAssetPropertiesInspector.clear();
    
-   NewAssetPackageList.setText(%moduleName);
+   NewAssetModuleList.setText(%moduleName);
    
    //get rid of the old one if we had one.
    if(isObject(%this.newAssetSettings))
@@ -96,9 +96,9 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
    if(%assetType $= "ComponentAsset")
    {
       NewAssetPropertiesInspector.startGroup("Components");
-      NewAssetPropertiesInspector.addField("parentClass", "New Asset Parent Class", "String",  "Name of the new asset's parent class", %assetType, "", %this.newAssetSettings);
+      NewAssetPropertiesInspector.addField("parentClass", "New Asset Parent Class", "String",  "Name of the new asset's parent class", "Component", "", %this.newAssetSettings);
       NewAssetPropertiesInspector.addField("componentGroup", "Component Group", "String",  "Name of the group of components this component asset belongs to", "", "", %this.newAssetSettings);
-      NewAssetPropertiesInspector.addField("componentName", "Component Name", "String",  "Name of the new component", "", "", %this.newAssetSettings);
+      //NewAssetPropertiesInspector.addField("componentName", "Component Name", "String",  "Name of the new component", "", "", %this.newAssetSettings);
       NewAssetPropertiesInspector.endGroup();
    }
    else if(%assetType $= "LevelAsset")
@@ -132,7 +132,7 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
    
    if(%moduleName $= "")
    {
-      Canvas.pushDialog(AssetBrowser_selectPackage);
+      Canvas.pushDialog(AssetBrowser_selectModule);
    }
    else
    {
@@ -165,7 +165,7 @@ function CreateNewAsset()
 	}
 	
 	//get the selected module data
-   %moduleName = NewAssetPackageList.getText();
+   %moduleName = NewAssetModuleList.getText();
    
    if(%moduleName $= "")
 	{
@@ -185,7 +185,7 @@ function CreateNewAsset()
 	if(%assetType $= "ComponentAsset")
 	{
 	   //Canvas.popDialog(AssetBrowser_newComponentAsset); 
-	   //AssetBrowser_newComponentAsset-->AssetBrowserPackageList.setText(AssetBrowser.selectedModule);
+	   //AssetBrowser_newComponentAsset-->AssetBrowserModuleList.setText(AssetBrowser.selectedModule);
 	   %assetFilePath = createNewComponentAsset(%assetName, %path);
 	}
 	else if(%assetType $= "MaterialAsset")
@@ -236,7 +236,7 @@ function createNewComponentAsset()
    {
       AssetName = %assetName;
       versionId = 1;
-      componentName = AssetBrowser.newAssetSettings.componentName;
+      componentName = %assetName;
       componentClass = AssetBrowser.newAssetSettings.parentClass;
       friendlyName = AssetBrowser.newAssetSettings.friendlyName;
       componentType = AssetBrowser.newAssetSettings.componentGroup;
@@ -250,10 +250,17 @@ function createNewComponentAsset()
 	
 	if(%file.openForWrite(%scriptPath))
 	{
+		//TODO: enable ability to auto-embed a header for copyright or whatnot
+	   %file.writeline("//onAdd is called when the component is created and then added to it's owner entity.\n");
+	   %file.writeline("//You would also add any script-defined component fields via addComponentField().\n");
 		%file.writeline("function " @ %assetName @ "::onAdd(%this)\n{\n\n}\n");
+		%file.writeline("//onAdd is called when the component is removed and deleted from it's owner entity.");
 		%file.writeline("function " @ %assetName @ "::onRemove(%this)\n{\n\n}\n");
+		%file.writeline("//onClientConnect is called any time a new client connects to the server.");
 		%file.writeline("function " @ %assetName @ "::onClientConnect(%this, %client)\n{\n\n}\n");
+		%file.writeline("//onClientDisconnect is called any time a client disconnects from the server.");
 		%file.writeline("function " @ %assetName @ "::onClientDisonnect(%this, %client)\n{\n\n}\n");
+		%file.writeline("//update is called when the component does an update tick.\n");
 		%file.writeline("function " @ %assetName @ "::Update(%this)\n{\n\n}\n");
 		
 		%file.close();
@@ -278,8 +285,11 @@ function createNewMaterialAsset()
 {
    %assetName = NewAssetName.getText();
    
-   %tamlpath = "data/" @ %moduleName @ "/materials/" @ %assetName @ ".asset.taml";
-   %sgfPath = "data/" @ %moduleName @ "/materials/" @ %assetName @ ".sgf";
+   %moduleName = AssetBrowser.newAssetSettings.moduleName;
+   %modulePath = "data/" @ %moduleName;
+   
+   %tamlpath = %modulePath @ "/materials/" @ %assetName @ ".asset.taml";
+   %sgfPath = %modulePath @ "/materials/" @ %assetName @ ".sgf";
    
    %asset = new MaterialAsset()
    {
@@ -307,12 +317,12 @@ function createNewMaterialAsset()
 function createNewScriptAsset()
 {
    %moduleName = AssetBrowser.newAssetSettings.moduleName;
-   %modulePath = "data/" @ %selectedModule;
+   %modulePath = "data/" @ %moduleName;
       
    %assetName = AssetBrowser.newAssetSettings.assetName;      
    
-   %tamlpath = "data/" @ %moduleName @ "/scripts/" @ %assetName @ ".asset.taml";
-   %scriptPath = "data/" @ %moduleName @ "/scripts/" @ %assetName @ ".cs";
+   %tamlpath = %modulePath @ "/scripts/" @ %assetName @ ".asset.taml";
+   %scriptPath = %modulePath @ "/scripts/" @ %assetName @ ".cs";
    
    %asset = new ScriptAsset()
    {
@@ -404,11 +414,11 @@ function createNewStateMachineAsset()
 function createNewGUIAsset()
 {
    %moduleName = AssetBrowser.newAssetSettings.moduleName;
-   %modulePath = "data/" @ %selectedModule;
+   %modulePath = "data/" @ %moduleName;
       
    %assetName = AssetBrowser.newAssetSettings.assetName;
    
-   %tamlpath = "data/" @ %moduleName @ "/GUIs/" @ %assetName @ ".asset.taml";
+   %tamlpath = %modulePath @ "/GUIs/" @ %assetName @ ".asset.taml";
    %guipath = %modulePath @ "/GUIs/" @ %assetName @ ".gui";
    %scriptPath = %modulePath @ "/GUIs/" @ %assetName @ ".cs";
    
@@ -628,4 +638,20 @@ function ParentComponentList::refresh(%this)
          }
       }
    }
+}
+
+//----------------------------------------------------------
+// Game Object creation
+//----------------------------------------------------------
+function EWorldEditor::createGameObject( %this )
+{
+   GameObjectCreatorObjectName.text = "";
+   
+   %activeSelection = %this.getActiveSelection();
+   if( %activeSelection.getCount() == 0 )
+      return;
+      
+   GameObjectCreator.selectedEntity = %activeSelection.getObject( 0 );
+
+   Canvas.pushDialog(GameObjectCreator);
 }

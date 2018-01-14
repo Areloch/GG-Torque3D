@@ -77,6 +77,7 @@ public:
         mAssetType = StringTable->EmptyString();
         mAssetCategory = StringTable->EmptyString();
         mAssetTags = StringTable->EmptyString();
+        mAssetVirtualPath = StringTable->EmptyString();
     }
 
     ModuleDefinition*           mpModuleDefinition;
@@ -98,6 +99,7 @@ public:
     StringTableEntry            mAssetType;
     StringTableEntry            mAssetCategory;
     StringTableEntry            mAssetTags;
+    StringTableEntry            mAssetVirtualPath;
 };
 
 #endif // _ASSET_DEFINITION_H_

@@ -86,7 +86,7 @@
          canSaveDynamicFields = "0";
       };
       new GuiTextCtrl() {
-         text = "Target Package Module:";
+         text = "Target Module:";
          maxLength = "1024";
          margin = "0 0 0 0";
          padding = "0 0 0 0";
@@ -108,7 +108,7 @@
          canSave = "1";
          canSaveDynamicFields = "0";
       };
-      new GuiPopUpMenuCtrlEx(NewAssetPackageList) {
+      new GuiPopUpMenuCtrlEx(NewAssetModuleList) {
          maxPopupHeight = "200";
          sbUsesNAColor = "0";
          reverseTextList = "0";
@@ -132,11 +132,11 @@
          tooltipProfile = "GuiToolTipProfile";
          hovertime = "1000";
          isContainer = "1";
-         class = "AssetBrowserPackageList";
+         class = "AssetBrowserModuleList";
          canSave = "1";
          canSaveDynamicFields = "0";
       };
-      new GuiBitmapButtonCtrl(NewAssetPackageBtn) {
+      new GuiBitmapButtonCtrl(NewAssetModuleBtn) {
          bitmap = "tools/gui/images/iconAdd.png";
          bitmapMode = "Centered";
          autoFitExtents = "0";
@@ -154,7 +154,7 @@
          profile = "GuiDefaultProfile";
          visible = "1";
          active = "1";
-         command = "Canvas.pushDialog(AssetBrowser_AddPackage);\nAssetBrowser_addPackageWindow.selectWindow();";
+         command = "Canvas.pushDialog(AssetBrowser_AddModule);\nAssetBrowser_addModuleWindow.selectWindow();";
          tooltipProfile = "GuiToolTipProfile";
          hovertime = "1000";
          isContainer = "0";

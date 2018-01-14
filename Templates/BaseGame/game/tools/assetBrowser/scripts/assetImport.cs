@@ -282,7 +282,7 @@ function AssetBrowser::addImportingAsset( %this, %assetType, %filePath, %parentA
    %filePath = filePath(%filePath) @ "/" @ fileBase(%filePath) @ fileExt(%filePath); //sanitize the file path
    
    %moduleName = AssetBrowser.SelectedModule;
-   ImportAssetPackageList.text = %moduleName;
+   ImportAssetModuleList.text = %moduleName;
    
    //Add to our main list
    %assetItem = new ScriptObject()
@@ -1019,7 +1019,7 @@ function ImportAssetWindow::refresh(%this)
 function ImportAssetWindow::validateAssets(%this)
 {
    %assetCount = AssetBrowser.importAssetFinalListArray.count();
-   %moduleName = ImportAssetPackageList.getText();
+   %moduleName = ImportAssetModuleList.getText();
    %assetQuery = new AssetQuery();
    
    %hasIssues = false;
@@ -1123,7 +1123,7 @@ function ImportAssetWindow::ImportAssets(%this)
    %assetCount = AssetBrowser.importAssetFinalListArray.count();
    
    //get the selected module data
-   %moduleName = ImportAssetPackageList.getText();
+   %moduleName = ImportAssetModuleList.getText();
    
    %module = ModuleDatabase.findModule(%moduleName, 1);
    
@@ -1388,7 +1388,7 @@ function ImportAssetWindow::ImportAssets(%this)
 function ImportAssetWindow::validateAsset(%this, %assetItem)
 {
    %assetCount = AssetBrowser.importAssetFinalListArray.count();
-   %moduleName = ImportAssetPackageList.getText();
+   %moduleName = ImportAssetModuleList.getText();
    
    %hasIssues = false;
    
@@ -1503,12 +1503,12 @@ function ImportAssetWindow::resolveIssue(%this, %assetItem)
 //
 
 //
-function ImportAssetPackageList::onWake(%this)
+function ImportAssetModuleList::onWake(%this)
 {
    %this.refresh();
 }
 
-function ImportAssetPackageList::refresh(%this)
+function ImportAssetModuleList::refresh(%this)
 {
    %this.clear();
    

@@ -86,7 +86,7 @@
          canSave = "1";
          canSaveDynamicFields = "0";
       };
-      new GuiTextCtrl() {
+      new GuiTextCtrl(GameObjectCreatorObjectName) {
          text = "Game Object Name:";
          maxLength = "1024";
          margin = "0 0 0 0";
@@ -110,7 +110,7 @@
          canSaveDynamicFields = "0";
       };
       new GuiTextCtrl() {
-         text = "Target Package Module:";
+         text = "Target Module:";
          maxLength = "1024";
          margin = "0 0 0 0";
          padding = "0 0 0 0";
@@ -150,14 +150,14 @@
          profile = "GuiDefaultProfile";
          visible = "1";
          active = "1";
-         command = "Canvas.pushDialog(AssetBrowser_addPackage);\nAssetBrowser_addPackageWindow.selectWindow();";
+         command = "Canvas.pushDialog(AssetBrowser_addModule);\nAssetBrowser_addModuleWindow.selectWindow();";
          tooltipProfile = "GuiToolTipProfile";
          hovertime = "1000";
          isContainer = "0";
          canSave = "1";
          canSaveDynamicFields = "0";
       };
-      new GuiPopUpMenuCtrlEx(GameObjectPackageList) {
+      new GuiPopUpMenuCtrlEx(GameObjectModuleList) {
          maxPopupHeight = "200";
          sbUsesNAColor = "0";
          reverseTextList = "0";

@@ -118,7 +118,7 @@ function AssetBrowser::buildPopupMenus(%this)
          item[ 0 ] = "Create New Asset" TAB AddNewAssetPopup;
          item[ 1 ] = "Reload Module" TAB "" TAB "AssetBrowser.reloadModule();";
          Item[ 2 ] = "-";
-         Item[ 3 ] = "Rename Module" TAB "" TAB "AssetBrowser.renameModule();";
+         Item[ 3 ] = "Edit Module" TAB "" TAB "AssetBrowser.editModuleInfo();";
          Item[ 4 ] = "-";
          Item[ 5 ] = "Duplicate Module" TAB "" TAB "AssetBrowser.copyModule();";
          Item[ 6 ] = "-";
