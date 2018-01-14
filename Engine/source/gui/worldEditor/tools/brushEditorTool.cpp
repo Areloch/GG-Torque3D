@@ -126,7 +126,7 @@ bool BrushEditorTool::onMouseDown(const Gui3DMouseEvent &e)
 
          mBrushes.push_back(newBrush);
 
-         compileGeometry();
+         //compileGeometry();
       }
    }
    else
@@ -190,6 +190,8 @@ bool BrushEditorTool::onMouseDragged(const Gui3DMouseEvent &e)
             polies[i].vertices[v].position.z += delta.z;
          }
       }
+
+      mBrushes[mSelectedBrush].mCSG = CSG::fromPolygons(polies);
    }
 
    return true;
@@ -324,6 +326,7 @@ void BrushEditorTool::processBrushes()
    //clean reset all our brushes' models
    for (U32 i = 0; i < mBrushes.size(); i++)
    {
+      mBrushes[i].mModifiedCSG = mBrushes[i].mCSG;
       mBrushes[i].mCSGModel = mBrushes[i].mCSG.toModel();
    }
 
@@ -341,8 +344,9 @@ void BrushEditorTool::processBrushes()
             if (!mBrushes[i].mBounds.isOverlapped(mBrushes[s].mBounds))
                continue;
 
-            mBrushes[i].mCSG = mBrushes[s].mCSG.csg_subtract(mBrushes[i].mCSG);
+            mBrushes[i].mModifiedCSG = mBrushes[s].mModifiedCSG.csg_subtract(mBrushes[i].mModifiedCSG);
 
+            mBrushes[i].mCSGModel = mBrushes[i].mModifiedCSG.toModel();
             //wasModified = true;
          }
 
@@ -440,7 +444,7 @@ void BrushEditorTool::compileGeometry()
             continue;
 
          Brush newBrush;
-         newBrush.mCSG = mBrushes[i].mCSG;
+         newBrush.mCSG = mBrushes[i].mModifiedCSG;
          newBrush.mCSGModel = mBrushes[i].mCSGModel;
          newBrush.mMaterialName = mBrushes[i].mMaterialName;
          newBrush.mPrimCount = mBrushes[i].mPrimCount;

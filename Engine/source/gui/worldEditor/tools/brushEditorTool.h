@@ -42,6 +42,7 @@ class BrushEditorTool : public EditorTool
    struct EditBrush
    {
       CSG mCSG;
+      CSG mModifiedCSG;
       CSGModel mCSGModel;
 
       bool mIsSubtract;
