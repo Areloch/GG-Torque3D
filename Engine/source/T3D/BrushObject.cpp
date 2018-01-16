@@ -697,7 +697,10 @@ void BrushObject::updateBounds(bool recenter)
       }
    }
 
-   mObjBox = Box3F::aroundPoints(points.address(), points.size());
+   if(!points.empty())
+      mObjBox = Box3F::aroundPoints(points.address(), points.size());
+   else
+      mObjBox.set(Point3F::One, Point3F::One);
 
    resetWorldBox();
 }

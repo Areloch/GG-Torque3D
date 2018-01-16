@@ -41,12 +41,14 @@ class BrushEditorTool : public EditorTool
 
    struct EditBrush
    {
-      std::vector<CSGUtils::csgjs_polygon> mCSG;
-      CSGUtils::csgjs_model mCSGModel;
+      std::vector<CSGUtils::CSGPolygon> mCSG;
+      CSGUtils::CSGModel mCSGModel;
 
       bool mIsSubtract;
 
       Box3F mBounds;
+
+      MatrixF mTransform;
 
       // The name of the Material we will use for rendering
       String            mMaterialName;
@@ -60,6 +62,15 @@ class BrushEditorTool : public EditorTool
 
       U32 mVertCount;
       U32 mPrimCount;
+
+      Box3F getBounds()
+      {
+         Box3F transBox = mBounds;
+
+         transBox.setCenter(mTransform.getPosition());
+
+         return transBox;
+      }
    };
 
 private:

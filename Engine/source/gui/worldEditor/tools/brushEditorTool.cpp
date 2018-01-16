@@ -121,8 +121,11 @@ bool BrushEditorTool::onMouseDown(const Gui3DMouseEvent &e)
          bool isSubtract = e.modifier & SI_ALT ? false : true;
 
          Box3F box(1);
-         box.setCenter(hitPos);
+         //box.setCenter(hitPos);
          newBrush = addBoxBrush(box, isSubtract);
+
+         newBrush.mTransform = MatrixF::Identity;
+         newBrush.mTransform.setPosition(hitPos);
 
          mBrushes.push_back(newBrush);
 
@@ -141,7 +144,7 @@ bool BrushEditorTool::onMouseDown(const Gui3DMouseEvent &e)
       {
          Point3F normal;
          F32 tempT;
-         if (mBrushes[i].mBounds.collideLine(e.pos, e.pos + e.vec * 10000.0f, &tempT, &normal))
+         if (mBrushes[i].getBounds().collideLine(e.pos, e.pos + e.vec * 10000.0f, &tempT, &normal))
          {
             if (tempT < t)
             {
@@ -155,9 +158,9 @@ bool BrushEditorTool::onMouseDown(const Gui3DMouseEvent &e)
       {
          //mWorldEditor->getGizmo()->getProfile()->flags = 0;
          MatrixF trans = MatrixF(true);
-         trans.setPosition(mBrushes[mSelectedBrush].mBounds.getCenter());
+         trans.setPosition(mBrushes[mSelectedBrush].getBounds().getCenter());
 
-         mWorldEditor->getGizmo()->set(trans, mBrushes[mSelectedBrush].mBounds.getCenter(), Point3F(1,1,1));
+         mWorldEditor->getGizmo()->set(trans, mBrushes[mSelectedBrush].getBounds().getCenter(), Point3F(1,1,1));
       }
    }
 
@@ -174,9 +177,13 @@ bool BrushEditorTool::onMouseDragged(const Gui3DMouseEvent &e)
    {
       Point3F delta = mWorldEditor->getGizmo()->getOffset();
 
+      Point3F brushPos = mBrushes[mSelectedBrush].mTransform.getPosition();
+
+      mBrushes[mSelectedBrush].mTransform.setPosition(brushPos + delta);
+
       mBrushes[mSelectedBrush].mBounds.setCenter(mWorldEditor->getGizmo()->getPosition());
 
-      for (U32 i = 0; i < mBrushes[mSelectedBrush].mCSG.size(); i++)
+      /*for (U32 i = 0; i < mBrushes[mSelectedBrush].mCSG.size(); i++)
       {
          mBrushes[mSelectedBrush].mCSG[i].plane.normal.x += delta.x;
          mBrushes[mSelectedBrush].mCSG[i].plane.normal.y += delta.y;
@@ -188,7 +195,7 @@ bool BrushEditorTool::onMouseDragged(const Gui3DMouseEvent &e)
             mBrushes[mSelectedBrush].mCSG[i].vertices[v].pos.y += delta.y;
             mBrushes[mSelectedBrush].mCSG[i].vertices[v].pos.z += delta.z;
          }
-      }
+      }*/
    }
 
    return true;
@@ -323,7 +330,49 @@ void BrushEditorTool::processBrushes()
    //clean reset all our brushes' models
    for (U32 i = 0; i < mBrushes.size(); i++)
    {
-      mBrushes[i].mCSGModel = CSGUtils::csgjs_modelFromPolygons(mBrushes[i].mCSG);
+      //transform our brush before processing
+      std::vector<CSGUtils::CSGPolygon> transPolies;
+
+      for (U32 p = 0; p < mBrushes[i].mCSG.size(); p++)
+      {
+         CSGUtils::CSGPlane transPlane = mBrushes[i].mCSG[p].plane;
+         Point3F planePos = Point3F(transPlane.normal.x, transPlane.normal.y, transPlane.normal.z);
+
+         mBrushes[i].mTransform.mulP(planePos);
+
+         transPlane.normal.x = planePos.x;
+         transPlane.normal.y = planePos.y;
+         transPlane.normal.z = planePos.z;
+
+         CSGUtils::CSGPolygon transPoly;
+         transPoly.plane = transPlane;
+
+         for (U32 v = 0; v < mBrushes[i].mCSG[p].vertices.size(); v++)
+         {
+            CSGUtils::CSGVertex transVert = mBrushes[i].mCSG[p].vertices[v];
+
+            Point3F norm, pos, transNorm, transPos;
+            norm = Point3F(transVert.normal.x, transVert.normal.y, transVert.normal.z);
+            pos = Point3F(transVert.pos.x, transVert.pos.y, transVert.pos.z);
+
+            mBrushes[i].mTransform.mulP(norm);
+            mBrushes[i].mTransform.mulP(pos);
+
+            transVert.normal.x = norm.x;
+            transVert.normal.y = norm.y;
+            transVert.normal.z = norm.z;
+
+            transVert.pos.x = pos.x;
+            transVert.pos.y = pos.y;
+            transVert.pos.z = pos.z;
+
+            transPoly.vertices.push_back(transVert);
+         }
+
+         transPolies.push_back(transPoly);
+      }
+
+      mBrushes[i].mCSGModel = CSGUtils::CSGModelFromPolygons(transPolies);
    }
 
    for (U32 i = 0; i < mBrushes.size(); i++)
@@ -337,10 +386,10 @@ void BrushEditorTool::processBrushes()
             if (!mBrushes[s].mIsSubtract)
                continue;
 
-            if (!mBrushes[i].mBounds.isOverlapped(mBrushes[s].mBounds))
+            if (!mBrushes[i].getBounds().isOverlapped(mBrushes[s].getBounds()))
                continue;
 
-            mBrushes[i].mCSGModel = CSGUtils::csgjs_difference(mBrushes[s].mCSGModel, mBrushes[i].mCSGModel);
+            mBrushes[i].mCSGModel = CSGUtils::Subtract(mBrushes[s].mCSGModel, mBrushes[i].mCSGModel);
 
             //wasModified = true;
          }
@@ -348,7 +397,7 @@ void BrushEditorTool::processBrushes()
          /*if (wasModified)
          {
             //flip it!
-            std::vector<CSGUtils::csgjs_polygon> tempPoly = CSGUtils::csgjs_modelToPolygons(mBrushes[i].mCSGModel);
+            std::vector<CSGUtils::CSGPolygon> tempPoly = CSGUtils::CSGModelToPolygons(mBrushes[i].mCSGModel);
 
             for (U32 f = 0; f < tempPoly.size(); f++)
             {
@@ -356,7 +405,7 @@ void BrushEditorTool::processBrushes()
             }
 
             //and get the return
-            mBrushes[i].mCSGModel = CSGUtils::csgjs_modelFromPolygons(tempPoly);
+            mBrushes[i].mCSGModel = CSGUtils::CSGModelFromPolygons(tempPoly);
          }*/
       }
    }
@@ -381,6 +430,9 @@ void BrushEditorTool::compileGeometry()
    //Build buffer data
    for (U32 i = 0; i < mBrushes.size(); i++)
    {
+      if (mBrushes[i].mIsSubtract)
+         continue;
+
       if (mBrushes[i].mCSGModel.vertices.size() != 0)
       {
          mBrushes[i].mPrimCount = mBrushes[i].mCSGModel.indices.size() / 3;
@@ -394,12 +446,15 @@ void BrushEditorTool::compileGeometry()
          {
             for (int j = 0; j < 3; j++)
             {
-               CSGUtils::csgjs_vertex v = mBrushes[i].mCSGModel.vertices[mBrushes[i].mCSGModel.indices[ind + j]];
+               CSGUtils::CSGVertex v = mBrushes[i].mCSGModel.vertices[mBrushes[i].mCSGModel.indices[ind + j]];
 
-               pVert->normal = Point3F(v.normal.x, v.normal.y, v.normal.z);
+               Point3F normal = Point3F(v.normal.x, v.normal.y, v.normal.z);
+               Point3F position = Point3F(v.pos.x, v.pos.y, v.pos.z);
+
+               pVert->normal = normal;
                pVert->tangent = Point3F(0, 0, 1);
                pVert->color = ColorI::BLACK;
-               pVert->point = Point3F(v.pos.x, v.pos.y, v.pos.z);
+               pVert->point = position;
                pVert->texCoord = Point2F(v.uv.x, v.uv.y);
 
                pVert++;
@@ -493,7 +548,7 @@ void BrushEditorTool::compileGeometry()
 
             for (int j = 0; j < 3; j++)
             {
-               CSGUtils::csgjs_vertex v = mBrushes[i].mCSGModel.vertices[mBrushes[i].mCSGModel.indices[i + j]];
+               CSGUtils::CSGVertex v = mBrushes[i].mCSGModel.vertices[mBrushes[i].mCSGModel.indices[i + j]];
 
                pVert->normal = Point3F(v.normal.x, v.normal.y, v.normal.z);
                pVert->tangent = Point3F(0, 0, 1);
@@ -878,20 +933,19 @@ void BrushEditorTool::render()
    GFXDrawUtil *drawer = GFX->getDrawUtil();
 
    GFXStateBlockDesc desc;
+   desc.setZReadWrite(true, false);
+   desc.setBlend(true);
    desc.setCullMode(GFXCullNone);
-   desc.setFillModeWireframe();
 
    for (U32 i = 0; i < mBrushes.size(); i++)
    {
       if (mBrushes[i].mIsSubtract)
       {
-         drawer->drawCube(desc, mBrushes[i].mBounds, ColorI(255,215,0));
+         if(i != mSelectedBrush)
+            drawer->drawCube(desc, mBrushes[i].getBounds(), ColorI(255,215,0, 90));
+         else
+            drawer->drawCube(desc, mBrushes[i].getBounds(), ColorI(255, 20, 147, 90));
       }
-   }
-
-   if (mSelectedBrush != -1)
-   {
-      drawer->drawCube(desc, mBrushes[mSelectedBrush].mBounds, ColorI(255, 20, 147));
    }
 
    mWorldEditor->getGizmo()->renderGizmo(mWorldEditor->getLastCameraQuery().cameraMatrix, mWorldEditor->getLastCameraQuery().fov);
@@ -1031,7 +1085,7 @@ BrushEditorTool::EditBrush BrushEditorTool::addBoxBrush(Box3F newBrushBounds, bo
       if (faceId == -1)
          continue;
 
-      std::vector<CSGUtils::csgjs_vertex> facePoly;
+      std::vector<CSGUtils::CSGVertex> facePoly;
 
       Vector<Point3F> facePoints;
       Vector<Point2F> faceCoords;
@@ -1041,7 +1095,7 @@ BrushEditorTool::EditBrush BrushEditorTool::addBoxBrush(Box3F newBrushBounds, bo
 
       for (U32 v = 0; v < facePoints.size(); v++)
       {
-         CSGUtils::csgjs_vertex vert;
+         CSGUtils::CSGVertex vert;
          vert.pos.x = facePoints[v].x;
          vert.pos.y = facePoints[v].y;
          vert.pos.z = facePoints[v].z;
@@ -1064,7 +1118,7 @@ BrushEditorTool::EditBrush BrushEditorTool::addBoxBrush(Box3F newBrushBounds, bo
    //expand our bounds
    newBrush.mBounds = Box3F::aroundPoints(points.address(), points.size());
 
-   newBrush.mCSGModel = CSGUtils::csgjs_modelFromPolygons(newBrush.mCSG);
+   newBrush.mCSGModel = CSGUtils::CSGModelFromPolygons(newBrush.mCSG);
 
    return newBrush;
 }

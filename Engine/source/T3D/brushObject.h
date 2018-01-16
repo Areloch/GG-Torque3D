@@ -53,8 +53,8 @@ typedef BrushVert VertexType;
 
 struct Brush
 {
-   std::vector<CSGUtils::csgjs_polygon> mCSG;
-   CSGUtils::csgjs_model mCSGModel;
+   std::vector<CSGUtils::CSGPolygon> mCSG;
+   CSGUtils::CSGModel mCSGModel;
 
    bool mIsSubtract;
 

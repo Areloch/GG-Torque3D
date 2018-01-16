@@ -240,8 +240,6 @@ ConvexShape::ConvexShape()
                 StaticShapeObjectType;    
 
    mConvexList = new Convex;
-
-   mIsSubtract = false;
 }
 
 ConvexShape::~ConvexShape()
@@ -261,11 +259,6 @@ void ConvexShape::initPersistFields()
 
    endGroup( "Rendering" );
 
-   addGroup("CSG");
-   addField("isSubtract", TypeBool, Offset(mIsSubtract, ConvexShape),
-      "The name of the material used to render the mesh.");
-   endGroup("CSG");
-
    addGroup( "Internal" );
 
       addProtectedField( "surface", TypeRealString, NULL, &protectedSetSurface, &defaultProtectedGetFn, 
@@ -280,7 +273,6 @@ void ConvexShape::inspectPostApply()
 {
    Parent::inspectPostApply();
 
-   updateCSG();
    _updateGeometry( true );
 
    setMaskBits( UpdateMask );
@@ -349,7 +341,6 @@ bool ConvexShape::onAdd()
    if ( isClientObject() )   
       _updateMaterial();      
    
-   updateCSG();
    _updateGeometry( true );
 
    addToScene();
@@ -438,8 +429,6 @@ U32 ConvexShape::packUpdate( NetConnection *conn, U32 mask, BitStream *stream )
 
    if ( stream->writeFlag( mask & UpdateMask ) )
    {
-      stream->writeFlag(mIsSubtract);
-
       stream->write( mMaterialName );
       
       U32 surfCount = mSurfaces.size();
@@ -473,8 +462,6 @@ void ConvexShape::unpackUpdate( NetConnection *conn, BitStream *stream )
 
    if ( stream->readFlag() ) // UpdateMask
    {
-      mIsSubtract = stream->readFlag();
-
       stream->read( &mMaterialName );      
 
       if ( isProperlyAdded() )
@@ -498,17 +485,14 @@ void ConvexShape::unpackUpdate( NetConnection *conn, BitStream *stream )
          mat.setPosition( pos );
       }
 
-      if (isProperlyAdded())
-      {
-         updateCSG();
-         _updateGeometry(true);
-      }
+      if ( isProperlyAdded() )
+         _updateGeometry( true );
    }
 }
 
 void ConvexShape::prepRenderImage( SceneRenderState *state )
 {   
-   
+   /*
    if ( state->isDiffusePass() )
    {
       ObjectRenderInst *ri2 = state->getRenderPass()->allocInst<ObjectRenderInst>();
@@ -516,8 +500,9 @@ void ConvexShape::prepRenderImage( SceneRenderState *state )
       ri2->type = RenderPassManager::RIT_Editor;
       state->getRenderPass()->addInst( ri2 );
    }
+   */
 
-   if ( mVertexBuffer.isNull() || !state || mIsSubtract)
+   if ( mVertexBuffer.isNull() || !state)
       return;
 
    // If we don't have a material instance after the override then 
@@ -1051,192 +1036,103 @@ void ConvexShape::_updateMaterial()
 
 void ConvexShape::_updateGeometry( bool updateCollision )
 {
-   /*if (mCSG.size() != 0)
+   mPlanes.clear();
+
+   for ( S32 i = 0; i < mSurfaces.size(); i++ )   
+      mPlanes.push_back( PlaneF( mSurfaces[i].getPosition(), mSurfaces[i].getUpVector() ) );
+
+	Vector< Point3F > tangents;
+	for ( S32 i = 0; i < mSurfaces.size(); i++ )
+		tangents.push_back( mSurfaces[i].getRightVector() );
+   
+   mGeometry.generate( mPlanes, tangents );
+
+   AssertFatal( mGeometry.faces.size() <= mSurfaces.size(), "Got more faces than planes?" );
+
+   const Vector< ConvexShape::Face > &faceList = mGeometry.faces;
+   const Vector< Point3F > &pointList = mGeometry.points;
+
+   // Reset our surface center points.
+
+   for ( S32 i = 0; i < faceList.size(); i++ )
+		mSurfaces[ faceList[i].id ].setPosition( faceList[i].centroid );
+
+   mPlanes.clear();
+
+   for ( S32 i = 0; i < mSurfaces.size(); i++ )   
+      mPlanes.push_back( PlaneF( mSurfaces[i].getPosition(), mSurfaces[i].getUpVector() ) );
+
+   // Update bounding box.   
+   updateBounds( false );
+
+	mVertexBuffer = NULL;
+	mPrimitiveBuffer = NULL;
+	mVertCount = 0;
+	mPrimCount = 0;
+
+   if ( updateCollision )
+      _updateCollision();
+
+   // Server does not need to generate vertex/prim buffers.
+   if ( isServerObject() )
+      return;
+
+   if ( faceList.empty() )   
+      return;
+
+
+	// Get total vert and prim count.
+
+	for ( S32 i = 0; i < faceList.size(); i++ )	
+	{
+		U32 count = faceList[i].triangles.size();
+		mPrimCount += count;
+		mVertCount += count * 3;		
+	}
+
+	// Allocate VB and copy in data.
+
+	mVertexBuffer.set( GFX, mVertCount, GFXBufferTypeStatic );
+	VertexType *pVert = mVertexBuffer.lock();
+
+	for ( S32 i = 0; i < faceList.size(); i++ )
+	{
+		const ConvexShape::Face &face = faceList[i];
+		const Vector< U32 > &facePntMap = face.points;
+		const Vector< ConvexShape::Triangle > &triangles = face.triangles;
+		const ColorI &faceColor = sgConvexFaceColors[ i % sgConvexFaceColorCount ];
+
+		for ( S32 j = 0; j < triangles.size(); j++ )
+		{
+			for ( S32 k = 0; k < 3; k++ )
+			{
+				pVert->normal = face.normal;
+				pVert->tangent = face.tangent;
+				pVert->color = faceColor;			
+				pVert->point = pointList[ facePntMap[ triangles[j][k] ] ];
+				pVert->texCoord = face.texcoords[ triangles[j][k] ];
+
+				pVert++;
+			}
+		}		
+	}	
+
+	mVertexBuffer.unlock();
+
+	// Allocate PB
+
+   mPrimitiveBuffer.set( GFX, mPrimCount * 3, mPrimCount, GFXBufferTypeStatic );
+
+   U16 *pIndex;
+   mPrimitiveBuffer.lock( &pIndex );
+
+   for ( U16 i = 0; i < mPrimCount * 3; i++ )
    {
-      CSGUtils::csgjs_model myCSG = CSGUtils::csgjs_modelFromPolygons(mCSG);
-
-      mPrimCount = myCSG.indices.size() / 3;
-      mVertCount = myCSG.vertices.size();
-
-      // Allocate VB and copy in data.
-      mVertexBuffer.set(GFX, mVertCount, GFXBufferTypeStatic);
-      VertexType *pVert = mVertexBuffer.lock();
-
-      for (size_t i = 0; i < myCSG.indices.size(); i += 3)
-      {
-         for (int j = 0; j < 3; j++)
-         {
-            CSGUtils::csgjs_vertex v = myCSG.vertices[myCSG.indices[i + j]];
-
-            pVert->normal = Point3F(v.normal.x, v.normal.y, v.normal.z);
-            pVert->tangent = Point3F(0, 0, 1);
-            pVert->color = ColorI::BLACK;
-            pVert->point = Point3F(v.pos.x, v.pos.y, v.pos.z);
-            pVert->texCoord = Point2F(v.uv.x, v.uv.y);
-
-            pVert++;
-         }
-      }
-
-      mVertexBuffer.unlock();
-
-      // Allocate PB
-
-      mPrimitiveBuffer.set(GFX, myCSG.indices.size(), mPrimCount, GFXBufferTypeStatic);
-
-      U16 *pIndex;
-      mPrimitiveBuffer.lock(&pIndex);
-
-      for (U16 i = 0; i < myCSG.indices.size(); i++)
-      {
-         *pIndex = i;
-         pIndex++;
-      }
-
-      mPrimitiveBuffer.unlock();
-   }*/
-   if (mCSGModel.vertices.size() != 0)
-   {
-      mPrimCount = mCSGModel.indices.size() / 3;
-      mVertCount = mCSGModel.vertices.size();
-
-      // Allocate VB and copy in data.
-      mVertexBuffer.set(GFX, mVertCount, GFXBufferTypeStatic);
-      VertexType *pVert = mVertexBuffer.lock();
-
-      for (size_t i = 0; i < mCSGModel.indices.size(); i += 3)
-      {
-         for (int j = 0; j < 3; j++)
-         {
-            CSGUtils::csgjs_vertex v = mCSGModel.vertices[mCSGModel.indices[i + j]];
-
-            pVert->normal = Point3F(v.normal.x, v.normal.y, v.normal.z);
-            pVert->tangent = Point3F(0,0,1);
-            pVert->color = ColorI::BLACK;
-            pVert->point = Point3F(v.pos.x, v.pos.y, v.pos.z);
-            pVert->texCoord = Point2F(v.uv.x, v.uv.y);
-
-            pVert++;
-         }
-      }
-
-      mVertexBuffer.unlock();
-
-      // Allocate PB
-
-      mPrimitiveBuffer.set(GFX, mCSGModel.indices.size(), mPrimCount, GFXBufferTypeStatic);
-
-      U16 *pIndex;
-      mPrimitiveBuffer.lock(&pIndex);
-
-      for (U16 i = 0; i < mCSGModel.indices.size(); i++)
-      {
-         *pIndex = i;
-         pIndex++;
-      }
-
-      mPrimitiveBuffer.unlock();
+      *pIndex = i;
+      pIndex++;
    }
-   else
-   {
-      mPlanes.clear();
 
-      for (S32 i = 0; i < mSurfaces.size(); i++)
-         mPlanes.push_back(PlaneF(mSurfaces[i].getPosition(), mSurfaces[i].getUpVector()));
-
-      Vector< Point3F > tangents;
-      for (S32 i = 0; i < mSurfaces.size(); i++)
-         tangents.push_back(mSurfaces[i].getRightVector());
-
-      mGeometry.generate(mPlanes, tangents);
-
-      AssertFatal(mGeometry.faces.size() <= mSurfaces.size(), "Got more faces than planes?");
-
-      const Vector< ConvexShape::Face > &faceList = mGeometry.faces;
-      const Vector< Point3F > &pointList = mGeometry.points;
-
-      // Reset our surface center points.
-
-      for (S32 i = 0; i < faceList.size(); i++)
-         mSurfaces[faceList[i].id].setPosition(faceList[i].centroid);
-
-      mPlanes.clear();
-
-      for (S32 i = 0; i < mSurfaces.size(); i++)
-         mPlanes.push_back(PlaneF(mSurfaces[i].getPosition(), mSurfaces[i].getUpVector()));
-
-      // Update bounding box.   
-      updateBounds(false);
-
-      mVertexBuffer = NULL;
-      mPrimitiveBuffer = NULL;
-      mVertCount = 0;
-      mPrimCount = 0;
-
-      if (updateCollision)
-         _updateCollision();
-
-      // Server does not need to generate vertex/prim buffers.
-      if (isServerObject())
-         return;
-
-      if (faceList.empty())
-         return;
-
-
-      // Get total vert and prim count.
-
-      for (S32 i = 0; i < faceList.size(); i++)
-      {
-         U32 count = faceList[i].triangles.size();
-         mPrimCount += count;
-         mVertCount += count * 3;
-      }
-
-      // Allocate VB and copy in data.
-
-      mVertexBuffer.set(GFX, mVertCount, GFXBufferTypeStatic);
-      VertexType *pVert = mVertexBuffer.lock();
-
-      for (S32 i = 0; i < faceList.size(); i++)
-      {
-         const ConvexShape::Face &face = faceList[i];
-         const Vector< U32 > &facePntMap = face.points;
-         const Vector< ConvexShape::Triangle > &triangles = face.triangles;
-         const ColorI &faceColor = sgConvexFaceColors[i % sgConvexFaceColorCount];
-
-         for (S32 j = 0; j < triangles.size(); j++)
-         {
-            for (S32 k = 0; k < 3; k++)
-            {
-               pVert->normal = face.normal;
-               pVert->tangent = face.tangent;
-               pVert->color = faceColor;
-               pVert->point = pointList[facePntMap[triangles[j][k]]];
-               pVert->texCoord = face.texcoords[triangles[j][k]];
-
-               pVert++;
-            }
-         }
-      }
-
-      mVertexBuffer.unlock();
-
-      // Allocate PB
-
-      mPrimitiveBuffer.set(GFX, mPrimCount * 3, mPrimCount, GFXBufferTypeStatic);
-
-      U16 *pIndex;
-      mPrimitiveBuffer.lock(&pIndex);
-
-      for (U16 i = 0; i < mPrimCount * 3; i++)
-      {
-         *pIndex = i;
-         pIndex++;
-      }
-
-      mPrimitiveBuffer.unlock();
-   }
+   mPrimitiveBuffer.unlock();
 }
 
 void ConvexShape::_updateCollision()
@@ -1284,8 +1180,7 @@ void ConvexShape::_renderDebug( ObjectRenderInst *ri, SceneRenderState *state, B
    GFX->setTexture( 0, NULL );
 
    // Render world box.
-   //if ( false )
-   if(true)
+   if ( false )
    {
       Box3F wbox( mWorldBox );
       //if ( getServerObject() )      
@@ -1295,7 +1190,8 @@ void ConvexShape::_renderDebug( ObjectRenderInst *ri, SceneRenderState *state, B
       desc.setFillModeWireframe();
       drawer->drawCube( desc, wbox, ColorI::RED );
    }
-   
+
+
    const Vector< Point3F > &pointList = mGeometry.points;
 	const Vector< ConvexShape::Face > &faceList = mGeometry.faces;
 
@@ -1559,60 +1455,6 @@ void ConvexShape::getSurfaceTriangles( S32 surfId, Vector< Point3F > *outPoints,
          objToWorld.mulP( (*outPoints)[i] );      
    }
 }
-
-void ConvexShape::getSurfaceVerts(U32 faceId, Vector< Point3F > *outPoints, Vector< Point2F > *outCoords, bool worldSpace)
-{
-   const ConvexShape::Face &face = mGeometry.faces[faceId];
-   const Vector< Point3F > &pointList = mGeometry.points;
-
-   const MatrixF &surfToObj = mSurfaces[faceId];
-   MatrixF objToSurf(surfToObj);
-   objToSurf.inverse();
-
-   //Point3F surfScale(1.5f, 1.5f, 1.0f);
-
-   for (S32 i = 0; i < face.triangles.size(); i++)
-   {
-      for (S32 j = 0; j < 3; j++)
-      {
-         Point3F pnt(pointList[face.points[face.triangles[i][j]]]);
-
-         /*objToSurf.mulP(pnt);
-         pnt *= surfScale;
-         surfToObj.mulP(pnt);*/
-
-         outPoints->push_back_unique(pnt);
-
-         if (outCoords)
-            outCoords->push_back_unique(face.texcoords[face.triangles[i][j]]);
-      }
-   }
-
-   if (worldSpace)
-   {
-      MatrixF objToWorld(mObjToWorld);
-      objToWorld.scale(mObjScale);
-
-      for (S32 i = 0; i < outPoints->size(); i++)
-         objToWorld.mulP((*outPoints)[i]);
-   }
-}
-
-S32 ConvexShape::getFaceId(U32 surfId)
-{
-   S32 faceId = -1;
-   for (S32 i = 0; i < mGeometry.faces.size(); i++)
-   {
-      if (mGeometry.faces[i].id == surfId)
-      {
-         faceId = i;
-         break;
-      }
-   }
-
-   return faceId;
-}
-
 void ConvexShape::Geometry::generate( const Vector< PlaneF > &planes, const Vector< Point3F > &tangents )
 {
    PROFILE_SCOPE( Geometry_generate );
@@ -1858,34 +1700,34 @@ void ConvexShape::Geometry::generate( const Vector< PlaneF > &planes, const Vect
 
 			if ( j == 0 )
 			{
-poly.p1 = vertMap[1];
-poly.p2 = vertMap[2];
-         }
-         else
-         {
-            poly.p1 = vertMap[1 + j];
-            poly.p2 = vertMap[2 + j];
-         }
-      }
+				poly.p1 = vertMap[ 1 ];
+				poly.p2 = vertMap[ 2 ];
+			}
+			else
+			{
+				poly.p1 = vertMap[ 1 + j ];
+				poly.p2 = vertMap[ 2 + j ];
+			}
+		}
 
-      delete[] vertMap;
+		delete [] vertMap;
 
 
-      // Calculate texture coordinates for each point in this face.
+		// Calculate texture coordinates for each point in this face.
 
-      const Point3F binormal = mCross(newFace.normal, newFace.tangent);
-      PlaneF planey(newFace.centroid - 0.5f * binormal, binormal);
-      PlaneF planex(newFace.centroid - 0.5f * newFace.tangent, newFace.tangent);
+		const Point3F binormal = mCross( newFace.normal, newFace.tangent );
+		PlaneF planey( newFace.centroid - 0.5f * binormal, binormal );
+		PlaneF planex( newFace.centroid - 0.5f * newFace.tangent, newFace.tangent );
 
-      newFace.texcoords.setSize(newFace.points.size());
+		newFace.texcoords.setSize( newFace.points.size() );
 
-      for (S32 j = 0; j < newFace.points.size(); j++)
-      {
-         F32 x = planex.distToPlane(points[newFace.points[j]]);
-         F32 y = planey.distToPlane(points[newFace.points[j]]);
+		for ( S32 j = 0; j < newFace.points.size(); j++ )
+		{
+			F32 x = planex.distToPlane( points[ newFace.points[ j ] ] );
+			F32 y = planey.distToPlane( points[ newFace.points[ j ] ] );
 
-         newFace.texcoords[j].set(-x, -y);
-      }
+			newFace.texcoords[j].set( -x, -y );
+		}
 
       // Data verification tests.
 #ifdef TORQUE_ENABLE_ASSERTS
@@ -1896,7 +1738,7 @@ poly.p2 = vertMap[2];
       /*
       for ( S32 j = 0; j < triCount; j++ )
       {
-         F32 area = MathUtils::mTriangleArea( points[ newFace.points[ newFace.triangles[j][0] ] ],
+         F32 area = MathUtils::mTriangleArea( points[ newFace.points[ newFace.triangles[j][0] ] ], 
                                               points[ newFace.points[ newFace.triangles[j][1] ] ],
                                               points[ newFace.points[ newFace.triangles[j][2] ] ] );
          AssertFatal( area > 0.0f, "ConvexShape - triangle winding bad." );
@@ -1905,98 +1747,7 @@ poly.p2 = vertMap[2];
 
 
       // Done with this Face.
-
-      faces.push_back(newFace);
+      
+      faces.push_back( newFace );
    }
-}
-
-//CSG
-void ConvexShape::updateCSG()
-{
-   //Use the geometry to set up our CSG data
-   mCSG.clear();
-
-   for (U32 i = 0; i < mGeometry.faces.size(); i++)
-   {
-      S32 faceId = getFaceId(i);
-
-      if (faceId == -1)
-         continue;
-
-      std::vector<CSGUtils::csgjs_vertex> facePoly;
-
-      Vector<Point3F> facePoints;
-      Vector<Point2F> faceCoords;
-      Point3F faceNorm = mGeometry.faces[faceId].normal;
-
-      getSurfaceVerts(faceId, &facePoints, &faceCoords, true);
-
-      for (U32 v = 0; v < facePoints.size(); v++)
-      {
-         CSGUtils::csgjs_vertex vert;
-         vert.pos.x = facePoints[v].x;
-         vert.pos.y = facePoints[v].y;
-         vert.pos.z = facePoints[v].z;
-
-         vert.normal.x = faceNorm.x;
-         vert.normal.y = faceNorm.y;
-         vert.normal.z = faceNorm.z;
-
-         vert.uv.x = faceCoords[v].x;
-         vert.uv.y = faceCoords[v].y;
-
-         facePoly.insert(facePoly.end(), vert);
-      }
-
-      mCSG.insert(mCSG.end(), facePoly);
-   }
-
-   if (!mIsSubtract)
-   {
-      SimGroup* missionGroup;
-      if (!Sim::findObject("MissionGroup", missionGroup))
-         return;
-
-      CSGUtils::csgjs_model myCSG = CSGUtils::csgjs_modelFromPolygons(mCSG);
-
-      for (SimGroup::iterator itr = missionGroup->begin(); itr != missionGroup->end(); itr++)
-      {
-         ConvexShape *subtractingMesh = dynamic_cast<ConvexShape*>(*itr);
-         if (!subtractingMesh)
-            continue;
-
-         if (!subtractingMesh->mIsSubtract)
-            continue;
-
-         if (!mWorldBox.isOverlapped(subtractingMesh->getWorldBox()))
-            continue;
-
-         CSGUtils::csgjs_model subtractCSG = CSGUtils::csgjs_modelFromPolygons(subtractingMesh->mCSG);
-
-         myCSG = CSGUtils::csgjs_difference(subtractCSG, myCSG);
-      }
-
-      mCSGModel = myCSG;
-   }
-   /*else
-   {
-      SimGroup* missionGroup;
-      if (!Sim::findObject("MissionGroup", missionGroup))
-         return;
-
-      for (SimGroup::iterator itr = missionGroup->begin(); itr != missionGroup->end(); itr++)
-      {
-         ConvexShape *subtracteeMesh = dynamic_cast<ConvexShape*>(*itr);
-         if (!subtracteeMesh)
-            continue;
-
-         if (subtracteeMesh->mIsSubtract)
-            continue;
-
-         if (!mWorldBox.isOverlapped(subtracteeMesh->getWorldBox()))
-            continue;
-
-         subtracteeMesh->updateCSG();
-      }
-   }*/
 }
