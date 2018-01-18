@@ -77,6 +77,36 @@ void RenderPipeline::setupBuffers()
 	mGBuffer.targets.push_back(RoughnessTarget);
 }
 
+//
+void RenderPipeline::renderViews()
+{
+	//Walk through all our active cameras, and init a render from them
+	for (;;)
+	{
+		render();
+	}
+}
+
+void RenderPipeline::render()
+{
+	//Step 1 process all our render systems to draw the scene
+	//RenderStaticMeshSytem::render();
+	//RenderMeshSystem::render();
+
+	//render any special snowflake non-e/c/s based classes
+	//Scene::render();
+
+	//Now that we've written all the visible geometry to our gBuffer, render lights
+	//LightManager::renderLights();
+
+	//Initiate our post process effects, starting with the deferred combine(as this mockup is currently written as Deferred)
+	//PostFX::render();
+
+	//Frame complete, ensure targets are resolved and that cleanup happens!
+	//cleanup();
+}
+//
+
 bool RenderPipeline::GBuffer::setTargetChannels(Target *_target, RenderPipeline::GBuffer::RenderTargets _renderTarget, U32 _channels)
 {
 	//find the RTData if it's already had channels assigned

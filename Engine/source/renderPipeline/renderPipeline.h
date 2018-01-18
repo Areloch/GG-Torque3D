@@ -60,7 +60,7 @@ protected:
 public:
 	RenderPipeline();
 
-	virtual void render()=0;
+	virtual void render();
 
 	virtual void setupBuffers();
 };
