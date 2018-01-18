@@ -27,10 +27,10 @@
 #include "forest/forestDataFile.h"
 
 #include "gfx/gfxTransformSaver.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "scene/sceneManager.h"
 #include "scene/sceneRenderState.h"
-#include "lighting/lightManager.h"
+#include "renderPipeline/lighting/lightManager.h"
 #include "ts/tsMesh.h"
 #include "ts/tsRenderState.h"
 #include "ts/tsShapeInstance.h"

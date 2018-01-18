@@ -29,8 +29,8 @@
 #include "core/resourceManager.h"
 #include "core/stream/bitStream.h"
 #include "gfx/gfxTransformSaver.h"
-#include "renderInstance/renderPassManager.h"
-#include "lighting/lightQuery.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
+#include "renderPipeline/lighting/lightQuery.h"
 
 
 IMPLEMENT_CO_NETOBJECT_V1(RenderShapeExample);

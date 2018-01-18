@@ -44,7 +44,7 @@
 #include "core/resourceManager.h"
 #include "materials/materialDefinition.h"
 #include "materials/baseMatInstance.h"
-#include "lighting/lightQuery.h"
+#include "renderPipeline/lighting/lightQuery.h"
 
 
 // Collision masks are used to determine what type of objects the

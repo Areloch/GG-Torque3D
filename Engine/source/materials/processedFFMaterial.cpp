@@ -31,7 +31,7 @@
 #include "gfx/gfxDevice.h"
 #include "gfx/genericConstBuffer.h"
 #include "materials/materialParameters.h"
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #include "scene/sceneRenderState.h"
 #include "core/util/safeDelete.h"
 #include "math/util/matrixSet.h"

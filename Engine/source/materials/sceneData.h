@@ -26,7 +26,7 @@
 #include "scene/sceneRenderState.h"
 #endif
 #ifndef _LIGHTMANAGER_H_
-#include "lighting/lightManager.h"
+#include "renderPipeline/lighting/lightManager.h"
 #endif
 #ifndef _GFXDEVICE_H_
 #include "gfx/gfxDevice.h"

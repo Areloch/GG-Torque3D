@@ -28,8 +28,8 @@
 #include "scene/sceneRenderState.h"
 #include "scene/zones/sceneRootZone.h"
 #include "scene/zones/sceneZoneSpace.h"
-#include "lighting/lightManager.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/lighting/lightManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "gfx/gfxDevice.h"
 #include "gfx/gfxDrawUtil.h"
 #include "gfx/gfxDebugEvent.h"
@@ -41,7 +41,7 @@
 // For player object bounds workaround.
 #include "T3D/player.h"
 
-#include "postFx/postEffectManager.h"
+#include "renderPipeline/postFX/postEffectManager.h"
 
 extern bool gEditingMission;
 

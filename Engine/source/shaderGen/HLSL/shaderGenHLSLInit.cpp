@@ -33,7 +33,7 @@
 #include "materials/materialFeatureTypes.h"
 #include "core/module.h"
 // Deferred Shading
-#include "lighting/advanced/hlsl/deferredShadingFeaturesHLSL.h"
+#include "renderPipeline/lighting/advanced/hlsl/deferredShadingFeaturesHLSL.h"
 #include "shaderGen/HLSL/accuFeatureHLSL.h"
 
 static ShaderGen::ShaderGenInitDelegate sInitDelegate;

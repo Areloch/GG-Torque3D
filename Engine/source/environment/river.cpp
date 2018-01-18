@@ -49,7 +49,7 @@
 #include "T3D/fx/particleEmitter.h"
 #include "scene/reflectionManager.h"
 #include "ts/tsShapeInstance.h"
-#include "postFx/postEffect.h"
+#include "renderPipeline/postFX/postEffect.h"
 #include "math/util/matrixSet.h"
 #include "environment/nodeListManager.h"
 

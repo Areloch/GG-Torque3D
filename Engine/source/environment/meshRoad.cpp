@@ -36,7 +36,7 @@
 #include "scene/sceneRenderState.h"
 #include "scene/sceneManager.h"
 #include "scene/sgUtil.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "T3D/gameBase/gameConnection.h"
 #include "core/stream/bitStream.h"
 #include "gfx/gfxDrawUtil.h"

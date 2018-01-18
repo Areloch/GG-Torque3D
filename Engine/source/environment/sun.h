@@ -30,7 +30,7 @@
 #include "core/color.h"
 #endif
 #ifndef _LIGHTINFO_H_
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #endif
 #ifndef _LIGHTFLAREDATA_H_
 #include "T3D/lightFlareData.h"

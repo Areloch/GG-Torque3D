@@ -33,7 +33,7 @@
 #include "scene/sceneRenderState.h"
 #include "scene/sceneManager.h"
 #include "scene/sceneObjectLightingPlugin.h"
-#include "lighting/lightManager.h"
+#include "renderPipeline/lighting/lightManager.h"
 #include "math/mathIO.h"
 #include "ts/tsShapeInstance.h"
 #include "ts/tsMaterialList.h"

@@ -31,7 +31,7 @@
 #include "sim/netConnection.h"
 #include "math/mathIO.h"
 #include "math/mQuat.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "gfx/gfxTransformSaver.h"
 #include "gfx/gfxDrawUtil.h"
 #include "gfx/primBuilder.h"

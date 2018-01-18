@@ -25,8 +25,8 @@
 
 #include "core/stream/bitStream.h"
 #include "console/engineAPI.h"
-#include "lighting/lightInfo.h"
-#include "lighting/lightQuery.h"
+#include "renderPipeline/lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightQuery.h"
 #include "math/mathUtils.h"
 #include "math/mathIO.h"
 #include "scene/sceneRenderState.h"
@@ -34,11 +34,11 @@
 #include "gfx/gfxDrawUtil.h"
 #include "gfx/gfxTextureManager.h"
 #include "gfx/sim/debugDraw.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "T3D/gameBase/gameConnection.h"
 #include "T3D/gameBase/processList.h"
 #include "collision/collision.h"
-#include "lighting/lightManager.h"
+#include "renderPipeline/lighting/lightManager.h"
 
 const U32 LightFlareData::LosMask = STATIC_COLLISION_TYPEMASK |
                                     ShapeBaseObjectType |

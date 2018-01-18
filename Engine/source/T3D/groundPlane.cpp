@@ -28,7 +28,7 @@
 #include "platform/platform.h"
 #include "T3D/groundPlane.h"
 
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "scene/sceneRenderState.h"
 #include "materials/sceneData.h"
 #include "materials/materialDefinition.h"

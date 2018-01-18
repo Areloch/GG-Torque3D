@@ -21,7 +21,7 @@
 //-----------------------------------------------------------------------------
 
 #include "terrain/terrRender.h"
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #include "scene/sceneRenderState.h"
 
 /*

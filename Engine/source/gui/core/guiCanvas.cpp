@@ -39,7 +39,7 @@
 #include "console/consoleTypes.h"
 #include "gfx/screenshot.h"
 #include "gfx/video/videoCapture.h"
-#include "lighting/lightManager.h"
+#include "renderPipeline/lighting/lightManager.h"
 #include "core/strings/stringUnit.h"
 #include "gui/core/guiOffscreenCanvas.h"
 

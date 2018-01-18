@@ -37,11 +37,11 @@
 #include "platform/profiler.h"
 #include "scene/sceneRenderState.h"
 #include "math/util/frustum.h"
-#include "renderInstance/renderPassManager.h"
-#include "renderInstance/renderTerrainMgr.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderTerrainMgr.h"
 
-#include "lighting/lightInfo.h"
-#include "lighting/lightManager.h"
+#include "renderPipeline/lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightManager.h"
 
 #include "materials/matInstance.h"
 #include "materials/materialManager.h"

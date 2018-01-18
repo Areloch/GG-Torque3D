@@ -57,7 +57,7 @@
 #include "T3D/containerQuery.h"
 #include "T3D/lightDescription.h"
 #include "console/engineAPI.h"
-#include "lighting/lightManager.h"
+#include "renderPipeline/lighting/lightManager.h"
 
 #include "afx/util/afxEase.h"
 #include "afx/afxMagicMissile.h"

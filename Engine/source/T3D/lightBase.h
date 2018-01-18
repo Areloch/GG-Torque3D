@@ -32,7 +32,7 @@
 #include "scene/sceneObject.h"
 #endif
 #ifndef _LIGHTINFO_H_
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #endif
 #ifndef _ITICKABLE_H_
 #include "core/iTickable.h"

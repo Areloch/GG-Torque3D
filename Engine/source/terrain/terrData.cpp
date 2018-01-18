@@ -41,7 +41,7 @@
 #include "sim/netConnection.h"
 #include "core/util/safeDelete.h"
 #include "T3D/objectTypes.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "scene/sceneRenderState.h"
 #include "materials/materialManager.h"
 #include "materials/baseMatInstance.h"

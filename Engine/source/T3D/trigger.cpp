@@ -31,7 +31,7 @@
 #include "core/stream/bitStream.h"
 #include "math/mathIO.h"
 #include "gfx/gfxTransformSaver.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "gfx/gfxDrawUtil.h"
 #include "T3D/physics/physicsPlugin.h"
 #include "T3D/physics/physicsBody.h"

@@ -26,7 +26,7 @@
 #ifndef _AFX_MODEL_H_
 #define _AFX_MODEL_H_
 
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 
 class ParticleEmitterData;
 class ParticleEmitter;

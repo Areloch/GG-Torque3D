@@ -26,7 +26,7 @@
 #ifndef _AFX_MOORING_H_
 #define _AFX_MOORING_H_
 
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 
 #include "afx/afxEffectDefs.h"
 

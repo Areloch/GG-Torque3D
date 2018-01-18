@@ -27,7 +27,7 @@
 
 #include "console/consoleTypes.h"
 #include "core/stream/bitStream.h"
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #include "T3D/projectile.h"
 
 #include "afx/ce/afxMachineGun.h"

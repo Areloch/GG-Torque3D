@@ -26,7 +26,7 @@
 #ifndef _AFX_PROJECTILE_H_
 #define _AFX_PROJECTILE_H_
 
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #include "T3D/projectile.h"
 
 #include "afx/afxEffectDefs.h"

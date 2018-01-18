@@ -38,9 +38,9 @@
 #include "gfx/gfxDevice.h"
 #include "gfx/primBuilder.h"
 #include "gfx/gfxStringEnumTranslate.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "T3D/gameBase/gameProcess.h"
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #include "console/engineAPI.h"
 
 #if defined(AFX_CAP_PARTICLE_POOLS) 

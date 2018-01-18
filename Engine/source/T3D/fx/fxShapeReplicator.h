@@ -30,7 +30,7 @@
 #include "ts/tsShapeInstance.h"
 #endif
 #ifndef _RENDERPASSMANAGER_H_
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #endif
 
 #define AREA_ANIMATION_ARC         (1.0f / 360.0f)

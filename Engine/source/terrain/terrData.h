@@ -38,7 +38,7 @@
 #include "core/resource.h"
 #endif
 #ifndef _RENDERPASSMANAGER_H_
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #endif
 #ifndef _TSIGNAL_H_
 #include "core/util/tSignal.h"

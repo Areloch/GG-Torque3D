@@ -30,7 +30,7 @@
 #include "gfx/gfxPrimitiveBuffer.h"
 #endif
 #ifndef _RENDERPASSMANAGER_H_
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #endif
 
 class SFXTrack;

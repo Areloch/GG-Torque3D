@@ -26,7 +26,7 @@
 #include "afx/arcaneFX.h"
 
 #include "math/mathIO.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 
 #include "afx/afxChoreographer.h"
 #include "afx/ce/afxZodiac.h"

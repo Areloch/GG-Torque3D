@@ -34,12 +34,12 @@
 #include "gui/3d/guiTSControl.h"
 #include "ts/tsShapeInstance.h"
 #include "gfx/gfxOcclusionQuery.h"
-#include "lighting/lightManager.h"
-#include "lighting/shadowMap/lightShadowMap.h"
+#include "renderPipeline/lighting/lightManager.h"
+#include "renderPipeline/lighting/shadowMap/lightShadowMap.h"
 #include "math/mathUtils.h"
 #include "math/util/frustum.h"
 #include "gfx/screenshot.h"
-#include "postFx/postEffectManager.h"
+#include "renderPipeline/postFX/postEffectManager.h"
 
 extern ColorI gCanvasClearColor;
 

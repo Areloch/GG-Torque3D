@@ -38,7 +38,7 @@
 #include "core/resource.h"
 #endif
 #ifndef _LIGHTINFO_H_
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #endif
 
 class ParticleEmitter;

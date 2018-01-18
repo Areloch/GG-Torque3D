@@ -32,7 +32,7 @@
 #include "T3D/gameBase/gameConnection.h"
 #include "scene/sceneManager.h"
 #include "scene/sceneRenderState.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "console/engineAPI.h"
 
 //------------------------------------------------------------------------------

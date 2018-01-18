@@ -30,12 +30,12 @@
 #include "core/stream/fileStream.h"
 #include "core/stream/bitStream.h"
 #include "scene/sceneRenderState.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "gfx/primBuilder.h"
 #include "materials/materialManager.h"
 #include "materials/customMaterialDefinition.h"
 #include "materials/shaderData.h"
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #include "math/mathIO.h"
 
 ConsoleDocClass( CloudLayer,

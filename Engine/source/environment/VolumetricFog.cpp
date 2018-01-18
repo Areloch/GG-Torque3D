@@ -23,7 +23,7 @@
 #include "environment/VolumetricFog.h"
 #include "windowManager/platformWindowMgr.h"
 #include "gfx/gfxTransformSaver.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "math/mathIO.h"
 #include "materials/shaderData.h"
 #include "math/util/matrixSet.h"
@@ -35,8 +35,8 @@
 #include "console/engineAPI.h"
 #include "gui/core/guiCanvas.h"
 #include "VolumetricFogRTManager.h"
-#include "lighting/lightInfo.h"
-#include "lighting/lightManager.h"
+#include "renderPipeline/lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightManager.h"
 
 #define COLBOX_SCALE Point3F(1.02f, 1.02f, 1.02f)
 

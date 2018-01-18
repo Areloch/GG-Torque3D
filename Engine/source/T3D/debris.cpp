@@ -43,7 +43,7 @@
 #include "core/resourceManager.h"
 #include "gfx/gfxTransformSaver.h"
 #include "console/engineAPI.h"
-#include "lighting/lightQuery.h"
+#include "renderPipeline/lighting/lightQuery.h"
 
 
 const U32 csmStaticCollisionMask = TerrainObjectType | StaticShapeObjectType | StaticObjectType;

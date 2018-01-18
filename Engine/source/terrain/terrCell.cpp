@@ -32,7 +32,7 @@
 #include "terrain/terrData.h"
 #include "terrain/terrCellMaterial.h"
 #include "scene/sceneRenderState.h"
-#include "lighting/lightManager.h"
+#include "renderPipeline/lighting/lightManager.h"
 #include "gfx/gfxDrawUtil.h"
 
 

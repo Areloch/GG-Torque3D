@@ -28,7 +28,7 @@
 #include "materials/sceneData.h"
 #include "gfx/gfxDebugEvent.h"
 #include "gfx/gfxTransformSaver.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 
 
 IMPLEMENT_CO_NETOBJECT_V1(RenderObjectExample);

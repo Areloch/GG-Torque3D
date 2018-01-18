@@ -26,7 +26,7 @@
 #include "core/util/safeDelete.h"
 #include "scene/sceneRenderState.h"
 #include "scene/sceneManager.h"
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #include "core/stream/bitStream.h"
 #include "math/mathIO.h"
 #include "math/mathUtils.h"
@@ -36,12 +36,12 @@
 #include "gfx/gfxTransformSaver.h"
 #include "gfx/gfxDebugEvent.h"
 #include "gfx/gfxOcclusionQuery.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "sim/netConnection.h"
 #include "scene/reflectionManager.h"
 #include "ts/tsShapeInstance.h"
 #include "T3D/gameFunctions.h"
-#include "postFx/postEffect.h"
+#include "renderPipeline/postFX/postEffect.h"
 #include "math/util/matrixSet.h"
 
 extern ColorI gCanvasClearColor;

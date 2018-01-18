@@ -29,8 +29,8 @@
 #include "core/stream/bitStream.h"
 #include "materials/materialManager.h"
 #include "materials/baseMatInstance.h"
-#include "renderInstance/renderPassManager.h"
-#include "lighting/lightQuery.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
+#include "renderPipeline/lighting/lightQuery.h"
 #include "console/engineAPI.h"
 
 

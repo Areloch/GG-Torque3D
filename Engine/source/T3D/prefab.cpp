@@ -27,7 +27,7 @@
 #include "core/stream/bitStream.h"
 #include "scene/sceneRenderState.h"
 #include "gfx/gfxTransformSaver.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "console/consoleTypes.h"
 #include "core/volume.h"
 #include "console/engineAPI.h"

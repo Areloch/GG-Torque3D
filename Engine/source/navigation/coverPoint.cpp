@@ -29,7 +29,7 @@
 #include "gfx/gfxDebugEvent.h"
 #include "gfx/gfxTransformSaver.h"
 #include "gfx/gfxDrawUtil.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "console/engineAPI.h"
 
 extern bool gEditingMission;

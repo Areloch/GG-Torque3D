@@ -33,7 +33,7 @@
 #include "core/color.h"
 #endif
 #ifndef _RENDERPASSMANAGER_H_
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #endif
 #ifndef _ENGINEAPI_H_
 #include "console/engineAPI.h"

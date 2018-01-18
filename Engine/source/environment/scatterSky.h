@@ -36,13 +36,13 @@
 #include "gfx/gfxStateBlock.h"
 #endif
 #ifndef _RENDERPASSMANAGER_H_
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #endif
 #ifndef _PRIMBUILDER_H_
 #include "gfx/primBuilder.h"
 #endif
 #ifndef _LIGHTINFO_H_
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #endif
 #ifndef _LIGHTFLAREDATA_H_
 #include "T3D/lightFlareData.h"

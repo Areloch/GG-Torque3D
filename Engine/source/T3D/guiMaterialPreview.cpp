@@ -27,9 +27,9 @@
 
 #include "console/engineAPI.h"
 #include "T3D/guiMaterialPreview.h"
-#include "renderInstance/renderPassManager.h"
-#include "lighting/lightManager.h"
-#include "lighting/lightInfo.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
+#include "renderPipeline/lighting/lightManager.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #include "core/resourceManager.h"
 #include "scene/sceneManager.h"
 #include "scene/sceneRenderState.h"

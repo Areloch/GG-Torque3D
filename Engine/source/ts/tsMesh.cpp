@@ -47,7 +47,7 @@
 #include "scene/sceneRenderState.h"
 #include "materials/matInstance.h"
 #include "materials/materialFeatureTypes.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "materials/customMaterialDefinition.h"
 #include "gfx/util/triListOpt.h"
 #include "util/triRayCheck.h"

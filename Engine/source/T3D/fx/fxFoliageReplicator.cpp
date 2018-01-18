@@ -59,7 +59,7 @@
 #include "math/mathIO.h"
 #include "console/simBase.h"
 #include "scene/sceneManager.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "scene/sceneRenderState.h"
 #include "sim/netConnection.h"
 #include "materials/shaderData.h"

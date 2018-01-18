@@ -36,7 +36,7 @@
 #include "gfx/gfxPrimitiveBuffer.h"
 #endif
 #ifndef _RENDERPASSMANAGER_H_
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #endif
 #ifndef _MATTEXTURETARGET_H_
 #include "materials/matTextureTarget.h"

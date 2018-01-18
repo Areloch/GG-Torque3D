@@ -23,7 +23,7 @@
 #include "platform/platform.h"
 #include "scene/sceneRenderState.h"
 
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "math/util/matrixSet.h"
 
 #include "T3D/components/render/renderComponentInterface.h"

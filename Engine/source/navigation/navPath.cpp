@@ -31,7 +31,7 @@
 
 #include "scene/sceneRenderState.h"
 #include "gfx/gfxDrawUtil.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "gfx/primBuilder.h"
 #include "core/stream/bitStream.h"
 #include "math/mathIO.h"

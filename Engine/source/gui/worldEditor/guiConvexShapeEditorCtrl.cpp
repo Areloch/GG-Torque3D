@@ -26,7 +26,7 @@
 #include "console/consoleTypes.h"
 #include "console/engineAPI.h"
 #include "T3D/convexShape.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "collision/collision.h"
 #include "math/util/frustum.h"
 #include "math/mathUtils.h"

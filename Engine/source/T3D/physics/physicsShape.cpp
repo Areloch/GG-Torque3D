@@ -39,7 +39,7 @@
 #include "T3D/physics/physicsDebris.h"
 #include "T3D/fx/explosion.h"
 #include "T3D/containerQuery.h"
-#include "lighting/lightQuery.h"
+#include "renderPipeline/lighting/lightQuery.h"
 #include "console/engineAPI.h"
 
 using namespace Torque;

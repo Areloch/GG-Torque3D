@@ -25,7 +25,7 @@
 
 #include "materials/matInstance.h"
 #include "materials/materialFeatureTypes.h"
-#include "lighting/lightManager.h"
+#include "renderPipeline/lighting/lightManager.h"
 #include "core/util/safeDelete.h"
 #include "shaderGen/shaderGen.h"
 #include "core/module.h"

@@ -33,7 +33,7 @@
 #include "core/stream/bitStream.h"
 #include "gfx/gfxTransformSaver.h"
 #include "console/engineAPI.h"
-#include "lighting/lightQuery.h"
+#include "renderPipeline/lighting/lightQuery.h"
 
 IMPLEMENT_CALLBACK( StateMachineComponent, onStateChange, void, (), (),
                    "@brief Called when we collide with another object.\n\n"

@@ -41,7 +41,7 @@
 #include "T3D/lightDescription.h"
 #endif
 #ifndef _LIGHTINFO_H_
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #endif
 
 

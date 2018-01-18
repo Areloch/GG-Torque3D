@@ -32,7 +32,7 @@
 #include "materials/materialFeatureTypes.h"
 #include "core/util/autoPtr.h"
 
-#include "lighting/advanced/advancedLightBinManager.h"
+#include "renderPipeline/lighting/advanced/advancedLightBinManager.h"
 #include "ts/tsShape.h"
 
 #include "shaderGen/shaderGen.h"

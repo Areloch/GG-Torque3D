@@ -36,7 +36,7 @@
 #include "sim/netConnection.h"
 #include "gfx/gfxTransformSaver.h"
 #include "console/engineAPI.h"
-#include "lighting/lightQuery.h"
+#include "renderPipeline/lighting/lightQuery.h"
 #include "gfx/sim/debugDraw.h" 
 
 extern bool gEditingMission;

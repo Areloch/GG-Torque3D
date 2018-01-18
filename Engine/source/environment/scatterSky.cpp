@@ -31,7 +31,7 @@
 #include "math/mathUtils.h"
 #include "math/util/matrixSet.h"
 #include "scene/sceneRenderState.h"
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #include "gfx/sim/gfxStateBlockData.h"
 #include "gfx/gfxTransformSaver.h"
 #include "gfx/gfxDrawUtil.h"

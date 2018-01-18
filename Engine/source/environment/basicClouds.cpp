@@ -30,7 +30,7 @@
 #include "core/stream/fileStream.h"
 #include "core/stream/bitStream.h"
 #include "scene/sceneRenderState.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "materials/shaderData.h"
 #include "math/mathIO.h"
 

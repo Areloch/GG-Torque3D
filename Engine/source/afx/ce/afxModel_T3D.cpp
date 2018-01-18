@@ -28,7 +28,7 @@
 #include "scene/sceneRenderState.h"
 #include "scene/sceneManager.h"
 #include "ts/tsShapeInstance.h"
-#include "lighting/lightQuery.h"
+#include "renderPipeline/lighting/lightQuery.h"
 
 #include "afx/ce/afxModel.h"
 

@@ -30,7 +30,7 @@
 #include "gfx/primBuilder.h"
 #include "gfx/gfxDrawUtil.h"
 #include "gfx/gfxTransformSaver.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "materials/materialDefinition.h"
 #include "materials/baseMatInstance.h"
 #include "scene/sceneRenderState.h"

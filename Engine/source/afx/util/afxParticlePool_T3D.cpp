@@ -27,9 +27,9 @@
 
 #include "scene/sceneRenderState.h"
 #include "T3D/fx/particleEmitter.h"
-#include "renderInstance/renderPassManager.h"
-#include "lighting/lightInfo.h"
-#include "lighting/lightManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
+#include "renderPipeline/lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightManager.h"
 
 #include "afx/util/afxParticlePool.h"
 

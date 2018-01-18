@@ -26,7 +26,7 @@
 #include "console/consoleTypes.h"
 #include "gfx/gfxDevice.h"
 #include "core/strings/stringUnit.h"
-#include "lighting/lightManager.h"
+#include "renderPipeline/lighting/lightManager.h"
 #include "console/engineAPI.h"
 
 using namespace Torque;
@@ -109,8 +109,8 @@ void ShaderData::initPersistFields()
       "@tsexample\n"
        "singleton ShaderData( FlashShader )\n"
           "{\n"
-              "DXVertexShaderFile 	= $shaderGen::cachePath @ \"/postFx/flashV.hlsl\";\n"
-              "DXPixelShaderFile 	= $shaderGen::cachePath @ \"/postFx/flashP.hlsl\";\n\n"
+              "DXVertexShaderFile 	= $shaderGen::cachePath @ \"/renderPipeline/postFX/flashV.hlsl\";\n"
+              "DXPixelShaderFile 	= $shaderGen::cachePath @ \"/renderPipeline/postFX/flashP.hlsl\";\n\n"
               " //Define setting the color of WHITE_COLOR.\n"
               "defines = \"WHITE_COLOR=float4(1.0,1.0,1.0,0.0)\";\n\n"
               "pixVersion = 2.0\n"

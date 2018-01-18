@@ -35,7 +35,7 @@
 #define _afxRENDERHIGHLIGHTMGR_H_
 
 #ifndef _TEXTARGETBIN_MGR_H_
-#include "renderInstance/renderTexTargetBinManager.h"
+#include "renderPipeline/renderInstance/renderTexTargetBinManager.h"
 #endif
 
 

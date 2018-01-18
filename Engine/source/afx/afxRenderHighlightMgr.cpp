@@ -40,7 +40,7 @@
 #include "materials/matInstance.h"
 //#include "materials/materialFeatureTypes.h"
 #include "materials/processedMaterial.h"
-#include "postFx/postEffect.h"
+#include "renderPipeline/postFX/postEffect.h"
 #include "gfx/gfxTransformSaver.h"
 #include "gfx/gfxDebugEvent.h"
 #include "math/util/matrixSet.h"

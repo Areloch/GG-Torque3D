@@ -42,7 +42,7 @@
 #include "ts/tsShape.h"
 #endif
 #ifndef _POST_EFFECT_H_
-#include "postFx/postEffect.h"
+#include "renderPipeline/postFX/postEffect.h"
 #endif
    
 #include "gui/core/guiCanvas.h"

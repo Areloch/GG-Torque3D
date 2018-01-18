@@ -26,7 +26,7 @@
 #include <typeinfo>
 #include "afx/arcaneFX.h"
 
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #include "T3D/projectile.h"
 
 #include "afx/afxEffectDefs.h"

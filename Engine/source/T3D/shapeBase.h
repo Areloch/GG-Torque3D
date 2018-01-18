@@ -49,7 +49,7 @@
    #include "sim/netStringTable.h"
 #endif
 #ifndef _RENDERPASSMANAGER_H_
-   #include "renderInstance/renderPassManager.h"
+   #include "renderPipeline/renderInstance/renderPassManager.h"
 #endif
 #ifndef _TSSHAPE_H_
    #include "ts/tsShape.h"
@@ -58,7 +58,7 @@
    #include "core/bitVector.h"
 #endif
 #ifndef _LIGHTINFO_H_
-   #include "lighting/lightInfo.h"
+   #include "renderPipeline/lighting/lightInfo.h"
 #endif
 #ifndef _REFLECTOR_H_
    #include "scene/reflector.h"

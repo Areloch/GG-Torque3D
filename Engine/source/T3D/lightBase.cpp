@@ -32,10 +32,10 @@
 #include "console/typeValidators.h"
 #include "core/stream/bitStream.h"
 #include "sim/netConnection.h"
-#include "lighting/lightManager.h"
-#include "lighting/shadowMap/lightShadowMap.h"
+#include "renderPipeline/lighting/lightManager.h"
+#include "renderPipeline/lighting/shadowMap/lightShadowMap.h"
 #include "scene/sceneRenderState.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "console/engineAPI.h"
 #include "gfx/gfxDrawUtil.h"
 

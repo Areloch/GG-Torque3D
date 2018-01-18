@@ -37,7 +37,7 @@
 #include "T3D/fx/particleEmitterNode.h"
 #include "T3D/gameBase/gameProcess.h"
 #include "sim/netConnection.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "console/engineAPI.h"
 
 namespace

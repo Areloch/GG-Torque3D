@@ -30,8 +30,8 @@
 
 #include "scene/sceneRenderState.h"
 #include "scene/sceneManager.h"
-#include "lighting/lightInfo.h"
-#include "lighting/lightManager.h"
+#include "renderPipeline/lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightManager.h"
 #include "console/consoleTypes.h"
 #include "console/typeValidators.h"
 #include "core/resourceManager.h"

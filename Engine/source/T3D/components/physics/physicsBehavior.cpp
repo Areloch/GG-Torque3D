@@ -32,7 +32,7 @@
 #include "core/stream/bitStream.h"
 #include "gfx/gfxTransformSaver.h"
 #include "console/engineAPI.h"
-#include "lighting/lightQuery.h"
+#include "renderPipeline/lighting/lightQuery.h"
 #include "T3D/gameBase/gameConnection.h"
 #include "T3D/containerQuery.h"
 #include "math/mathIO.h"

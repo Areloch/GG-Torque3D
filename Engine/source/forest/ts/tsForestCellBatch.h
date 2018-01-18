@@ -24,7 +24,7 @@
 #define _TSFORESTCELLBATCH_H_
 
 #ifndef _IMPOSTERRENDERMGR_H_
-#include "renderInstance/renderImposterMgr.h"
+#include "renderPipeline/renderInstance/renderImposterMgr.h"
 #endif
 #ifndef _FORESTCELLBATCH_H_
 #include "forest/forestCellBatch.h"

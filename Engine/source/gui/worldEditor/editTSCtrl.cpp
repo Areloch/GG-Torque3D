@@ -36,7 +36,7 @@
 #include "gfx/gfxDebugEvent.h"
 #include "scene/sceneManager.h"
 #include "scene/sceneRenderState.h"
-#include "renderInstance/renderBinManager.h"
+#include "renderPipeline/renderInstance/renderBinManager.h"
 
 
 IMPLEMENT_CONOBJECT(EditTSCtrl);

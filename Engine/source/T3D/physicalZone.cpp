@@ -34,7 +34,7 @@
 #include "scene/sceneRenderState.h"
 #include "T3D/trigger.h"
 #include "gfx/gfxTransformSaver.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "gfx/gfxDrawUtil.h"
 #include "console/engineAPI.h"
 

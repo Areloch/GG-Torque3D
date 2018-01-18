@@ -23,11 +23,11 @@
 #include "platform/platform.h"
 #include "T3D/lightDescription.h"
 
-#include "lighting/lightManager.h"
+#include "renderPipeline/lighting/lightManager.h"
 #include "T3D/lightFlareData.h"
 #include "T3D/lightAnimData.h"
 #include "core/stream/bitStream.h"
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #include "console/engineAPI.h"
 
 

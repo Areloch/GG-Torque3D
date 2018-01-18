@@ -32,7 +32,7 @@
 #include "scene/sceneRenderState.h"
 #include "math/mathIO.h"
 #include "core/stream/bitStream.h"
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #include "console/engineAPI.h"
 
 extern bool gEditingMission;

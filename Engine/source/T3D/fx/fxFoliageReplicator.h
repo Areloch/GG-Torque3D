@@ -41,7 +41,7 @@
 #include "gfx/bitmap/gBitmap.h"
 #endif
 #ifndef _RENDERPASSMANAGER_H_
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #endif
 #ifndef _MATHUTIL_FRUSTUM_H_
 #include "math/util/frustum.h"

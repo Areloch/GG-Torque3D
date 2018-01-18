@@ -29,13 +29,13 @@
 #include "materials/materialManager.h"
 #include "terrain/terrFeatureTypes.h"
 #include "terrain/terrMaterial.h"
-#include "renderInstance/renderDeferredMgr.h"
+#include "renderPipeline/renderInstance/renderDeferredMgr.h"
 #include "shaderGen/shaderGen.h"
 #include "shaderGen/featureMgr.h"
 #include "scene/sceneRenderState.h"
 #include "materials/sceneData.h"
 #include "gfx/util/screenspace.h"
-#include "lighting/advanced/advancedLightBinManager.h"
+#include "renderPipeline/lighting/advanced/advancedLightBinManager.h"
 
 S32 sgMaxTerrainMaterialsPerPass = 3;
 

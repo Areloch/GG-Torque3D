@@ -39,7 +39,7 @@
 #include "materials/materialManager.h"
 #include "materials/baseMatInstance.h"
 #include "environment/nodeListManager.h"
-#include "lighting/lightQuery.h"
+#include "renderPipeline/lighting/lightQuery.h"
 
 
 extern F32 gDecalBias;

@@ -35,7 +35,7 @@
 #include "T3D/gameBase/gameProcess.h"
 #include "core/resourceManager.h"
 #include "gfx/gfxTransformSaver.h"
-#include "lighting/lightQuery.h"
+#include "renderPipeline/lighting/lightQuery.h"
 #include "T3D/physics/physicsBody.h"
 #include "T3D/physics/physicsCollision.h"
 #include "T3D/physics/physicsWorld.h"

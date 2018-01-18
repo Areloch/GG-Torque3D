@@ -23,7 +23,7 @@
 #include "platform/platform.h"
 #include "shaderGen/HLSL/paraboloidHLSL.h"
 
-#include "lighting/lightInfo.h"
+#include "renderPipeline/lighting/lightInfo.h"
 #include "materials/sceneData.h"
 #include "materials/materialFeatureTypes.h"
 #include "materials/materialFeatureData.h"

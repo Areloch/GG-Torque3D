@@ -39,7 +39,7 @@
 #include "gfx/gfxPrimitiveBuffer.h"
 #endif
 #ifndef _RENDERPASSMANAGER_H_
-#include "renderInstance/renderPassManager.h"
+#include "renderPipeline/renderInstance/renderPassManager.h"
 #endif
 #ifndef _WATEROBJECT_H_
 #include "waterObject.h"

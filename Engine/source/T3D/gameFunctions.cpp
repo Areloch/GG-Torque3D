@@ -33,7 +33,7 @@
 #include "core/module.h"
 #include "console/engineAPI.h"
 #include "platform/output/IDisplayDevice.h"
-#include "postFx/postEffectManager.h"
+#include "renderPipeline/postFX/postEffectManager.h"
 #include "gfx/gfxTransformSaver.h"
 
 static void RegisterGameFunctions();

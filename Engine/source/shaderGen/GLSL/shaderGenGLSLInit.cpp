@@ -35,7 +35,7 @@
 #include "shaderGen/GLSL/accuFeatureGLSL.h"
 
 // Deferred Shading
-#include "lighting/advanced/glsl/deferredShadingFeaturesGLSL.h"
+#include "renderPipeline/lighting/advanced/glsl/deferredShadingFeaturesGLSL.h"
 
 static ShaderGen::ShaderGenInitDelegate sInitDelegate;
 
