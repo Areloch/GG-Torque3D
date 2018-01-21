@@ -94,8 +94,6 @@ private:
    Signal< void(Component*) > onComponentAdded;
    Signal< void(Component*) > onComponentRemoved;
 
-   Signal< void(MatrixF*) > onTransformSet;
-
    S32                       mLifetimeMS;
 
 protected:

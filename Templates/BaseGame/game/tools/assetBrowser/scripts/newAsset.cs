@@ -30,6 +30,12 @@ function AssetBrowser_newAsset::onWake(%this)
    //NewComponentParentClass.setText("Component");
 }
 
+function AssetBrowser_newAssetWindow::onClose(%this)
+{
+   NewAssetPropertiesInspector.clearFields(); 
+   Canvas.popDialog(AssetBrowser_newAsset);
+}
+
 function NewAssetTypeList::onWake(%this)
 {
    %this.refresh();
@@ -84,8 +90,10 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
    %this.newAssetSettings.assetType = %assetType;
    %this.newAssetSettings.moduleName = %moduleName;
    
+   %shortAssetTypeName = strreplace(%assetType, "Asset", "");
+   
    NewAssetPropertiesInspector.startGroup("General");
-   NewAssetPropertiesInspector.addField("assetName", "New Asset Name", "String",  "Name of the new asset", "New" @ %assetType, "", %this.newAssetSettings);
+   NewAssetPropertiesInspector.addField("assetName", "New Asset Name", "String",  "Name of the new asset", "New" @ %shortAssetTypeName, "", %this.newAssetSettings);
    //NewAssetPropertiesInspector.addField("AssetType", "New Asset Type", "List",  "Type of the new asset", %assetType, "Component,Image,Material,Shape,Sound,State Machine", %newAssetSettings);
    
    NewAssetPropertiesInspector.addField("friendlyName", "Friendly Name", "String",  "Human-readable name of new asset", "", "", %this.newAssetSettings);
@@ -114,7 +122,7 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
       NewAssetPropertiesInspector.addField("isServerScript", "Is Server Script", "bool",  "Is this script used on the server?", "1", "", %this.newAssetSettings);
       NewAssetPropertiesInspector.endGroup();
    }
-   else if(%assetType $= "ShapeAnimationAsset")
+   /*else if(%assetType $= "ShapeAnimationAsset")
    {
       NewAssetPropertiesInspector.startGroup("Animation");
       NewAssetPropertiesInspector.addField("sourceFile", "Source File", "filename",  "Source file this animation will pull from", "", "", %this.newAssetSettings);
@@ -126,7 +134,7 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
       NewAssetPropertiesInspector.addField("padRotation", "Pad Rotations", "bool",  "Source file this animation will pull from", "0", "", %this.newAssetSettings);
       NewAssetPropertiesInspector.addField("padTransforms", "Pad Transforms", "bool",  "Source file this animation will pull from", "0", "", %this.newAssetSettings);
       NewAssetPropertiesInspector.endGroup();
-   }
+   }*/
    
    return;
    
@@ -283,7 +291,7 @@ function createNewComponentAsset()
 
 function createNewMaterialAsset()
 {
-   %assetName = NewAssetName.getText();
+   %assetName = AssetBrowser.newAssetSettings.assetName;
    
    %moduleName = AssetBrowser.newAssetSettings.moduleName;
    %modulePath = "data/" @ %moduleName;
@@ -355,8 +363,7 @@ function createNewScriptAsset()
 
 function createNewStateMachineAsset()
 {
-   if(%assetName $= "")
-      %assetName = NewAssetName.getText();
+   %assetName = AssetBrowser.newAssetSettings.assetName;
       
    %assetQuery = new AssetQuery();
    

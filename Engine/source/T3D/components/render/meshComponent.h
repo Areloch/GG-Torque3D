@@ -85,11 +85,11 @@ protected:
 
    StringTableEntry		mShapeName;
    StringTableEntry		mShapeAsset;
-   //TSShape*		         mShape;
+   TSShape*		         mShape;
    //Box3F						mShapeBounds;
    Point3F					mCenterOffset;
 
-   MeshComponentInterface*  mInterfaceData;
+   MeshRenderSystemInterface*  mInterfaceData;
 
    struct matMap
    {
@@ -102,8 +102,20 @@ protected:
    Vector<matMap>  mMaterials;
 
 public:
-   //StringTableEntry       mMeshAssetId;
-   //AssetPtr<ShapeAsset>   mMeshAsset;
+   enum RenderMode
+   {
+      Individual = 0,
+      DynamicBatch,
+      StaticBatch,
+      Instanced
+   };
+
+protected:
+   RenderMode           mRenderMode;
+
+public:
+   StringTableEntry       mMeshAssetId;
+   AssetPtr<ShapeAsset>   mMeshAsset;
 
    //TSShapeInstance*       mShapeInstance;
 
@@ -143,10 +155,10 @@ public:
 
    bool setMeshAsset(const char* assetName);
 
-   virtual TSShape* getShape() { if (mInterfaceData->mMeshAsset)  return mInterfaceData->mMeshAsset->getShape(); else return NULL; }
+   virtual TSShape* getShape() { if (mMeshAsset)  return mMeshAsset->getShape(); else return NULL; }
    virtual TSShapeInstance* getShapeInstance() { return mInterfaceData->mShapeInstance; }
 
-   Resource<TSShape> getShapeResource() { return mInterfaceData->mMeshAsset->getShapeResource(); }
+   Resource<TSShape> getShapeResource() { return mMeshAsset->getShapeResource(); }
 
    void _onResourceChanged(const Torque::Path &path);
 
@@ -173,5 +185,8 @@ public:
       return;
    }
 };
+
+typedef MeshComponent::RenderMode BatchingMode;
+DefineEnumType(BatchingMode);
 
 #endif

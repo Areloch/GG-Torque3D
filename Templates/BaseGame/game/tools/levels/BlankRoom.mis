@@ -7,7 +7,7 @@ new SimGroup(MissionGroup) {
       enabled = "1";
       musicTrack = "lush";
 
-   new LevelInfo(TheLevelInfo) {
+   new LevelInfo(theLevelInfo) {
       nearClip = "0.1";
       visibleDistance = "1000";
       visibleGhostDistance = "0";

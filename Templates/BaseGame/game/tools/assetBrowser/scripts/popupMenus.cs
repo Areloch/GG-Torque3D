@@ -9,6 +9,7 @@ function AssetBrowser::buildPopupMenus(%this)
          isPopup = true;
          
          item[ 0 ] = "Create New Module" TAB "" TAB "AssetBrowser.CreateNewModule();";
+         item[ 1 ] = "Refresh Module Dependencies" TAB "" TAB "AssetBrowser.RefreshModuleDependencies();";
       };
    }
       
@@ -127,7 +128,10 @@ function AssetBrowser::buildPopupMenus(%this)
    }
    
    //Some assets are not yet ready/implemented, so disable their creation here
+   AddNewArtAssetPopup.enableItem(3, false); //shape
+   AddNewArtAssetPopup.enableItem(4, false); //shape animation
    AddNewArtAssetPopup.enableItem(8, false); //post effect
+   AddNewArtAssetPopup.enableItem(10, false); //sound asset
    AddNewArtAssetPopup.enableItem(12, false); //particle effect
    
    AddNewScriptAssetPopup.enableItem(2, false); //state machine

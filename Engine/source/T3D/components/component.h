@@ -117,7 +117,8 @@ public:
    //This is called when a different component is removed from our owner entity
    virtual void componentRemovedFromOwner(Component *comp);  
 
-   virtual void ownerTransformSet(MatrixF *mat);
+   //Overridden by components that actually care
+   virtual void ownerTransformSet(MatrixF *mat) {}
 
    void setOwner(Entity* pOwner);
    inline Entity *getOwner() { return mOwner ? mOwner : NULL; }

@@ -2,9 +2,9 @@
 new SimGroup(MissionGroup) {
    canSave = "1";
    canSaveDynamicFields = "1";
-      Enabled = "1";
+      enabled = "1";
 
-   new LevelInfo(TheLevelInfo) {
+   new LevelInfo(theLevelInfo) {
       nearClip = "0.1";
       visibleDistance = "1000";
       visibleGhostDistance = "0";
@@ -17,12 +17,13 @@ new SimGroup(MissionGroup) {
       ambientLightBlendPhase = "1";
       ambientLightBlendCurve = "0 0 -1 -1";
       advancedLightmapSupport = "0";
+      soundAmbience = "AudioAmbienceDefault";
       soundDistanceModel = "Linear";
       class = "DefaultGame";
       canSave = "1";
       canSaveDynamicFields = "1";
          desc0 = "An empty room ready to be populated with Torque objects.";
-         Enabled = "1";
+         enabled = "1";
          levelName = "Empty Room";
    };
    new SkyBox(theSky) {
@@ -71,7 +72,7 @@ new SimGroup(MissionGroup) {
    new SimGroup(PlayerDropPoints) {
       canSave = "1";
       canSaveDynamicFields = "1";
-         Enabled = "1";
+         enabled = "1";
 
       new SpawnSphere(DefaultCameraSpawnSphere) {
          autoSpawn = "0";
@@ -87,7 +88,7 @@ new SimGroup(MissionGroup) {
          scale = "1 1 1";
          canSave = "1";
          canSaveDynamicFields = "1";
-            Enabled = "1";
+            enabled = "1";
             homingCount = "0";
             lockCount = "0";
       };
@@ -99,7 +100,7 @@ new SimGroup(MissionGroup) {
       Material = "Grid_512_Gray";
       canSave = "1";
       canSaveDynamicFields = "1";
-         Enabled = "1";
+         enabled = "1";
          position = "0 0 0";
          rotation = "1 0 0 0";
          scale = "1 1 1";

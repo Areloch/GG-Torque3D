@@ -6,14 +6,20 @@
 #include "T3D/assets/ShapeAsset.h"
 #include "T3D/assets/MaterialAsset.h"
 
-class MeshComponentInterface
+#ifndef _GFXVERTEXBUFFER_H_
+#include "gfx/gfxVertexBuffer.h"
+#endif
+#ifndef _GFXPRIMITIVEBUFFER_H_
+#include "gfx/gfxPrimitiveBuffer.h"
+#endif
+#ifndef _OPTIMIZEDPOLYLIST_H_
+#include "collision/optimizedPolyList.h"
+#endif
+
+class MeshRenderSystemInterface : public SystemInterface<MeshRenderSystemInterface>
 {
 public:
-   TSShape*		            mShape;
-   TSShapeInstance*        mShapeInstance;
-
-   StringTableEntry        mMeshAssetId;
-   AssetPtr<ShapeAsset>    mMeshAsset;
+   TSShapeInstance * mShapeInstance;
 
    MatrixF                 mTransform;
    Point3F                 mScale;
@@ -32,25 +38,105 @@ public:
    Vector<matMap>  mChangingMaterials;
    Vector<matMap>  mMaterials;
 
-   MeshComponentInterface()
-   {
-      mShape = nullptr;
-      mShapeInstance = nullptr;
+   //Static geometry stuff
+   bool                    mStatic;
 
-      mMeshAssetId = StringTable->EmptyString();
-      mMeshAsset = StringTable->EmptyString();
+   OptimizedPolyList       mGeometry;
+
+   MeshRenderSystemInterface() : SystemInterface(), mShapeInstance(nullptr), mTransform(MatrixF::Identity), mScale(Point3F::One), mIsClient(false), mStatic(false)
+   {
+      mBounds = Box3F(1);
+      mSphere = SphereF();
    }
 
-   ~MeshComponentInterface()
+   ~MeshRenderSystemInterface()
    {
-      SAFE_DELETE(mShape);
+      //SAFE_DELETE(mShape);
       SAFE_DELETE(mShapeInstance);
    }
 };
 
-class MeshRenderSystem : public ComponentSystem < MeshComponentInterface >
+class MeshRenderSystem
 {
-   //static Vector<MeshComponentInterface> smInterfaceList;
+protected:
+   /*struct StaticBatchElement
+   {
+      SimObject* owner;
+      OptimizedPolyList geometry;
+      String batchName;
+   };
+
+   static Vector<StaticBatchElement> mStaticElements;*/
+
+   //We retain the pushed geometry data for rendering here. It's static(unless forced to change through editing or whatnot)
+   //so rendering the batches is real fast
+   struct BufferMaterials
+   {
+      // The name of the Material we will use for rendering
+      String            mMaterialName;
+      // The actual Material instance
+      BaseMatInstance*  mMaterialInst;
+
+      BufferMaterials()
+      {
+         mMaterialName = "";
+         mMaterialInst = NULL;
+      }
+   };
+
+   static Vector<BufferMaterials> mBufferMaterials;
+
+   struct BufferSet
+   {
+      U32 surfaceMaterialId;
+
+      U32 vertCount;
+      U32 primCount;
+
+      Point3F center;
+
+      struct Buffers
+      {
+         U32 vertStart;
+         U32 primStart;
+         U32 vertCount;
+         U32 primCount;
+
+         Vector<GFXVertexPNTT> vertData;
+         Vector<U32> primData;
+
+         GFXVertexBufferHandle< GFXVertexPNTT > vertexBuffer;
+         GFXPrimitiveBufferHandle            primitiveBuffer;
+
+         Buffers()
+         {
+            vertStart = 0;
+            primStart = 0;
+            vertCount = 0;
+            primCount = 0;
+
+            vertexBuffer = NULL;
+            primitiveBuffer = NULL;
+         }
+      };
+
+      Vector<Buffers> buffers;
+
+      BufferSet()
+      {
+         Buffers newBuffer;
+         buffers.push_back(newBuffer);
+
+         surfaceMaterialId = 0;
+
+         vertCount = 0;
+         primCount = 0;
+
+         center = Point3F::Zero;
+      }
+   };
+
+   static Vector<BufferSet> mStaticBuffers;
 
 public:
    /*virtual void prepRenderImage(SceneRenderState *state);
@@ -108,11 +194,14 @@ public:
       smInterfaceList.erase(q);
    }*/
 
-   //
-   //
    //Core render function, which does all the real work
    static void render(SceneManager *sceneManager, SceneRenderState* state);
 
    //Render our particular interface's data
    static void renderInterface(U32 interfaceIndex, SceneRenderState* state);
+
+   //Static Batch rendering
+   static void rebuildBuffers();
+
+   static U32 findBufferSetByMaterial(U32 matId);
 };

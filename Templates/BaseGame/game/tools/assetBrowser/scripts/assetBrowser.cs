@@ -472,6 +472,18 @@ function AssetBrowser::loadFilters( %this )
    }
 
    AssetBrowser-->filterTree.buildVisibleTree(true);
+   
+   //special handling for selections
+   if(AssetBrowser.newModuleId !$= "")
+   {
+      AssetBrowser-->filterTree.clearSelection();
+      %newModuleItem = AssetBrowser-->filterTree.findItemByName(AssetBrowser.newModuleId);
+      AssetBrowser-->filterTree.selectItem(%newModuleItem);
+      AssetBrowser.newModuleId = ""; 
+   }
+   
+   %selectedItem = AssetBrowser-->filterTree.getSelectedItem();
+   AssetBrowser-->filterTree.scrollVisibleByObjectId(%selectedItem);
 }
 
 // create category and update current material if there is one

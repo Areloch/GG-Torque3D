@@ -22,27 +22,18 @@ function AssetBrowser_editModule::saveModule(%this)
       %scriptExt = fileExt(%moduleDef.scriptFile);
       
       %newScriptFileName = %newscriptFilePath @ "/" @ AssetBrowser.tempModule.ModuleID @ %scriptExt;
-      
-      %oldModuleFile = "data/" @ %oldModuleName @ "/" @ %oldModuleName @ ".module";
-      %newModuleFile = "data/" @ AssetBrowser.tempModule.ModuleID @ "/" @ AssetBrowser.tempModule.ModuleID @ ".module";
-      
-      //renaming
-      ModuleDatabase.renameModule(%moduleDef, AssetBrowser.tempModule.ModuleID);
+      %newScriptFileOldName = %newscriptFilePath @ "/" @ %oldModuleName @ %scriptExt;
       
       %moduleDef.ModuleId = AssetBrowser.tempModule.ModuleID;
-      %moduleDef.scriptFile = strreplace(%moduleDef.scriptFile, %oldModuleName, AssetBrowser.tempModule.ModuleID);
+      %moduleDef.scriptFile = AssetBrowser.tempModule.ModuleID @ %scriptExt;
       
-      TamlWrite(%moduleDef, %newModuleFile);
-      fileDelete(%oldModuleFile);
-      
-      pathCopy(%oldScriptFilePath, %newScriptFileName);
-      fileDelete(%oldScriptFilePath);
+      ModuleDatabase.copyModule(%moduleDef, AssetBrowser.tempModule.ModuleID, "data/" @ AssetBrowser.tempModule.ModuleID);
       
       //Go through our scriptfile and replace the old namespace with the new
       %editedFileContents = "";
       
       %file = new FileObject();
-      if ( %file.openForRead( %newScriptFileName ) ) 
+      if ( %file.openForRead( %newScriptFileOldName ) ) 
       {
          while ( !%file.isEOF() ) 
          {
@@ -64,36 +55,14 @@ function AssetBrowser_editModule::saveModule(%this)
          %file.close();
       }
       
-      //Now, relocate all asset files
-      for( %file = findFirstFile( "data/"@%oldModuleName@"/*" );
-         %file !$= "";
-         %file = findNextFile( "data/"@%oldModuleName@"/*" ))
-      {
-         if(%file $= %oldScriptFilePath || %file $= %oldModuleFile)
-            continue;
-            
-         %path = filePath(%file);
-         %base = fileBase(%file);
-         %ext = fileExt(%file);
-         
-         %newPath = strreplace(%path, %oldModuleName, AssetBrowser.tempModule.ModuleID);
-            
-         %newFile = %newPath @ "/" @ %base @ %ext;
-         
-         if(!IsDirectory(%newPath))
-         {
-            createPath(%newFile);
-         }
-
-         pathCopy(%file, %newFile);
-         fileDelete(%file);
-      }
+      %success = fileDelete(%newScriptFileOldName);
       
-      exec(%newScriptFileName);
+      ModuleDatabase.unloadExplicit(%oldModuleName);
+      
+      %success = fileDelete("data/" @ %oldModuleName);
+      
+      ModuleDatabase.loadExplicit(AssetBrowser.tempModule.ModuleID);
    }
-   
-   ModuleDatabase.unloadExplicit(%oldModuleName);
-   ModuleDatabase.loadExplicit(AssetBrowser.tempModule.ModuleID);
    
    //Now, update the module file itself
    //%file = ModuleDatabase.getAssetFilePath(%moduleDef.ModuleID);
@@ -146,4 +115,13 @@ function AssetBrowser::reloadModule(%this)
 function AssetBrowser::deleteModule(%this)
 {
    
+}
+
+function AssetBrowser::RefreshModuleDependencies(%this)
+{
+   //Iterate through all our modules
+   
+   //then, iterate through the module's assets
+   
+   //if an asset has a module that isn't us, queue that into the dependencies list  
 }

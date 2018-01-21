@@ -196,6 +196,7 @@ void GuiVariableInspector::addCallbackField(const char* name, const char* label,
 void GuiVariableInspector::clearFields()
 {
    mFields.clear();
+   clearGroups();
    update();
 }
 

@@ -198,7 +198,6 @@ void Component::onComponentRemove()
    {
       mOwner->onComponentAdded.remove(this, &Component::componentAddedToOwner);
       mOwner->onComponentRemoved.remove(this, &Component::componentRemovedFromOwner);
-      mOwner->onTransformSet.remove(this, &Component::ownerTransformSet);
    }
 
    mOwner = NULL;
@@ -212,7 +211,6 @@ void Component::setOwner(Entity* owner)
    {
       mOwner->onComponentAdded.remove(this, &Component::componentAddedToOwner);
       mOwner->onComponentRemoved.remove(this, &Component::componentRemovedFromOwner);
-      mOwner->onTransformSet.remove(this, &Component::ownerTransformSet);
 
       mOwner->removeComponent(this, false);
    }
@@ -223,7 +221,6 @@ void Component::setOwner(Entity* owner)
    {
       mOwner->onComponentAdded.notify(this, &Component::componentAddedToOwner);
       mOwner->onComponentRemoved.notify(this, &Component::componentRemovedFromOwner);
-      mOwner->onTransformSet.notify(this, &Component::ownerTransformSet);
    }
 
    if (isServerObject())
@@ -244,11 +241,6 @@ void Component::componentAddedToOwner(Component *comp)
 }
 
 void Component::componentRemovedFromOwner(Component *comp)
-{
-   return;
-}
-
-void Component::ownerTransformSet(MatrixF *mat)
 {
    return;
 }

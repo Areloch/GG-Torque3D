@@ -85,6 +85,8 @@ function AssetBrowser_addModuleWindow::CreateNewModule(%this)
    GameObjectModuleList.refresh();
    ImportAssetModuleList.refresh();
    
+   AssetBrowser.newModuleId = %newModuleName;
+   
    Canvas.popDialog(AssetBrowser_addModule);
    eval(AssetBrowser_addModuleWindow.callbackFunction);
 }

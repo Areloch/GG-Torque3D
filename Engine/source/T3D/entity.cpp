@@ -900,7 +900,11 @@ void Entity::setTransform(Point3F position, RotationF rotation)
       // Update the transforms.
       Parent::setTransform(newMat);
 
-      onTransformSet.trigger(&newMat);
+      U32 compCount = mComponents.size();
+      for (U32 i = 0; i < compCount; ++i)
+      {
+         mComponents[i]->ownerTransformSet(&newMat);
+      }
 
       Point3F newPos = newMat.getPosition();
       RotationF newRot = newMat;
@@ -942,7 +946,11 @@ void Entity::setRenderTransform(Point3F position, RotationF rotation)
 
       Parent::setRenderTransform(newMat);
 
-      onTransformSet.trigger(&newMat);
+      U32 compCount = mComponents.size();
+      for (U32 i = 0; i < compCount; ++i)
+      {
+         mComponents[i]->ownerTransformSet(&newMat);
+      }
    }
 }
 

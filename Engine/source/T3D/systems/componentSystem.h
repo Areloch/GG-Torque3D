@@ -1,31 +1,30 @@
 #pragma once
+#include "console/engineAPI.h"
 
 template<typename T>
-class ComponentSystem
+class SystemInterface
 {
 public:
-   static Vector<T> smInterfaceList;
+   bool mIsEnabled;
+   bool mIsServer;
 
-   ComponentSystem()
-   {
-      
-   }
-   virtual ~ComponentSystem()
-   {
-      smInterfaceList.clear();
-   }
+   static Vector<T*> all;
 
-   static T* GetNewInterface()
+   SystemInterface()
    {
-      smInterfaceList.increment();
-
-      return &smInterfaceList.last();
+      all.push_back((T*)this);
    }
 
-   static void RemoveInterface(T* q)
+   virtual ~SystemInterface()
    {
-      smInterfaceList.erase(q);
+      for (U32 i = 0; i < all.size(); i++)
+      {
+         if (all[i] == (T*)this)
+         {
+            all.erase(i);
+            return;
+         }
+      }
    }
 };
-
-template<typename T> Vector<T> ComponentSystem<T>::smInterfaceList(0);
+template<typename T> Vector<T*> SystemInterface<T>::all(0);

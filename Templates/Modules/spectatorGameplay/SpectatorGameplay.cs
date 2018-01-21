@@ -67,3 +67,53 @@ function SpectatorGameplay::destroy( %this )
 {
    
 }
+
+function swapStaticTest()
+{
+   %c = TestMeshGroup.getCount();  
+   for(%i=0; %i < %c; %i++)
+   {
+      %e = TestMeshGroup.getObject(%i);
+      %comp = %e.getObject(0);     
+      
+      if(%comp.BatchingMode $= "Individual")
+         %comp.BatchingMode = "Static Batching";
+      else
+         %comp.BatchingMode = "Individual";
+   }
+}
+function staticTest()
+{
+   for(%x=0; %x < 5; %x++)
+   {
+      for(%y=0; %y < 5; %y++)
+      {
+         for(%z=0; %z < 5; %z++)
+         {
+            %e = new Entity() {
+               scale = "1 1 1";
+               canSave = "1";
+               canSaveDynamicFields = "1";
+               position = %x SPC %y SPC %z;
+               rotation = "0 -0 -0";
+               LocalPosition = "0 0 0";
+               LocalRotation = "1 0 0 0";
+               lifetimeMS = "0";
+
+               new MeshComponent() {
+                  componentType = "Render";
+                  friendlyName = "Mesh Component";
+                  description = "Causes the object to render a non-animating 3d shape using the file provided.";
+                  networked = "1";
+                  enabled = "1";
+                  //BatchingMode = "Individual";
+                  BatchingMode = "Static Batching";
+                  MeshAsset = "SpectatorGameplay:PlayerCapsule";
+               };
+            };
+            
+            TestMeshGroup.add(%e);
+         }
+      }
+   }
+}
