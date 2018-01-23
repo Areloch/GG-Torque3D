@@ -79,6 +79,8 @@ public:
    static void initPersistFields();
    virtual bool onAdd();
 
+   U32 getNumRenderTargets() { return mNumRenderTargets; }
+
 protected:
 
    NamedTexTarget mNamedTarget;

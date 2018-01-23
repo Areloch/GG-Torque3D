@@ -78,6 +78,9 @@ private:
 
    SimObjectPtr<GameBase> mControlObject;
    SimObjectPtr<GameBase> mCameraObject;
+
+   Vector<SimObjectPtr<GameBase>> mCameraObjectsList;
+
    U32 mDataBlockSequence;
    char mDisconnectReason[256];
 

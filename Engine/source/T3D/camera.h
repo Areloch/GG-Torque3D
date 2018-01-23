@@ -150,6 +150,17 @@ class Camera: public ShapeBase
 
       CameraMotionMode  mMode;
 
+      //
+      bool mHDRDisplayTarget;
+      F32 mNearDist;
+      F32 mFarDist;
+      F32 mFoV;
+      F32 mResolutionScaling;
+      bool mCustomFilters;
+
+      GFXTextureTargetRef mBaseTarget;
+      GFXTexHandle        mRenderTarget;
+
       void _setPosition(const Point3F& pos,const Point3F& viewRot);
       void _setRenderPosition(const Point3F& pos,const Point3F& viewRot);
       void _validateEyePoint( F32 pos, MatrixF* mat );
@@ -253,6 +264,10 @@ class Camera: public ShapeBase
       DECLARE_DESCRIPTION( "Represents a position, direction and field of view to render a scene from." );
       static F32 getMovementSpeed() { return smMovementSpeed; }
       bool isCamera() const { return true; }
+
+      void renderView(Point2I windowResolution);
+
+      GFXTexHandle getCameraRenderTarget() { return mRenderTarget; }
 };
 
 typedef Camera::CameraMotionMode CameraMotionMode;

@@ -346,6 +346,20 @@ void GuiCanvas::handleResize( WindowId did, S32 width, S32 height )
 void GuiCanvas::handlePaintEvent(WindowId did)
 {
    bool canRender = mPlatformWindow->isVisible() && GFX->allowRender() && !GFX->canCurrentlyRender();
+
+   if (canRender)
+   {
+      //run through any cameras and tell them to render this frame if they haven't already
+      for (U32 i = 0; i < mCameraList.size(); i++)
+      {
+         mCameraList[i]->renderView(getExtent());
+
+         bool servObj = mCameraList[i]->isServerObject();
+
+         GFXTexHandle tx = mCameraList[i]->getCameraRenderTarget();
+         bool tmp = true;
+      }
+   }
    
    // Do the screenshot first.
    if ( gScreenShot != NULL && gScreenShot->isPending() && canRender )
