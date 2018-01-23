@@ -43,6 +43,9 @@
 #include "core/strings/stringUnit.h"
 #include "gui/core/guiOffscreenCanvas.h"
 
+#include "renderPipeline/renderPipeline.h"
+#include "renderPipeline/deferredPipeline/deferredRenderPipeline.h"
+
 #ifndef TORQUE_TGB_ONLY
 #include "scene/sceneObject.h"
 #endif
@@ -245,6 +248,10 @@ bool GuiCanvas::onAdd()
       mPlatformWindow->displayEvent.notify(this, &GuiCanvas::handlePaintEvent);
       mPlatformWindow->setInputController( dynamic_cast<IProcessInput*>(this) );
    }
+
+   DeferredRenderPipeline::initPipeline();
+
+   RenderPipeline::getRenderPipeline()->setupBuffers();
 
    // Need to get painted, too! :)
    Process::notify(this, &GuiCanvas::paint, PROCESS_RENDER_ORDER);

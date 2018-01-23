@@ -315,6 +315,7 @@ addPath("${srcDir}/ts/arch")
 addPath("${srcDir}/physics")
 addPath("${srcDir}/gui/3d")
 addPath("${srcDir}/postFx")
+addPathRec("${srcDir}/renderPipeline")
 
 if(NOT TORQUE_EXPERIMENTAL_EC)
    set(BLACKLIST "entity.cpp;entity.h" )

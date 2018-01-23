@@ -42,6 +42,8 @@
 
 #include "gui/core/guiCanvas.h"
 
+#include "renderPipeline/renderPipeline.h"
+
 #ifdef TORQUE_EXTENDED_MOVE
    #include "T3D/gameBase/extended/extendedMove.h"
 #endif
@@ -1852,6 +1854,8 @@ void Camera::autoFitRadius( F32 radius )
 void Camera::renderView(Point2I windowResolution)
 {
    GFXDEBUGEVENT_SCOPE(Camera_renderView, ColorI::WHITE);
+
+   bool hasGbuffer = RenderPipeline::supportsGBuffer();
 
    PostEffect *preCapture = dynamic_cast<PostEffect*>(Sim::findObject("AL_PreCapture"));
    PostEffect *deferredShading = dynamic_cast<PostEffect*>(Sim::findObject("AL_DeferredShading"));
