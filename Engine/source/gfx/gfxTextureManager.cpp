@@ -203,7 +203,7 @@ void GFXTextureManager::resurrect()
       temp = temp->mNext;
    }
 
-   //mutexHandle.unlock();
+   mutexHandle.unlock();
 
    // Notify callback registries.
    smEventSignal.trigger( GFXResurrect );
@@ -486,7 +486,7 @@ GFXTextureObject *GFXTextureManager::_createTexture(  GBitmap *bmp,
       return NULL;
    }
 
-   //mutexHandle.unlock();
+   mutexHandle.unlock();
    // Do statistics and book-keeping...
    
    //    - info for the texture...
@@ -627,7 +627,7 @@ GFXTextureObject *GFXTextureManager::_createTexture(  DDSFile *dds,
       return NULL;
    }
 
-   //mutexHandle.unlock();
+   mutexHandle.unlock();
 
    // Do statistics and book-keeping...
 
@@ -1288,7 +1288,7 @@ void GFXTextureManager::reloadTextures()
 
 void GFXTextureManager::reloadTextures(std::unordered_map<GFXTextureObject*, Resource<DDSFile>>& ddsFiles, std::unordered_map<GFXTextureObject*, Resource<GBitmap>>& bmpFiles)
 {
-	MutexHandle mutexHandleGFX = TORQUE_LOCK(GFX->mMutex);
+   MutexHandle mutexHandleGFX = TORQUE_LOCK(GFX->mMutex);
 	MutexHandle mutexHandleThis = TORQUE_LOCK(mMutex);
 
 	for (GFXTextureObject* tex = mListHead; tex != nullptr; tex = tex->mNext)
