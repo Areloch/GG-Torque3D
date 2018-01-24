@@ -64,8 +64,8 @@ public:
    };
 
    GFXTextureManager();
-   void preDestroy();
    virtual ~GFXTextureManager();
+   void preDestroy();
 
    /// Set up some global script interface stuff.
    static void init();
@@ -303,7 +303,10 @@ protected:
 	   TexturePoolDescriptorHash
    > TexturePoolValue;
 
-   typedef std::unordered_map<GFXTextureProfile*, TexturePoolValue> TexturePoolMap;
+   //typedef std::unordered_map<GFXTextureProfile*, TexturePoolValue> TexturePoolMap;
+   //READDED
+   typedef HashTable<GFXTextureProfile*,StrongRefPtr<GFXTextureObject> > TexturePoolMap;
+   //READDED
 
    /// All the allocated texture pool textures.
    TexturePoolMap mTexturePool;
@@ -432,17 +435,17 @@ protected:
 template <class T,class U>
 inline void GFXTextureManager::addEventDelegate( T obj, U func ) 
 {
-	return;
-	/*
+	//return;
+
+   //READDED
    EventSignal::DelegateSig d( obj, func );
    
    AssertFatal( !smEventSignal.contains( d ), 
       "GFXTextureManager::addEventDelegate() - This is already registered!" );
 
    smEventSignal.notify( d ); 
-   */
+   //READDED
 }
-
 
 template <class T, class U>
 void GFXTextureManager::removeEventDelegate(T obj, U func)
