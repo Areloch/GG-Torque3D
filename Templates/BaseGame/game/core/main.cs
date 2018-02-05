@@ -72,6 +72,8 @@ exec("./cursor.cs");
 exec("./renderManager.cs");
 exec("./lighting.cs");
 
+exec("./renderPipelines/deferredRenderPipeline/deferredRenderPipeline.cs");
+
 exec("./audio.cs");
 exec("./sfx/audioAmbience.cs");
 exec("./sfx/audioData.cs");

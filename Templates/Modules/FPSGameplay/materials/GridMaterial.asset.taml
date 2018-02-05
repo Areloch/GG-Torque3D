@@ -1,0 +1,10 @@
+<MaterialAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="GridMaterial"
+    scriptFile="data/FPSGameplay/materials/GridMaterial.cs"
+    materialDefinitionName="GridMaterial"
+    imageMap1="@Asset=FPSGameplay:GridMaterial_ALBEDO"
+    originalFilePath="/GridMaterial"
+    shaderGraph="data/FPSGameplay/materials/GridMaterial.sgf"
+    VersionId="1" />

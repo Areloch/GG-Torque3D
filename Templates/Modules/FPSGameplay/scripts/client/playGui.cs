@@ -48,6 +48,8 @@ function PlayGui::onWake(%this)
       schedule(0, 0, "refreshCenterTextCtrl");
    if ( isFunction( "refreshBottomTextCtrl" ) )
       schedule(0, 0, "refreshBottomTextCtrl");
+      
+   %this.cameraObject = localClientConnection.camera;
 }
 
 function PlayGui::onSleep(%this)

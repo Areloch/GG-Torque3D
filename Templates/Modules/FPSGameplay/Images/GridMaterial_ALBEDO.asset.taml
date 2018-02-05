@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="GridMaterial_ALBEDO"
+    imageFile="data/FPSGameplay/Images/GridMaterial"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="/GridMaterial"
+    VersionId="1" />

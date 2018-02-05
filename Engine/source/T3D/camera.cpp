@@ -1860,12 +1860,12 @@ void Camera::renderView(Point2I windowResolution)
 
    bool hasGbuffer = RenderPipeline::supportsGBuffer();
 
-   /*PostEffect *preCapture = dynamic_cast<PostEffect*>(Sim::findObject("AL_PreCapture"));
-   PostEffect *deferredShading = dynamic_cast<PostEffect*>(Sim::findObject("AL_DeferredShading"));
+   //PostEffect *preCapture = dynamic_cast<PostEffect*>(Sim::findObject("AL_PreCapture"));
+   //PostEffect *deferredShading = dynamic_cast<PostEffect*>(Sim::findObject("AL_DeferredShading"));
    //if (preCapture)
    //   preCapture->enable();
-   if (deferredShading)
-      deferredShading->disable();*/
+   //if (deferredShading)
+   //   deferredShading->disable();
 
    // Save the current transforms so we can restore
    // it for child control rendering below.
@@ -1923,7 +1923,7 @@ void Camera::renderView(Point2I windowResolution)
    //if (preCapture)
    //   preCapture->disable();
    //if (deferredShading)
-   //   deferredShading->enable();
+   //    deferredShading->enable();
 }
 
 //=============================================================================

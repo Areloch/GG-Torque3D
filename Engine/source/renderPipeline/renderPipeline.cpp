@@ -269,7 +269,7 @@ void RenderPipeline::renderFrame(GFXTextureTargetRef* target, MatrixF transform,
    if (!GFX->allowRender() || GFX->canCurrentlyRender())
       return;
 
-   PROFILE_START(GameFunctions_RenderFrame);
+   PROFILE_START(RenderPipeline_RenderFrame);
 
    GFX->setActiveRenderTarget(*target);
    if (!GFX->getActiveRenderTarget())
@@ -324,11 +324,11 @@ void RenderPipeline::renderFrame(GFXTextureTargetRef* target, MatrixF transform,
    }*/
 
    // Begin GFX
-   PROFILE_START(GameFunctions_RenderFrame_GFXBeginScene);
+   PROFILE_START(RenderPipeline_RenderFrame_GFXBeginScene);
    bool beginSceneRes = GFX->beginScene();
    PROFILE_END();
 
-   PROFILE_START(GameFunctions_RenderFrame_OffscreenCanvases);
+   PROFILE_START(RenderPipeline_RenderFrame_OffscreenCanvases);
 
    // Render all offscreen canvas objects here since we may need them in the render loop
    if (GuiOffscreenCanvas::sList.size() != 0)
@@ -420,11 +420,16 @@ void RenderPipeline::renderFrame(GFXTextureTargetRef* target, MatrixF transform,
       PFXMGR->setFrameMatrices(mSaveModelview, mSaveProjection);
 
       //renderWorld(guiViewport);
-      PROFILE_START(GameFunctions_RenderFrame_RenderWorld);
+      PROFILE_START(RenderPipeline_RenderFrame_RenderWorld);
       FrameAllocator::setWaterMark(0);
 
       //gClientSceneGraph->renderScene(SPT_Reflect, typeMask);
-      gClientSceneGraph->renderScene(SPT_Diffuse, typeMask);
+      //gClientSceneGraph->renderScene(SPT_Diffuse, typeMask);
+
+      SceneCameraState cameraState = SceneCameraState::fromGFX();
+      SceneRenderState renderState(gClientSceneGraph, SPT_Diffuse, cameraState);
+
+      renderScene(&renderState, typeMask);
 
       // renderScene leaves some states dirty, which causes problems if GameTSCtrl is the last Gui object rendered
       GFX->updateStates();
@@ -435,7 +440,7 @@ void RenderPipeline::renderFrame(GFXTextureTargetRef* target, MatrixF transform,
       PROFILE_END();
    }
 
-   PROFILE_START(GameFunctions_RenderFrame_GFXEndScene);
+   PROFILE_START(RenderPipeline_RenderFrame_GFXEndScene);
    GFX->endScene();
    PROFILE_END();
 
@@ -451,11 +456,11 @@ void RenderPipeline::renderFrame(GFXTextureTargetRef* target, MatrixF transform,
 //
 void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask)
 {
-   PROFILE_SCOPE(SceneGraph_renderScene);
+   PROFILE_SCOPE(RenderPipeline_renderScene);
 
    // Get the lights for rendering the scene.
 
-   PROFILE_START(SceneGraph_registerLights);
+   PROFILE_START(RenderPipeline_registerLights);
    LIGHTMGR->registerGlobalLights(&renderState->getCullingFrustum(), false);
    PROFILE_END();
 
@@ -593,7 +598,7 @@ void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask)
 
    // Remove the previously registered lights.
 
-   PROFILE_START(SceneGraph_unregisterLights);
+   PROFILE_START(RenderPipeline_unregisterLights);
    LIGHTMGR->unregisterAllLights();
    PROFILE_END();
 }
@@ -608,7 +613,7 @@ void RenderPipeline::_renderScene(SceneRenderState* renderState, U32 objectMask)
 
    //AssertFatal(this == gClientSceneGraph, "SceneManager::_buildSceneGraph - Only the client scenegraph can support this call!");
 
-   PROFILE_SCOPE(SceneGraph_batchRenderImages);
+   PROFILE_SCOPE(RenderPipeline_batchRenderImages);
 
    // In the editor, override the type mask for diffuse passes.
 

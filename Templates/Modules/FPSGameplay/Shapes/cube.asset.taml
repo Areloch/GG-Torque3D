@@ -1,0 +1,9 @@
+<ShapeAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="cube"
+    fileName="data/FPSGameplay/Shapes/cube.dae"
+    isNewShape="1"
+    materialSlot1="@Asset=FPSGameplay:GridMaterial"
+    originalFilePath="E:/Gamedev/T3DMIT/RTVisualizer/My Projects/RTVisualizer/game/data/FPSGameplay/art/shapes/cube/cube.dae"
+    VersionId="1" />

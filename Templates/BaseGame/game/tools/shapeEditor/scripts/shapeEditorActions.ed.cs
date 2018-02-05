@@ -346,20 +346,16 @@ function ActionAddSequence::doit( %this )
       %assetDef = AssetDatabase.acquireAsset(%this.seqName);
       %moduleName = getWord(getToken(%this.seqName, ":", 0),0);
       
-      //TODO, properly ignore <rootpose> and ambient entries for our idx values, but only if they're there!
-      %idx = ShapeEdSequenceList.rowCount() - 2;
+      %idx = ShapeEdSequenceList.rowCount();
       
-      %animSet = "ShapeEditorPlugin.selectedAssetDef.animationSequence"@%idx@"=\"@Asset="@%moduleName@":"@%assetDef.assetName@"\";";
-      eval(%animSet);
+      %matSet = "ShapeEditorPlugin.selectedAssetDef.animationSequence"@%idx@"=\"@Asset="@%moduleName@":"@%this.seqName.assetName@"\";";
+      eval(%matSet);
       
       %assetPath = AssetDatabase.getAssetFilePath(ShapeEditorPlugin.selectedAssetId);
       
       %assetImportSuccessful = TAMLWrite(ShapeEditorPlugin.selectedAssetDef, %assetPath); 
       
       AssetDatabase.refreshAsset(ShapeEditorPlugin.selectedAssetId);
-      
-      //force a refresh
-      ShapeEdPropWindow.update_onShapeSelectionChanged();
       
       return true;
    }
