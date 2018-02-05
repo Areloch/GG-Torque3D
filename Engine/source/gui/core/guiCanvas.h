@@ -212,6 +212,7 @@ public:
    virtual void onRemove();
 
    void setMenuBar(SimObject *obj);
+   SimObject* getMenuBar() { return mMenuBarCtrl; }
 
    static void initPersistFields();
 
@@ -335,6 +336,9 @@ public:
 
    /// Returns the point, in screenspace, at which the cursor is located.
    virtual Point2I getCursorPos();
+
+   /// Returns the point, in local coordinates, at which the cursor is located
+   virtual Point2I getCursorPosLocal() { return Point2I(S32(mCursorPt.x), S32(mCursorPt.y)); }
 
    /// Enable/disable rendering of the cursor.
    /// @param   state    True if we should render cursor
