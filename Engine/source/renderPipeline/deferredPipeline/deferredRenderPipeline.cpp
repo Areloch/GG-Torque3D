@@ -8,7 +8,7 @@ DeferredRenderPipeline::DeferredRenderPipeline()
 
 void DeferredRenderPipeline::setupBuffers()
 {
-   mSupportGBuffer = true;
+   /*mSupportGBuffer = true;
 
    //Albedo
    GBuffer::Target AlebdoTarget;
@@ -75,5 +75,5 @@ void DeferredRenderPipeline::setupBuffers()
          mPipelineName, RoughnessTarget.targetName);
       return;
    }
-   mGBuffer.targets.push_back(RoughnessTarget);
+   mGBuffer.targets.push_back(RoughnessTarget);*/
 }

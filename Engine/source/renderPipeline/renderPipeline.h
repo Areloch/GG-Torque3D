@@ -1,13 +1,45 @@
 #pragma once
 #include "console/engineAPI.h"
 
-class RenderPipeline
+#include "console/simObject.h"
+
+#include "gfx/gfxDevice.h"
+
+#ifndef _TSSHAPEINSTANCE_H_
+#include "ts/tsShapeInstance.h"
+#endif
+
+class RenderPipeline : public SimObject
 {
+   typedef SimObject Parent;
+
+   U32 mLastRenderTime;
+
+   /// Name of the model loaded for display.
+   String mModelName;
+
+   /// Model being displayed in the view.
+   TSShapeInstance* mModel;
+
 protected:
 	StringTableEntry mPipelineName;
    StringTableEntry mDescription;
 
    static RenderPipeline* smRenderPipeline;
+
+   enum NormalStorage
+   {
+      CartesianXYZ,
+      CartesianXY,
+      Spherical,
+      LambertAzimuthal,
+   };
+
+   enum NormalSpace
+   {
+      WorldSpace,
+      ViewSpace,
+   };
 
 	struct GBuffer
 	{
@@ -61,7 +93,7 @@ protected:
 		U32 getGBufferSize();
 
 		//Used to validate our targets so we don't have multiple channels overlapped
-		bool setTargetChannels(Target *_target, RenderTargets _renderTarget, U32 _channels);
+		bool setBuffer(StringTableEntry _bufferName, RenderTargets _renderTarget, GFXFormat _targetFormat);
 	};
 
 	bool mSupportGBuffer;
@@ -74,17 +106,27 @@ protected:
 
 public:
 	RenderPipeline();
+   DECLARE_CONOBJECT(RenderPipeline);
+
+   static void initPersistFields();
+
+   bool onAdd();
+   void onRemove();
 
 	virtual void render();
+   void renderFrame(GFXTextureTargetRef* target, MatrixF transform, Frustum frustum, U32 typeMask, ColorI canvasClearColor);
+
+   void renderScene(SceneRenderState* renderState, U32 objectMask);
+   void _renderScene(SceneRenderState* renderState, U32 objectMask);
 
 	virtual void setupBuffers();
 
    static RenderPipeline* getRenderPipeline()
    {
-      if (smRenderPipeline == nullptr)
+      /*if (smRenderPipeline == nullptr)
       {
          smRenderPipeline = new RenderPipeline();
-      }
+      }*/
 
       return smRenderPipeline;
    }
@@ -97,5 +139,31 @@ public:
       }
 
       return smRenderPipeline->mSupportGBuffer;
+   }
+
+   void initialize();
+
+   bool setGBufferTarget(String bufferName, String targetName, String formatName);
+
+   RenderPipeline* initPipeline()
+   {
+      if (smRenderPipeline == nullptr)
+      {
+         smRenderPipeline = this;
+      }
+      else
+      {
+         Con::errorf("Attempted to init the Render Pipeline, but a pipeline was already activated!");
+      }
+
+      return smRenderPipeline;
+   }
+
+   void shutDownPipeline()
+   {
+      if (smRenderPipeline != nullptr)
+      {
+         delete smRenderPipeline;
+      }
    }
 };

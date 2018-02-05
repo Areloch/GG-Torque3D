@@ -249,9 +249,9 @@ bool GuiCanvas::onAdd()
       mPlatformWindow->setInputController( dynamic_cast<IProcessInput*>(this) );
    }
 
-   DeferredRenderPipeline::initPipeline();
+   //DeferredRenderPipeline::initPipeline();
 
-   RenderPipeline::getRenderPipeline()->setupBuffers();
+   //RenderPipeline::getRenderPipeline()->setupBuffers();
 
    // Need to get painted, too! :)
    Process::notify(this, &GuiCanvas::paint, PROCESS_RENDER_ORDER);
@@ -381,6 +381,9 @@ void GuiCanvas::handlePaintEvent(WindowId did)
       VIDCAP->capture();
 
    renderFrame(false);
+
+   //if (RenderPipeline::getRenderPipeline())
+   //   RenderPipeline::getRenderPipeline()->render();
 }
 
 void GuiCanvas::handleAppEvent( WindowId did, S32 event )

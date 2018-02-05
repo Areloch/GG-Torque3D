@@ -1855,14 +1855,17 @@ void Camera::renderView(Point2I windowResolution)
 {
    GFXDEBUGEVENT_SCOPE(Camera_renderView, ColorI::WHITE);
 
+   if (RenderPipeline::getRenderPipeline() == nullptr)
+      return;
+
    bool hasGbuffer = RenderPipeline::supportsGBuffer();
 
-   PostEffect *preCapture = dynamic_cast<PostEffect*>(Sim::findObject("AL_PreCapture"));
+   /*PostEffect *preCapture = dynamic_cast<PostEffect*>(Sim::findObject("AL_PreCapture"));
    PostEffect *deferredShading = dynamic_cast<PostEffect*>(Sim::findObject("AL_DeferredShading"));
    //if (preCapture)
    //   preCapture->enable();
    if (deferredShading)
-      deferredShading->disable();
+      deferredShading->disable();*/
 
    // Save the current transforms so we can restore
    // it for child control rendering below.
@@ -1912,14 +1915,15 @@ void Camera::renderView(Point2I windowResolution)
    //if (mCustomFilters)
       renderMask = -1;
 
-   renderFrame(&mBaseTarget, matView, frustum, renderMask, gCanvasClearColor);
+   //renderFrame(&mBaseTarget, matView, frustum, renderMask, gCanvasClearColor);
+   RenderPipeline::getRenderPipeline()->renderFrame(&mBaseTarget, matView, frustum, renderMask, gCanvasClearColor);
 
    mBaseTarget->resolve();
 
    //if (preCapture)
    //   preCapture->disable();
-   if (deferredShading)
-      deferredShading->enable();
+   //if (deferredShading)
+   //   deferredShading->enable();
 }
 
 //=============================================================================

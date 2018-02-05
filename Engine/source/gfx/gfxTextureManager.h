@@ -42,7 +42,6 @@
 #include "core/util/tSignal.h"
 #endif
 
-
 namespace Torque
 {
    class Path;
