@@ -11,7 +11,7 @@
 #include "lighting/lightManager.h"
 #include "lighting/lightInfo.h"
 
-//#include "T3D/systems/render/meshRenderSystem.h"
+#include "T3D/systems/render/meshRenderSystem.h"
 
 #include "core/resourceManager.h"
 
@@ -782,7 +782,7 @@ void RenderPipeline::_renderScene(SceneRenderState* renderState, U32 objectMask)
 
    //mCurrentRenderState = NULL;
 
-   MeshRenderSystem::render(this, renderState);
+   MeshRenderSystem::render(nullptr, renderState);
 }
 
 /*bool RenderPipeline::GBuffer::setTargetChannels(Target *_target, RenderPipeline::GBuffer::RenderTargets _renderTarget, U32 _channels)

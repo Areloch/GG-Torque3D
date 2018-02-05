@@ -1,4 +1,4 @@
-new GameTSCtrl(PlayGui) {
+new GuiRenderTargetVizCtrl(PlayGui) {
    isContainer = "1";
    profile = "GuiContentProfile";
    horizSizing = "right";
