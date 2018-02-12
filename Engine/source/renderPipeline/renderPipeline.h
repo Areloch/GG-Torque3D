@@ -104,6 +104,15 @@ protected:
 	bool mSupportSSAO;
 	bool mSupportHDR;
 
+   //
+   Vector< SceneObject* > mBatchQueryList;
+
+   //A cache list of objects that made it through culling, so we don't have to attempt to re-test
+   //visibility of objects later.
+   Vector< SceneObject* > mRenderedObjectsList;
+
+   LinearColorF mAmbientLightColor;
+
 public:
 	RenderPipeline();
    DECLARE_CONOBJECT(RenderPipeline);
@@ -118,6 +127,8 @@ public:
 
    void renderScene(SceneRenderState* renderState, U32 objectMask);
    void _renderScene(SceneRenderState* renderState, U32 objectMask);
+
+   void renderNonSystems(SceneRenderState* renderState, U32 objectMask);
 
 	virtual void setupBuffers();
 

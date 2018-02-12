@@ -20,6 +20,14 @@
 #include "gui/core/guiCanvas.h"
 #include "gui/core/guiOffscreenCanvas.h"
 
+#include "scene/zones/sceneTraversalState.h"
+#include "scene/zones/sceneRootZone.h"
+#include "scene/zones/sceneZoneSpace.h"
+
+#include "T3D/gameFunctions.h"
+
+#include "gui/3d//guiTSControl.h"
+
 RenderPipeline* RenderPipeline::smRenderPipeline(0);
 
 IMPLEMENT_CONOBJECT(RenderPipeline);
@@ -398,8 +406,9 @@ void RenderPipeline::renderFrame(GFXTextureTargetRef* target, MatrixF transform,
       // mLastCameraQuery.cameraMatrix is supposed to contain the camera-to-world
       // transform. In-place invert would save a copy but mess up any GUIs that
       // depend on that value.
-      //CameraQuery camera;
-      //GameProcessCameraQuery(&camera);
+      CameraQuery camera;
+      GameUpdateCameraFov();
+      bool camQuery = GameProcessCameraQuery(&camera);
 
       MatrixF worldToCamera = transform;
 
@@ -419,17 +428,17 @@ void RenderPipeline::renderFrame(GFXTextureTargetRef* target, MatrixF transform,
       // Give the post effect manager the worldToCamera, and cameraToScreen matrices
       PFXMGR->setFrameMatrices(mSaveModelview, mSaveProjection);
 
-      //renderWorld(guiViewport);
+      // GameRenderWorld()
       PROFILE_START(RenderPipeline_RenderFrame_RenderWorld);
       FrameAllocator::setWaterMark(0);
 
       //gClientSceneGraph->renderScene(SPT_Reflect, typeMask);
-      //gClientSceneGraph->renderScene(SPT_Diffuse, typeMask);
+      gClientSceneGraph->renderScene(SPT_Diffuse, typeMask);
 
       SceneCameraState cameraState = SceneCameraState::fromGFX();
       SceneRenderState renderState(gClientSceneGraph, SPT_Diffuse, cameraState);
 
-      renderScene(&renderState, typeMask);
+      //renderScene(&renderState, typeMask);
 
       // renderScene leaves some states dirty, which causes problems if GameTSCtrl is the last Gui object rendered
       GFX->updateStates();
@@ -438,6 +447,7 @@ void RenderPipeline::renderFrame(GFXTextureTargetRef* target, MatrixF transform,
          "Error, someone didn't reset the water mark on the frame allocator!");
       FrameAllocator::setWaterMark(0);
       PROFILE_END();
+      // /GameRenderWorld()
    }
 
    PROFILE_START(RenderPipeline_RenderFrame_GFXEndScene);
@@ -472,37 +482,44 @@ void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask)
    // Note that we retain the starting zone information here and pass it
    // on to renderSceneNoLights so that we don't need to look it up twice.
 
-   /*if (renderState->isDiffusePass())
+   if (renderState->isDiffusePass())
    {
-      if (!baseObject && getZoneManager())
+      SceneZoneSpace* baseObject = nullptr;
+      U32 baseZone;
+
+      if (!baseObject && gClientSceneGraph->getZoneManager())
       {
-         getZoneManager()->findZone(renderState->getCameraPosition(), baseObject, baseZone);
+         gClientSceneGraph->getZoneManager()->findZone(renderState->getCameraPosition(), baseObject, baseZone);
          AssertFatal(baseObject != NULL, "SceneManager::renderScene - findZone() did not return an object");
       }
 
       LinearColorF zoneAmbient;
       if (baseObject && baseObject->getZoneAmbientLightColor(baseZone, zoneAmbient))
-         mAmbientLightColor.setTargetValue(zoneAmbient);
+         mAmbientLightColor = zoneAmbient;
       else
       {
          const LightInfo* sunlight = LIGHTMGR->getSpecialLight(LightManager::slSunLightType);
          if (sunlight)
-            mAmbientLightColor.setTargetValue(sunlight->getAmbient());
+            //mAmbientLightColor.setTargetValue(sunlight->getAmbient());
+            mAmbientLightColor = sunlight->getAmbient();
       }
 
-      renderState->setAmbientLightColor(mAmbientLightColor.getCurrentValue());
-   }*/
+      renderState->setAmbientLightColor(mAmbientLightColor);
+   }
 
    // Trigger the pre-render signal.
 
    //NOTE:
    //This is pretty much just used for some debug rendering stuff in the editors
    //Re-establish in a better setup later
-   /*PROFILE_START(SceneGraph_preRenderSignal);
-   mCurrentRenderState = renderState;
-   getPreRenderSignal().trigger(this, renderState);
-   mCurrentRenderState = NULL;
-   PROFILE_END();*/
+
+   //Turns out this part is mandatory for ensuring lighting is properly set up.
+   //without it, we get the dreaded shadowSoftness error in vectorLight's shader
+   PROFILE_START(RenderPipeline_preRenderSignal);
+   //mCurrentRenderState = renderState;
+   gClientSceneGraph->getPreRenderSignal().trigger(gClientSceneGraph, renderState);
+   //mCurrentRenderState = NULL;
+   PROFILE_END();
 
    // Render the scene.
 
@@ -590,11 +607,11 @@ void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask)
    //Everything before this was just filling the buffer targets for this stage to actually utilize for the final
    //Well, at least, in a deferred renderer context
    //In a non-deferred context, all the magic just happened and why are you even here?
-   /*PROFILE_START(SceneGraphRender_postRenderSignal);
-   mCurrentRenderState = renderState;
-   getPostRenderSignal().trigger(this, renderState);
-   mCurrentRenderState = NULL;
-   PROFILE_END();*/
+   PROFILE_START(RenderPipeline_postRenderSignal);
+   //mCurrentRenderState = renderState;
+   gClientSceneGraph->getPostRenderSignal().trigger(gClientSceneGraph, renderState);
+   //mCurrentRenderState = NULL;
+   PROFILE_END();
 
    // Remove the previously registered lights.
 
@@ -605,56 +622,66 @@ void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask)
 
 void RenderPipeline::_renderScene(SceneRenderState* renderState, U32 objectMask)
 {
+   renderNonSystems(renderState, objectMask);
+
+   MeshRenderSystem::render(nullptr, renderState);
+}
+
+void RenderPipeline::renderNonSystems(SceneRenderState* renderState, U32 objectMask)
+{
    // Set the current state.
 
    //mCurrentRenderState = renderState;
+
+   SceneZoneSpace* baseObject = nullptr;
+   U32 baseZone;
 
    // Render.
 
    //AssertFatal(this == gClientSceneGraph, "SceneManager::_buildSceneGraph - Only the client scenegraph can support this call!");
 
-   PROFILE_SCOPE(RenderPipeline_batchRenderImages);
+   PROFILE_SCOPE(RenderPipeline_renderNonSystems);
 
    // In the editor, override the type mask for diffuse passes.
 
-   //if (gEditingMission && state->isDiffusePass())
+   //if (gEditingMission && renderState->isDiffusePass())
    //   objectMask = EDITOR_RENDER_TYPEMASK;
 
    // Update the zoning state and traverse zones.
 
    //NOTE
    //Systems will deal with the rendering of objects, this is unneeded here
-   /*if (getZoneManager())
+   if (gClientSceneGraph->getZoneManager())
    {
       // Update.
 
-      getZoneManager()->updateZoningState();
+      gClientSceneGraph->getZoneManager()->updateZoningState();
 
       // If zone culling isn't disabled, traverse the
       // zones now.
 
-      if (!state->getCullingState().disableZoneCulling())
+      if (!renderState->getCullingState().disableZoneCulling())
       {
          // Find the start zone if we haven't already.
 
          if (!baseObject)
          {
-            getZoneManager()->findZone(state->getCameraPosition(), baseObject, baseZone);
+            gClientSceneGraph->getZoneManager()->findZone(renderState->getCameraPosition(), baseObject, baseZone);
             AssertFatal(baseObject != NULL, "SceneManager::_renderScene - findZone() did not return an object");
          }
 
          // Traverse zones starting in base object.
 
-         SceneTraversalState traversalState(&state->getCullingState());
-         PROFILE_START(Scene_traverseZones);
+         SceneTraversalState traversalState(&renderState->getCullingState());
+         PROFILE_START(RenderPipeline_traverseZones);
          baseObject->traverseZones(&traversalState, baseZone);
          PROFILE_END();
 
          // Set the scene render box to the area we have traversed.
 
-         state->setRenderArea(traversalState.getTraversedArea());
+         renderState->setRenderArea(traversalState.getTraversedArea());
       }
-   }*/
+   }
 
    // Set the query box for the container query.  Never
    // make it larger than the frustum's AABB.  In the editor,
@@ -662,7 +689,7 @@ void RenderPipeline::_renderScene(SceneRenderState* renderState, U32 objectMask)
    // the opportunity to render editor visualizations even if
    // they are otherwise not in view.
 
-   /*if (!state->getCullingFrustum().getBounds().isOverlapped(state->getRenderArea()))
+   if (!renderState->getCullingFrustum().getBounds().isOverlapped(renderState->getRenderArea()))
    {
       // This handles fringe cases like flying backwards into a zone where you
       // end up pretty much standing on a zone border and looking directly into
@@ -671,16 +698,16 @@ void RenderPipeline::_renderScene(SceneRenderState* renderState, U32 objectMask)
       // distance).
 
       return;
-   }*/
-
-   /*Box3F queryBox = state->getCullingFrustum().getBounds();
-   if (!gEditingMission)
-   {
-      queryBox.minExtents.setMax(state->getRenderArea().minExtents);
-      queryBox.maxExtents.setMin(state->getRenderArea().maxExtents);
    }
 
-   PROFILE_START(Scene_cullObjects);
+   Box3F queryBox = renderState->getCullingFrustum().getBounds();
+   //if (!gEditingMission)
+   {
+      queryBox.minExtents.setMax(renderState->getRenderArea().minExtents);
+      queryBox.maxExtents.setMin(renderState->getRenderArea().maxExtents);
+   }
+
+   PROFILE_START(RenderPipeline_cullObjects);
 
    //TODO: We should split the codepaths here based on whether the outdoor zone has visible space.
    //    If it has, we should use the container query-based path.
@@ -690,15 +717,15 @@ void RenderPipeline::_renderScene(SceneRenderState* renderState, U32 objectMask)
    // Gather all objects that intersect the scene render box.
 
    mBatchQueryList.clear();
-   getContainer()->findObjectList(queryBox, objectMask, &mBatchQueryList);
+   gClientSceneGraph->getContainer()->findObjectList(queryBox, objectMask, &mBatchQueryList);
 
    // Cull the list.
 
-   U32 numRenderObjects = state->getCullingState().cullObjects(
+   U32 numRenderObjects = renderState->getCullingState().cullObjects(
       mBatchQueryList.address(),
       mBatchQueryList.size(),
-      !state->isDiffusePass() ? SceneCullingState::CullEditorOverrides : 0 // Keep forced editor stuff out of non-diffuse passes.
-   );
+      !renderState->isDiffusePass() ? SceneCullingState::CullEditorOverrides : 0 // Keep forced editor stuff out of non-diffuse passes.
+      );
 
    //HACK: If the control object is a Player and it is not in the render list, force
    // it into it.  This really should be solved by collision bounds being separate from
@@ -707,10 +734,10 @@ void RenderPipeline::_renderScene(SceneRenderState* renderState, U32 objectMask)
    // Note that we are forcing the player object into ALL passes here but such
    // is the power of proliferation of things done wrong.
 
-   GameConnection* connection = GameConnection::getConnectionToServer();
+   /*GameConnection* connection = GameConnection::getConnectionToServer();
    if (connection)
    {
-      Player* player = dynamic_cast< Player* >(connection->getControlObject());
+      Player* player = dynamic_cast<Player*>(connection->getControlObject());
       if (player)
       {
          mBatchQueryList.setSize(numRenderObjects);
@@ -720,7 +747,7 @@ void RenderPipeline::_renderScene(SceneRenderState* renderState, U32 objectMask)
             numRenderObjects++;
          }
       }
-   }
+   }*/
 
    PROFILE_END();
 
@@ -733,15 +760,15 @@ void RenderPipeline::_renderScene(SceneRenderState* renderState, U32 objectMask)
 
    // Render the remaining objects.
 
-   PROFILE_START(Scene_renderObjects);
-   state->renderObjects(mBatchQueryList.address(), numRenderObjects);
+   PROFILE_START(RenderPipeline_renderNonSystemObjects);
+   renderState->renderObjects(mBatchQueryList.address(), numRenderObjects);
    PROFILE_END();
 
    // Render bounding boxes, if enabled.
 
-   if (smRenderBoundingBoxes && state->isDiffusePass())
+   /*if (smRenderBoundingBoxes && renderState->isDiffusePass())
    {
-      GFXDEBUGEVENT_SCOPE(Scene_renderBoundingBoxes, ColorI::WHITE);
+      GFXDEBUGEVENT_SCOPE(RenderPipeline_renderBoundingBoxes, ColorI::WHITE);
 
       GameBase* cameraObject = 0;
       if (connection)
@@ -774,21 +801,20 @@ void RenderPipeline::_renderScene(SceneRenderState* renderState, U32 objectMask)
       }
    }*/
 
-/*#ifdef TORQUE_DEBUG
+   #ifdef TORQUE_DEBUG
 
    // If frustum is locked and this is a diffuse pass, render the culling volumes of
    // zones that are selected (or the volumes of the outdoor zone if no zone is
    // selected).
 
-   if (gEditingMission && renderState->isDiffusePass() && smLockDiffuseFrustum)
-      renderState->getCullingState().debugRenderCullingVolumes();
+   //if (gEditingMission && renderState->isDiffusePass() && smLockDiffuseFrustum)
+   //   renderState->getCullingState().debugRenderCullingVolumes();
 
-#endif*/
+   #endif
 
    //mCurrentRenderState = NULL;
-
-   MeshRenderSystem::render(nullptr, renderState);
 }
+
 
 /*bool RenderPipeline::GBuffer::setTargetChannels(Target *_target, RenderPipeline::GBuffer::RenderTargets _renderTarget, U32 _channels)
 {
