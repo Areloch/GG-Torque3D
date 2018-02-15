@@ -237,9 +237,9 @@ void RenderDeferredMgr::addElement( RenderInst *inst )
    PROFILE_SCOPE( RenderDeferredMgr_addElement )
 
    // Skip out if this bin is disabled.
-   if (  gClientSceneGraph->getCurrentRenderState() &&
-         gClientSceneGraph->getCurrentRenderState()->disableAdvancedLightingBins() )
-      return;
+   //if (  gClientSceneGraph->getCurrentRenderState() &&
+   //      gClientSceneGraph->getCurrentRenderState()->disableAdvancedLightingBins() )
+   //   return;
 
    // First what type of render instance is it?
    const bool isDecalMeshInst = ((inst->type == RenderPassManager::RIT_Decal)||(inst->type == RenderPassManager::RIT_DecalRoad));

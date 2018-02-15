@@ -469,6 +469,7 @@ void SceneManager::_renderScene( SceneRenderState* state, U32 objectMask, SceneZ
    mRenderedObjectsList.clear();
    for (U32 i = 0; i < numRenderObjects; ++i)
    {
+      SceneObject* bleh = mBatchQueryList[i];
       mRenderedObjectsList.push_back(mBatchQueryList[i]);
    }
 

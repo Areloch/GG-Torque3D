@@ -1855,7 +1855,7 @@ void Camera::renderView(Point2I windowResolution)
 {
    GFXDEBUGEVENT_SCOPE(Camera_renderView, ColorI::WHITE);
 
-   if (RenderPipeline::getRenderPipeline() == nullptr)
+   if (RenderPipeline::get() == nullptr)
       return;
 
    bool hasGbuffer = RenderPipeline::supportsGBuffer();
@@ -1906,7 +1906,9 @@ void Camera::renderView(Point2I windowResolution)
    F32 nearDist = mNearDist;
    F32 farDist = mFarDist;
 
-   MathUtils::makeFrustum(&left, &right, &top, &bottom, mDegToRad(mFoV), 1.0f, nearDist);
+   F32 frustumAspectRatio = (F32)windowResolution.x / (F32)windowResolution.y;
+
+   MathUtils::makeFrustum(&left, &right, &top, &bottom, mDegToRad(mFoV), frustumAspectRatio, nearDist);
    Frustum frustum(false, left, right, top, bottom, nearDist, farDist);
 
    U32 renderMask = DEFAULT_RENDER_TYPEMASK;
@@ -1916,7 +1918,7 @@ void Camera::renderView(Point2I windowResolution)
       renderMask = -1;
 
    //renderFrame(&mBaseTarget, matView, frustum, renderMask, gCanvasClearColor);
-   RenderPipeline::getRenderPipeline()->renderFrame(&mBaseTarget, matView, frustum, renderMask, gCanvasClearColor);
+   RenderPipeline::get()->renderFrame(&mBaseTarget, matView, frustum, renderMask, gCanvasClearColor);
 
    mBaseTarget->resolve();
 

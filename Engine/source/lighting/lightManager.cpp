@@ -38,6 +38,7 @@
 #include "console/engineAPI.h"
 #include "renderInstance/renderDeferredMgr.h"
 
+#include "renderPipeline/renderPipeline.h"
 
 Signal<void(const char*,bool)> LightManager::smActivateSignal;
 LightManager *LightManager::smActiveLM = NULL;
@@ -227,14 +228,14 @@ void LightManager::registerGlobalLights( const Frustum *frustum, bool staticLigh
       // Cull the lights using the frustum.
       getSceneManager()->getContainer()->findObjectList( *frustum, lightMask, &activeLights );
 
-      for (U32 i = 0; i < activeLights.size(); ++i)
+      /*for (U32 i = 0; i < activeLights.size(); ++i)
       {
          if (!getSceneManager()->mRenderedObjectsList.contains(activeLights[i]))
          {
             activeLights.erase(i);
             --i;
          }
-      }
+      }*/
 
       // Store the culling position for sun placement
       // later... see setSpecialLight.

@@ -9,6 +9,12 @@
 #include "ts/tsShapeInstance.h"
 #endif
 
+#include "scene/sceneManager.h"
+#include "scene/sceneCameraState.h"
+
+#include "lighting/shadowManager.h"
+#include "lighting/shadowMap/shadowMapPass.h"
+
 class RenderPipeline : public SimObject
 {
    typedef SimObject Parent;
@@ -104,6 +110,7 @@ protected:
 	bool mSupportSSAO;
 	bool mSupportHDR;
 
+public:
    //
    Vector< SceneObject* > mBatchQueryList;
 
@@ -112,6 +119,15 @@ protected:
    Vector< SceneObject* > mRenderedObjectsList;
 
    LinearColorF mAmbientLightColor;
+
+   SceneRenderState* mCurrentRenderState;
+
+   //
+   //
+   //Lighting
+   ShadowMapPass *mShadowMapPass;
+   LightShadowMap *mCurrentShadowMap;
+   LightShadowMap *mCurrentDynamicShadowMap;
 
 public:
 	RenderPipeline();
@@ -125,14 +141,14 @@ public:
 	virtual void render();
    void renderFrame(GFXTextureTargetRef* target, MatrixF transform, Frustum frustum, U32 typeMask, ColorI canvasClearColor);
 
-   void renderScene(SceneRenderState* renderState, U32 objectMask);
-   void _renderScene(SceneRenderState* renderState, U32 objectMask);
+   //void renderScene(SceneRenderState* renderState, U32 objectMask);
+   //void _renderScene(SceneRenderState* renderState, U32 objectMask);
 
-   void renderNonSystems(SceneRenderState* renderState, U32 objectMask);
+   //void renderNonSystems(SceneRenderState* renderState, U32 objectMask);
 
 	virtual void setupBuffers();
 
-   static RenderPipeline* getRenderPipeline()
+   static RenderPipeline* get()
    {
       /*if (smRenderPipeline == nullptr)
       {
@@ -153,6 +169,7 @@ public:
    }
 
    void initialize();
+   void shutDown();
 
    bool setGBufferTarget(String bufferName, String targetName, String formatName);
 
@@ -177,4 +194,26 @@ public:
          delete smRenderPipeline;
       }
    }
+
+   //
+   //
+   //
+   //
+   /// Render the scene with the default render pass.
+   /// @note This uses the current GFX state (transforms, viewport, frustum) to initialize
+   ///   the render state.
+   static SceneCameraState smLockedDiffuseCamera;
+
+   void renderScene(ScenePassType passType, U32 objectMask = DEFAULT_RENDER_TYPEMASK);
+
+   /// Render the scene with a custom rendering pass.
+   void renderScene(SceneRenderState *state, U32 objectMask = DEFAULT_RENDER_TYPEMASK, SceneZoneSpace* baseObject = NULL, U32 baseZone = 0);
+
+   /// Render the scene with a custom rendering pass and no lighting set up.
+   void renderSceneNoLights(SceneRenderState *state, U32 objectMask = DEFAULT_RENDER_TYPEMASK, SceneZoneSpace* baseObject = NULL, U32 baseZone = 0);
+
+   void _renderScene(SceneRenderState* state,
+      U32 objectMask = (U32)-1,
+      SceneZoneSpace* baseObject = NULL,
+      U32 baseZone = 0);
 };

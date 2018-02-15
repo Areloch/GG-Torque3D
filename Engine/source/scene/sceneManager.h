@@ -141,8 +141,10 @@ class SceneManager
 
       /// The currently active render state or NULL if we're
       /// not in the process of rendering.
+public:
       SceneRenderState* mCurrentRenderState;
 
+protected:
       F32 mVisibleDistance;
 
       F32 mVisibleGhostDistance;

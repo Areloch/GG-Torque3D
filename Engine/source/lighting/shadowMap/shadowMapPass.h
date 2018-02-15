@@ -55,6 +55,7 @@ public:
 
    ShadowMapPass() {}   // Only called by ConsoleSystem
    ShadowMapPass(LightManager* LightManager, ShadowMapManager* ShadowManager);
+   ShadowMapPass(LightManager* lightManager);
    virtual ~ShadowMapPass();
 
    //
@@ -65,6 +66,8 @@ public:
    void render(   SceneManager *sceneGraph, 
                   const SceneRenderState *diffuseState, 
                   U32 objectMask );
+
+   void render(const SceneRenderState *diffuseState, U32 objectMask);
 
    /// Return the type of pass this is
    virtual const String& getPassType() const { return PassTypeName; };

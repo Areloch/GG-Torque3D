@@ -28,9 +28,18 @@
 
 #include "gui/3d//guiTSControl.h"
 
+#include "math/mathUtils.h"
+
+#include "lighting/advanced/advancedLightBinManager.h"
+#include "lighting/shadowMap/shadowMapManager.h"
+
+#define RENDER_PIPELINE
+
 RenderPipeline* RenderPipeline::smRenderPipeline(0);
 
 IMPLEMENT_CONOBJECT(RenderPipeline);
+
+SceneCameraState RenderPipeline::smLockedDiffuseCamera = SceneCameraState(RectI(), Frustum(), MatrixF(), MatrixF());
 
 RenderPipeline::RenderPipeline()
 {
@@ -100,6 +109,13 @@ void RenderPipeline::initialize()
       false);
 
    setupBuffers();
+
+   mShadowMapPass = new ShadowMapPass(LIGHTMGR);
+}
+
+void RenderPipeline::shutDown()
+{
+
 }
 
 void RenderPipeline::setupBuffers()
@@ -433,12 +449,9 @@ void RenderPipeline::renderFrame(GFXTextureTargetRef* target, MatrixF transform,
       FrameAllocator::setWaterMark(0);
 
       //gClientSceneGraph->renderScene(SPT_Reflect, typeMask);
-      gClientSceneGraph->renderScene(SPT_Diffuse, typeMask);
+      //gClientSceneGraph->renderScene(SPT_Diffuse, typeMask);
 
-      SceneCameraState cameraState = SceneCameraState::fromGFX();
-      SceneRenderState renderState(gClientSceneGraph, SPT_Diffuse, cameraState);
-
-      //renderScene(&renderState, typeMask);
+      renderScene(SPT_Diffuse, typeMask);
 
       // renderScene leaves some states dirty, which causes problems if GameTSCtrl is the last Gui object rendered
       GFX->updateStates();
@@ -464,14 +477,17 @@ void RenderPipeline::renderFrame(GFXTextureTargetRef* target, MatrixF transform,
 }
 
 //
-void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask)
+/*void RenderPipeline::renderScene(SceneRenderState* rs, U32 objectMask)
 {
    PROFILE_SCOPE(RenderPipeline_renderScene);
+
+   SceneCameraState cameraState = SceneCameraState::fromGFX();
+   SceneRenderState renderState(gClientSceneGraph, SPT_Diffuse, cameraState);
 
    // Get the lights for rendering the scene.
 
    PROFILE_START(RenderPipeline_registerLights);
-   LIGHTMGR->registerGlobalLights(&renderState->getCullingFrustum(), false);
+   LIGHTMGR->registerGlobalLights(&renderState.getCullingFrustum(), false);
    PROFILE_END();
 
    // If its a diffuse pass, update the current ambient light level.
@@ -482,14 +498,14 @@ void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask)
    // Note that we retain the starting zone information here and pass it
    // on to renderSceneNoLights so that we don't need to look it up twice.
 
-   if (renderState->isDiffusePass())
+   if (renderState.isDiffusePass())
    {
       SceneZoneSpace* baseObject = nullptr;
       U32 baseZone;
 
       if (!baseObject && gClientSceneGraph->getZoneManager())
       {
-         gClientSceneGraph->getZoneManager()->findZone(renderState->getCameraPosition(), baseObject, baseZone);
+         gClientSceneGraph->getZoneManager()->findZone(renderState.getCameraPosition(), baseObject, baseZone);
          AssertFatal(baseObject != NULL, "SceneManager::renderScene - findZone() did not return an object");
       }
 
@@ -504,7 +520,7 @@ void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask)
             mAmbientLightColor = sunlight->getAmbient();
       }
 
-      renderState->setAmbientLightColor(mAmbientLightColor);
+      renderState.setAmbientLightColor(mAmbientLightColor);
    }
 
    // Trigger the pre-render signal.
@@ -516,9 +532,9 @@ void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask)
    //Turns out this part is mandatory for ensuring lighting is properly set up.
    //without it, we get the dreaded shadowSoftness error in vectorLight's shader
    PROFILE_START(RenderPipeline_preRenderSignal);
-   //mCurrentRenderState = renderState;
-   gClientSceneGraph->getPreRenderSignal().trigger(gClientSceneGraph, renderState);
-   //mCurrentRenderState = NULL;
+   gClientSceneGraph->mCurrentRenderState = &renderState;
+   gClientSceneGraph->getPreRenderSignal().trigger(gClientSceneGraph, &renderState);
+   gClientSceneGraph->mCurrentRenderState = NULL;
    PROFILE_END();
 
    // Render the scene.
@@ -532,7 +548,7 @@ void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask)
       Frustum originalFrustum = GFX->getFrustum();
 
       // Save PFX & SceneManager projections
-      MatrixF origNonClipProjection = renderState->getSceneManager()->getNonClipProjection();
+      MatrixF origNonClipProjection = renderState.getSceneManager()->getNonClipProjection();
       PFXFrameState origPFXState = PFXMGR->getFrameState();
 
       const FovPort *currentFovPort = GFX->getStereoFovPort();
@@ -549,7 +565,7 @@ void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask)
       GFX->setFrustum(gfxFrustum);
 
       SceneCameraState cameraStateLeft = SceneCameraState::fromGFX();
-      SceneRenderState renderStateLeft(this, renderState->getScenePassType(), cameraStateLeft);
+      SceneRenderState renderStateLeft(this, renderState.getScenePassType(), cameraStateLeft);
       renderStateLeft.getSceneManager()->setNonClipProjection(GFX->getProjectionMatrix());
       renderStateLeft.setSceneRenderStyle(SRS_SideBySide);
       PFXMGR->setFrameMatrices(GFX->getWorldMatrix(), GFX->getProjectionMatrix());
@@ -570,7 +586,7 @@ void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask)
       GFX->setFrustum(gfxFrustum);
 
       SceneCameraState cameraStateRight = SceneCameraState::fromGFX();
-      SceneRenderState renderStateRight(this, renderState->getScenePassType(), cameraStateRight);
+      SceneRenderState renderStateRight(this, renderState.getScenePassType(), cameraStateRight);
       renderStateRight.getSceneManager()->setNonClipProjection(GFX->getProjectionMatrix());
       renderStateRight.setSceneRenderStyle(SRS_SideBySide);
       PFXMGR->setFrameMatrices(GFX->getWorldMatrix(), GFX->getProjectionMatrix());
@@ -582,7 +598,7 @@ void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask)
       GFX->endField();
 
       // Restore previous values
-      renderState->getSceneManager()->setNonClipProjection(origNonClipProjection);
+      renderState.getSceneManager()->setNonClipProjection(origNonClipProjection);
       PFXMGR->setFrameState(origPFXState);
 
       GFX->setWorldMatrix(originalWorld);
@@ -596,7 +612,7 @@ void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask)
       //In a deferred context, this will populate our buffer targets that the post process step afterwards will use in deferred/combine shaders to assemble into our final target
       //In a forward contex it's basically where the render magic actually happens.
       //In other words, this name is stupid and I'll be changing it, yes
-      _renderScene(renderState, objectMask);
+      /*_renderScene(&renderState, objectMask);
    //}
 
    // Trigger the post-render signal.
@@ -608,9 +624,9 @@ void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask)
    //Well, at least, in a deferred renderer context
    //In a non-deferred context, all the magic just happened and why are you even here?
    PROFILE_START(RenderPipeline_postRenderSignal);
-   //mCurrentRenderState = renderState;
-   gClientSceneGraph->getPostRenderSignal().trigger(gClientSceneGraph, renderState);
-   //mCurrentRenderState = NULL;
+   gClientSceneGraph->mCurrentRenderState = &renderState;
+   gClientSceneGraph->getPostRenderSignal().trigger(gClientSceneGraph, &renderState);
+   gClientSceneGraph->mCurrentRenderState = NULL;
    PROFILE_END();
 
    // Remove the previously registered lights.
@@ -749,7 +765,7 @@ void RenderPipeline::renderNonSystems(SceneRenderState* renderState, U32 objectM
       }
    }*/
 
-   PROFILE_END();
+   /*PROFILE_END();
 
    //store our rendered objects into a list we can easily look up against later if required
    mRenderedObjectsList.clear();
@@ -801,7 +817,7 @@ void RenderPipeline::renderNonSystems(SceneRenderState* renderState, U32 objectM
       }
    }*/
 
-   #ifdef TORQUE_DEBUG
+   /*#ifdef TORQUE_DEBUG
 
    // If frustum is locked and this is a diffuse pass, render the culling volumes of
    // zones that are selected (or the volumes of the outdoor zone if no zone is
@@ -813,7 +829,7 @@ void RenderPipeline::renderNonSystems(SceneRenderState* renderState, U32 objectM
    #endif
 
    //mCurrentRenderState = NULL;
-}
+}*/
 
 
 /*bool RenderPipeline::GBuffer::setTargetChannels(Target *_target, RenderPipeline::GBuffer::RenderTargets _renderTarget, U32 _channels)
@@ -854,6 +870,395 @@ void RenderPipeline::renderNonSystems(SceneRenderState* renderState, U32 objectM
 	}
 }*/
 
+//
+//
+//
+//
+//
+//
+
+void RenderPipeline::renderScene(ScenePassType passType, U32 objectMask)
+{
+   SceneCameraState cameraState = SceneCameraState::fromGFX();
+
+   // Handle frustum locking.
+   bool smLockDiffuseFrustum = false;
+
+   const bool lockedFrustum = (smLockDiffuseFrustum && passType == SPT_Diffuse);
+   if (lockedFrustum)
+      cameraState = smLockedDiffuseCamera;
+   else if (passType == SPT_Diffuse)
+   {
+      // Store the camera state so if we lock, this will become the
+      // locked state.
+      smLockedDiffuseCamera = cameraState;
+   }
+
+   // Create the render state.
+
+   SceneRenderState renderState(gClientSceneGraph, passType, cameraState);
+
+   // If we have locked the frustum, reset the view transform
+   // on the render pass which the render state has just set
+   // to the view matrix corresponding to the locked frustum.  For
+   // rendering, however, we need the true view matrix from the
+   // GFX state.
+
+   if (lockedFrustum)
+   {
+      RenderPassManager* rpm = renderState.getRenderPass();
+      rpm->assignSharedXform(RenderPassManager::View, GFX->getWorldMatrix());
+   }
+
+   // Render.
+
+   renderScene(&renderState, objectMask);
+}
+
+//-----------------------------------------------------------------------------
+
+void RenderPipeline::renderScene(SceneRenderState* renderState, U32 objectMask, SceneZoneSpace* baseObject, U32 baseZone)
+{
+   PROFILE_SCOPE(RenderPipeline_SG_renderScene);
+
+   // Get the lights for rendering the scene.
+
+   PROFILE_START(RenderPipeline_SG_registerLights);
+   LIGHTMGR->registerGlobalLights(&renderState->getCullingFrustum(), false);
+   PROFILE_END();
+
+   // If its a diffuse pass, update the current ambient light level.
+   // To do that find the starting zone and determine whether it has a custom
+   // ambient light color.  If so, pass it on to the ambient light manager.
+   // If not, use the ambient light color of the sunlight.
+   //
+   // Note that we retain the starting zone information here and pass it
+   // on to renderSceneNoLights so that we don't need to look it up twice.
+
+   if (renderState->isDiffusePass())
+   {
+      if (!baseObject && gClientSceneGraph->getZoneManager())
+      {
+         gClientSceneGraph->getZoneManager()->findZone(renderState->getCameraPosition(), baseObject, baseZone);
+         AssertFatal(baseObject != NULL, "SceneManager::renderScene - findZone() did not return an object");
+      }
+
+      LinearColorF zoneAmbient;
+      if (baseObject && baseObject->getZoneAmbientLightColor(baseZone, zoneAmbient))
+         mAmbientLightColor = zoneAmbient;
+      else
+      {
+         const LightInfo* sunlight = LIGHTMGR->getSpecialLight(LightManager::slSunLightType);
+         if (sunlight)
+            mAmbientLightColor = sunlight->getAmbient();
+      }
+
+      renderState->setAmbientLightColor(mAmbientLightColor);
+   }
+
+   // Trigger the pre-render signal.
+
+   PROFILE_START(RenderPipeline_SG_preRenderSignal);
+   mCurrentRenderState = renderState;
+   //getPreRenderSignal().trigger(this, renderState);
+
+   if (mShadowMapPass && renderState->isDiffusePass())
+      mShadowMapPass->render(renderState, (U32)-1);
+
+   mCurrentRenderState = NULL;
+   PROFILE_END();
+
+   // Render the scene.
+
+   if (GFX->getCurrentRenderStyle() == GFXDevice::RS_StereoSideBySide)
+   {
+      // Store previous values
+      RectI originalVP = GFX->getViewport();
+      MatrixF originalWorld = GFX->getWorldMatrix();
+      Frustum originalFrustum = GFX->getFrustum();
+
+      // Save PFX & SceneManager projections
+      MatrixF origNonClipProjection = renderState->getSceneManager()->getNonClipProjection();
+      PFXFrameState origPFXState = PFXMGR->getFrameState();
+
+      const FovPort *currentFovPort = GFX->getStereoFovPort();
+      const MatrixF *worldEyeTransforms = GFX->getInverseStereoEyeTransforms();
+
+      // Render left half of display
+      GFX->activateStereoTarget(0);
+      GFX->beginField();
+
+      GFX->setWorldMatrix(worldEyeTransforms[0]);
+
+      Frustum gfxFrustum = originalFrustum;
+      MathUtils::makeFovPortFrustum(&gfxFrustum, gfxFrustum.isOrtho(), gfxFrustum.getNearDist(), gfxFrustum.getFarDist(), currentFovPort[0]);
+      GFX->setFrustum(gfxFrustum);
+
+      SceneCameraState cameraStateLeft = SceneCameraState::fromGFX();
+      SceneRenderState renderStateLeft(gClientSceneGraph, renderState->getScenePassType(), cameraStateLeft);
+      renderStateLeft.getSceneManager()->setNonClipProjection(GFX->getProjectionMatrix());
+      renderStateLeft.setSceneRenderStyle(SRS_SideBySide);
+      PFXMGR->setFrameMatrices(GFX->getWorldMatrix(), GFX->getProjectionMatrix());
+
+      renderSceneNoLights(&renderStateLeft, objectMask, baseObject, baseZone); // left
+
+                                                                               // Indicate that we've just finished a field
+                                                                               //GFX->clear(GFXClearTarget | GFXClearZBuffer | GFXClearStencil, ColorI(255,0,0), 1.0f, 0);
+      GFX->endField();
+
+      // Render right half of display
+      GFX->activateStereoTarget(1);
+      GFX->beginField();
+      GFX->setWorldMatrix(worldEyeTransforms[1]);
+
+      gfxFrustum = originalFrustum;
+      MathUtils::makeFovPortFrustum(&gfxFrustum, gfxFrustum.isOrtho(), gfxFrustum.getNearDist(), gfxFrustum.getFarDist(), currentFovPort[1]);
+      GFX->setFrustum(gfxFrustum);
+
+      SceneCameraState cameraStateRight = SceneCameraState::fromGFX();
+      SceneRenderState renderStateRight(gClientSceneGraph, renderState->getScenePassType(), cameraStateRight);
+      renderStateRight.getSceneManager()->setNonClipProjection(GFX->getProjectionMatrix());
+      renderStateRight.setSceneRenderStyle(SRS_SideBySide);
+      PFXMGR->setFrameMatrices(GFX->getWorldMatrix(), GFX->getProjectionMatrix());
+
+      renderSceneNoLights(&renderStateRight, objectMask, baseObject, baseZone); // right
+
+                                                                                // Indicate that we've just finished a field
+                                                                                //GFX->clear(GFXClearTarget | GFXClearZBuffer | GFXClearStencil, ColorI(0,255,0), 1.0f, 0);
+      GFX->endField();
+
+      // Restore previous values
+      renderState->getSceneManager()->setNonClipProjection(origNonClipProjection);
+      PFXMGR->setFrameState(origPFXState);
+
+      GFX->setWorldMatrix(originalWorld);
+      GFX->setFrustum(originalFrustum);
+      GFX->setViewport(originalVP);
+   }
+   else
+   {
+      renderSceneNoLights(renderState, objectMask, baseObject, baseZone);
+   }
+
+   // Trigger the post-render signal.
+
+   PROFILE_START(RenderPipeline_SG_postRenderSignal);
+   mCurrentRenderState = renderState;
+   //gClientSceneGraph->getPostRenderSignal().trigger(gClientSceneGraph, renderState);
+
+   PFXMGR->postRenderPass(renderState);
+
+   mCurrentRenderState = NULL;
+   PROFILE_END();
+
+   // Remove the previously registered lights.
+
+   PROFILE_START(RenderPipeline_SG_unregisterLights);
+   LIGHTMGR->unregisterAllLights();
+   PROFILE_END();
+}
+
+//-----------------------------------------------------------------------------
+
+void RenderPipeline::renderSceneNoLights(SceneRenderState* renderState, U32 objectMask, SceneZoneSpace* baseObject, U32 baseZone)
+{
+   // Set the current state.
+
+   mCurrentRenderState = renderState;
+
+   // Render.
+
+   _renderScene(mCurrentRenderState, objectMask, baseObject, baseZone);
+
+#ifdef TORQUE_DEBUG
+
+   // If frustum is locked and this is a diffuse pass, render the culling volumes of
+   // zones that are selected (or the volumes of the outdoor zone if no zone is
+   // selected).
+
+   //if (gEditingMission && renderState->isDiffusePass() && smLockDiffuseFrustum)
+   //   renderState->getCullingState().debugRenderCullingVolumes();
+
+#endif
+
+   mCurrentRenderState = NULL;
+}
+
+//-----------------------------------------------------------------------------
+
+void RenderPipeline::_renderScene(SceneRenderState* state, U32 objectMask, SceneZoneSpace* baseObject, U32 baseZone)
+{
+   //AssertFatal(this == gClientSceneGraph, "SceneManager::_buildSceneGraph - Only the client scenegraph can support this call!");
+
+   PROFILE_SCOPE(RenderPipeline_SG_batchRenderImages);
+
+   // In the editor, override the type mask for diffuse passes.
+
+   //if (gEditingMission && state->isDiffusePass())
+   //   objectMask = EDITOR_RENDER_TYPEMASK;
+
+   MeshRenderSystem::render(gClientSceneGraph, state);
+
+   // Update the zoning state and traverse zones.
+
+   if (gClientSceneGraph->getZoneManager())
+   {
+      // Update.
+
+      gClientSceneGraph->getZoneManager()->updateZoningState();
+
+      // If zone culling isn't disabled, traverse the
+      // zones now.
+
+      if (!state->getCullingState().disableZoneCulling())
+      {
+         // Find the start zone if we haven't already.
+
+         if (!baseObject)
+         {
+            gClientSceneGraph->getZoneManager()->findZone(state->getCameraPosition(), baseObject, baseZone);
+            AssertFatal(baseObject != NULL, "SceneManager::_renderScene - findZone() did not return an object");
+         }
+
+         // Traverse zones starting in base object.
+
+         SceneTraversalState traversalState(&state->getCullingState());
+         PROFILE_START(RenderPipeline_Scene_traverseZones);
+         baseObject->traverseZones(&traversalState, baseZone);
+         PROFILE_END();
+
+         // Set the scene render box to the area we have traversed.
+
+         state->setRenderArea(traversalState.getTraversedArea());
+      }
+   }
+
+   // Set the query box for the container query.  Never
+   // make it larger than the frustum's AABB.  In the editor,
+   // always query the full frustum as that gives objects
+   // the opportunity to render editor visualizations even if
+   // they are otherwise not in view.
+
+   if (!state->getCullingFrustum().getBounds().isOverlapped(state->getRenderArea()))
+   {
+      // This handles fringe cases like flying backwards into a zone where you
+      // end up pretty much standing on a zone border and looking directly into
+      // its "walls".  In that case the traversal area will be behind the frustum
+      // (remember that the camera isn't where visibility starts, it's the near
+      // distance).
+
+      return;
+   }
+
+   Box3F queryBox = state->getCullingFrustum().getBounds();
+   //if (!gEditingMission)
+   {
+      queryBox.minExtents.setMax(state->getRenderArea().minExtents);
+      queryBox.maxExtents.setMin(state->getRenderArea().maxExtents);
+   }
+
+   PROFILE_START(RenderPipeline_Scene_cullObjects);
+
+   //TODO: We should split the codepaths here based on whether the outdoor zone has visible space.
+   //    If it has, we should use the container query-based path.
+   //    If it hasn't, we should fill the object list directly from the zone lists which will usually
+   //       include way fewer objects.
+
+   // Gather all objects that intersect the scene render box.
+
+   mBatchQueryList.clear();
+   gClientSceneGraph->getContainer()->findObjectList(queryBox, objectMask, &mBatchQueryList);
+
+   // Cull the list.
+
+   U32 numRenderObjects = state->getCullingState().cullObjects(
+      mBatchQueryList.address(),
+      mBatchQueryList.size(),
+      !state->isDiffusePass() ? SceneCullingState::CullEditorOverrides : 0 // Keep forced editor stuff out of non-diffuse passes.
+   );
+
+   //HACK: If the control object is a Player and it is not in the render list, force
+   // it into it.  This really should be solved by collision bounds being separate from
+   // object bounds; only because the Player class is using bounds not encompassing
+   // the actual player object is it that we have this problem in the first place.
+   // Note that we are forcing the player object into ALL passes here but such
+   // is the power of proliferation of things done wrong.
+
+   /*GameConnection* connection = GameConnection::getConnectionToServer();
+   if (connection)
+   {
+      Player* player = dynamic_cast< Player* >(connection->getControlObject());
+      if (player)
+      {
+         mBatchQueryList.setSize(numRenderObjects);
+         if (!mBatchQueryList.contains(player))
+         {
+            mBatchQueryList.push_back(player);
+            numRenderObjects++;
+         }
+      }
+   }*/
+
+   PROFILE_END();
+
+   //store our rendered objects into a list we can easily look up against later if required
+   mRenderedObjectsList.clear();
+   for (U32 i = 0; i < numRenderObjects; ++i)
+   {
+      mRenderedObjectsList.push_back(mBatchQueryList[i]);
+   }
+
+   // Render the remaining objects.
+
+   PROFILE_START(RenderPipeline_Scene_renderObjects);
+   state->renderObjects(mBatchQueryList.address(), numRenderObjects);
+   PROFILE_END();
+
+   // Render bounding boxes, if enabled.
+
+   /*if (smRenderBoundingBoxes && state->isDiffusePass())
+   {
+      GFXDEBUGEVENT_SCOPE(Scene_renderBoundingBoxes, ColorI::WHITE);
+
+      GameBase* cameraObject = 0;
+      if (connection)
+         cameraObject = connection->getCameraObject();
+
+      GFXStateBlockDesc desc;
+      desc.setFillModeWireframe();
+      desc.setZReadWrite(true, false);
+
+      for (U32 i = 0; i < numRenderObjects; ++i)
+      {
+         SceneObject* object = mBatchQueryList[i];
+
+         // Skip global bounds object.
+         if (object->isGlobalBounds())
+            continue;
+
+         // Skip camera object as we're viewing the scene from it.
+         if (object == cameraObject)
+            continue;
+
+         const Box3F& worldBox = object->getWorldBox();
+         GFX->getDrawUtil()->drawObjectBox(
+            desc,
+            Point3F(worldBox.len_x(), worldBox.len_y(), worldBox.len_z()),
+            worldBox.getCenter(),
+            MatrixF::Identity,
+            ColorI::WHITE
+         );
+      }
+   }*/
+}
+
+//
+//
+//
+//
+//
+//
+
 bool RenderPipeline::setGBufferTarget(String bufferName, String targetName, String formatName)
 {
    //Example of the diffuse buffer getting set up
@@ -874,7 +1279,7 @@ bool RenderPipeline::setGBufferTarget(String bufferName, String targetName, Stri
 
 DefineEngineFunction(getRenderPipeline, S32, (), , "")
 {
-   RenderPipeline* rp = RenderPipeline::getRenderPipeline();
+   RenderPipeline* rp = RenderPipeline::get();
 
    if (rp)
       return rp->getId();
