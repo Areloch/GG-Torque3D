@@ -3882,14 +3882,14 @@ void WorldEditor::makeSelectionAMesh(const char *filename)
 
    Vector< SceneObject* > objectList;
 
-   for ( S32 i = 0; i < mSelected->size(); i++ )
+   for (S32 i = 0; i < mSelected->size(); i++)
    {
-      SceneObject *pObj = dynamic_cast< SceneObject* >( ( *mSelected )[i] );
-      if ( pObj )
-         objectList.push_back( pObj );
+      SceneObject *pObj = dynamic_cast< SceneObject* >((*mSelected)[i]);
+      if (pObj)
+         objectList.push_back(pObj);
    }
 
-   if ( objectList.empty() )
+   if (objectList.empty())
       return;
 
    //
@@ -3927,15 +3927,40 @@ void WorldEditor::makeSelectionAMesh(const char *filename)
    OptimizedPolyList polyList;
    polyList.setBaseTransform(orientation);
 
+   ColladaUtils::ExportData exportData;
+
    for (S32 i = 0; i < objectList.size(); i++)
    {
       SceneObject *pObj = objectList[i];
-      if (!pObj->buildPolyList(PLC_Export, &polyList, pObj->getWorldBox(), pObj->getWorldSphere()))
+      //if (!pObj->buildPolyList(PLC_Export, &polyList, pObj->getWorldBox(), pObj->getWorldSphere()))
+      if (!pObj->buildExportPolyList(PLC_Export, &exportData, pObj->getWorldBox(), pObj->getWorldSphere()))
          Con::warnf("colladaExportObjectList() - object %i returned no geometry.", pObj->getId());
    }
 
+   //recenter generated visual mesh results
+   for (U32 dl = 0; dl < exportData.colMeshes.size(); dl++)
+   {
+
+      for (U32 pnt = 0; pnt < exportData.colMeshes[dl].mesh.mPoints.size(); pnt++)
+      {
+         exportData.colMeshes[dl].mesh.mPoints[pnt] -= centroid;
+      }
+   }
+
+   //recenter generated collision mesh results
+   for (U32 dl = 0; dl < exportData.detailLevels.size(); dl++)
+   {
+      for (U32 pnt = 0; pnt < exportData.detailLevels[dl].mesh.mPoints.size(); pnt++)
+      {
+         exportData.detailLevels[dl].mesh.mPoints[pnt] -= centroid;
+      }
+   }
+
+   exportData.processData();
+
    // Use a ColladaUtils function to do the actual export to a Collada file
-   ColladaUtils::exportToCollada(filename, polyList);
+   ColladaUtils::exportToCollada(filename, exportData);
+   //ColladaUtils::exportToCollada(filename, polyList);
    //
 
    // Allocate TSStatic object and add to level.
