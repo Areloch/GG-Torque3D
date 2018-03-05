@@ -22,23 +22,30 @@
 
 singleton Material(DECAL_scorch)
 {
-   baseTex[0] = "./scorch_decal.png";
 
-   translucent = true;
-   translucentBlendOp = None;
+   translucent = "0";
+   translucentBlendOp = "None";
    translucentZWrite = true;
    alphaTest = true;
-   alphaRef = 84;
+   alphaRef = "84";
+   mapTo = "scorch_decal.png";
+   diffuseMap[0] = "art/decals/scorch_decal.png";
+   pixelSpecular0 = "0";
+   materialTag0 = "Miscellaneous";
 };
 
 singleton Material(DECAL_RocketEXP)
 {
-   baseTex[0] = "art/decals/rBlast";
 
    vertColor[0] = true;
-   translucent = true;
+   translucent = "0";
    translucentBlendOp = LerpAlpha;
    translucentZWrite = true;
+   mapTo = "rBlast";
+   diffuseMap[0] = "art/decals/rBlast";
+   alphaTest = "1";
+   glow[0] = "1";
+   emissive[0] = "1";
 };
 
 singleton Material(DECAL_bulletHole)

@@ -16,6 +16,7 @@ new SimGroup(MissionGroup) {
       canvasClearColor = "0 0 0 255";
       ambientLightBlendPhase = "1";
       ambientLightBlendCurve = "0 0 -1 -1";
+      LevelEnvMap = "BlueSkyCubemap";
       soundAmbience = "AudioAmbienceDefault";
       soundDistanceModel = "Linear";
       canSave = "1";
@@ -149,7 +150,7 @@ new SimGroup(MissionGroup) {
       meshCulling = "0";
       originSort = "0";
       CollisionType = "Collision Mesh";
-      DecalType = "Collision Mesh";
+      DecalType = "Visible Mesh";
       allowPlayerStep = "0";
       alphaFadeEnable = "0";
       alphaFadeStart = "100";

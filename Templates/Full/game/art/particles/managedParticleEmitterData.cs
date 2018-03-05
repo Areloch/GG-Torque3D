@@ -32,4 +32,5 @@ datablock ParticleEmitterData(fireplaceE : DefaultEmitter)
    ejectionOffset = "0.75";
    thetaMax = "0";
    phiVariance = "0";
+   glow = "1";
 };

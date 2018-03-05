@@ -490,3 +490,30 @@ singleton Material(arch_mat)
    invertSmoothness[0] = "1";
    specularMap[0] = "art/shapes/sponza/Sponza_Arch_comp.png";
 };
+
+singleton Material(sponza_Material__47)
+{
+   mapTo = "Material__47";
+   diffuseColor[0] = "0.588 0.588 0.588 1";
+   smoothness[0] = "1";
+   metalness[0] = "6";
+   translucentBlendOp = "None";
+};
+
+singleton Material(sponza_Material__57)
+{
+   mapTo = "Material__57";
+   diffuseColor[0] = "0.588 0.588 0.588 1";
+   smoothness[0] = "1";
+   metalness[0] = "6";
+   translucentBlendOp = "None";
+};
+
+singleton Material(sponza_extra_curtains__6___Default)
+{
+   mapTo = "_6___Default";
+   diffuseColor[0] = "0.588 0.588 0.588 1";
+   smoothness[0] = "1";
+   metalness[0] = "6";
+   translucentBlendOp = "None";
+};
