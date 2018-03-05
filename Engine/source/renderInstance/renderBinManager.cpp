@@ -182,7 +182,7 @@ DefineEngineMethod( RenderBinManager, getBinType, const char*, (),,
 }
 
 DefineEngineMethod(RenderBinManager, getRenderOrder, F32, (), ,
-   "Returns the bin type string.")
+   "Returns the bin render order.")
 {
    return object->getRenderOrder();
 }

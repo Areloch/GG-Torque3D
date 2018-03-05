@@ -69,7 +69,7 @@ GFXOcclusionQuery::OcclusionQueryStatus GFXGLOcclusionQuery::getStatus(bool bloc
 
    if (GFXDevice::getDisableOcclusionQuery())
       return NotOccluded;
-
+   
    if (!glIsQuery(mQuery))
       return NotOccluded;
 
