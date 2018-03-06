@@ -368,6 +368,7 @@ function ImportAssetButton::onClick(%this)
       DefaultFile    = "";
       ChangePath     = false;
       OverwritePrompt = true;
+      forceRelativePath = false;
       //MultipleFiles = true;
    };
 
@@ -376,7 +377,7 @@ function ImportAssetButton::onClick(%this)
    if ( %ret )
    {
       $Pref::WorldEditor::LastPath = filePath( %dlg.FileName );
-      %fullPath = makeRelativePath( %dlg.FileName, getMainDotCSDir() );
+      %fullPath = %dlg.FileName;
       %file = fileBase( %fullPath );
    }   
    
@@ -385,7 +386,11 @@ function ImportAssetButton::onClick(%this)
    if ( !%ret )
       return;
       
-   AssetBrowser.importAssetListArray.empty();
+   AssetBrowser.onBeginDropFiles();
+   AssetBrowser.onDropFile(%fullPath);
+   AssetBrowser.onEndDropFiles();
+      
+   /*AssetBrowser.importAssetListArray.empty();
    
    %fileExt = fileExt( %fullPath );
    //add it to our array!
@@ -400,7 +405,7 @@ function ImportAssetButton::onClick(%this)
       
    ImportAssetConfigWindow.visible = true;
    ImportAssetConfigWindow.refresh();
-   ImportAssetConfigWindow.selectWindow();
+   ImportAssetConfigWindow.selectWindow();*/
 }
 //
 
@@ -934,12 +939,13 @@ function ImportAssetWindow::refresh(%this)
          
          if(%assetType $= "Model" || %assetType $= "Animation" || %assetType $= "Image" || %assetType $= "Sound")
          {
-            if(%assetItem.status $= "Error")
+            /*if(%assetItem.status $= "Error")
             {
                %iconPath = "tools/gui/images/iconError";
                %configCommand = "ImportAssetOptionsWindow.findMissingFile(" @ %assetItem @ ");";
             }
-            else if(%assetItem.status $= "Warning")
+            else*/
+            if(%assetItem.status $= "Warning")
             {
                %iconPath = "tools/gui/images/iconWarn";
                %configCommand = "ImportAssetOptionsWindow.fixIssues(" @ %assetItem @ ");";
@@ -967,30 +973,89 @@ function ImportAssetWindow::refresh(%this)
             }
          }
          
+         %inputCellPos = %indent;
+         %inputCellWidth = (ImportingAssetList.extent.x * 0.3) - %indent;
+         
+         %filePathBtnPos = %inputCellPos + %inputCellWidth - %height;
+         
+         %assetNameCellPos = %inputCellPos + %inputCellWidth;
+         %assetNameCellWidth = ImportingAssetList.extent.x * 0.3;
+         
+         %assetTypeCellPos = %assetNameCellPos + %assetNameCellWidth;
+         %assetTypeCellWidth = ImportingAssetList.extent.x * 0.3;
+         
+         %configBtnPos = %assetTypeCellPos + %assetTypeCellWidth - (%height * 2);
+         %configBtnWidth = %height;
+         
+         %delBtnPos = %assetTypeCellPos + %assetTypeCellWidth - %height;
+         %delBtnWidth = %height;
+         
+         %inputField = %filePath;
+         
+         //Check if it's a generated type, like materials
+         %inputPathProfile = ToolsGuiTextEditProfile;
+         %generatedField = false;
+         if(%assetType $= "Material")
+         {
+            %inputField = "(Generated)";
+            %generatedField = true;
+         }
+         else
+         {
+            //nope, so check that it's a valid file path. If not, flag it as such
+            if(%assetItem.status $= "Error")
+            {
+               %inputField = "File not found!";
+               %inputPathProfile = ToolsGuiTextEditErrorProfile;
+            }
+         }
+         
          %importEntry = new GuiControl()
          {
             position = "0 0";
             extent = ImportingAssetList.extent.x SPC %height;
             
-            new GuiTextCtrl()
+            new GuiTextEditCtrl()
+            {
+               Text = %inputField; 
+               position = %inputCellPos SPC "0";
+               extent = %inputCellWidth SPC %height;
+               internalName = "InputPath";
+               active = false;
+               profile = %inputPathProfile;
+            };
+            
+            new GuiButtonCtrl()
+            {
+               position = %filePathBtnPos SPC "0";
+               extent = %height SPC %height;
+               command = "ImportAssetOptionsWindow.findMissingFile(" @ %assetItem @ ");";
+               text = "...";
+               internalName = "InputPathButton";
+               tooltip = %toolTip;
+               visible = !%generatedField;
+            };
+            
+            new GuiTextEditCtrl()
             {
               Text = %assetName; 
-              position = %indent SPC "0";
-              extent = %width - %indent SPC %height;
+              position = %assetNameCellPos SPC "0";
+              extent = %assetNameCellWidth SPC %height;
               internalName = "AssetName";
             };
             
-            new GuiTextCtrl()
+            new GuiTextEditCtrl()
             {
               Text = %assetType; 
-              position = %width SPC "0";
-              extent = %width - %height - %height SPC %height;
+              position = %assetTypeCellPos SPC "0";
+              extent = %assetTypeCellWidth SPC %height;
+              active = false;
               internalName = "AssetType";
             };
             
             new GuiBitmapButtonCtrl()
             {
-               position = ImportingAssetList.extent.x - %height - %height SPC "0";
+               position = %configBtnPos SPC "0";
                extent = %height SPC %height;
                command = %configCommand;
                bitmap = %iconPath;
@@ -998,7 +1063,7 @@ function ImportAssetWindow::refresh(%this)
             };
             new GuiBitmapButtonCtrl()
             {
-               position = ImportingAssetList.extent.x - %height SPC "0";
+               position = %delBtnPos SPC "0";
                extent = %height SPC %height;
                command = "ImportAssetOptionsWindow.deleteImportingAsset(" @ %assetItem @ ");";
                bitmap = "tools/gui/images/iconDelete";

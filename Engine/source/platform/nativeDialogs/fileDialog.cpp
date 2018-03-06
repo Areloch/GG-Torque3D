@@ -287,7 +287,7 @@ bool FileDialog::Execute()
       if(mForceRelativePath)
          mData.mFile = Platform::makeRelativePathName(resultPath.c_str(), NULL);
       else
-         mData.mFile = resultPath.c_str();
+         mData.mFile = StringTable->insert(resultPath.c_str());
    }
    else if (mData.mStyle & FileDialogData::FDS_MULTIPLEFILES)
    {

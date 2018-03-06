@@ -1611,9 +1611,10 @@ function ColladaImportDlg::loadLights(%this)
 
 function updateTSShapeLoadProgress(%progress, %msg)
 {
+   return;
    // Check if the loading GUI is visible and use that instead of the
    // separate import progress GUI if possible
-   if ( isObject(LoadingGui) && LoadingGui.isAwake() )
+   /*if ( isObject(LoadingGui) && LoadingGui.isAwake() )
    {
       // Save/Restore load progress at the start/end of the import process
       if ( %progress == 0 )
@@ -1635,8 +1636,8 @@ function updateTSShapeLoadProgress(%progress, %msg)
       %progressCtrl = LoadingProgress;
       %textCtrl = LoadingProgressTxt;
    }
-   else
-   {
+   else*/
+   //{
       // Show/Hide gui at the start/end of the import process
       if ( %progress == 0 )
       {
@@ -1651,7 +1652,7 @@ function updateTSShapeLoadProgress(%progress, %msg)
 
       %progressCtrl = ColladaImportProgress-->progressBar;
       %textCtrl = ColladaImportProgress-->progressText;
-   }
+   //}
 
    // Update progress indicators
    if (%progress == 0)

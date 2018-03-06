@@ -722,8 +722,34 @@ function AssetBrowser::reImportAsset(%this)
       AssetBrowser.isAssetReImport = true;
       AssetBrowser.reImportingAssetId = EditAssetPopup.assetId;
       
+      %reimportingPath = %assetDef.originalFilePath;
+      
+      //first, double-check we have an originating file. if we don't then we need to basically go out looking for it
+      if(!isFile(%assetDef.originalFilePath))
+      {
+         //if(%assetType $= "ImageAsset")
+         //   %filters = "";
+            
+         %dlg = new OpenFileDialog()
+         {
+            Filters = "(All Files (*.*)|*.*|";
+            DefaultFile = %currentFile;
+            ChangePath = false;
+            MustExist = true;
+            MultipleFiles = false;
+            forceRelativePath = false;
+         };
+            
+         if ( %dlg.Execute() )
+         {
+            %reimportingPath = %dlg.FileName;
+         }
+         
+         %dlg.delete();
+      }
+      
       AssetBrowser.onBeginDropFiles();
-      AssetBrowser.onDropFile(%assetDef.originalFilePath);
+      AssetBrowser.onDropFile(%reimportingPath);
       AssetBrowser.onEndDropFiles();
       
       %module = AssetDatabase.getAssetModule(EditAssetPopup.assetId);
