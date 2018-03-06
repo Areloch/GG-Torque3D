@@ -1221,9 +1221,6 @@ void ProcessedShaderMaterial::_setShaderConstants(SceneRenderState * state, cons
    // Damage: minimum damage applied (for editor previewing, mostly)
    if (handles->mMaterialDamageMinSC->isValid())
       shaderConsts->set(handles->mMaterialDamageMinSC, mMaterial->mMaterialDamageMin[stageNum]);
-
-   //ProbeShaderConstants *psc = PROBEMGR->getProbeShaderConstants(shaderConsts);
-   //shaderConsts->setSafe(psc->mProbeTestColorSC, Point4F(1, 0, 0, 1));
 }
 
 bool ProcessedShaderMaterial::_hasCubemap(U32 pass)

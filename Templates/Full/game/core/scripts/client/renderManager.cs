@@ -47,7 +47,6 @@ function initRenderManager()
    };
    DiffuseRenderPassManager.addManager( new RenderPassStateBin()           { renderOrder = 0.001; stateToken = AL_FormatToken; } );
    
-     
    // We really need to fix the sky to render after all the 
    // meshes... but that causes issues in reflections.
    DiffuseRenderPassManager.addManager( new RenderObjectMgr(SkyBin)        { bintype = "Sky"; renderOrder = 0.1; processAddOrder = 0.1; } );
