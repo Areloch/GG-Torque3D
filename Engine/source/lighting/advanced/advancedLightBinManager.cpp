@@ -357,6 +357,15 @@ void AdvancedLightBinManager::render( SceneRenderState *state )
       lsp->getOcclusionQuery()->end();
    }
 
+   // Set NULL for active shadow map (so nothing gets confused)
+   mShadowManager->setLightShadowMap(NULL);
+   mShadowManager->setLightDynamicShadowMap(NULL);
+   GFX->setVertexBuffer(NULL);
+   GFX->setPrimitiveBuffer(NULL);
+
+   // Fire off a signal to let others know that light-bin rendering is ending now
+   getRenderSignal().trigger(state, this);
+
    // Finish up the rendering
    _onPostRender();
 }
