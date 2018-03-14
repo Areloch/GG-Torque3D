@@ -697,7 +697,7 @@ void WaterPlane::prepRenderImage( SceneRenderState *state )
    if( !state->isDiffusePass() )
       return;
 
-   mBasicLighting = dStricmp( LIGHTMGR->getId(), "BLM" ) == 0;
+   //mBasicLighting = dStricmp( LIGHTMGR->getId(), "BLM" ) == 0;
    mUnderwater = isUnderwater( state->getCameraPosition() );
 
    mMatrixSet->setSceneView(GFX->getWorldMatrix());

@@ -129,6 +129,14 @@ void PostEffectManager::_onPostRenderPass( SceneManager *sceneGraph, const Scene
    renderEffects( sceneState, PFXAfterDiffuse );
 }
 
+void PostEffectManager::postRenderPass(const SceneRenderState *sceneState)
+{
+   if (!sceneState->isDiffusePass())
+      return;
+
+   renderEffects(sceneState, PFXAfterDiffuse);
+}
+
 GFXTextureObject* PostEffectManager::getBackBufferTex()
 {
    GFXTarget *target = GFX->getActiveRenderTarget();

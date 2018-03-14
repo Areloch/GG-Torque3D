@@ -36,6 +36,7 @@
 #include "terrain/terrCellMaterial.h"
 #include "math/util/matrixSet.h"
 #include "materials/materialManager.h"
+#include "renderPipeline/renderPipeline.h"
 
 bool RenderTerrainMgr::smRenderWireframe = false;
 
@@ -118,9 +119,12 @@ void RenderTerrainMgr::render( SceneRenderState *state )
    if ( mInstVector.empty() )
       return;
 
-   // Check if bin is disabled in advanced lighting.
-   if ( MATMGR->getDeferredEnabled() && mBasicOnly )
+   if (!RenderPipeline::get())
       return;
+
+   // Check if bin is disabled in advanced lighting.
+   //if ( MATMGR->getDeferredEnabled() && mBasicOnly )
+   //   return;
 
    PROFILE_SCOPE( RenderTerrainMgr_Render );
 
@@ -132,7 +136,7 @@ void RenderTerrainMgr::render( SceneRenderState *state )
    sgData.wireframe |= smRenderWireframe;
 
    // Restore transforms
-   MatrixSet &matrixSet = getRenderPass()->getMatrixSet();
+   MatrixSet &matrixSet = RenderPipeline::get()->getRenderPass()->getMatrixSet();
    matrixSet.restoreSceneViewProjection();
 
    GFXDEBUGEVENT_SCOPE( RenderTerrainMgr_Render, ColorI::GREEN );

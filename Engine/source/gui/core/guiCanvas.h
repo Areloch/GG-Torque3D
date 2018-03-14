@@ -46,6 +46,8 @@
 #include "windowManager/platformWindowMgr.h"
 #include "gfx/gfxFence.h"
 
+#include "T3D/camera.h"
+
 /// A canvas on which rendering occurs.
 ///
 ///
@@ -453,6 +455,8 @@ public:
    virtual void disableKeyboardTranslation();
 
    virtual void setWindowTitle(const char *newTitle);
+
+   Vector<Camera*> mCameraList;
 
 private:
    static const U32 MAX_GAMEPADS = 4; ///< The maximum number of supported gamepads

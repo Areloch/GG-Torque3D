@@ -51,11 +51,13 @@
 #include "materials/shaderData.h"
 #include "gfx/sim/cubemapData.h"
 
+#include "renderPipeline/renderPipeline.h"
+
 const MatInstanceHookType DeferredMatInstanceHook::Type( "Deferred" );
-const String RenderDeferredMgr::BufferName("deferred");
+//const String RenderDeferredMgr::BufferName("deferred");
 const RenderInstType RenderDeferredMgr::RIT_Deferred("Deferred");
-const String RenderDeferredMgr::ColorBufferName("color");
-const String RenderDeferredMgr::MatInfoBufferName("matinfo");
+//const String RenderDeferredMgr::ColorBufferName("color");
+//const String RenderDeferredMgr::MatInfoBufferName("matinfo");
 
 IMPLEMENT_CONOBJECT(RenderDeferredMgr);
 
@@ -78,12 +80,12 @@ RenderDeferredMgr::RenderSignal& RenderDeferredMgr::getRenderSignal()
 
 RenderDeferredMgr::RenderDeferredMgr( bool gatherDepth,
                                     GFXFormat format )
-   :  Parent(  RIT_Deferred,
+   :  /*Parent(  RIT_Deferred,
                0.01f,
                0.01f,
                format,
                Point2I( Parent::DefaultTargetSize, Parent::DefaultTargetSize),
-               gatherDepth ? Parent::DefaultTargetChainLength : 0 ),
+               gatherDepth ? Parent::DefaultTargetChainLength : 0 ),*/
       mDeferredMatInstance( NULL )
 {
    notifyType( RenderPassManager::RIT_Decal );
@@ -93,14 +95,14 @@ RenderDeferredMgr::RenderDeferredMgr( bool gatherDepth,
    notifyType( RenderPassManager::RIT_Object );
 
    // We want a full-resolution buffer
-   mTargetSizeType = RenderTexTargetBinManager::WindowSize;
+   //mTargetSizeType = RenderTexTargetBinManager::WindowSize;
 
-   if(getTargetChainLength() > 0)
-      GFXShader::addGlobalMacro( "TORQUE_LINEAR_DEPTH" );
+   //if(getTargetChainLength() > 0)
+    //  GFXShader::addGlobalMacro( "TORQUE_LINEAR_DEPTH" );
 
-   mNamedTarget.registerWithName( BufferName );
-   mColorTarget.registerWithName( ColorBufferName );
-   mMatInfoTarget.registerWithName( MatInfoBufferName );
+   //mNamedTarget.registerWithName( RenderPipeline::NormalBufferName );
+   //mColorTarget.registerWithName(RenderPipeline::ColorBufferName );
+   //mMatInfoTarget.registerWithName(RenderPipeline::MaterialInfoBufferName );
 
    mClearGBufferShader = NULL;
 
@@ -111,37 +113,38 @@ RenderDeferredMgr::~RenderDeferredMgr()
 {
    GFXShader::removeGlobalMacro( "TORQUE_LINEAR_DEPTH" );
 
-   mColorTarget.release();
-   mMatInfoTarget.release();
+   //mColorTarget.release();
+   //mMatInfoTarget.release();
    _unregisterFeatures();
    SAFE_DELETE( mDeferredMatInstance );
 }
 
 void RenderDeferredMgr::_registerFeatures()
 {
-   ConditionerFeature *cond = new LinearEyeDepthConditioner( getTargetFormat() );
-   FEATUREMGR->registerFeature( MFT_DeferredConditioner, cond );
-   mNamedTarget.setConditioner( cond );
+   //ConditionerFeature *cond = new LinearEyeDepthConditioner( getTargetFormat() );
+   //FEATUREMGR->registerFeature( MFT_DeferredConditioner, cond );
+   //mNamedTarget.setConditioner( cond );
 }
 
 void RenderDeferredMgr::_unregisterFeatures()
 {
-   mNamedTarget.setConditioner( NULL );
+   //mNamedTarget.setConditioner( NULL );
    FEATUREMGR->unregisterFeature(MFT_DeferredConditioner);
 }
 
 bool RenderDeferredMgr::setTargetSize(const Point2I &newTargetSize)
 {
-   bool ret = Parent::setTargetSize( newTargetSize );
+   /*bool ret = Parent::setTargetSize( newTargetSize );
    mNamedTarget.setViewport( GFX->getViewport() );
    mColorTarget.setViewport( GFX->getViewport() );
    mMatInfoTarget.setViewport( GFX->getViewport() );
-   return ret;
+   return ret;*/
+   return false;
 }
 
 bool RenderDeferredMgr::_updateTargets()
 {
-   PROFILE_SCOPE(RenderDeferredMgr_updateTargets);
+   /*PROFILE_SCOPE(RenderDeferredMgr_updateTargets);
 
    bool ret = Parent::_updateTargets();
 
@@ -210,7 +213,8 @@ bool RenderDeferredMgr::_updateTargets()
 
    _initShaders();
 
-   return ret;
+   return ret;*/
+   return false;
 }
 
 void RenderDeferredMgr::_createDeferredMaterial()
@@ -320,6 +324,9 @@ void RenderDeferredMgr::render( SceneRenderState *state )
    if ( state->disableAdvancedLightingBins() )
       return;
 
+   if (!RenderPipeline::get())
+      return;
+
    // NOTE: We don't early out here when the element list is
    // zero because we need the deferred to be cleared.
 
@@ -329,13 +336,13 @@ void RenderDeferredMgr::render( SceneRenderState *state )
    GFXDEBUGEVENT_SCOPE( RenderDeferredMgr_Render, ColorI::RED );
 
    // Tell the superclass we're about to render
-   const bool isRenderingToTarget = _onPreRender(state);
+   //const bool isRenderingToTarget = _onPreRender(state);
 
    // Clear all z-buffer, and g-buffer.
    clearBuffers();
 
    // Restore transforms
-   MatrixSet &matrixSet = getRenderPass()->getMatrixSet();
+   MatrixSet &matrixSet = RenderPipeline::get()->getRenderPass()->getMatrixSet();
    matrixSet.restoreSceneViewProjection();
    const MatrixF worldViewXfm = GFX->getWorldMatrix();
 
@@ -524,8 +531,8 @@ void RenderDeferredMgr::render( SceneRenderState *state )
    // Signal end of pre-pass
    getRenderSignal().trigger( state, this, false );
 
-   if(isRenderingToTarget)
-      _onPostRender();
+   //if(isRenderingToTarget)
+   //   _onPostRender();
 }
 
 const GFXStateBlockDesc & RenderDeferredMgr::getOpaqueStenciWriteDesc( bool lightmappedGeometry /*= true*/ )
@@ -816,7 +823,7 @@ void ProcessedDeferredMaterial::addStateBlockDesc(const GFXStateBlockDesc& desc)
    GFXStateBlockDesc deferredStateBlock = desc;
 
    // Adjust color writes if this is a pure z-fill pass
-   const bool pixelOutEnabled = mDeferredMgr->getTargetChainLength() > 0;
+   const bool pixelOutEnabled = false; // mDeferredMgr->getTargetChainLength() > 0;
    if ( !pixelOutEnabled )
    {
       deferredStateBlock.colorWriteDefined = true;

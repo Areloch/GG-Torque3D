@@ -33,6 +33,7 @@
 #include "gfx/gfxDebugEvent.h"
 #include "renderInstance/renderParticleMgr.h"
 #include "math/util/matrixSet.h"
+#include "renderPipeline/renderPipeline.h"
 
 #define HIGH_NUM ((U32(-1)/2) - 1)
 
@@ -141,6 +142,9 @@ void RenderTranslucentMgr::render( SceneRenderState *state )
    if(!mElementList.size())
       return;
 
+   if (!RenderPipeline::get())
+      return;
+
    GFXDEBUGEVENT_SCOPE(RenderTranslucentMgr_Render, ColorI::BLUE);
 
    // Find the particle render manager (if we don't have it)
@@ -167,7 +171,8 @@ void RenderTranslucentMgr::render( SceneRenderState *state )
    GFXPrimitiveBuffer * lastPB = NULL;
 
    // Restore transforms
-   MatrixSet &matrixSet = getRenderPass()->getMatrixSet();
+
+   MatrixSet &matrixSet = RenderPipeline::get()->getRenderPass()->getMatrixSet();
    matrixSet.restoreSceneViewProjection();
 
    U32 binSize = mElementList.size();

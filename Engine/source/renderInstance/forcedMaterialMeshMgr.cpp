@@ -28,6 +28,7 @@
 #include "materials/materialDefinition.h"
 #include "console/consoleTypes.h"
 #include "math/util/matrixSet.h"
+#include "renderPipeline/renderPipeline.h"
 
 IMPLEMENT_CONOBJECT(ForcedMaterialMeshMgr);
 
@@ -83,6 +84,9 @@ void ForcedMaterialMeshMgr::render(SceneRenderState * state)
    if(!mElementList.size() || !mOverrideInstance)
       return;
 
+   if (!RenderPipeline::get())
+      return;
+
    GFXDEBUGEVENT_SCOPE(ForcedMaterialMeshMgr_Render, ColorI::RED);
 
    // Automagically save & restore our viewport and transforms.
@@ -103,10 +107,10 @@ void ForcedMaterialMeshMgr::render(SceneRenderState * state)
          if(passRI->primBuff->getPointer()->mPrimitiveArray[passRI->primBuffIndex].numVertices < 1)
             continue;
 
-         getRenderPass()->getMatrixSet().setWorld(*passRI->objectToWorld);
-         getRenderPass()->getMatrixSet().setView(*passRI->worldToCamera);
-         getRenderPass()->getMatrixSet().setProjection(*passRI->projection);
-         mOverrideInstance->setTransforms(getRenderPass()->getMatrixSet(), state);
+         RenderPipeline::get()->getRenderPass()->getMatrixSet().setWorld(*passRI->objectToWorld);
+         RenderPipeline::get()->getRenderPass()->getMatrixSet().setView(*passRI->worldToCamera);
+         RenderPipeline::get()->getRenderPass()->getMatrixSet().setProjection(*passRI->projection);
+         mOverrideInstance->setTransforms(RenderPipeline::get()->getRenderPass()->getMatrixSet(), state);
 
          mOverrideInstance->setBuffers(passRI->vertBuff, passRI->primBuff);
          GFX->drawPrimitive( passRI->primBuffIndex );                  

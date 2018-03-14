@@ -29,7 +29,7 @@
 #include "gfx/gfxStringEnumTranslate.h"
 #include "scene/sceneRenderState.h"
 #include "scene/sceneManager.h"
-
+#include "renderPipeline/renderPipeline.h"
 
 IMPLEMENT_CONOBJECT(RenderTexTargetBinManager);
 
@@ -246,6 +246,9 @@ bool RenderTexTargetBinManager::_onPreRender(SceneRenderState * state, bool pres
 {
    PROFILE_SCOPE(RenderTexTargetBinManager_onPreRender);
 
+   if (!RenderPipeline::get())
+      return false;
+
 #ifndef TORQUE_SHIPPING
    AssertFatal( m_NeedsOnPostRender == false, "_onPostRender not called on RenderTexTargetBinManager, or sub-class." );
    m_NeedsOnPostRender = false;
@@ -278,7 +281,7 @@ bool RenderTexTargetBinManager::_onPreRender(SceneRenderState * state, bool pres
       return false;
 
    // Attach active depth target texture
-   binTarget->attachTexture(GFXTextureTarget::DepthStencil, getRenderPass()->getDepthTargetTexture());
+   binTarget->attachTexture(GFXTextureTarget::DepthStencil, RenderPipeline::get()->getRenderPass()->getDepthTargetTexture());
 
    // Preserve contents
    if(preserve)

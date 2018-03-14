@@ -36,6 +36,8 @@
 #include "gfx/gfxDrawUtil.h"
 #include "collision/clippedPolyList.h"
 
+#include "renderPipeline/renderPipeline.h"
+
 static const Point4F cubePoints[9] = 
 {
    Point4F(-0.5, -0.5, -0.5, 1.0f), Point4F(-0.5, -0.5,  0.5, 1.0f), Point4F(-0.5,  0.5, -0.5, 1.0f), Point4F(-0.5,  0.5,  0.5, 1.0f),
@@ -589,14 +591,17 @@ bool RenderParticleMgr::_initShader()
 
 void RenderParticleMgr::_onLMActivate( const char*, bool activate )
 {
+   if (!RenderPipeline::get())
+      return;
+
    if ( activate )
    {
-      RenderPassManager *rpm = getRenderPass();
+      RenderPassManager *rpm = RenderPipeline::get()->getRenderPass();
       if ( !rpm )
          return;
 
       // Hunt for the pre-pass manager/target
-      RenderDeferredMgr *deferredBin = NULL;
+      /*RenderDeferredMgr *deferredBin = NULL;
       for( U32 i = 0; i < rpm->getManagerCount(); i++ )
       {
          RenderBinManager *bin = rpm->getManager(i);
@@ -605,21 +610,26 @@ void RenderParticleMgr::_onLMActivate( const char*, bool activate )
             deferredBin = (RenderDeferredMgr*)bin;
             break;
          }
-      }
+      }*/
+
+      if (!RenderPipeline::get())
+         return;
+
+      RenderPipeline::GBuffer::Buffer* deferredBinTarget = RenderPipeline::get()->getGBuffer()->findBufferByName(RenderPipeline::NormalBufferName);
 
       // If we found the deferred bin, set this bin to render very shortly afterwards
       // and re-add this render-manager. If there is no pre-pass bin, or it doesn't
       // have a depth-texture, we can't render offscreen.
-      mOffscreenRenderEnabled = deferredBin && (deferredBin->getTargetChainLength() > 0);
+      mOffscreenRenderEnabled = deferredBinTarget && (deferredBinTarget->mTargetChainLength > 0);
       if(mOffscreenRenderEnabled)
       {
          rpm->removeManager(this);
-         setRenderOrder( deferredBin->getRenderOrder() + 0.011f );
+         setRenderOrder(RenderPipeline::get()->mDeferredRenderManager->getRenderOrder() + 0.011f );
          rpm->addManager(this);
       }
 
       // Find the targets we use
-      mDeferredTarget = NamedTexTarget::find( "deferred" );
+      mDeferredTarget = NamedTexTarget::find(RenderPipeline::NormalBufferName);
       mEdgeTarget = NamedTexTarget::find( "edge" );
 
       // Setup the shader

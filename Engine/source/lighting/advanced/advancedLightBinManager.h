@@ -24,7 +24,7 @@
 #define _ADVANCEDLIGHTBINMANAGER_H_
 
 #ifndef _TEXTARGETBIN_MGR_H_
-#include "renderInstance/renderTexTargetBinManager.h"
+#include "renderInstance/renderBinManager.h"
 #endif
 #ifndef _TVECTOR_H_
 #include "core/util/tVector.h"
@@ -78,9 +78,9 @@ public:
    bool mSpecialLight;
 };
 
-class AdvancedLightBinManager : public RenderTexTargetBinManager
+class AdvancedLightBinManager : public RenderBinManager
 {
-   typedef RenderTexTargetBinManager Parent;
+   typedef RenderBinManager Parent;
 
 public:
 
@@ -88,7 +88,8 @@ public:
    static const RenderInstType RIT_LightInfo;
    
    // registered buffer name
-   static const String smBufferName;
+   //RenderPipe
+   //static const String smBufferName;
 
    /// The shadow filter mode to use on shadowed light materials.
    static ShadowFilterMode smShadowFilterMode;
@@ -226,7 +227,8 @@ protected:
    ///
    void _onShadowFilterChanged();
 
-   AdvancedLightBufferConditioner *mConditioner;
+   //RenderPipe
+   //AdvancedLightBufferConditioner *mConditioner;
 
    typedef GFXVertexPNTT FarFrustumQuadVert; 
    GFXVertexBufferHandle<FarFrustumQuadVert> mFarFrustumQuadVerts;

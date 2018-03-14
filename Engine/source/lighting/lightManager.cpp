@@ -36,7 +36,7 @@
 #include "T3D/gameBase/gameConnection.h"
 #include "gfx/gfxStringEnumTranslate.h"
 #include "console/engineAPI.h"
-#include "renderInstance/renderDeferredMgr.h"
+//#include "renderInstance/renderDeferredMgr.h"
 
 
 Signal<void(const char*,bool)> LightManager::smActivateSignal;
@@ -227,14 +227,14 @@ void LightManager::registerGlobalLights( const Frustum *frustum, bool staticLigh
       // Cull the lights using the frustum.
       getSceneManager()->getContainer()->findObjectList( *frustum, lightMask, &activeLights );
 
-      for (U32 i = 0; i < activeLights.size(); ++i)
+      /*for (U32 i = 0; i < activeLights.size(); ++i)
       {
          if (!getSceneManager()->mRenderedObjectsList.contains(activeLights[i]))
          {
             activeLights.erase(i);
             --i;
          }
-      }
+      }*/
 
       // Store the culling position for sun placement
       // later... see setSpecialLight.
@@ -419,7 +419,7 @@ bool LightManager::lightScene( const char* callback, const char* param )
    return sl->lightScene( callback, flags );
 }
 
-RenderDeferredMgr* LightManager::_findDeferredRenderBin()
+/*RenderDeferredMgr* LightManager::_findDeferredRenderBin()
 {
    RenderPassManager* rpm = getSceneManager()->getDefaultRenderPass();
    for( U32 i = 0; i < rpm->getManagerCount(); i++ )
@@ -432,7 +432,7 @@ RenderDeferredMgr* LightManager::_findDeferredRenderBin()
    }
 
    return NULL;
-}
+}*/
 
 DefineEngineFunction( setLightManager, bool, ( const char *name ),,
    "Finds and activates the named light manager.\n"

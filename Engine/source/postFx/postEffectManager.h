@@ -87,6 +87,10 @@ protected:
    ///
    void _onPostRenderPass( SceneManager *sceneGraph, const SceneRenderState *sceneState );
 
+public:
+   void postRenderPass(const SceneRenderState *sceneState);
+
+protected:
    // Helper method
    void _updateResources();
 

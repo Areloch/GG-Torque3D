@@ -39,7 +39,7 @@
 #include "materials/materialFeatureTypes.h"
 #include "math/util/frustum.h"
 #include "scene/sceneObject.h"
-#include "renderInstance/renderDeferredMgr.h"
+//#include "renderInstance/renderDeferredMgr.h"
 #include "shaderGen/featureMgr.h"
 #include "shaderGen/HLSL/shaderFeatureHLSL.h"
 #include "shaderGen/HLSL/bumpHLSL.h"
@@ -185,7 +185,7 @@ void BasicLightManager::activate( SceneManager *sceneManager )
    FEATUREMGR->unregisterFeature( MFT_SubSurface );
 
    // First look for the deferred bin...
-   RenderDeferredMgr *deferredBin = _findDeferredRenderBin();
+  // RenderDeferredMgr *deferredBin = _findDeferredRenderBin();
 
    /*
    // If you would like to use forward shading, and have a linear depth pre-pass

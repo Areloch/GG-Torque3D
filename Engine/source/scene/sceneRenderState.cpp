@@ -110,5 +110,5 @@ void SceneRenderState::renderObjects( SceneObject** objects, U32 numObjects )
 
    // Render what the objects have batched.
 
-   getRenderPass()->renderPass( this );
+   //getRenderPass()->renderPass( this );
 }

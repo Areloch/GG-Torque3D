@@ -23,14 +23,14 @@
 #include "platform/platform.h"
 #include "lighting/advanced/hlsl/advancedLightingFeaturesHLSL.h"
 
-#include "lighting/advanced/advancedLightBinManager.h"
+//#include "lighting/advanced/advancedLightBinManager.h"
 #include "shaderGen/langElement.h"
 #include "shaderGen/shaderOp.h"
 #include "shaderGen/conditionerFeature.h"
-#include "renderInstance/renderDeferredMgr.h"
+//#include "renderInstance/renderDeferredMgr.h"
 #include "materials/processedMaterial.h"
 #include "materials/materialFeatureTypes.h"
-
+#include "renderPipeline/renderPipeline.h"
 
 void DeferredRTLightingFeatHLSL::processPixMacros( Vector<GFXShaderMacro> &macros, 
                                                    const MaterialFeatureData &fd  )
@@ -43,11 +43,11 @@ void DeferredRTLightingFeatHLSL::processPixMacros( Vector<GFXShaderMacro> &macro
    }
 
    // Pull in the uncondition method for the light info buffer
-   NamedTexTarget *texTarget = NamedTexTarget::find( AdvancedLightBinManager::smBufferName );
+   NamedTexTarget *texTarget = NamedTexTarget::find(RenderPipeline::LightInfoBufferName);
    if ( texTarget && texTarget->getConditioner() )
    {
       ConditionerMethodDependency *unconditionMethod = texTarget->getConditioner()->getConditionerMethodDependency(ConditionerFeature::UnconditionMethod);
-      unconditionMethod->createMethodMacro( String::ToLower( AdvancedLightBinManager::smBufferName ) + "Uncondition", macros );
+      unconditionMethod->createMethodMacro( String::ToLower(RenderPipeline::LightInfoBufferName) + "Uncondition", macros );
       addDependency(unconditionMethod);
    }
 }
@@ -146,7 +146,7 @@ void DeferredRTLightingFeatHLSL::processPix( Vector<ShaderComponent*> &component
    
 
    // Perform the uncondition here.
-   String unconditionLightInfo = String::ToLower( AdvancedLightBinManager::smBufferName ) + "Uncondition";
+   String unconditionLightInfo = String::ToLower(RenderPipeline::LightInfoBufferName) + "Uncondition";
    meta->addStatement(new GenOp(avar("   %s(@.Sample(@, @), @, @, @);\r\n",
       unconditionLightInfo.c_str()), lightBufferTex, lightInfoBuffer, uvScene, d_lightcolor, d_NL_Att, d_specular));
 
@@ -206,7 +206,7 @@ void DeferredRTLightingFeatHLSL::setTexData( Material::StageData &stageDat,
       return;
    }
 
-   NamedTexTarget *texTarget = NamedTexTarget::find( AdvancedLightBinManager::smBufferName );
+   NamedTexTarget *texTarget = NamedTexTarget::find(RenderPipeline::LightInfoBufferName);
    if( texTarget )
    {
       // HACK: We store this for use in DeferredRTLightingFeatHLSL::processPix()
@@ -637,7 +637,9 @@ void DeferredMinnaertHLSL::setTexData( Material::StageData &stageDat,
 {
    if( !fd.features[MFT_ForwardShading] && fd.features[MFT_RTLighting] )
    {
-      NamedTexTarget *texTarget = NamedTexTarget::find(RenderDeferredMgr::BufferName);
+      NamedTexTarget *texTarget = &RenderPipeline::get()->getGBuffer()->findBufferByName(RenderPipeline::NormalBufferName)->namedTarget;
+
+      //NamedTexTarget *texTarget = NamedTexTarget::find(RenderDeferredMgr::BufferName);
       if ( texTarget )
       {
          passData.mTexType[texIndex] = Material::TexTarget;
@@ -653,11 +655,13 @@ void DeferredMinnaertHLSL::processPixMacros( Vector<GFXShaderMacro> &macros,
    if( !fd.features[MFT_ForwardShading] && fd.features[MFT_RTLighting] )
    {
       // Pull in the uncondition method for the g buffer
-      NamedTexTarget *texTarget = NamedTexTarget::find( RenderDeferredMgr::BufferName );
+      //NamedTexTarget *texTarget = NamedTexTarget::find( RenderDeferredMgr::BufferName );
+      NamedTexTarget *texTarget = &RenderPipeline::get()->getGBuffer()->findBufferByName(RenderPipeline::NormalBufferName)->namedTarget;
+
       if ( texTarget && texTarget->getConditioner() )
       {
          ConditionerMethodDependency *unconditionMethod = texTarget->getConditioner()->getConditionerMethodDependency(ConditionerFeature::UnconditionMethod);
-         unconditionMethod->createMethodMacro( String::ToLower(RenderDeferredMgr::BufferName) + "Uncondition", macros );
+         unconditionMethod->createMethodMacro( String::ToLower(RenderPipeline::NormalBufferName) + "Uncondition", macros );
          addDependency(unconditionMethod);
       }
    }
@@ -720,7 +724,7 @@ void DeferredMinnaertHLSL::processPix( Vector<ShaderComponent*> &componentList,
    // Get the world space view vector.
    Var *wsViewVec = getWsView( getInWsPosition( componentList ), meta );
 
-   String unconditionDeferredMethod = String::ToLower(RenderDeferredMgr::BufferName) + "Uncondition";
+   String unconditionDeferredMethod = String::ToLower(RenderPipeline::NormalBufferName) + "Uncondition";
 
    Var *d_NL_Att = (Var*)LangElement::find( "d_NL_Att" );
 

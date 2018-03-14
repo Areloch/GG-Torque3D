@@ -29,7 +29,8 @@
 #include "lighting/shadowMap/shadowMapPass.h"
 #include "lighting/shadowMap/lightShadowMap.h"
 #include "lighting/common/lightMapParams.h"
-#include "renderInstance/renderDeferredMgr.h"
+//#include "renderInstance/renderDeferredMgr.h"
+#include "materials/processedMaterial.h"
 #include "gfx/gfxTransformSaver.h"
 #include "scene/sceneManager.h"
 #include "scene/sceneRenderState.h"
@@ -41,8 +42,10 @@
 #include "math/util/matrixSet.h"
 #include "console/consoleTypes.h"
 
+#include "renderPipeline/renderPipeline.h"
+
 const RenderInstType AdvancedLightBinManager::RIT_LightInfo( "LightInfo" );
-const String AdvancedLightBinManager::smBufferName( "lightinfo" );
+//const String AdvancedLightBinManager::smBufferName( "lightinfo" );
 
 ShadowFilterMode AdvancedLightBinManager::smShadowFilterMode = ShadowFilterMode_SoftShadowHighQuality;
 bool AdvancedLightBinManager::smPSSMDebugRender = false;
@@ -115,20 +118,20 @@ ConsoleDocClass( AdvancedLightBinManager,
 AdvancedLightBinManager::AdvancedLightBinManager( AdvancedLightManager *lm /* = NULL */, 
                                                  ShadowMapManager *sm /* = NULL */, 
                                                  GFXFormat lightBufferFormat /* = GFXFormatR8G8B8A8 */ )
-   :  RenderTexTargetBinManager( RIT_LightInfo, 1.0f, 1.0f, lightBufferFormat ), 
+   :  //RenderTexTargetBinManager( RIT_LightInfo, 1.0f, 1.0f, lightBufferFormat ), 
       mNumLightsCulled(0), 
       mLightManager(lm), 
-      mShadowManager(sm),
-      mConditioner(NULL)
+      mShadowManager(sm)//,
+      //mConditioner(NULL)
 {
    // Create an RGB conditioner
-   mConditioner = new AdvancedLightBufferConditioner( getTargetFormat(), 
-                                                      AdvancedLightBufferConditioner::RGB );
-   mNamedTarget.setConditioner( mConditioner ); 
-   mNamedTarget.registerWithName( smBufferName );
+   //mConditioner = new AdvancedLightBufferConditioner( getTargetFormat(), 
+   //                                                   AdvancedLightBufferConditioner::RGB );
+   //mNamedTarget.setConditioner( mConditioner ); 
+   //mNamedTarget.registerWithName(RenderPipeline::LightInfoBufferName);
 
    // We want a full-resolution buffer
-   mTargetSizeType = RenderTexTargetBinManager::WindowSize;
+   //mTargetSizeType = RenderTexTargetBinManager::WindowSize;
 
    mMRTLightmapsDuringDeferred = false;
 
@@ -143,7 +146,7 @@ AdvancedLightBinManager::~AdvancedLightBinManager()
 {
    _deleteLightMaterials();
 
-   SAFE_DELETE(mConditioner);
+   //SAFE_DELETE(mConditioner);
 
    Con::NotifyDelegate callback( this, &AdvancedLightBinManager::_deleteLightMaterials );
    Con::removeVariableNotify( "$pref::shadows::filterMode", callback );
@@ -172,10 +175,11 @@ void AdvancedLightBinManager::consoleInit()
 
 bool AdvancedLightBinManager::setTargetSize(const Point2I &newTargetSize)
 {
-   bool ret = Parent::setTargetSize( newTargetSize );
+   //RenderPipe
+   bool ret = false;//Parent::setTargetSize( newTargetSize );
 
    // We require the viewport to match the default.
-   mNamedTarget.setViewport( GFX->getViewport() );
+   //mNamedTarget.setViewport( GFX->getViewport() );
 
    return ret;
 }
@@ -234,6 +238,9 @@ void AdvancedLightBinManager::render( SceneRenderState *state )
 {
    PROFILE_SCOPE( AdvancedLightManager_Render );
 
+   if (!RenderPipeline::get())
+      return;
+
    // Take a look at the SceneRenderState and see if we should skip drawing the pre-pass
    if( state->disableAdvancedLightingBins() )
       return;
@@ -249,15 +256,15 @@ void AdvancedLightBinManager::render( SceneRenderState *state )
    GFXDEBUGEVENT_SCOPE( AdvancedLightBinManager_Render, ColorI::RED );
 
    // Tell the superclass we're about to render
-   if ( !_onPreRender( state ) )
-      return;
+   //if ( !_onPreRender( state ) )
+   //   return;
 
    // Clear as long as there isn't MRT population of light buffer with lightmap data
    if ( !MRTLightmapsDuringDeferred() )
       GFX->clear(GFXClearTarget, ColorI(0, 0, 0, 0), 1.0f, 0);
 
    // Restore transforms
-   MatrixSet &matrixSet = getRenderPass()->getMatrixSet();
+   MatrixSet &matrixSet = RenderPipeline::get()->getRenderPass()->getMatrixSet();
    matrixSet.restoreSceneViewProjection();
 
    const MatrixF &worldToCameraXfm = matrixSet.getWorldToCamera();
@@ -368,7 +375,7 @@ void AdvancedLightBinManager::render( SceneRenderState *state )
    getRenderSignal().trigger(state, this);
 
    // Finish up the rendering
-   _onPostRender();
+   //_onPostRender();
 }
 
 AdvancedLightBinManager::LightMaterialInfo* AdvancedLightBinManager::_getLightMaterial(   LightInfo::Type lightType, 
@@ -502,7 +509,7 @@ void AdvancedLightBinManager::_setupPerFrameParameters( const SceneRenderState *
                                           vsFarPlane);
    }
 
-   MatrixSet &matrixSet = getRenderPass()->getMatrixSet();
+   MatrixSet &matrixSet = RenderPipeline::get()->getRenderPass()->getMatrixSet();
    //matrixSet.restoreSceneViewProjection();
 
    const MatrixF &worldToCameraXfm = matrixSet.getWorldToCamera();
@@ -579,9 +586,9 @@ void AdvancedLightBinManager::MRTLightmapsDuringDeferred( bool val )
       if(mLightManager->isActive())
          MATMGR->flushAndReInitInstances();
 
-      RenderDeferredMgr *deferred;
-      if ( Sim::findObject( "AL_DeferredBin", deferred ) && deferred->getTargetTexture( 0 ) )
-         deferred->updateTargets();
+      //RenderDeferredMgr *deferred;
+      //if ( Sim::findObject( "AL_DeferredBin", deferred ) && deferred->getTargetTexture( 0 ) )
+       //  deferred->updateTargets();
    }
 }
 
@@ -861,7 +868,7 @@ bool LightMatInstance::init( const FeatureSet &features, const GFXVertexFormat *
 
    litState.separateAlphaBlendDefined = true;
    litState.separateAlphaBlendEnable = false;
-   litState.stencilMask = RenderDeferredMgr::OpaqueDynamicLitMask | RenderDeferredMgr::OpaqueStaticLitMask;
+   litState.stencilMask = BIT(0) | BIT(1); //dynamic and static
    litState.setCullMode(GFXCullCW);
    mLitState[DynamicLight][Base] = GFX->createStateBlock(litState);
    litState.setCullMode(GFXCullCCW);
@@ -869,7 +876,7 @@ bool LightMatInstance::init( const FeatureSet &features, const GFXVertexFormat *
 
    litState.separateAlphaBlendDefined = true;
    litState.separateAlphaBlendEnable = false;
-   litState.stencilMask = RenderDeferredMgr::OpaqueDynamicLitMask | RenderDeferredMgr::OpaqueStaticLitMask;
+   litState.stencilMask = BIT(0) | BIT(1); //dynamic and static
    litState.setCullMode(GFXCullCCW);
    mLitState[SunLight][Base] = GFX->createStateBlock(litState);
    litState.setCullMode(GFXCullCCW);
@@ -879,7 +886,7 @@ bool LightMatInstance::init( const FeatureSet &features, const GFXVertexFormat *
    // in the usual way, but will not effect lightmapped geometry.
    litState.separateAlphaBlendDefined = true;
    litState.separateAlphaBlendEnable = false;
-   litState.stencilMask = RenderDeferredMgr::OpaqueDynamicLitMask;
+   litState.stencilMask = BIT(0); //dynamic
    litState.setCullMode(GFXCullCW);
    mLitState[StaticLightNonLMGeometry][Base] = GFX->createStateBlock(litState);
    litState.setCullMode(GFXCullCCW);
@@ -889,7 +896,7 @@ bool LightMatInstance::init( const FeatureSet &features, const GFXVertexFormat *
    // multiply-darken color information. 
    litState.blendDest = GFXBlendSrcColor;
    litState.blendSrc = GFXBlendZero;
-   litState.stencilMask = RenderDeferredMgr::OpaqueStaticLitMask;
+   litState.stencilMask = BIT(1); //static
    litState.separateAlphaBlendDefined = true;
    litState.separateAlphaBlendEnable = true;
    litState.separateAlphaBlendSrc = GFXBlendOne;

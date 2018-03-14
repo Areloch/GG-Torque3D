@@ -43,11 +43,11 @@
 #include "materials/materialFeatureTypes.h"
 #include "console/console.h"
 #include "postFx/postEffect.h"
-#ifdef TORQUE_BASIC_LIGHTING  
+/*#ifdef TORQUE_BASIC_LIGHTING  
 #include "lighting/basic/basicLightManager.h"  
-#else  
+#else  */
 #include "lighting/advanced/advancedLightManager.h"  
-#endif 
+//#endif 
 #include "lighting/shadowMap/shadowMatHook.h"
 #include "materials/materialManager.h"
 #include "lighting/shadowMap/lightShadowMap.h"
@@ -534,11 +534,11 @@ void ProjectedShadow::_renderToTexture( F32 camDist, const TSRenderState &rdata 
    GFX->popActiveRenderTarget();
 
    // If we're close enough then filter the shadow.  
-#ifdef TORQUE_BASIC_LIGHTING  
+/*#ifdef TORQUE_BASIC_LIGHTING  
    if (camDist < BasicLightManager::getShadowFilterDistance())
-#else  
+#else  */
    if (camDist < AdvancedLightManager::getShadowFilterDistance())
-#endif  
+//#endif  
    {
       if ( !smShadowFilter )
       {

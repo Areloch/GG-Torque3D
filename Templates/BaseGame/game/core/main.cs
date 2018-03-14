@@ -72,6 +72,11 @@ exec("./cursor.cs");
 exec("./renderManager.cs");
 exec("./lighting.cs");
 
+exec("./renderPipelines/deferredRenderPipeline/deferredRenderPipeline.cs");
+
+//for now, just force deferred to initialize, for testing purposes
+DeferredRenderPipeline.initialize();
+
 exec("./audio.cs");
 exec("./sfx/audioAmbience.cs");
 exec("./sfx/audioData.cs");

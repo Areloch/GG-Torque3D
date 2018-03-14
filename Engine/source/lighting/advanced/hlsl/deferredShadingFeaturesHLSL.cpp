@@ -23,11 +23,11 @@
 #include "platform/platform.h"
 #include "lighting/advanced/hlsl/deferredShadingFeaturesHLSL.h"
 
-#include "lighting/advanced/advancedLightBinManager.h"
+//#include "lighting/advanced/advancedLightBinManager.h"
 #include "shaderGen/langElement.h"
 #include "shaderGen/shaderOp.h"
 #include "shaderGen/conditionerFeature.h"
-#include "renderInstance/renderDeferredMgr.h"
+//#include "renderInstance/renderDeferredMgr.h"
 #include "materials/processedMaterial.h"
 #include "materials/materialFeatureTypes.h"
 

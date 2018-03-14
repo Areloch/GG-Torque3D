@@ -147,8 +147,9 @@ RenderPassManager::~RenderPassManager()
 
       // Clear the parent first, so that RenderBinManager::onRemove()
       // won't call removeManager() and break this loop.
-      bin->setRenderPass( NULL );
-      bin->deleteObject();
+      bin->removeRenderPass(this);
+      //bin->setRenderPass( NULL );
+      //bin->deleteObject();
    }
 }
 
@@ -175,17 +176,20 @@ void RenderPassManager::addManager(RenderBinManager* mgr)
    if ( !mgr->isProperlyAdded() )
       mgr->registerObject();
 
-   AssertFatal( mgr->getRenderPass() == NULL, "RenderPassManager::addManager() - Bin is still part of another pass manager!" );
-   mgr->setRenderPass( this );
+   //AssertFatal( mgr->getRenderPass() == NULL, "RenderPassManager::addManager() - Bin is still part of another pass manager!" );
+   //mgr->setRenderPass( this );
+   mgr->addRenderPass(this);
 
    _insertSort(mRenderBins, mgr, true);
 }
 
 void RenderPassManager::removeManager(RenderBinManager* mgr)
 {
-   AssertFatal( mgr->getRenderPass() == this, "RenderPassManager::removeManager() - We do not own this bin!" );
+   //AssertFatal( mgr->getRenderPass() == this, "RenderPassManager::removeManager() - We do not own this bin!" );
 
-   mgr->setRenderPass( NULL );
+   //mgr->setRenderPass( NULL );
+   mgr->removeRenderPass(this);
+
    mRenderBins.remove( mgr );
 }
 
@@ -266,9 +270,9 @@ void RenderPassManager::render(SceneRenderState * state)
 void RenderPassManager::renderPass(SceneRenderState * state)
 {
    PROFILE_SCOPE( RenderPassManager_RenderPass );
-   sort();
+   //sort();
    render(state);
-   clear();
+   //clear();
 }
 
 GFXTextureObject *RenderPassManager::getDepthTargetTexture()

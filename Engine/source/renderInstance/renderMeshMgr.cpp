@@ -32,7 +32,7 @@
 #include "scene/sceneRenderState.h"
 #include "gfx/gfxDebugEvent.h"
 #include "math/util/matrixSet.h"
-
+#include "renderPipeline/renderPipeline.h"
 
 IMPLEMENT_CONOBJECT(RenderMeshMgr);
 
@@ -100,6 +100,8 @@ void RenderMeshMgr::render(SceneRenderState * state)
    if(!mElementList.size())
       return;
 
+   if (!RenderPipeline::get())
+      return;
 
    GFXDEBUGEVENT_SCOPE( RenderMeshMgr_Render, ColorI::GREEN );
 
@@ -107,7 +109,7 @@ void RenderMeshMgr::render(SceneRenderState * state)
    GFXTransformSaver saver;
 
    // Restore transforms
-   MatrixSet &matrixSet = getRenderPass()->getMatrixSet();
+   MatrixSet &matrixSet = RenderPipeline::get()->getRenderPass()->getMatrixSet();
    matrixSet.restoreSceneViewProjection();
 
    // init loop data
@@ -147,11 +149,11 @@ void RenderMeshMgr::render(SceneRenderState * state)
       // Check if bin is disabled in advanced lighting.
       // Allow forward rendering pass on custom materials.
 
-      if ( ( MATMGR->getDeferredEnabled() && mBasicOnly && !mat->isCustomMaterial() ) )
+      /*if ( ( MATMGR->getDeferredEnabled() && mBasicOnly && !mat->isCustomMaterial() ) )
       {
          j++;
          continue;
-      }
+      }*/
 
       U32 matListEnd = j;
       lastMiscTex = sgData.miscTex;

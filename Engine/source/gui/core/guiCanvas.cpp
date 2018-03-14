@@ -43,6 +43,8 @@
 #include "core/strings/stringUnit.h"
 #include "gui/core/guiOffscreenCanvas.h"
 
+#include "renderPipeline/renderPipeline.h"
+
 #ifndef TORQUE_TGB_ONLY
 #include "scene/sceneObject.h"
 #endif
@@ -369,6 +371,20 @@ void GuiCanvas::handleResize( WindowId did, S32 width, S32 height )
 void GuiCanvas::handlePaintEvent(WindowId did)
 {
    bool canRender = mPlatformWindow->isVisible() && GFX->allowRender() && !GFX->canCurrentlyRender();
+
+   if (canRender)
+   {
+      //run through any cameras and tell them to render this frame if they haven't already
+      for (U32 i = 0; i < mCameraList.size(); i++)
+      {
+         mCameraList[i]->renderView(getExtent());
+
+         bool servObj = mCameraList[i]->isServerObject();
+
+         GFXTexHandle tx = mCameraList[i]->getCameraRenderTarget();
+         bool tmp = true;
+      }
+   }
    
    // Do the screenshot first.
    if ( gScreenShot != NULL && gScreenShot->isPending() && canRender )
@@ -1765,7 +1781,7 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
 
       Con::printf( "AntiAliasing has been disabled; it is not compatible with AdvancedLighting." );
    }
-   else if ( dStricmp( LIGHTMGR->getId(), "BLM" ) == 0)
+   /*else if ( dStricmp( LIGHTMGR->getId(), "BLM" ) == 0)
    {
       const char *pref = Con::getVariable( "$pref::Video::mode" );
 
@@ -1777,7 +1793,7 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
 
          Con::printf( "AntiAliasing has been enabled while running BasicLighting." );
       }
-   }
+   }*/
 
    // for now, just always reset the update regions - this is a
    // fix for FSAA on ATI cards

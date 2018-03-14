@@ -300,7 +300,7 @@ protected:
    static bool smDisableTrueReflections;
 
    // Rendering   
-   bool mBasicLighting;
+   //bool mBasicLighting;
    //U32 mRenderUpdateCount;
    //U32 mReflectUpdateCount;
    bool mGenerateVB;

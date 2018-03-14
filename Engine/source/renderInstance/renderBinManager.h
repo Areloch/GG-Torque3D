@@ -37,7 +37,6 @@
 
 class SceneRenderState;
 
-
 /// This delegate is used in derived RenderBinManager classes
 /// to allow material instances to be overriden.
 typedef Delegate<BaseMatInstance*(BaseMatInstance*)> MaterialOverrideDelegate;
@@ -76,7 +75,15 @@ public:
    const RenderInstType& getRenderInstType() { return mRenderInstType; }
 
    /// Returns the render pass this bin is registered to.
-   RenderPassManager* getRenderPass() const { return mRenderPass; }
+   RenderPassManager* getRenderPass(U32 passIdx) const 
+   { 
+      if (passIdx > mRenderPasses.size())
+         return nullptr;
+      else 
+         return mRenderPasses[passIdx]; 
+   }
+
+   U32 getRenderPassCount() { return mRenderPasses.size(); }
 
    /// QSort callback function
    static S32 FN_CDECL cmpKeyFunc(const void* p1, const void* p2);
@@ -95,7 +102,9 @@ protected:
       U32 key2;
    };
 
-   void setRenderPass( RenderPassManager *rpm );
+   void addRenderPass( RenderPassManager *rpm );
+
+   void removeRenderPass(RenderPassManager *rpm);
 
    /// Called from derived bins to add additional
    /// render instance types to be notified about.
@@ -112,8 +121,8 @@ protected:
    /// this bin wants to process.
    Vector<RenderInstType> mOtherTypes;
 
-   /// The render pass manager this bin is registered with.
-   RenderPassManager *mRenderPass;
+   /// The render pass manageres this bin is registered with.
+   Vector<RenderPassManager*> mRenderPasses;
 
    MaterialOverrideDelegate mMatOverrideDelegate;
 
@@ -127,9 +136,6 @@ protected:
    /// Inlined utility function which gets the material from the 
    /// RenderInst if available, otherwise, return NULL.
    inline BaseMatInstance* getMaterial( RenderInst *inst ) const;
-
-   // Limits bin to rendering in basic lighting only.
-   bool mBasicOnly;
 };
 
 

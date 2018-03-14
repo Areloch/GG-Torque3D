@@ -22,7 +22,7 @@
 #ifndef _DEFERRED_MGR_H_
 #define _DEFERRED_MGR_H_
 
-#include "renderInstance/renderTexTargetBinManager.h"
+#include "renderInstance/renderBinManager.h"
 #include "materials/matInstance.h"
 #include "materials/processedShaderMaterial.h"
 #include "shaderGen/conditionerFeature.h"
@@ -34,18 +34,18 @@ class DeferredMatInstance;
 // This render manager renders opaque objects to the z-buffer as a z-fill pass.
 // It can optionally accumulate data from this opaque render pass into a render
 // target for later use.
-class RenderDeferredMgr : public RenderTexTargetBinManager
+class RenderDeferredMgr : public RenderBinManager
 {
-   typedef RenderTexTargetBinManager Parent;
+   typedef RenderBinManager Parent;
 
 public:
 
    // registered buffer name
-   static const String BufferName;
+   //static const String BufferName;
 
    // andremwac: Deferred Rendering
-   static const String ColorBufferName;
-   static const String MatInfoBufferName;
+   //static const String ColorBufferName;
+   //static const String MatInfoBufferName;
 
    // Generic Deferred Render Instance Type
    static const RenderInstType RIT_Deferred;
@@ -102,10 +102,10 @@ protected:
    GFXVertexBufferHandle<GFXVertexPC>  mClearGBufferVerts;
    GFXShaderRef                        mClearGBufferShader;
    GFXStateBlockRef                    mStateblock;
-   NamedTexTarget                      mColorTarget;
-   NamedTexTarget                      mMatInfoTarget;
-   GFXTexHandle                        mColorTex;
-   GFXTexHandle                        mMatInfoTex;
+   //NamedTexTarget                      mColorTarget;
+   //NamedTexTarget                      mMatInfoTarget;
+   //GFXTexHandle                        mColorTex;
+   //GFXTexHandle                        mMatInfoTex;
    GFXShaderConstBufferRef             mShaderConsts;
    GFXShaderConstHandle                *mSpecularStrengthSC;  
    GFXShaderConstHandle                *mSpecularPowerSC;

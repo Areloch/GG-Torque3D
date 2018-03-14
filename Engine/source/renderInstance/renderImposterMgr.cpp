@@ -30,7 +30,7 @@
 #include "lighting/lightInfo.h"
 #include "scene/sceneRenderState.h"
 #include "gfx/gfxDebugEvent.h"
-#include "renderInstance/renderDeferredMgr.h"
+//#include "renderInstance/renderDeferredMgr.h"
 #include "gfx/gfxTransformSaver.h"
 #include "console/consoleTypes.h"
 #include "gfx/util/screenspace.h"
@@ -38,6 +38,7 @@
 #include "materials/materialManager.h"
 #include "materials/materialFeatureTypes.h"
 
+#include "renderPipeline/renderPipeline.h"
 /*
 GFXImplementVertexFormat( ImposterCorner )
 {
@@ -70,7 +71,7 @@ RenderImposterMgr::RenderImposterMgr( F32 renderOrder, F32 processAddOrder )
    :  RenderBinManager( RIT_Imposter, renderOrder, processAddOrder )
 {
    notifyType( RIT_ImposterBatch );
-   RenderDeferredMgr::getRenderSignal().notify( this, &RenderImposterMgr::_renderDeferred );
+   RenderPipeline::get()->mDeferredRenderManager->getRenderSignal().notify( this, &RenderImposterMgr::_renderDeferred );
 }
 
 void RenderImposterMgr::initPersistFields()
@@ -88,7 +89,7 @@ void RenderImposterMgr::initPersistFields()
 
 RenderImposterMgr::~RenderImposterMgr()
 {
-   RenderDeferredMgr::getRenderSignal().remove( this, &RenderImposterMgr::_renderDeferred );
+   RenderPipeline::get()->mDeferredRenderManager->getRenderSignal().remove( this, &RenderImposterMgr::_renderDeferred );
 
    mIB = NULL;
 }
@@ -135,6 +136,9 @@ void RenderImposterMgr::_innerRender( const SceneRenderState *state, RenderDefer
 {
    PROFILE_SCOPE( RenderImposterMgr_InnerRender );
 
+   if (!RenderPipeline::get())
+      return;
+
    // Capture the GFX stats for this render.
    GFXDeviceStatistics stats;
    stats.start( GFX->getDeviceStatistics() );
@@ -142,7 +146,7 @@ void RenderImposterMgr::_innerRender( const SceneRenderState *state, RenderDefer
    GFXTransformSaver saver;
 
    // Restore transforms
-   MatrixSet &matrixSet = getRenderPass()->getMatrixSet();
+   MatrixSet &matrixSet = RenderPipeline::get()->getRenderPass()->getMatrixSet();
    matrixSet.restoreSceneViewProjection();
    matrixSet.setWorld( MatrixF::Identity );
 

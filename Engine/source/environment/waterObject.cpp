@@ -198,7 +198,7 @@ WaterObject::WaterObject()
    mUnderwaterPostFx( NULL ),
    mOverallRippleMagnitude( 0.1f ),
    mOverallWaveMagnitude( 1.0f ),
-   mBasicLighting( false ),
+   //mBasicLighting( false ),
    mSpecularPower( 48.0f ),
    mSoundAmbience( NULL ),
    mCubemap( NULL ),
@@ -683,7 +683,7 @@ void WaterObject::prepRenderImage( SceneRenderState *state )
    PROFILE_SCOPE(WaterObject_prepRenderImage);
 
    // Are we in Basic Lighting?
-   mBasicLighting = dStricmp( LIGHTMGR->getId(), "BLM" ) == 0;
+   //mBasicLighting = dStricmp( LIGHTMGR->getId(), "BLM" ) == 0;
    mUnderwater = isUnderwater( state->getCameraPosition() );
 
    // We only render during the normal diffuse render pass.
@@ -747,8 +747,8 @@ void WaterObject::renderObject( ObjectRenderInst *ri, SceneRenderState *state, B
    if ( doQuery )
       query->end();   
 
-   if ( mUnderwater && mBasicLighting )
-      drawUnderwaterFilter( state );
+   //if ( mUnderwater && mBasicLighting )
+   //   drawUnderwaterFilter( state );
 }
 
 void WaterObject::setCustomTextures( S32 matIdx, U32 pass, const WaterMatParams &paramHandles )
@@ -1070,11 +1070,11 @@ void WaterObject::updateUnderwaterEffect( SceneRenderState *state )
       return;
 
    // Never use underwater postFx with Basic Lighting, we don't have depth.
-   if ( mBasicLighting )
+  /* if ( mBasicLighting )
    {
       effect->disable();
       return;
-   }
+   }*/
 
    GameConnection *conn = GameConnection::getConnectionToServer();
    if ( !conn )
@@ -1191,22 +1191,22 @@ void WaterObject::cleanupMaterials()
 S32 WaterObject::getMaterialIndex( const Point3F &camPos )
 {
    bool underwater = isUnderwater( camPos );
-   bool basicLighting = dStricmp( LIGHTMGR->getId(), "BLM" ) == 0;
+   //bool basicLighting = dStricmp( LIGHTMGR->getId(), "BLM" ) == 0;
 
    // set the material
    S32 matIdx = -1;
    if ( underwater )
    {
-      if ( basicLighting )
+      /*if ( basicLighting )
          matIdx = BasicUnderWaterMat;
-      else
+      else*/
          matIdx = UnderWaterMat;
    }
    else
    {
-      if ( basicLighting )
+      /*if ( basicLighting )
          matIdx = BasicWaterMat;
-      else
+      else*/
          matIdx = WaterMat;
    }
 

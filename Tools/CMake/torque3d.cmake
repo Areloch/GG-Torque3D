@@ -312,6 +312,7 @@ addPath("${srcDir}/ts/arch")
 addPath("${srcDir}/physics")
 addPath("${srcDir}/gui/3d")
 addPath("${srcDir}/postFx")
+addPathRec("${srcDir}/renderPipeline")
 
 addPath("${srcDir}/T3D")
 set(BLACKLIST "" )

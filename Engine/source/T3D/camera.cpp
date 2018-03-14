@@ -35,11 +35,21 @@
 #include "math/mathUtils.h"
 #include "math/mTransform.h"
 
+#include "gfx/gfxDebugEvent.h"
+#include "postFx/postEffect.h"
+#include "gfx/gfxTransformSaver.h"
+#include "T3D/gameFunctions.h"
+
+#include "gui/core/guiCanvas.h"
+
+#include "renderPipeline/renderPipeline.h"
+
 #ifdef TORQUE_EXTENDED_MOVE
    #include "T3D/gameBase/extended/extendedMove.h"
 #endif
 
 S32 Camera::smExtendedMovePosRotIndex = 0;  // The ExtendedMove position/rotation index used for camera movements
+extern ColorI gCanvasClearColor;
 
 #define MaxPitch 1.5706f
 #define CameraRadius 0.05f;
@@ -300,6 +310,13 @@ Camera::Camera()
    mCurrentEditOrbitDist = 2.0;
 
    mLocked = false;
+
+   mHDRDisplayTarget = false;
+   mNearDist = 0.1f;
+   mFarDist = 1000.f;
+   mFoV = 90.f;
+   mCustomFilters = false;
+   mResolutionScaling = 1.f;
 }
 
 //----------------------------------------------------------------------------
@@ -324,6 +341,16 @@ bool Camera::onAdd()
 
    scriptOnAdd();
 
+   if (isClientObject())
+   {
+      //find our canvas and add us to it's camera list
+      GuiCanvas* canv;
+      if (Sim::findObject("Canvas", canv))
+      {
+         canv->mCameraList.push_back(this);
+      }
+   }
+
    return true;
 }
 
@@ -331,6 +358,16 @@ bool Camera::onAdd()
 
 void Camera::onRemove()
 {
+   if (isClientObject())
+   {
+      //find our canvas and add us to it's camera list
+      GuiCanvas* canv;
+      if (Sim::findObject("Canvas", canv))
+      {
+         canv->mCameraList.remove(this);
+      }
+   }
+
    scriptOnRemove();
    removeFromScene();
    Parent::onRemove();
@@ -1226,6 +1263,11 @@ U32 Camera::packUpdate(NetConnection *con, U32 mask, BitStream *bstream)
       }
    }
 
+   bstream->write(mResolutionScaling);
+   bstream->write(mCameraFov);
+   bstream->write(mNearDist);
+   bstream->write(mFarDist);
+
    return 0;
 }
 
@@ -1301,6 +1343,11 @@ void Camera::unpackUpdate(NetConnection *con, BitStream *bstream)
          mDelta.posVec = mDelta.rotVec = VectorF(0.0f, 0.0f, 0.0f);
       }
    }
+
+   bstream->read(&mResolutionScaling);
+   bstream->read(&mCameraFov);
+   bstream->read(&mNearDist);
+   bstream->read(&mFarDist);
 }
 
 //----------------------------------------------------------------------------
@@ -1311,6 +1358,12 @@ void Camera::initPersistFields()
       addProtectedField( "controlMode", TYPEID< CameraMotionMode >(), Offset( mMode, Camera ),
          &_setModeField, &defaultProtectedGetFn,
          "The current camera control mode." );
+
+      addField("resolutionScaling", TypeF32, Offset(mResolutionScaling, Camera), "");
+      addField("nearDist", TypeF32, Offset(mNearDist, Camera), "");
+      addField("farDist", TypeF32, Offset(mFarDist, Camera), "");
+      addField("resolutionScaling", TypeF32, Offset(mResolutionScaling, Camera), "");
+      addField("FOV", TypeF32, Offset(mCameraFov, Camera), "");
    endGroup( "Camera" );
 
    addGroup( "Camera: Newton Mode" );
@@ -1795,6 +1848,86 @@ void Camera::autoFitRadius( F32 radius )
    }
 }
 
+//
+//
+//
+void Camera::renderView(Point2I windowResolution)
+{
+   GFXDEBUGEVENT_SCOPE(Camera_renderView, ColorI::WHITE);
+
+   if (RenderPipeline::get() == nullptr)
+      return;
+
+   bool hasGbuffer = RenderPipeline::supportsGBuffer();
+
+   //PostEffect *preCapture = dynamic_cast<PostEffect*>(Sim::findObject("AL_PreCapture"));
+   //PostEffect *deferredShading = dynamic_cast<PostEffect*>(Sim::findObject("AL_DeferredShading"));
+   //if (preCapture)
+   //   preCapture->enable();
+   //if (deferredShading)
+   //   deferredShading->disable();
+
+   // Save the current transforms so we can restore
+   // it for child control rendering below.
+   GFXTransformSaver saver;
+
+   //bool saveEditingMission = gEditingMission;
+   //gEditingMission = false;
+
+   F32 scaling = dAtof(Con::getVariable("$render::resolutionScale"));
+
+   if (scaling == 0)
+      scaling = 1;
+
+   //Point2I renderRes = Point2I(windowResolution.x * scaling, windowResolution.y * scaling); //SUPER SAMPLING~!!!!!
+
+   //Get canvas resolution and then apply any dynamic or controlled scaling
+   Point2I renderRes = Point2I(windowResolution.x * mResolutionScaling, windowResolution.y * mResolutionScaling); //SUPER SAMPLING~!!!!!
+
+   GFXFormat renderFormat = GFXFormatR8G8B8A8;
+
+   if (mHDRDisplayTarget)
+      renderFormat = GFXFormatR10G10B10A2;
+
+   mRenderTarget.set(renderRes.x, renderRes.y, renderFormat, &GFXRenderTargetProfile, "");
+
+   mBaseTarget = GFX->allocRenderToTextureTarget();
+
+   GFX->clearTextureStateImmediate(0);
+   mBaseTarget->attachTexture(GFXTextureTarget::Color0, mRenderTarget);
+
+   // create camera matrix
+   MatrixF matView = getRenderTransform();
+
+   matView.inverse();
+
+   // set projection to 90 degrees vertical and horizontal
+   F32 left, right, top, bottom;
+   F32 nearDist = mNearDist;
+   F32 farDist = mFarDist;
+
+   F32 frustumAspectRatio = (F32)windowResolution.x / (F32)windowResolution.y;
+
+   MathUtils::makeFrustum(&left, &right, &top, &bottom, mDegToRad(mFoV), frustumAspectRatio, nearDist);
+   Frustum frustum(false, left, right, top, bottom, nearDist, farDist);
+
+   U32 renderMask = DEFAULT_RENDER_TYPEMASK;
+
+   //handle any custom filter settings on this camera here
+   //if (mCustomFilters)
+      renderMask = -1;
+
+   //renderFrame(&mBaseTarget, matView, frustum, renderMask, gCanvasClearColor);
+   RenderPipeline::get()->renderFrame(&mBaseTarget, matView, frustum, renderMask, gCanvasClearColor);
+
+   mBaseTarget->resolve();
+
+   //if (preCapture)
+   //   preCapture->disable();
+   //if (deferredShading)
+   //    deferredShading->enable();
+}
+
 //=============================================================================
 //    Console API.
 //=============================================================================
@@ -2143,4 +2276,13 @@ DefineEngineMethod( Camera, lookAt, void, (Point3F point), ,
                    "@param point The position to point the camera at.")
 {
    object->lookAt(point);
+}
+
+DefineEngineMethod(Camera, getRTResolution, Point2I, (), ,
+   "Point the camera at the specified position.  Does not work in Orbit or Track modes.\n\n"
+   "@param point The position to point the camera at.")
+{
+   Camera* clientCam = dynamic_cast<Camera*>(object->getClientObject());
+   if(clientCam->getCameraRenderTarget())
+      return Point2I(clientCam->getCameraRenderTarget()->getWidth(), clientCam->getCameraRenderTarget()->getHeight());
 }

@@ -34,7 +34,7 @@
 #include "math/util/matrixSet.h"
 #include "gfx/gfxDebugEvent.h"
 #include "materials/materialFeatureTypes.h"
-
+#include "renderPipeline/renderPipeline.h"
 
 IMPLEMENT_CONOBJECT(RenderOcclusionMgr);
 
@@ -173,6 +173,9 @@ void RenderOcclusionMgr::render( SceneRenderState *state )
    // Early out if nothing to draw.
    if ( !mElementList.size() )
       return;
+
+   if (!RenderPipeline::get())
+      return;
    
    GFXTransformSaver saver;
 
@@ -185,7 +188,7 @@ void RenderOcclusionMgr::render( SceneRenderState *state )
    sgData.init( state );
 
    // Restore transforms
-   MatrixSet &matrixSet = getRenderPass()->getMatrixSet();
+   MatrixSet &matrixSet = RenderPipeline::get()->getRenderPass()->getMatrixSet();
    matrixSet.restoreSceneViewProjection();
 
    // The material is single pass... just setup once here.

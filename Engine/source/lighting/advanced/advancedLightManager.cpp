@@ -23,14 +23,14 @@
 #include "platform/platform.h"
 #include "lighting/advanced/advancedLightManager.h"
 
-#include "lighting/advanced/advancedLightBinManager.h"
+//#include "lighting/advanced/advancedLightBinManager.h"
 #include "lighting/advanced/advancedLightingFeatures.h"
 #include "lighting/shadowMap/shadowMapManager.h"
 #include "lighting/shadowMap/lightShadowMap.h"
 #include "lighting/common/sceneLighting.h"
 #include "lighting/common/lightMapParams.h"
 #include "core/util/safeDelete.h"
-#include "renderInstance/renderDeferredMgr.h"
+//#include "renderInstance/renderDeferredMgr.h"
 #include "materials/materialManager.h"
 #include "math/util/sphereMesh.h"
 #include "console/consoleTypes.h"
@@ -39,9 +39,13 @@
 #include "gfx/gfxCardProfile.h"
 #include "gfx/gfxTextureProfile.h"
 
-#ifndef TORQUE_BASIC_LIGHTING
+#include "materials/sceneData.h"
+
+#include "renderPipeline/renderPipeline.h"
+
+//#ifndef TORQUE_BASIC_LIGHTING
 F32 AdvancedLightManager::smProjectedShadowFilterDistance = 40.0f;
-#endif
+//#endif
 
 ImplementEnumType( ShadowType,
    "\n\n"
@@ -61,7 +65,7 @@ AdvancedLightManager AdvancedLightManager::smSingleton;
 AdvancedLightManager::AdvancedLightManager()
    :  LightManager( "Advanced Lighting", "ADVLM" )
 {
-   mLightBinManager = NULL;
+   //mLightBinManager = NULL;
    mLastShader = NULL;
    mAvailableSLInterfaces = NULL;
 }
@@ -106,39 +110,39 @@ void AdvancedLightManager::activate( SceneManager *sceneManager )
 
    // Find a target format that supports blending... 
    // we prefer the floating point format if it works.
-   Vector<GFXFormat> formats;
+   /*Vector<GFXFormat> formats;
    formats.push_back( GFXFormatR16G16B16A16F );
    //formats.push_back( GFXFormatR16G16B16A16 );
    GFXFormat blendTargetFormat = GFX->selectSupportedFormat( &GFXRenderTargetProfile,
                                                          formats,
                                                          true,
                                                          true,
-                                                         false );
+                                                         false );*/
 
-   mLightBinManager = new AdvancedLightBinManager( this, SHADOWMGR, blendTargetFormat );
-   mLightBinManager->assignName( "AL_LightBinMgr" );
+  // mLightBinManager = new AdvancedLightBinManager( this, SHADOWMGR, blendTargetFormat );
+   //mLightBinManager->assignName( "AL_LightBinMgr" );
 
    // First look for the deferred bin...
-   RenderDeferredMgr *deferredBin = _findDeferredRenderBin();
+   //RenderDeferredMgr *deferredBin = _findDeferredRenderBin();
 
    // If we didn't find the deferred bin then add one.
-   if ( !deferredBin )
+   /*if ( !deferredBin )
    {
       deferredBin = new RenderDeferredMgr( true, blendTargetFormat );
       deferredBin->assignName( "AL_DeferredBin" );
       deferredBin->registerObject();
       getSceneManager()->getDefaultRenderPass()->addManager( deferredBin );
       mDeferredRenderBin = deferredBin;
-   }
+   }*/
 
    // Tell the material manager that deferred is enabled.
-   MATMGR->setDeferredEnabled( true );
+   //MATMGR->setDeferredEnabled( true );
 
    // Insert our light bin manager.
-   mLightBinManager->setRenderOrder( deferredBin->getRenderOrder() + 0.01f );
-   getSceneManager()->getDefaultRenderPass()->addManager( mLightBinManager );
+   //mLightBinManager->setRenderOrder( deferredBin->getRenderOrder() + 0.01f );
+   //getSceneManager()->getDefaultRenderPass()->addManager( mLightBinManager );
 
-   AdvancedLightingFeatures::registerFeatures(mDeferredRenderBin->getTargetFormat(), mLightBinManager->getTargetFormat());
+   //AdvancedLightingFeatures::registerFeatures(mDeferredRenderBin->getTargetFormat(), mLightBinManager->getTargetFormat());
 
    // Last thing... let everyone know we're active.
    smActivateSignal.trigger( getId(), true );
@@ -152,7 +156,7 @@ void AdvancedLightManager::deactivate()
 
    // Release our bin manager... it will take care of
    // removing itself from the render passes.
-   if( mLightBinManager )
+   /*if( mLightBinManager )
    {
       mLightBinManager->MRTLightmapsDuringDeferred(false);
       mLightBinManager->deleteObject();
@@ -161,7 +165,7 @@ void AdvancedLightManager::deactivate()
 
    if ( mDeferredRenderBin )
       mDeferredRenderBin->deleteObject();
-   mDeferredRenderBin = NULL;
+   mDeferredRenderBin = NULL;*/
 
    SHADOWMGR->deactivate();
 
@@ -480,18 +484,18 @@ void AdvancedLightManager::registerGlobalLight(LightInfo *light, SimObject *obj)
    Parent::registerGlobalLight( light, obj );
 
    // Pass the volume lights to the bin manager.
-   if (  mLightBinManager &&
+   if (  RenderPipeline::get()->mLightBinManager &&
          (  light->getType() == LightInfo::Point ||
             light->getType() == LightInfo::Spot ) )
-      mLightBinManager->addLight( light );
+      RenderPipeline::get()->mLightBinManager->addLight( light );
 }
 
 void AdvancedLightManager::unregisterAllLights()
 {
    Parent::unregisterAllLights();
 
-   if ( mLightBinManager )
-      mLightBinManager->clearAllLights();
+   if (RenderPipeline::get()->mLightBinManager )
+      RenderPipeline::get()->mLightBinManager->clearAllLights();
 }
 
 bool AdvancedLightManager::setTextureStage(  const SceneData &sgData,

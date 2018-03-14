@@ -34,6 +34,7 @@
 #include "gfx/gfxTransformSaver.h"
 #include "gfx/gfxDebugEvent.h"
 #include "math/util/matrixSet.h"
+#include "renderPipeline/renderPipeline.h"
 
 IMPLEMENT_CONOBJECT( RenderGlowMgr );
 
@@ -151,6 +152,9 @@ void RenderGlowMgr::render( SceneRenderState *state )
    if ( !isGlowEnabled() )
       return;
 
+   if (!RenderPipeline::get())
+      return;
+
    const U32 binSize = mElementList.size();
 
    // If this is a non-diffuse pass or we have no objects to
@@ -175,7 +179,7 @@ void RenderGlowMgr::render( SceneRenderState *state )
    GFX->clear( GFXClearTarget, ColorI::BLACK, 1.0f, 0);
 
    // Restore transforms
-   MatrixSet &matrixSet = getRenderPass()->getMatrixSet();
+   MatrixSet &matrixSet = RenderPipeline::get()->getRenderPass()->getMatrixSet();
    matrixSet.restoreSceneViewProjection();
 
    // init loop data

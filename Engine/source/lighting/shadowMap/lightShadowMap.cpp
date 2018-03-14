@@ -52,7 +52,7 @@
 
 // Remove this when the shader constants are reworked better
 #include "lighting/advanced/advancedLightManager.h"
-#include "lighting/advanced/advancedLightBinManager.h"
+//#include "lighting/advanced/advancedLightBinManager.h"
 
 // TODO: Some cards (Justin's GeForce 7x series) barf on the integer format causing
 // filtering artifacts. These can (sometimes) be resolved by switching the format

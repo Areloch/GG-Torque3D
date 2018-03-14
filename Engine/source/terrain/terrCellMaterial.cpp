@@ -29,13 +29,15 @@
 #include "materials/materialManager.h"
 #include "terrain/terrFeatureTypes.h"
 #include "terrain/terrMaterial.h"
-#include "renderInstance/renderDeferredMgr.h"
+//#include "renderInstance/renderDeferredMgr.h"
 #include "shaderGen/shaderGen.h"
 #include "shaderGen/featureMgr.h"
 #include "scene/sceneRenderState.h"
 #include "materials/sceneData.h"
 #include "gfx/util/screenspace.h"
-#include "lighting/advanced/advancedLightBinManager.h"
+//#include "lighting/advanced/advancedLightBinManager.h"
+
+#include "renderPipeline/renderPipeline.h"
 
 S32 sgMaxTerrainMaterialsPerPass = 3;
 
@@ -343,13 +345,13 @@ bool TerrainCellMaterial::_createPass( Vector<MaterialInfo*> *materials,
 
    // Has advanced lightmap support been enabled for deferred.
    bool advancedLightmapSupport = false;
-   if ( deferredMat )
+   /*if ( deferredMat )
    {
       // This sucks... but it works.
       AdvancedLightBinManager *lightBin;
       if ( Sim::findObject( "AL_LightBinMgr", lightBin ) )
          advancedLightmapSupport = lightBin->MRTLightmapsDuringDeferred();
-   }
+   }*/
 
    // Loop till we create a valid shader!
    while( true )
@@ -675,7 +677,8 @@ bool TerrainCellMaterial::_createPass( Vector<MaterialInfo*> *materials,
    // If we're doing deferred it requires some 
    // special stencil settings for it to work.
    if ( deferredMat )
-      desc.addDesc( RenderDeferredMgr::getOpaqueStenciWriteDesc( false ) );
+      //desc.addDesc( RenderDeferredMgr::getOpaqueStenciWriteDesc( false ) );
+      desc.addDesc(RenderPipeline::getOpaqueStenciWriteDesc(false));
 
    desc.setCullMode( GFXCullCCW );
    pass->stateBlock = GFX->createStateBlock(desc);

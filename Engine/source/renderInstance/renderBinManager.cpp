@@ -35,9 +35,9 @@ IMPLEMENT_CONOBJECT(RenderBinManager);
 RenderBinManager::RenderBinManager( const RenderInstType& ritype, F32 renderOrder, F32 processAddOrder ) :
    mProcessAddOrder( processAddOrder ),
    mRenderOrder( renderOrder ),
-   mRenderInstType( ritype ),  
-   mRenderPass( NULL ),
-   mBasicOnly ( false )
+   mRenderInstType( ritype )//,  
+   //mRenderPass( NULL ),
+   //mBasicOnly ( false )
 {
    VECTOR_SET_ASSOCIATION( mElementList );
    mElementList.reserve( 2048 );
@@ -61,9 +61,6 @@ void RenderBinManager::initPersistFields()
    addField("processAddOrder", TypeF32, Offset(mProcessAddOrder, RenderBinManager),
       "Defines the order for adding instances in relation to other bins." );
 
-   addField( "basicOnly", TypeBool, Offset(mBasicOnly, RenderBinManager),
-      "Limites the render bin to basic lighting only." );
-
    Parent::initPersistFields();
 }
 
@@ -71,8 +68,8 @@ void RenderBinManager::onRemove()
 {
    // Tell the render pass to remove us when 
    // we're being unregistered.
-   if ( mRenderPass )
-      mRenderPass->removeManager( this );
+   for(U32 i=0; i < mRenderPasses.size(); i++)
+      mRenderPasses[i]->removeManager( this );
 
    Parent::onRemove();
 }
@@ -89,31 +86,45 @@ void RenderBinManager::notifyType( const RenderInstType &type )
 
    // Register for the signal if the pass
    // has already been assigned.
-   if ( mRenderPass )
-      mRenderPass->getAddSignal(type).notify( this, &RenderBinManager::addElement, mProcessAddOrder );
+   for (U32 i = 0; i < mRenderPasses.size(); i++)
+      mRenderPasses[i]->getAddSignal(type).notify( this, &RenderBinManager::addElement, mProcessAddOrder );
 }
 
-void RenderBinManager::setRenderPass( RenderPassManager *rpm )
+void RenderBinManager::addRenderPass( RenderPassManager *rpm )
 {
-   if ( mRenderPass )
+   /*if ( mRenderPass )
    {
       if ( mRenderInstType.isValid() )
          mRenderPass->getAddSignal(mRenderInstType).remove( this, &RenderBinManager::addElement );
 
       for ( U32 i=0; i < mOtherTypes.size(); i++ )
          mRenderPass->getAddSignal(mOtherTypes[i]).remove( this, &RenderBinManager::addElement );         
-   }
+   }*/
 
-   mRenderPass = rpm;
+   
+   //mRenderPass = rpm;
 
-   if ( mRenderPass )
+   if (rpm != nullptr)
    {
-      if ( mRenderInstType.isValid() )
-         mRenderPass->getAddSignal(mRenderInstType).notify( this, &RenderBinManager::addElement, mProcessAddOrder );
+      mRenderPasses.push_back(rpm);
 
-      for ( U32 i=0; i < mOtherTypes.size(); i++ )
-         mRenderPass->getAddSignal(mOtherTypes[i]).notify( this, &RenderBinManager::addElement, mProcessAddOrder );
+      if (mRenderInstType.isValid())
+         rpm->getAddSignal(mRenderInstType).notify(this, &RenderBinManager::addElement, mProcessAddOrder);
+
+      for (U32 i = 0; i < mOtherTypes.size(); i++)
+         rpm->getAddSignal(mOtherTypes[i]).notify(this, &RenderBinManager::addElement, mProcessAddOrder);
    }
+}
+
+void RenderBinManager::removeRenderPass(RenderPassManager *rpm)
+{
+   if (mRenderInstType.isValid())
+      rpm->getAddSignal(mRenderInstType).remove(this, &RenderBinManager::addElement);
+
+   for (U32 i = 0; i < mOtherTypes.size(); i++)
+      rpm->getAddSignal(mOtherTypes[i]).remove(this, &RenderBinManager::addElement);
+
+   mRenderPasses.remove(rpm);
 }
 
 void RenderBinManager::addElement( RenderInst *inst )

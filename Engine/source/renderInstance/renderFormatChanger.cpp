@@ -29,6 +29,7 @@
 #include "gfx/gfxDebugEvent.h"
 #include "postFx/postEffect.h"
 #include "postFx/postEffectManager.h"
+#include "renderPipeline/renderPipeline.h"
 
 extern ColorI gCanvasClearColor;
 
@@ -134,12 +135,13 @@ void RenderFormatToken::process(SceneRenderState *state, RenderPassStateBin *cal
          // Set active z target on render pass
          if(mTargetDepthStencilTexture[mTargetChainIdx].isValid())
          {
-            if(callingBin->getRenderPass()->getDepthTargetTexture() != GFXTextureTarget::sDefaultDepthStencil)
-               mStoredPassZTarget = callingBin->getRenderPass()->getDepthTargetTexture();
+            if(RenderPipeline::get() && RenderPipeline::get()->getRenderPass()->getDepthTargetTexture() != GFXTextureTarget::sDefaultDepthStencil)
+               mStoredPassZTarget = RenderPipeline::get()->getRenderPass()->getDepthTargetTexture();
             else
                mStoredPassZTarget = NULL;
 
-            callingBin->getRenderPass()->setDepthTargetTexture(mTargetDepthStencilTexture[mTargetChainIdx]);
+            if(RenderPipeline::get())
+               RenderPipeline::get()->getRenderPass()->setDepthTargetTexture(mTargetDepthStencilTexture[mTargetChainIdx]);
          }
 
          // Run the PostEffect which copies data into the new target.
@@ -165,7 +167,9 @@ void RenderFormatToken::process(SceneRenderState *state, RenderPassStateBin *cal
          // Restore active z-target
          if(mTargetDepthStencilTexture[mTargetChainIdx].isValid())
          {
-            callingBin->getRenderPass()->setDepthTargetTexture(mStoredPassZTarget.getPointer());
+            if(RenderPipeline::get())
+               RenderPipeline::get()->getRenderPass()->setDepthTargetTexture(mStoredPassZTarget.getPointer());
+
             mStoredPassZTarget = NULL;
          }
 

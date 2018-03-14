@@ -27,7 +27,7 @@
 #include "core/stream/bitStream.h"
 #include "scene/sceneManager.h"
 #include "lighting/advanced/advancedLightManager.h"
-#include "lighting/advanced/advancedLightBinManager.h"
+//#include "lighting/advanced/advancedLightBinManager.h"
 #include "sfx/sfxAmbience.h"
 #include "sfx/sfxSoundscape.h"
 #include "sfx/sfxSystem.h"
@@ -349,12 +349,12 @@ void LevelInfo::_onLMActivate(const char *lm, bool enable)
 {
 #ifndef TORQUE_DEDICATED
    // Advanced light manager
-   if(enable && String(lm) == String("ADVLM"))
+   /*if(enable && String(lm) == String("ADVLM"))
    {
       AssertFatal(dynamic_cast<AdvancedLightManager *>(LIGHTMGR), "Bad light manager type!");
       AdvancedLightManager *lightMgr = static_cast<AdvancedLightManager *>(LIGHTMGR);
       lightMgr->getLightBinManager()->MRTLightmapsDuringDeferred(mAdvancedLightmapSupport);
-   }
+   }*/
 #endif
 }
 
