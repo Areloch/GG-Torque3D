@@ -301,7 +301,7 @@ function HDRPostFX::onEnabled( %this )
    // Reset the light manager which will ensure the new
    // hdr encoding takes effect in all the shaders and
    // that the offscreen surface is enabled.
-   resetLightManager();
+   //resetLightManager();
          
    return true;
 }
@@ -321,7 +321,7 @@ function HDRPostFX::onDisabled( %this )
             
    // Reset the light manager which will ensure the new
    // hdr encoding takes effect in all the shaders.
-   resetLightManager();
+   //resetLightManager();
 }
 
 singleton PostEffect( HDRPostFX )

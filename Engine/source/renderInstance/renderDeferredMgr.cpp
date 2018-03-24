@@ -356,7 +356,7 @@ void RenderDeferredMgr::render( SceneRenderState *state )
    }
 
    // Signal start of pre-pass
-   getRenderSignal().trigger( state, this, true );
+   //getRenderSignal().trigger( state, this, true );
    
    // First do a loop and render all the terrain... these are 
    // usually the big blockers in a scene and will save us fillrate
@@ -529,7 +529,7 @@ void RenderDeferredMgr::render( SceneRenderState *state )
    }
 
    // Signal end of pre-pass
-   getRenderSignal().trigger( state, this, false );
+   //getRenderSignal().trigger( state, this, false );
 
    //if(isRenderingToTarget)
    //   _onPostRender();

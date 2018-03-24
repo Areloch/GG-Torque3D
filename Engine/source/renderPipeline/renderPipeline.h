@@ -116,8 +116,11 @@ public:
 			RenderTargets renderTarget;
          NamedTexTarget namedTarget;
          GFXFormat targetFormat;
+
+         Point2I targetSize;
+
          GFXTextureTargetRef targetRef;
-         GBufferConditioner* conditioner;
+         ConditionerFeature* conditioner;
          GFXTexHandle handle;
 
          //RectI mTargetViewport;
@@ -150,9 +153,32 @@ public:
 
    Vector<RenderPassManager*> mRenderPasses;
 
+   Vector<PostEffect*> mPostEffects;
+
    RenderPassManager* mCurrentRenderPass;
 
    RenderPassManager* getRenderPass() { return mCurrentRenderPass; }
+
+   //
+   // Post Effect Stuff
+   //
+   /// A global flag for toggling the post effect system.  It
+   /// is tied to the $pref::enablePostEffects preference.
+   static bool smRenderEffects;
+
+   /// A copy of the last requested back buffer.
+   GFXTexHandle mBackBufferCopyTex;
+
+   //GFXTexHandle mBackBufferFloatCopyTex;
+
+   /// The target at the time the last back buffer
+   /// was copied.  Used to detect the need to recopy.
+   GFXTarget *mLastBackBufferTarget;
+
+   // State for current frame and last frame
+   bool mFrameStateSwitch;
+
+   PFXFrameState mFrameState[2];
 
 protected:
 
@@ -163,6 +189,8 @@ protected:
 	bool mSupportSSR;
 	bool mSupportSSAO;
 	bool mSupportHDR;
+
+   NamedTexTarget depthTarget;
 
 public:
    //
@@ -217,6 +245,9 @@ public:
    void addRenderBin(RenderBinManager* renderBinMgr);
    void addRenderPass(RenderPassManager* renderPassMgr);
 
+   void _onPassPreRender(SceneRenderState * state, bool preserve = false);
+   void _onPassPostRender();
+
    static RenderPipeline* get()
    {
       /*if (smRenderPipeline == nullptr)
@@ -245,7 +276,7 @@ public:
    static const GFXStateBlockDesc & getOpaqueStenciWriteDesc(bool lightmappedGeometry = true);
 
    bool setGBufferTargetSizes(Point2I targetSize);
-   bool setGBufferTarget(StringTableEntry bufferName, StringTableEntry targetName, StringTableEntry formatName);
+   bool addRenderTarget(StringTableEntry targetName, StringTableEntry formatName, Point2I targetSize);
 
    RenderPipeline* initPipeline()
    {

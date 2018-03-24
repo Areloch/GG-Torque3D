@@ -53,7 +53,7 @@
 
 
 class AvailableSLInterfaces;
-//class AdvancedLightBinManager;
+class AdvancedLightBinManager;
 //class RenderDeferredMgr;
 class BaseMatInstance;
 class MaterialParameters;
@@ -66,6 +66,7 @@ class ShadowMapManager;
 class AdvancedLightManager : public LightManager
 {
    typedef LightManager Parent;
+   friend class RenderPipeline;
 
 public:
 
@@ -115,7 +116,7 @@ protected:
    AdvancedLightManager();
    virtual ~AdvancedLightManager();
 
-   //SimObjectPtr<AdvancedLightBinManager> mLightBinManager;
+   SimObjectPtr<AdvancedLightBinManager> mLightBinManager;
 
    //SimObjectPtr<RenderDeferredMgr> mDeferredRenderBin;
 

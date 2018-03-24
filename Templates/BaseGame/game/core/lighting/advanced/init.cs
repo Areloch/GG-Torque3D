@@ -63,6 +63,6 @@ function onDeactivateAdvancedLM()
 
 function setAdvancedLighting()
 {
-   setLightManager( "Advanced Lighting" );   
+   //setLightManager( "Advanced Lighting" );   
 }
 

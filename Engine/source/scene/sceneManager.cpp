@@ -672,12 +672,12 @@ bool SceneManager::setLightManager( const char* lmName )
    if ( !lm )
       return false;
 
-   return _setLightManager( lm );
+   return setLightManager( lm );
 }
 
 //-----------------------------------------------------------------------------
 
-bool SceneManager::_setLightManager( LightManager* lm )
+bool SceneManager::setLightManager( LightManager* lm )
 {
    // Avoid unnecessary work reinitializing materials.
    if ( lm == mLightManager )

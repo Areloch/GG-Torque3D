@@ -81,6 +81,7 @@ public:
 class AdvancedLightBinManager : public RenderBinManager
 {
    typedef RenderBinManager Parent;
+   friend class RenderPipeline;
 
 public:
 

@@ -37,6 +37,9 @@
 #ifndef _SCENEMANAGER_H_
 #include "scene/sceneManager.h"
 #endif
+#ifndef _POST_EFFECT_H_
+#include "postFx/postEffect.h"
+#endif
 
 class SceneRenderState;
 class ISceneObject;
@@ -48,6 +51,8 @@ class LightInfo;
 struct RenderInst;
 class MatrixSet;
 class GFXPrimitiveBufferHandle;
+class RenderPipeline;
+class RenderFormatToken;
 
 /// A RenderInstType hash value.
 typedef U32 RenderInstTypeHash;
@@ -96,6 +101,7 @@ public:
 class RenderPassManager : public SimObject
 {
    typedef SimObject Parent;
+   friend class RenderPipeline;
 
 public:   
 
@@ -206,6 +212,9 @@ public:
 
    /// @}
 
+   void addRenderTarget(String renderTargetName);
+   void addPostEffect(String postEffectName);
+
    /// Get scene manager which this render pass belongs to.
    SceneManager* getSceneManager()
    {
@@ -247,7 +256,6 @@ protected:
       
    Vector< RenderBinManager* > mRenderBins;
 
-
    typedef HashTable<RenderInstTypeHash,AddInstSignal> AddInstTable;
 
    AddInstTable mAddInstSignals;
@@ -256,8 +264,41 @@ protected:
    GFXTexHandle mDepthBuff;
    MatrixSet *mMatrixSet;
 
+   //Render Targets utilized by the render pass
+   U32 mTargetChainLength;
+   U32 mTargetChainIdx;
+   U32 mNumRenderTargets;
+   GFXTextureTargetRef *mTargetChain;
+   GFXTexHandle **mTargetChainTextures;
+
+public:
+   //
+   // Pass configuration
+   struct RenderOrderEntry
+   {
+      enum ROE_Type
+      {
+         ROE_PostEffect = 0,
+         ROE_RenderBin
+      };
+
+      ROE_Type type;
+
+      RenderBinManager* mRenderBin;
+      PostEffect* mPostEffect;
+   };
+
+   Vector<StringTableEntry> mRenderTargetNames;
+   Vector<RenderOrderEntry> mRenderOrderEntries;
+   bool mIsForwardPass;
+   StringTableEntry        mMaterialOverrideHook;
+   
+   RenderFormatToken*      mFormatToken;
+
    /// Do a sorted insert into a vector, renderOrder bool controls which test we run for insertion.
    void _insertSort(Vector<RenderBinManager*>& list, RenderBinManager* mgr, bool renderOrder);
+
+   inline BaseMatInstance* getMatHookOverrideMaterial(BaseMatInstance *mat);
 };
 
 //**************************************************************************

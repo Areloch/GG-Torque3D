@@ -166,9 +166,6 @@ class SceneManager
       /// Global ambient light level in the scene.
       AmbientLightInterpolator mAmbientLightColor;
 
-      /// Deactivates the previous light manager and activates the new one.
-      bool _setLightManager( LightManager *lm );
-
       /// @}
 
       /// @name Rendering
@@ -269,6 +266,9 @@ class SceneManager
 
       /// Finds the light manager by name and activates it.
       bool setLightManager( const char *lmName );
+
+      /// Deactivates the previous light manager and activates the new one.
+      bool setLightManager(LightManager *lm);
 
       /// Return the current global ambient light color.
       const LinearColorF& getAmbientLightColor() const { return mAmbientLightColor.getCurrentValue(); }

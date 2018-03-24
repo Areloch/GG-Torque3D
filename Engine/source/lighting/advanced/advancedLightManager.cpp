@@ -484,18 +484,18 @@ void AdvancedLightManager::registerGlobalLight(LightInfo *light, SimObject *obj)
    Parent::registerGlobalLight( light, obj );
 
    // Pass the volume lights to the bin manager.
-   if (  RenderPipeline::get()->mLightBinManager &&
+   if (  mLightBinManager &&
          (  light->getType() == LightInfo::Point ||
             light->getType() == LightInfo::Spot ) )
-      RenderPipeline::get()->mLightBinManager->addLight( light );
+      mLightBinManager->addLight( light );
 }
 
 void AdvancedLightManager::unregisterAllLights()
 {
    Parent::unregisterAllLights();
 
-   if (RenderPipeline::get()->mLightBinManager )
-      RenderPipeline::get()->mLightBinManager->clearAllLights();
+   if (mLightBinManager )
+      mLightBinManager->clearAllLights();
 }
 
 bool AdvancedLightManager::setTextureStage(  const SceneData &sgData,

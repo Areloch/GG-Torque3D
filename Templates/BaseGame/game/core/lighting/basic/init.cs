@@ -88,5 +88,5 @@ function onDeactivateBasicLM()
 
 function setBasicLighting()
 {
-   setLightManager( "Basic Lighting" );   
+   //setLightManager( "Basic Lighting" );   
 }

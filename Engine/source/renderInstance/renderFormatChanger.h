@@ -36,6 +36,7 @@ class PostEffect;
 class RenderFormatToken : public RenderPassStateToken
 {
    typedef RenderPassStateToken Parent;
+   friend class RenderPipeline;
 
 public:
    enum FormatTokenState

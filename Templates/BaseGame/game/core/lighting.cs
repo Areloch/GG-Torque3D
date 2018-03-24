@@ -42,7 +42,7 @@ function initLightingSystems(%manager)
    }
 
    // Try the perfered one first.
-   %success = setLightManager(%manager);
+   /*%success = setLightManager(%manager);
 
    // Did we completely fail to initialize a light manager?   
    if (!%success)
@@ -50,7 +50,7 @@ function initLightingSystems(%manager)
       // If we completely failed to initialize a light 
       // manager then the 3d scene cannot be rendered.
       quitWithErrorMessage( "Failed to set a light manager!" );
-   }
+   }*/
 }
 
 //---------------------------------------------------------------------------------------------

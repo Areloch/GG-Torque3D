@@ -637,9 +637,7 @@ void DeferredMinnaertHLSL::setTexData( Material::StageData &stageDat,
 {
    if( !fd.features[MFT_ForwardShading] && fd.features[MFT_RTLighting] )
    {
-      NamedTexTarget *texTarget = &RenderPipeline::get()->getGBuffer()->findBufferByName(RenderPipeline::NormalBufferName)->namedTarget;
-
-      //NamedTexTarget *texTarget = NamedTexTarget::find(RenderDeferredMgr::BufferName);
+      NamedTexTarget *texTarget = NamedTexTarget::find(RenderPipeline::NormalBufferName);
       if ( texTarget )
       {
          passData.mTexType[texIndex] = Material::TexTarget;
@@ -655,8 +653,7 @@ void DeferredMinnaertHLSL::processPixMacros( Vector<GFXShaderMacro> &macros,
    if( !fd.features[MFT_ForwardShading] && fd.features[MFT_RTLighting] )
    {
       // Pull in the uncondition method for the g buffer
-      //NamedTexTarget *texTarget = NamedTexTarget::find( RenderDeferredMgr::BufferName );
-      NamedTexTarget *texTarget = &RenderPipeline::get()->getGBuffer()->findBufferByName(RenderPipeline::NormalBufferName)->namedTarget;
+      NamedTexTarget *texTarget = NamedTexTarget::find(RenderPipeline::NormalBufferName);
 
       if ( texTarget && texTarget->getConditioner() )
       {

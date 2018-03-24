@@ -40,7 +40,7 @@
 #include "core/util/safeDelete.h"
 #include "math/util/matrixSet.h"
 #include "console/engineAPI.h"
-
+#include "renderInstance/renderDeferredMgr.h"
 
 const RenderInstType RenderInstType::Invalid( "" );
 
@@ -125,9 +125,21 @@ RenderPassManager::RenderBinEventSignal& RenderPassManager::getRenderBinSignal()
 void RenderPassManager::initPersistFields()
 {
    Parent::initPersistFields();
+
+   addField("materailHook", TypeString, Offset(mMaterialOverrideHook, RenderPassManager), "The hook name for special pass material overrides");
+   addField("forwardPass", TypeBool, Offset(mIsForwardPass, RenderPassManager), "If the pass is forward-rendered");
+
+   addField("formatToken", TypeSimObjectPtr, Offset(mFormatToken, RenderPassManager), "If the pass is forward-rendered");
 }
 
-RenderPassManager::RenderPassManager()
+RenderPassManager::RenderPassManager() :  mTargetChainLength(1),
+                                          mTargetChainIdx(0),
+                                          mNumRenderTargets(1),
+                                          mTargetChain(NULL),
+                                          mTargetChainTextures(NULL),
+                                          mMaterialOverrideHook(StringTable->EmptyString()),
+                                          mIsForwardPass(false),
+                                          mFormatToken(NULL)
 {   
    mSceneManager = NULL;
    VECTOR_SET_ASSOCIATION( mRenderBins );
@@ -181,6 +193,13 @@ void RenderPassManager::addManager(RenderBinManager* mgr)
    mgr->addRenderPass(this);
 
    _insertSort(mRenderBins, mgr, true);
+
+   //entry order
+   RenderOrderEntry newOrderEntry;
+   newOrderEntry.type = RenderOrderEntry::ROE_RenderBin;
+   newOrderEntry.mRenderBin = mgr;
+
+   mRenderOrderEntries.push_back(newOrderEntry);
 }
 
 void RenderPassManager::removeManager(RenderBinManager* mgr)
@@ -247,8 +266,29 @@ void RenderPassManager::render(SceneRenderState * state)
    GFX->pushWorldMatrix();
    MatrixF proj = GFX->getProjectionMatrix();
 
+   //Establish our render targets for this pass
+   GFXTexHandle chainTex; //utilized to pass posteffect to posteffect in this pass
+
+   for (Vector<RenderOrderEntry>::iterator itr = mRenderOrderEntries.begin();
+      itr != mRenderOrderEntries.end(); itr++)
+   {
+      RenderOrderEntry* entry = itr;
+
+      if (entry->type == RenderOrderEntry::ROE_RenderBin)
+      {
+         AssertFatal(entry->mRenderBin, "Invalid render manager!");
+         getRenderBinSignal().trigger(entry->mRenderBin, state, true);
+         entry->mRenderBin->render(state);
+         getRenderBinSignal().trigger(entry->mRenderBin, state, false);
+      }
+      else if(entry->type == RenderOrderEntry::ROE_PostEffect)
+      {
+         AssertFatal(entry->mPostEffect, "Invalid post effect!");
+         entry->mPostEffect->process(state, chainTex);
+      }
+   }
    
-   for (Vector<RenderBinManager *>::iterator itr = mRenderBins.begin();
+   /*for (Vector<RenderBinManager *>::iterator itr = mRenderBins.begin();
       itr != mRenderBins.end(); itr++)
    {
       RenderBinManager *curBin = *itr;
@@ -256,7 +296,7 @@ void RenderPassManager::render(SceneRenderState * state)
       getRenderBinSignal().trigger(curBin, state, true);
       curBin->render(state);
       getRenderBinSignal().trigger(curBin, state, false);
-   }
+   }*/
 
    GFX->popWorldMatrix();
    GFX->setProjectionMatrix( proj );
@@ -338,6 +378,27 @@ void RenderPassManager::assignSharedXform( SharedTransformType stt, const Matrix
       mMatrixSet->setSceneProjection(xfm);
 }
 
+//
+void RenderPassManager::addRenderTarget(String renderTargetName)
+{
+   StringTableEntry targetName = StringTable->insert(renderTargetName.c_str());
+
+   mRenderTargetNames.push_back(targetName);
+}
+
+void RenderPassManager::addPostEffect(String postEffectName)
+{
+   StringTableEntry postFxName = StringTable->insert(postEffectName.c_str());
+
+   RenderOrderEntry newOrderEntry;
+   newOrderEntry.type = RenderOrderEntry::ROE_PostEffect;
+
+   if (Sim::findObject(postFxName, newOrderEntry.mPostEffect))
+   {
+      mRenderOrderEntries.push_back(newOrderEntry);
+   }
+}
+
 // Script interface
 
 DefineEngineMethod(RenderPassManager, getManagerCount, S32, (),, 
@@ -368,4 +429,19 @@ DefineEngineMethod( RenderPassManager, removeManager, void, ( RenderBinManager *
    if ( renderBin )
       object->removeManager( renderBin );
 }
+
+DefineEngineMethod(RenderPassManager, addRenderTarget, void, (String renderTargetName), (""),
+   "Removes a render bin manager.")
+{
+   object->addRenderTarget(renderTargetName);
+}
+
+DefineEngineMethod(RenderPassManager, addPostEffect, void, (String postEffectName), (""),
+   "Removes a render bin manager.")
+{
+   object->addPostEffect(postEffectName);
+}
+
+
+
 

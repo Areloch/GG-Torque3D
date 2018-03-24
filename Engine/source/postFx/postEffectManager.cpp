@@ -108,7 +108,7 @@ void PostEffectManager::_handleBinEvent( RenderBinManager *bin,
                                                 const SceneRenderState* sceneState,
                                                 bool isBinStart )
 {
-   if (  sceneState->isShadowPass() || 
+   /*if (  sceneState->isShadowPass() || 
          sceneState->isOtherPass() )
       return;
 
@@ -118,7 +118,9 @@ void PostEffectManager::_handleBinEvent( RenderBinManager *bin,
    if ( binName.isEmpty() )
       return;
 
-   renderEffects( sceneState, isBinStart ? PFXBeforeBin : PFXAfterBin, binName );
+   renderEffects( sceneState, isBinStart ? PFXBeforeBin : PFXAfterBin, binName );*/
+
+   //This is handled by the render pipeline's explicit ordering, now
 }
 
 void PostEffectManager::_onPostRenderPass( SceneManager *sceneGraph, const SceneRenderState *sceneState )

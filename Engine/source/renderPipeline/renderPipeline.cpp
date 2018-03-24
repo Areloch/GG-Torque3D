@@ -32,6 +32,8 @@
 
 #include "scene/reflectionManager.h"
 
+#include "renderInstance/renderFormatChanger.h"
+
 //#include "lighting/advanced/advancedLightBinManager.h"
 #include "lighting/advanced/advancedLightingFeatures.h"
 #include "lighting/shadowMap/shadowMapManager.h"
@@ -50,6 +52,8 @@
 #  include "lighting/advanced/glsl/advancedLightingFeaturesGLSL.h"
 #endif
 
+#include "lighting/advanced/advancedLightBufferConditioner.h"
+
 #define RENDER_PIPELINE
 
 RenderPipeline* RenderPipeline::smRenderPipeline(0);
@@ -66,6 +70,7 @@ SceneCameraState RenderPipeline::smLockedDiffuseCamera = SceneCameraState(RectI(
 RenderPipeline::RenderPipeline()
 {
    mPipelineName = StringTable->EmptyString();
+   mCurrentRenderPass = nullptr;
 }
 
 bool RenderPipeline::onAdd()
@@ -102,6 +107,8 @@ void RenderPipeline::initialize()
    //If it fails, bail out now
    if (!initPipeline())
       return;
+
+   mCurrentRenderPass = nullptr;
 
    //Begin the real setup of the pipeline's behavior. This informs the rest of the rendering's configuration
    if (mSupportGBuffer)
@@ -145,6 +152,25 @@ void RenderPipeline::initialize()
    setupPasses();
 
    registerMaterialFeatures();
+
+   //special-handle our lighting manager and bin for now
+   gClientSceneGraph->setLightManager("Advanced Lighting");
+   
+   StringTableEntry lightBinName = StringTable->insert("LightBin");
+   for (U32 i = 0; i < mRenderBins.size(); i++)
+   {
+      if (mRenderBins[i]->getName() == lightBinName)
+      {
+         AdvancedLightBinManager* lightBin = dynamic_cast<AdvancedLightBinManager*>(mRenderBins[i]);
+         
+         AdvancedLightManager* lm = dynamic_cast<AdvancedLightManager*>(LIGHTMGR);
+         lightBin->mLightManager = lm;
+         lightBin->mShadowManager = SHADOWMGR;
+
+         lm->mLightBinManager = lightBin;
+         break;
+      }
+   }
 
    mShadowMapPass = new ShadowMapPass(LIGHTMGR);
 }
@@ -849,8 +875,12 @@ void RenderPipeline::_renderScene(SceneRenderState* state, U32 objectMask, Scene
       //cache the current render pass so the bins know what they're supposed to be referencing
       mCurrentRenderPass = mRenderPasses[i];
 
+      _onPassPreRender(state);
+
       //Tell them to do their work
       mRenderPasses[i]->render(state);
+
+      _onPassPostRender();
    }
 
    //we can finally clear the render insts
@@ -994,7 +1024,7 @@ bool RenderPipeline::setGBufferTargetSizes(Point2I targetSize)
    return true;
 }
 
-bool RenderPipeline::setGBufferTarget(StringTableEntry bufferName, StringTableEntry targetName, StringTableEntry formatName)
+bool RenderPipeline::addRenderTarget(StringTableEntry bufferName, StringTableEntry formatName, Point2I targetSize)
 {
    //Example of the diffuse buffer getting set up
    /*if (mColorTex.getFormat() != colorFormat || mColorTex.getWidthHeight() != mTargetSize || GFX->recentlyReset())
@@ -1012,7 +1042,7 @@ bool RenderPipeline::setGBufferTarget(StringTableEntry bufferName, StringTableEn
    bool ret = true;
 
    //if (!mSupportGBuffer)
-      return false;
+      //return false;
 
    GBuffer::Buffer* buffer = mGBuffer.findBufferByName(bufferName);
 
@@ -1026,6 +1056,8 @@ bool RenderPipeline::setGBufferTarget(StringTableEntry bufferName, StringTableEn
 
       buffer->bufferName = bufferName;
       buffer->targetFormat = parseFormatString(formatName);
+
+      buffer->targetSize = targetSize;
 
       if (buffer->targetFormat == GFXFormat::GFXFormat_UNKNOWNSIZE)
          return false;
@@ -1041,7 +1073,24 @@ bool RenderPipeline::setGBufferTarget(StringTableEntry bufferName, StringTableEn
    //buffer->handle = GFXTexHandle(256,256, buffer->targetFormat, &GFXRenderTargetProfile, avar("%s() - (line %d)", __FUNCTION__, __LINE__), 1, GFXTextureManager::AA_MATCH_BACKBUFFER);
    //buffer->targetRef->attachTexture(GFXTextureTarget::RenderSlot(GFXTextureTarget::Color0), buffer->handle);
 
-   buffer->conditioner = new GBufferConditioner(buffer->targetFormat, GBufferConditioner::RGB);
+   //Set up the conditioner for the buffer. 
+   /*GBuffer::Conditioners* cond = mGBuffer.findConditioner(buffer->targetFormat);
+   if (!cond)
+   {
+      GBuffer::Conditioners newCond;
+      newCond.format = buffer->targetFormat;
+      newCond.conditioner = 
+      mGBuffer.mConditioners.push_back(newCond);
+
+      cond = &mGBuffer.mConditioners.last();
+   }*/
+
+   if (buffer->bufferName == RenderPipeline::NormalBufferName)
+      buffer->conditioner = new GBufferConditioner(buffer->targetFormat, GBufferConditioner::RGB);
+   else if (buffer->bufferName == RenderPipeline::LightInfoBufferName)
+      buffer->conditioner = new AdvancedLightBufferConditioner(buffer->targetFormat, AdvancedLightBufferConditioner::RGB);
+   else
+      buffer->conditioner = nullptr;
 
    buffer->namedTarget.setSamplerState(GFXSamplerStateDesc::getClampPoint());
    buffer->namedTarget.setConditioner(buffer->conditioner);
@@ -1053,6 +1102,184 @@ bool RenderPipeline::setGBufferTarget(StringTableEntry bufferName, StringTableEn
 
    return true;
 }
+
+// Target management
+void RenderPipeline::_onPassPreRender(SceneRenderState * state, bool preserve /* = false */)
+{
+   PROFILE_SCOPE(RenderTexTargetBinManager_onPreRender);
+
+   mCurrentRenderState = state;
+
+/*#ifndef TORQUE_SHIPPING
+   AssertFatal(m_NeedsOnPostRender == false, "_onPostRender not called on RenderTexTargetBinManager, or sub-class.");
+   m_NeedsOnPostRender = false;
+#endif*/
+
+   // Update the render target size
+   /*const Point2I &rtSize = GFX->getActiveRenderTarget()->getSize();
+   switch (mTargetSizeType)
+   {
+      case WindowSize:
+         setTargetSize(rtSize);
+         break;
+      case WindowSizeScaled:
+      {
+         Point2I scaledTargetSize(mFloor(rtSize.x * mTargetScale.x), mFloor(rtSize.y * mTargetScale.y));
+         setTargetSize(scaledTargetSize);
+         break;
+      }
+      case FixedSize:
+         // No adjustment necessary
+         break;
+   }
+
+   if (mTargetChainLength == 0)
+      return false;*/
+
+   //We need to get and set all the targets that the pass expects.
+   //The first one is the one set as the active render target
+   //And any others are set as attached textures
+
+   if (!mSupportGBuffer || mCurrentRenderPass->mRenderTargetNames.size() == 0)
+   {
+      return;
+   }
+
+   if (mCurrentRenderPass->mFormatToken == nullptr)
+   {
+      GBuffer::Buffer* primaryRenderTargetBuffer = mGBuffer.findBufferByName(mCurrentRenderPass->mRenderTargetNames[0]);
+
+      if (primaryRenderTargetBuffer == nullptr || !primaryRenderTargetBuffer->targetRef.isValid())
+      {
+         Con::errorf("RenderPipeline::_onPassPreRender - Attempted to use an invalid target as the pass' primary render target!");
+         return;
+      }
+
+      // Attach active depth target texture
+      primaryRenderTargetBuffer->targetRef->attachTexture(GFXTextureTarget::DepthStencil, getRenderPass()->getDepthTargetTexture());
+
+      // Preserve contents
+      if (preserve)
+         GFX->getActiveRenderTarget()->preserve();
+
+      GFX->pushActiveRenderTarget();
+      GFX->setActiveRenderTarget(primaryRenderTargetBuffer->targetRef);
+      GFX->setViewport(primaryRenderTargetBuffer->namedTarget.getViewport());
+
+      //roll through all our other pass targets and prep them now that the initial target is bound
+      for (U32 i = 1; i < mCurrentRenderPass->mRenderTargetNames.size(); i++)
+      {
+         GBuffer::Buffer* targetBuffer = mGBuffer.findBufferByName(mCurrentRenderPass->mRenderTargetNames[i]);
+
+         //GFX->setViewport(targetBuffer->namedTarget.getViewport());
+         primaryRenderTargetBuffer->targetRef->attachTexture(GFXTextureTarget::RenderSlot(GFXTextureTarget::Color0 + i), targetBuffer->namedTarget.getTexture());
+      }
+
+   }
+   else
+   {
+      //Forward pass, so we do our backbuffer swap voodoo here
+      GBuffer::Buffer* primaryRenderTargetBuffer = mGBuffer.findBufferByName(mCurrentRenderPass->mRenderTargetNames[0]);
+
+      primaryRenderTargetBuffer->namedTarget.setViewport(GFX->getViewport());
+
+      // Update targets
+      //_updateTargets();
+
+      // If we have a copy PostEffect then get the active backbuffer copy 
+      // now before we swap the render targets.
+      GFXTexHandle curBackBuffer;
+      if (mCurrentRenderPass->mFormatToken->mCopyPostEffect.isValid())
+         curBackBuffer = PFXMGR->getBackBufferTex();
+
+      // Push target
+      GFX->pushActiveRenderTarget();
+      GFX->setActiveRenderTarget(primaryRenderTargetBuffer->targetRef);
+
+      // Set viewport
+      GFX->setViewport(primaryRenderTargetBuffer->namedTarget.getViewport());
+
+      // Clear
+      GFX->clear(GFXClearTarget | GFXClearZBuffer | GFXClearStencil, /*gCanvasClearColor*/LinearColorF::BLACK, 1.0f, 0);
+
+      // Set active z target on render pass
+      if (mCurrentRenderPass->mFormatToken->mTargetDepthStencilTexture[0].isValid())
+      {
+         if (mCurrentRenderPass->getDepthTargetTexture() != GFXTextureTarget::sDefaultDepthStencil)
+            mCurrentRenderPass->mFormatToken->mStoredPassZTarget = mCurrentRenderPass->getDepthTargetTexture();
+         else
+            mCurrentRenderPass->mFormatToken->mStoredPassZTarget = NULL;
+
+         mCurrentRenderPass->setDepthTargetTexture(mCurrentRenderPass->mFormatToken->mTargetDepthStencilTexture[0]);
+      }
+
+      // Run the PostEffect which copies data into the new target.
+      if (mCurrentRenderPass->mFormatToken->mCopyPostEffect.isValid())
+         mCurrentRenderPass->mFormatToken->mCopyPostEffect->process(state, curBackBuffer, &mCurrentRenderPass->mFormatToken->mTarget.getViewport());
+   }
+
+/*#ifndef TORQUE_SHIPPING
+   m_NeedsOnPostRender = true;
+#endif*/
+}
+
+void RenderPipeline::_onPassPostRender()
+{
+   PROFILE_SCOPE(RenderTexTargetBinManager_onPostRender);
+
+/*#ifndef TORQUE_SHIPPING
+   m_NeedsOnPostRender = false;
+#endif*/
+
+
+   if (!mSupportGBuffer || mCurrentRenderPass->mRenderTargetNames.size() == 0)
+   {
+      return;
+   }
+
+   if (mCurrentRenderPass->mFormatToken == nullptr)
+   {
+      GBuffer::Buffer* primaryRenderTargetBuffer = mGBuffer.findBufferByName(mCurrentRenderPass->mRenderTargetNames[0]);
+
+      primaryRenderTargetBuffer->targetRef->resolve();
+
+      GFX->popActiveRenderTarget();
+
+   }
+   else
+   {
+      //Forward pass, so do our backbuffer swap voodoo here
+      // Pop target
+      GBuffer::Buffer* primaryRenderTargetBuffer = mGBuffer.findBufferByName(mCurrentRenderPass->mRenderTargetNames[0]);
+
+      AssertFatal(GFX->getActiveRenderTarget() == primaryRenderTargetBuffer->targetRef, "Render target stack went wrong somewhere");
+      primaryRenderTargetBuffer->targetRef->resolve();
+      GFX->popActiveRenderTarget();
+      primaryRenderTargetBuffer->namedTarget.setTexture(mCurrentRenderPass->mFormatToken->mTargetColorTexture[0]);
+
+      // This is the GFX viewport when we were first processed.
+      GFX->setViewport(primaryRenderTargetBuffer->namedTarget.getViewport());
+
+      // Restore active z-target
+      if (mCurrentRenderPass->mFormatToken->mTargetDepthStencilTexture[0].isValid())
+      {
+         mCurrentRenderPass->setDepthTargetTexture(mCurrentRenderPass->mFormatToken->mStoredPassZTarget.getPointer());
+         mCurrentRenderPass->mFormatToken->mStoredPassZTarget = NULL;
+      }
+
+      // Run the PostEffect which copies data to the backbuffer
+      if (mCurrentRenderPass->mFormatToken->mResolvePostEffect.isValid())
+      {
+         // Need to create a texhandle here, since inOutTex gets assigned during process()
+         GFXTexHandle inOutTex = mCurrentRenderPass->mFormatToken->mTargetColorTexture[0];
+         mCurrentRenderPass->mFormatToken->mResolvePostEffect->process(mCurrentRenderState, inOutTex, &primaryRenderTargetBuffer->namedTarget.getViewport());
+      }
+   }
+
+   //for (U32 i = 0; i < mNumRenderTargets; i++)
+   //   mNamedTarget.setTexture(i, mTargetChainTextures[mTargetChainIdx][i]);
+}
+//
 
 //
 //GBuffer stuff
@@ -1086,9 +1313,9 @@ DefineEngineMethod(RenderPipeline, shutDown, void, (), , "")
    object->shutDownPipeline();
 }
 
-DefineEngineMethod(RenderPipeline, setGBufferTarget, bool, (const char* bufferName, const char* targetName, const char* formatName), ("", "", ""), "")
+DefineEngineMethod(RenderPipeline, addRenderTarget, bool, (const char* targetName, const char* formatName, Point2I targetSize), ("", "", Point2I::Zero), "")
 {
-   bool ret = object->setGBufferTarget(StringTable->insert(bufferName), StringTable->insert(targetName), StringTable->insert(formatName));
+   bool ret = object->addRenderTarget(StringTable->insert(targetName), StringTable->insert(formatName), targetSize);
    return ret;
 }
 
@@ -1101,4 +1328,3 @@ DefineEngineMethod(RenderPipeline, addRenderPass, void, (RenderPassManager* rend
 {
    object->addRenderPass(renderPassMgr);
 }
-

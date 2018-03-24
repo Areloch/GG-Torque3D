@@ -4,8 +4,7 @@ new RenderPipeline(DeferredRenderPipeline)
    supportHDR = true;
    supportSSAO = true;
    supportSSR = false;
-   
-   renderPassManager = DiffuseRenderPassManager;
+   supportPostEffects = true;
 };
 
 function DeferredRenderPipeline::setupBuffers(%this)
@@ -14,20 +13,22 @@ function DeferredRenderPipeline::setupBuffers(%this)
    echo(%this.pipelineName @ " - setting up the buffers!");
    echo("================================================");
    
-   %success = %this.setGBufferTarget("color", "deferred", "GFXFormatR16G16B16A16");
+   %success = %this.addRenderTarget("backBuffer", "GFXFormatR8G8B8A8_SRGB");
    
-   %success = %this.setGBufferTarget("normal", "normal", "GFXFormatR16G16B16A16");
-   %success = %this.setGBufferTarget("matinfo", "deferred", "GFXFormatR16G16B16A16");
+   %success = %this.addRenderTarget("color", "GFXFormatR16G16B16A16");
    
-   %success = %this.setGBufferTarget("lightInfo", "lightInfo", "GFXFormatR16G16B16A16F");
+   %success = %this.addRenderTarget("deferred", "GFXFormatR16G16B16A16");
+   %success = %this.addRenderTarget("matinfo", "GFXFormatR16G16B16A16");
+   
+   %success = %this.addRenderTarget("lightInfo", "GFXFormatR16G16B16A16F");
 }
 
 function DeferredRenderPipeline::setupRenderBins(%this)
 {
    //Set up our bins
    //Core bins
-   //new RenderDeferredMgr( DeferredBin );
-   //new AdvancedLightBinManager( LightBin );
+   %this.addRenderBin(new RenderDeferredMgr( DeferredBin ));
+   %this.addRenderBin(new AdvancedLightBinManager( LightBin ));
    
    %this.addRenderBin(new RenderObjectMgr(SkyBin) { bintype = "Sky";  });
    %this.addRenderBin(new RenderTerrainMgr(TerrainBin)   {  });
@@ -49,38 +50,67 @@ function DeferredRenderPipeline::setupRenderBins(%this)
 
 function DeferredRenderPipeline::setupPasses(%this)
 {
-   %this.addRenderPass(new RenderPassManager(GBufferRenderPass)
+   new RenderFormatToken(DeferredRPFormatToken)
    {
-      materialHook = "deferred";
-      bufferTarget[0] = "color";
-      bufferTarget[1] = "deferred";
-      bufferTarget[2] = "matinfo";
-   });
+      enabled = "false";
+      //When hdr is enabled this will be changed to the appropriate format
+      format = "GFXFormatR8G8B8A8_SRGB";
+      depthFormat = "GFXFormatD24S8";
+      aaLevel = 0; // -1 = match backbuffer
+      
+      // The contents of the back buffer before this format token is executed
+      // is provided in $inTex
+      copyEffect = "AL_FormatCopy";
+      
+      // The contents of the render target created by this format token is
+      // provided in $inTex
+      resolveEffect = "AL_FormatCopy";
+   };
    
-   GBufferRenderPass.addManager(TerrainBin);
+   //GBuffer assembly pass
+   new RenderPassManager(GBufferRenderPass);
+   
+   GBufferRenderPass.addRenderTarget("deferred");
+   GBufferRenderPass.addRenderTarget("color");
+   GBufferRenderPass.addRenderTarget("matinfo");
+   
+   GBufferRenderPass.addManager(DeferredBin);
+   
+   /*GBufferRenderPass.addManager(TerrainBin);
    GBufferRenderPass.addManager(MeshBin);
    GBufferRenderPass.addManager(ObjectBin);
    GBufferRenderPass.addManager(DecalRoadBin);
-   GBufferRenderPass.addManager(DecalBin);
+   GBufferRenderPass.addManager(DecalBin);*/
    
-   %this.addRenderPass(new RenderPassManager( LightRenderPass )
-   {
-      bufferTarget[0] = "lightInfo";
-   });
+   GBufferRenderPass.addPostEffect(SSAOPostFx);
    
-   //LightRenderPass.addManager(LightBin);
-   LightRenderPass.addManager(TerrainBin);
+   %this.addRenderPass(GBufferRenderPass);
+   
+   //Lighting pass
+   new RenderPassManager( LightRenderPass );
+   
+   LightRenderPass.addRenderTarget("lightInfo");
+   
+   LightRenderPass.addManager(LightBin);
+   /*LightRenderPass.addManager(TerrainBin);
    LightRenderPass.addManager(MeshBin);
    LightRenderPass.addManager(ObjectBin);
    LightRenderPass.addManager(DecalRoadBin);
-   LightRenderPass.addManager(DecalBin);
+   LightRenderPass.addManager(DecalBin);*/
    
-   %this.addRenderPass(new RenderPassManager( ForwardRenderPass )
+   LightRenderPass.addPostEffect(AL_DeferredShading);
+   
+   //%this.addRenderPass(LightRenderPass);
+   
+   //Forward Rendering pass
+   new RenderPassManager( ForwardRenderPass )
    {
       forwardPass = true;
-      bufferTarget[0] = "depth";
-      bufferTarget[1] = "backbuffer";
-   });
+      formatToken = DeferredRPFormatToken;
+   };
+   
+   ForwardRenderPass.addRenderTarget("backBuffer");
+   //ForwardRenderPass.addRenderTarget("depth");
    
    ForwardRenderPass.addManager(SkyBin);
    ForwardRenderPass.addManager(TerrainBin);
@@ -90,7 +120,12 @@ function DeferredRenderPipeline::setupPasses(%this)
    ForwardRenderPass.addManager(ShadowBin);
    ForwardRenderPass.addManager(DecalRoadBin);
    ForwardRenderPass.addManager(DecalBin);
-	ForwardRenderPass.addManager(OccluderBin);
+   ForwardRenderPass.addManager(OccluderBin);
+	
+   ForwardRenderPass.addPostEffect(EdgeDetectPostEffect);
+   ForwardRenderPass.addPostEffect(UnderwaterFogPostFx);
+   ForwardRenderPass.addPostEffect(FogPostFx);
+	
    ForwardRenderPass.addManager(ObjTranslucentBin);
    ForwardRenderPass.addManager(WaterBin);
    ForwardRenderPass.addManager(FoliageBin);
@@ -98,5 +133,16 @@ function DeferredRenderPipeline::setupPasses(%this)
    ForwardRenderPass.addManager(TranslucentBin);
    ForwardRenderPass.addManager(FogBin);   
    ForwardRenderPass.addManager(GlowBin);   
-   ForwardRenderPass.addManager(EditorBin);   
+   
+   ForwardRenderPass.addPostEffect(GlowPostFx);
+   ForwardRenderPass.addPostEffect(VolFogGlowPostFx);
+   ForwardRenderPass.addPostEffect(DOFPostEffect);
+   ForwardRenderPass.addPostEffect(VignettePostEffect);
+   ForwardRenderPass.addPostEffect(LightRayPostFX);
+   ForwardRenderPass.addPostEffect(GammaPostFX);
+   ForwardRenderPass.addPostEffect(HDRPostFX);
+   
+   ForwardRenderPass.addManager(EditorBin); 
+   
+   //%this.addRenderPass(ForwardRenderPass);
 }
