@@ -19,20 +19,11 @@ TORQUE_UNIFORM_SAMPLERCUBE(cubeMap, 2);
 
 uniform float4 rtParams0;
 
-uniform float3 probeWSPos;
-uniform float3 probeLSPos;
 uniform float4 vsFarPlane;
-
-uniform float  radius;
-uniform float2 attenuation;
 
 uniform float4x4 invViewMat;
 
 uniform float3 eyePosWorld;
-uniform float3 bbMin;
-uniform float3 bbMax;
-
-uniform float useSphereMode;
 
 //SHTerms
 /*uniform float4 SHTerms0;
@@ -109,7 +100,7 @@ float4 main( ConvexConnectP IN ) : TORQUE_TARGET0
 
     float4 color = float4(1, 1, 1, 1);
     float4 ref = float4(0,0,0,0);
-    float alpha = 1;
+    float alpha = 0.3; //TODO: fix blending and bring this back to a real value
 
     float3 eyeRay = getDistanceVectorToPlane( -vsFarPlane.w, IN.vsEyeDir.xyz, vsFarPlane );
     float3 viewSpacePos = eyeRay * depth;
@@ -120,88 +111,13 @@ float4 main( ConvexConnectP IN ) : TORQUE_TARGET0
     float3 worldPos = float3(eyePosWorld + wsEyeRay * depth);
     float smoothness = min((1.0 - matInfo.b)*11.0 + 1.0, 8.0);//bump up to 8 for finalization
 
-    if(useSphereMode)
-    {
-        // Build light vec, get length, clip pixel if needed
-        float3 lightVec = probeLSPos - viewSpacePos;
-        float lenLightV = length( lightVec );
-        clip( radius - lenLightV );
+    float3 reflectionVec = reflect(IN.wsEyeDir, float4(wsNormal,1)).xyz;
 
-        // Get the attenuated falloff.
-        float atten = attenuate( float4(1,1,1,1), attenuation, lenLightV );
-        clip( atten - 1e-6 );
-
-        // Normalize lightVec
-        lightVec /= lenLightV;
-
-        // If we can do dynamic branching then avoid wasting
-        // fillrate on pixels that are backfacing to the light.
-        float nDotL = abs(dot( lightVec, normal ));
-
-        float Sat_NL_Att = saturate( nDotL * atten );
-
-        float3 reflectionVec = reflect(IN.wsEyeDir, float4(wsNormal,nDotL)).xyz;
-
-        float3 nrdir = normalize(reflectionVec);
-        float3 rbmax = (bbMax - worldPos.xyz) / nrdir;
-        float3 rbmin = (bbMin - worldPos.xyz) / nrdir;
-
-        float3 rbminmax = (nrdir > 0.0) ? rbmax : rbmin;
-        float fa = min(min(rbminmax.x,rbminmax.y),rbminmax.z);
-		  if (dot( lightVec, normal )<0.0f)
-           clip(fa);
-
-        float3 posOnBox = worldPos.xyz + nrdir * fa;
-        reflectionVec = posOnBox - probeWSPos;
-
-        //reflectionVec = mul(probeWSPos,reflectionVec);
-
-        ref = float4(reflectionVec, smoothness);
-
-        alpha = Sat_NL_Att;
-    }
-    else
-    {
-       // Build light vec, get length, clip pixel if needed
-       float3 lightVec = probeLSPos - viewSpacePos;
-       float lenLightV = length(lightVec);
-       //clip(radius - lenLightV);
-
-       // Normalize lightVec
-       lightVec /= lenLightV;
-
-       // If we can do dynamic branching then avoid wasting
-       // fillrate on pixels that are backfacing to the light.
-       float nDotL = abs(dot(lightVec, normal));
-
-       float3 reflectionVec = reflect(IN.wsEyeDir, float4(wsNormal, nDotL)).xyz;
-
-       float3 nrdir = normalize(reflectionVec);
-       float3 rbmax = (bbMax - worldPos.xyz) / nrdir;
-       float3 rbmin = (bbMin - worldPos.xyz) / nrdir;
-
-       float3 rbminmax = (nrdir > 0.0) ? rbmax : rbmin;
-       float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
-       if (dot(lightVec, normal)<0.0f)
-          clip(fa);
-
-       //Try to clip anything that falls outside our box as well
-       //TODO: Make it support rotated boxes as well
-       if(worldPos.x > bbMax.x || worldPos.y > bbMax.y || worldPos.z > bbMax.z ||
-          worldPos.x < bbMin.x || worldPos.y < bbMin.y || worldPos.z < bbMin.z)
-          clip(-1);
-
-       float3 posOnBox = worldPos.xyz + nrdir * fa;
-       reflectionVec = posOnBox - probeWSPos;
-
-       ref = float4(reflectionVec, smoothness);
-
-        alpha = 1;
-    }
+    ref = float4(reflectionVec, smoothness);
 
     color = TORQUE_TEXCUBELOD(cubeMap, ref);
 
-    float4 specularColor = (color);
+    //float4 specularColor = (color);
     //float4 indirectColor = (decodeSH(wsNormal));
 
     //color.rgb = lerp(indirectColor.rgb * 1.5, specularColor.rgb * 1.5, matInfo.b);

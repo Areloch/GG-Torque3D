@@ -20,8 +20,8 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef _ReflectionProbe_H_
-#define _ReflectionProbe_H_
+#ifndef REFLECTIONPROBE_H
+#define REFLECTIONPROBE_H
 
 #ifndef _SCENEOBJECT_H_
 #include "scene/sceneObject.h"
@@ -75,7 +75,6 @@ public:
       NoReflection = 0,
       StaticCubemap = 1,
       BakedCubemap = 2,
-      SkyLight = 3,
       DynamicCubemap = 5,
    };
 
@@ -123,7 +122,6 @@ private:
    ReflectionModeType mReflectionModeType;
 
    F32 mRadius;
-   F32 mIntensity;
 
    String mCubemapName;
    CubemapData *mCubemap;
@@ -180,9 +178,15 @@ public:
    static bool _setEnabled(void *object, const char *index, const char *data);
    static bool _doBake(void *object, const char *index, const char *data);
 
+   static bool protectedSetSHTerms(void *object, const char *index, const char *data);
+   static bool protectedSetSHConsts(void *object, const char *index, const char *data);
+
    // Handle when we are added to the scene and removed from the scene
    bool onAdd();
    void onRemove();
+
+   virtual void writeFields(Stream &stream, U32 tabStop);
+   virtual bool writeField(StringTableEntry fieldname, const char *value);
 
    // Override this so that we can dirty the network flag when it is called
    void setTransform(const MatrixF &mat);
@@ -226,6 +230,7 @@ public:
    F32 areaElement(F32 x, F32 y);
 
    //
+   MatrixF getSideMatrix(U32 side);
    LinearColorF decodeSH(Point3F normal);
 
    //

@@ -164,12 +164,25 @@ void CubemapData::updateFaces()
 	}
 }
 
+void CubemapData::setCubemapFile(FileName newCubemapFile)
+{
+   mCubeMapFile = newCubemapFile;
+}
+
 void CubemapData::setCubeFaceFile(U32 index, FileName newFaceFile)
 {
    if (index >= 6)
       return;
 
    mCubeFaceFile[index] = newFaceFile;
+}
+
+void CubemapData::setCubeFaceTexture(U32 index, GFXTexHandle newFaceTexture)
+{
+   if (index >= 6)
+      return;
+
+   mCubeFace[index] = newFaceTexture;
 }
 
 DefineEngineMethod( CubemapData, updateFaces, void, (),,

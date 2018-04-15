@@ -357,6 +357,28 @@ void ProbeManager::registerProbes( const Frustum *frustum, bool staticLighting )
    }*/
 }
 
+void ProbeManager::registerSkylight(ProbeInfo *probe, SimObject *obj)
+{
+   mSkylight = probe;
+
+   if (String("Advanced Lighting").equal(LIGHTMGR->getName(), String::NoCase))
+   {
+      SceneRenderState* state = mSceneManager->getCurrentRenderState();
+
+      RenderPassManager *renderPass = state->getRenderPass();
+
+      // Allocate an MeshRenderInst so that we can submit it to the RenderPassManager
+      ProbeRenderInst *probeInst = renderPass->allocInst<ProbeRenderInst>();
+
+      probeInst->set(probe);
+
+      probeInst->type = RenderPassManager::RIT_Probes;
+
+      // Submit our RenderInst to the RenderPassManager
+      state->getRenderPass()->addInst(probeInst);
+   }
+}
+
 void ProbeManager::registerProbe(ProbeInfo *probe, SimObject *obj )
 {
   // AssertFatal( !mRegisteredProbes.contains(probe),
@@ -395,7 +417,9 @@ void ProbeManager::unregisterProbe(ProbeInfo *probe )
 void ProbeManager::unregisterAllProbes()
 {
    //dMemset(mSpecialProbes, 0, sizeof(mSpecialProbes) );
-   //mRegisteredProbes.clear();
+   mRegisteredProbes.clear();
+
+   mSkylight = nullptr;
 }
 
 void ProbeManager::getAllUnsortedProbes( Vector<ProbeInfo*> *list ) const
@@ -460,7 +484,7 @@ void ProbeManager::_update4ProbeConsts(   const SceneData &sgData,
       probeRadiusSC->isValid() ||
       probeBoxMinSC->isValid() ||
       probeBoxMaxSC->isValid() ||
-      probeCubemapSC->isValid()  && !mRegisteredProbes.empty())
+      probeCubemapSC->isValid()  && (!mRegisteredProbes.empty() || mSkylight))
    {
       PROFILE_SCOPE(ProbeManager_Update4ProbeConsts_setProbes);
 
@@ -489,12 +513,21 @@ void ProbeManager::_update4ProbeConsts(   const SceneData &sgData,
 
       // Gather the data for the first 4 probes.
       const ProbeInfo *probe;
-      for (U32 i = 0; i < 4; i++) 
+      for (U32 i = 0; i < 4; i++)
       {
          if (i >= mRegisteredProbes.size())
             break;
 
-         probe = mRegisteredProbes[i];
+         if (i == 0 && mSkylight)
+         {
+            //quickly try and see if we have a skylight, and set that to always be probe 0
+            probe = mSkylight;
+         }
+         else
+         {
+            probe = mRegisteredProbes[i];
+         }
+
          if (!probe)
             continue;
 

@@ -17,6 +17,9 @@ function ProbeBakeDlg::onWake(%this)
 function ProbeBakeDlg_RunBake::onClick(%this)
 {
    %probeIds = parseMissionGroupForIds("ReflectionProbe", "");
+   %skylightIds = parseMissionGroupForIds("Skylight", "");
+   
+   %probeIds = rtrim(ltrim(%probeIds SPC %skylightIds));
    %probeCount = getWordCount(%probeIds);
    
    %numIter = ProbeBakeDlg_NumIterTxt.getText();

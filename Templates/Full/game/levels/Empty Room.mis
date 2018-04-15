@@ -16,7 +16,6 @@ new SimGroup(MissionGroup) {
       canvasClearColor = "0 0 0 255";
       ambientLightBlendPhase = "1";
       ambientLightBlendCurve = "0 0 -1 -1";
-      LevelEnvMap = "BlueSkyCubemap";
       soundAmbience = "AudioAmbienceDefault";
       soundDistanceModel = "Linear";
       canSave = "1";
@@ -32,7 +31,7 @@ new SimGroup(MissionGroup) {
       colorize = "0 0 0 1";
       rayleighScattering = "0.0035";
       sunScale = "1 1 1 1";
-      ambientScale = "1 1 1 1";
+      ambientScale = "0 0 0 1";
       fogScale = "1 1 1 1";
       exposure = "1";
       zOffset = "0";
@@ -72,6 +71,17 @@ new SimGroup(MissionGroup) {
       canSave = "1";
       canSaveDynamicFields = "1";
          mieScattering = "0.0045";
+   };
+   new Skylight() {
+      enabled = "1";
+      StaticCubemap = "DesertSkyCubemap";
+      position = "0 0 0";
+      rotation = "1 0 0 0";
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+      persistentId = "2693c36c-4086-11e8-975c-acd1bda862de";
+         reflectionPath = "levels/Empty Room/probes/";
    };
    new SimGroup(PlayerDropPoints) {
       canSave = "1";
@@ -203,9 +213,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.618686 0.45908 0.147998 0.5";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          Bake = "0";
@@ -216,6 +223,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "c04383f9-2147-11e7-9298-9a7d9c6feabe";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.618686 0.45908 0.147998 0.5";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -223,9 +233,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -237,6 +244,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "6ab2beca-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -244,9 +254,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -258,6 +265,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "6ab8d961-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -265,9 +275,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -279,6 +286,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "6abfde5c-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -286,9 +296,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -300,6 +307,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "6ac869fc-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -307,9 +317,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -321,6 +328,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "6acef9c4-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -328,9 +338,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -342,6 +349,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "6ad5145b-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -349,9 +359,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -363,6 +370,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "6adb7d13-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -370,9 +380,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -384,6 +391,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "6ae25afd-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -391,9 +401,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -405,6 +412,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "6aea4a5b-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -412,9 +422,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -426,6 +433,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "6af0da23-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -433,9 +443,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -447,6 +454,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "6af769ec-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -454,9 +464,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -468,6 +475,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "6afdf9b4-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -475,9 +485,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -489,6 +496,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "6b05c202-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -496,9 +506,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -510,6 +517,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "6b0dd870-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -517,9 +527,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "1 0.00455975 0.00455975 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -531,6 +538,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "25d6efbe-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "1 0.00455975 0.00455975 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "1 0.00455975 0.00455975 1";
       };
@@ -538,9 +548,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.201096 0.00775103 0.00775103 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -552,6 +559,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "25de1bc8-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.201096 0.00775103 0.00775103 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -559,9 +569,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.0356144 0.0315514 0.00604059 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -573,6 +580,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "25e4365f-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.0356144 0.0315514 0.00604059 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -580,9 +590,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.0356144 0.0315514 0.00604059 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -594,6 +601,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "25eaed38-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.0356144 0.0315514 0.00604059 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -601,9 +611,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.532";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -615,6 +622,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "25f17d01-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.532";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -622,9 +632,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.201096 0.00775103 0.00775103 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -636,6 +643,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "25fa7dd3-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.201096 0.00775103 0.00775103 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -643,9 +653,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "1 0.00455975 0.00455975 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -657,6 +664,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "26021f0f-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "1 0.00455975 0.00455975 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "1 0.00455975 0.00455975 1";
       };
@@ -664,9 +674,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "1 0.00455975 0.00455975 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -678,6 +685,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "ac3fe3f0-1ff5-11e7-b852-d5bab2d8fbcc";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "1 0.00455975 0.00455975 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "1 0.00455975 0.00455975 1";
       };
@@ -685,9 +695,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.201096 0.00775103 0.00775103 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -699,6 +706,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "f41bf404-209f-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.201096 0.00775103 0.00775103 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -706,9 +716,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.0461488 0.113921 0.0915184 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -720,6 +727,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "fa446dc9-209f-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.0461488 0.113921 0.0915184 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -727,9 +737,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.499505 1 0.687031 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -741,6 +748,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "fe03f4d6-209f-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.499505 1 0.687031 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -748,9 +758,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.0461488 0.113921 0.0915184 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -762,6 +769,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "02bbe946-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.0461488 0.113921 0.0915184 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -769,9 +779,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.201096 0.00775103 0.00775103 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -783,6 +790,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "072e6f42-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.201096 0.00775103 0.00775103 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -790,9 +800,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.119264 0.334458 0.554227 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -804,6 +811,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "afa9693c-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.119264 0.334458 0.554227 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -811,9 +821,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.119264 0.334458 0.554227 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -825,6 +832,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "afa1c7ff-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.119264 0.334458 0.554227 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -832,9 +842,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.119264 0.334458 0.554227 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -846,6 +853,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "af993c5f-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.119264 0.334458 0.554227 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -853,9 +863,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.119264 0.334458 0.554227 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -867,6 +874,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "af919b23-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.119264 0.334458 0.554227 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -874,9 +884,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.119264 0.334458 0.554227 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -888,6 +895,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "af8a4807-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.119264 0.334458 0.554227 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -895,9 +905,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -909,6 +916,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "a1f5851f-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -916,9 +926,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.618686 0.45908 0.147998 0.5";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -930,6 +937,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "a1eef556-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.618686 0.45908 0.147998 0.5";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -937,9 +947,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.618686 0.45908 0.147998 0.5";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -951,6 +958,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "a1e8658e-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.618686 0.45908 0.147998 0.5";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -958,9 +968,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "1 0.1 0.005 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -972,6 +979,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "a1e13983-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "1 0.1 0.005 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -979,9 +989,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.618686 0.45908 0.147998 0.5";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -993,6 +1000,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "a1d8ade3-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.618686 0.45908 0.147998 0.5";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -1000,9 +1010,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.618686 0.45908 0.147998 0.5";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -1014,6 +1021,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "a1d133b7-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.618686 0.45908 0.147998 0.5";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -1021,9 +1031,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.036 0.032 0.006 0.505";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -1035,6 +1042,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "a1cacaff-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.036 0.032 0.006 0.505";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -1042,9 +1052,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.89 0.39 0.148 0.949";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -1056,6 +1063,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "a1c43b36-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.89 0.39 0.148 0.949";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -1063,9 +1073,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.618686 0.45908 0.147998 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -1077,6 +1084,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "a1bdf98f-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.618686 0.45908 0.147998 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -1084,9 +1094,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "1 0.1 0.005 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -1098,6 +1105,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "a1b71ba5-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "1 0.1 0.005 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -1105,9 +1115,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.618686 0.45908 0.147998 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -1119,6 +1126,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "a1afef9a-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.618686 0.45908 0.147998 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -1126,9 +1136,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.618686 0.45908 0.147998 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -1140,6 +1147,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "a1a9fc14-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.618686 0.45908 0.147998 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -1147,9 +1157,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.618686 0.45908 0.147998 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -1161,6 +1168,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "a1a3e17d-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.618686 0.45908 0.147998 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -1168,9 +1178,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "0.89 0.39 0.148 0.949";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -1182,6 +1189,9 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "a19dedf6-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "0.89 0.39 0.148 0.949";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "0.5 0.5 1 1";
       };
@@ -1189,9 +1199,6 @@ new SimGroup(MissionGroup) {
          enabled = "1";
          ProbeShape = "Sphere";
          radius = "10";
-         Intensity = "1";
-         IndirectLightMode = "Ambient Color";
-         IndirectLight = "1 0.00455975 0.00455975 1";
          ReflectionMode = "Baked Cubemap";
          reflectionPath = "levels/Empty Room/probes/";
          StaticCubemap = "DesertSkyCubemap";
@@ -1203,30 +1210,12 @@ new SimGroup(MissionGroup) {
          canSaveDynamicFields = "1";
          persistentId = "0b06aecb-20a0-11e7-9c9c-8cefe314de25";
             GroundColor = "0.8 0.7 0.5 1";
+            IndirectLight = "1 0.00455975 0.00455975 1";
+            IndirectLightMode = "Ambient Color";
+            Intensity = "1";
             ProbeMode = "Baked Cubemap";
             SkyColor = "1 0.00455975 0.00455975 1";
       };
-   };
-   new ReflectionProbe(Skylight) {
-      enabled = "1";
-      ProbeShape = "Sphere";
-      radius = "200";
-      Intensity = "0.1";
-      IndirectLightMode = "Ambient Color";
-      IndirectLight = "1 1 1 1";
-      ReflectionMode = "Baked Cubemap";
-      reflectionPath = "levels/Empty Room/probes/";
-      StaticCubemap = "DesertSkyCubemap";
-      Bake = "0";
-      position = "0 0 50";
-      rotation = "1 0 0 0";
-      scale = "100 100 100";
-      canSave = "1";
-      canSaveDynamicFields = "1";
-      persistentId = "0039b2a6-20c2-11e7-b558-91c869a431e1";
-         GroundColor = "0.8 0.7 0.5 1";
-         ProbeMode = "Baked Cubemap";
-         SkyColor = "0.5 0.5 1 1";
    };
    new TSStatic() {
       shapeName = "art/shapes/textures/pbrGrid.dae";

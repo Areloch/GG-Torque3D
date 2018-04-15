@@ -499,6 +499,8 @@ struct ProbeRenderInst : public RenderInst
    /// when prioritizing lights for rendering.
    F32 mScore;
 
+   bool mIsSkylight;
+
    /// Whether to render debugging visualizations
    /// for this light.
    bool mDebugRender;

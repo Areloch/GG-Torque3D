@@ -54,6 +54,22 @@ public:
    virtual bool setupPass(SceneRenderState *state, const SceneData &sgData);
 };
 
+class SkylightMatInstance : public MatInstance
+{
+   typedef MatInstance Parent;
+protected:
+   MaterialParameterHandle * mSkylightParamsSC;
+   bool mInternalPass;
+
+   GFXStateBlockRef mProjectionState;
+
+public:
+   SkylightMatInstance(Material &mat) : Parent(mat), mSkylightParamsSC(NULL), mInternalPass(false), mProjectionState(NULL) {}
+
+   virtual bool init(const FeatureSet &features, const GFXVertexFormat *vertexFormat);
+   virtual bool setupPass(SceneRenderState *state, const SceneData &sgData);
+};
+
 //**************************************************************************
 // RenderObjectMgr
 //**************************************************************************
@@ -86,16 +102,8 @@ protected:
       // Light Parameters
       MaterialParameterHandle *probeLSPos;
       MaterialParameterHandle *probeWSPos;
-      MaterialParameterHandle *lightDirection;
-      MaterialParameterHandle *lightColor;
-      MaterialParameterHandle *lightBrightness;
-      MaterialParameterHandle *lightAttenuation;
-      MaterialParameterHandle *lightRange;
-      MaterialParameterHandle *lightAmbient;
-      MaterialParameterHandle *lightTrilight;
-      MaterialParameterHandle *lightSpotParams;
-
-      MaterialParameterHandle *intensity;
+      MaterialParameterHandle *attenuation;
+      MaterialParameterHandle *radius;
 
       MaterialParameterHandle *useCubemap;
       MaterialParameterHandle *cubemap;
@@ -122,6 +130,48 @@ protected:
          const MatrixF &_inverseViewMatrix);
 
       void setProbeParameters(const ProbeRenderInst *probe, const SceneRenderState* renderState, const MatrixF &worldViewOnly);
+   };
+
+   struct SkylightMaterialInfo
+   {
+      SkylightMatInstance *matInstance;
+
+      // { zNear, zFar, 1/zNear, 1/zFar }
+      MaterialParameterHandle *zNearFarInvNearFar;
+
+      // Far frustum plane (World Space)
+      MaterialParameterHandle *farPlane;
+
+      // Far frustum plane (View Space)
+      MaterialParameterHandle *vsFarPlane;
+
+      // -dot( farPlane, eyePos )
+      MaterialParameterHandle *negFarPlaneDotEye;
+
+      // Inverse View matrix
+      MaterialParameterHandle *invViewMat;
+
+      MaterialParameterHandle *useCubemap;
+      MaterialParameterHandle *cubemap;
+
+      MaterialParameterHandle *eyePosWorld;
+
+      MaterialParameterHandle *shTerms[9];
+      MaterialParameterHandle *shConsts[5];
+
+      SkylightMaterialInfo(const String &matName, const GFXVertexFormat *vertexFormat);
+
+      virtual ~SkylightMaterialInfo();
+
+
+      void setViewParameters(const F32 zNear,
+         const F32 zFar,
+         const Point3F &eyePos,
+         const PlaneF &farPlane,
+         const PlaneF &_vsFarPlane,
+         const MatrixF &_inverseViewMatrix);
+
+      void setSkylightParameters(const ProbeRenderInst *probe, const SceneRenderState* renderState, const MatrixF &worldViewOnly);
    };
 
    GFXVertexBufferHandle<FarFrustumQuadVert> mFarFrustumQuadVerts;
@@ -151,7 +201,11 @@ public:
    ReflectProbeMaterialInfo* mReflectProbeMaterial;
    ReflectProbeMaterialInfo* _getReflectProbeMaterial();
 
+   SkylightMaterialInfo* mSkylightMaterial;
+   SkylightMaterialInfo* _getSkylightMaterial();
+
    // Add a reflection probe to the bin
+   void addSkylightProbe(ProbeRenderInst *probeInfo);
    void addSphereReflectionProbe(ProbeRenderInst *probeInfo);
    void addConvexReflectionProbe(ProbeRenderInst *probeInfo);
 };

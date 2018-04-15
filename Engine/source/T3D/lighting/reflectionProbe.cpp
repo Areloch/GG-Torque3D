@@ -20,7 +20,7 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#include "T3D/reflectionProbe.h"
+#include "T3D/lighting/reflectionProbe.h"
 #include "math/mathIO.h"
 #include "scene/sceneRenderState.h"
 #include "console/consoleTypes.h"
@@ -88,8 +88,7 @@ ImplementEnumType(ReflectionModeEnum,
 { ReflectionProbe::NoReflection, "No Reflections", "This probe does not provide any local reflection data"},
 { ReflectionProbe::StaticCubemap, "Static Cubemap", "Uses a static CubemapData" },
 { ReflectionProbe::BakedCubemap, "Baked Cubemap", "Uses a cubemap baked from the probe's current position" },
-{ ReflectionProbe::DynamicCubemap, "Dynamic Cubemap", "Uses a cubemap baked from the probe's current position, updated at a set rate" },
-{ ReflectionProbe::SkyLight, "Skylight", "Captures a cubemap of the sky and far terrain, designed to influence the whole level" }
+//{ ReflectionProbe::DynamicCubemap, "Dynamic Cubemap", "Uses a cubemap baked from the probe's current position, updated at a set rate" },
    EndImplementEnumType;
 
 //-----------------------------------------------------------------------------
@@ -105,7 +104,7 @@ ReflectionProbe::ReflectionProbe()
 
    mProbeShapeType = ProbeInfo::Sphere;
 
-   mIndrectLightingModeType = AmbientColor;
+   mIndrectLightingModeType = NoIndirect;
    mAmbientColor = LinearColorF(1, 1, 1, 1);
    mSphericalHarmonics = LinearColorF(0, 0, 0, 1);
 
@@ -116,7 +115,6 @@ ReflectionProbe::ReflectionProbe()
    mDirty = false;
 
    mRadius = 10;
-   mIntensity = 1.0f;
 
    mUseCubemap = false;
    mCubemap = NULL;
@@ -139,7 +137,7 @@ ReflectionProbe::~ReflectionProbe()
    if (mEditorShapeInst)
       SAFE_DELETE(mEditorShapeInst);
 
-   if (mCubemap)
+   if (mReflectionModeType != StaticCubemap && mCubemap)
       mCubemap->deleteObject();
 }
 
@@ -155,16 +153,14 @@ void ReflectionProbe::initPersistFields()
       addField("ProbeShape", TypeReflectProbeType, Offset(mProbeShapeType, ReflectionProbe),
          "The type of mesh data to use for collision queries.");
       addField("radius", TypeF32, Offset(mRadius, ReflectionProbe), "The name of the material used to render the mesh.");
-
-      addField("Intensity", TypeF32, Offset(mIntensity, ReflectionProbe), "Path of file to save and load results.");
    endGroup("Rendering");
 
-   addGroup("IndirectLighting");
+   /*addGroup("IndirectLighting");
       addField("IndirectLightMode", TypeIndrectLightingModeEnum, Offset(mIndrectLightingModeType, ReflectionProbe),
          "The type of mesh data to use for collision queries.");
 
       addField("IndirectLight", TypeColorF, Offset(mAmbientColor, ReflectionProbe), "Path of file to save and load results.");
-   endGroup("IndirectLighting");
+   endGroup("IndirectLighting");*/
 
    addGroup("Reflection");
       addField("ReflectionMode", TypeReflectionModeEnum, Offset(mReflectionModeType, ReflectionProbe),
@@ -189,8 +185,86 @@ void ReflectionProbe::initPersistFields()
       "@note Only works for shadow mapped lights.\n\n"
       "@ingroup Lighting");
 
+   /*addGroup("Internal");
+
+   addProtectedField("SHTerm", TypeRealString, NULL, &protectedSetSHTerms, &defaultProtectedGetFn,
+      "Do not modify, for internal use.", AbstractClassRep::FIELD_HideInInspectors);
+
+   addProtectedField("SHConsts", TypeRealString, NULL, &protectedSetSHConsts, &defaultProtectedGetFn,
+      "Do not modify, for internal use.", AbstractClassRep::FIELD_HideInInspectors);
+
+   endGroup("Internal");*/
+
    // SceneObject already handles exposing the transform
    Parent::initPersistFields();
+}
+
+bool ReflectionProbe::protectedSetSHTerms(void *object, const char *index, const char *data)
+{
+   ReflectionProbe *probe = static_cast< ReflectionProbe* >(object);
+
+   LinearColorF term;
+   U32 idx;
+
+   dSscanf(data, "%i %g %g %g", &idx, &term.red, &term.green, &term.blue);
+
+   probe->mProbeInfo->mSHTerms[idx] = term;
+
+   return false;
+}
+
+bool ReflectionProbe::protectedSetSHConsts(void *object, const char *index, const char *data)
+{
+   ReflectionProbe *probe = static_cast< ReflectionProbe* >(object);
+
+   dSscanf(data, "%g %g %g %g %g", &probe->mProbeInfo->mSHConstants[0],
+      &probe->mProbeInfo->mSHConstants[1], &probe->mProbeInfo->mSHConstants[2], &probe->mProbeInfo->mSHConstants[3], &probe->mProbeInfo->mSHConstants[4]);
+
+   return false;
+}
+
+void ReflectionProbe::writeFields(Stream &stream, U32 tabStop)
+{
+   Parent::writeFields(stream, tabStop);
+
+   if (mIndrectLightingModeType != SphericalHarmonics)
+      return;
+
+   // Now write all planes.
+
+   stream.write(2, "\r\n");
+
+   for (U32 i = 0; i < 9; i++)
+   {
+      const LinearColorF shTerm = mProbeInfo->mSHTerms[i];
+
+      stream.writeTabs(tabStop);
+
+      char buffer[1024];
+      dMemset(buffer, 0, 1024);
+
+      dSprintf(buffer, 1024, "SHTerm = \"%i %g %g %g\";", i, shTerm.red, shTerm.green, shTerm.blue);
+
+      stream.writeLine((const U8*)buffer);
+   }
+
+   stream.writeTabs(tabStop);
+
+   char buffer[1024];
+   dMemset(buffer, 0, 1024);
+
+   dSprintf(buffer, 1024, "SHConsts = \"%g %g %g %g %g\";", mProbeInfo->mSHConstants[0],
+      mProbeInfo->mSHConstants[1], mProbeInfo->mSHConstants[2], mProbeInfo->mSHConstants[3], mProbeInfo->mSHConstants[4]);
+
+   stream.writeLine((const U8*)buffer);
+}
+
+bool ReflectionProbe::writeField(StringTableEntry fieldname, const char *value)
+{
+   if (fieldname == StringTable->insert("SHTerm") || fieldname == StringTable->insert("SHConsts"))
+      return false;
+
+   return Parent::writeField(fieldname, value);
 }
 
 void ReflectionProbe::inspectPostApply()
@@ -298,7 +372,6 @@ U32 ReflectionProbe::packUpdate(NetConnection *conn, U32 mask, BitStream *stream
    if (stream->writeFlag(mask & UpdateMask))
    {
       stream->write(mAmbientColor);
-      stream->writeFloat(mIntensity, 7);
       stream->write(mRadius);
    }
 
@@ -353,7 +426,6 @@ void ReflectionProbe::unpackUpdate(NetConnection *conn, BitStream *stream)
    if (stream->readFlag())  // UpdateMask
    {
       stream->read(&mAmbientColor);
-      mIntensity = stream->readFloat(7);
       stream->read(&mRadius);
    }
 
@@ -425,6 +497,17 @@ void ReflectionProbe::updateProbeParams()
    if (mProbeInfo == nullptr)
       return;
 
+   if (mIndrectLightingModeType == AmbientColor)
+   {
+      mProbeInfo->mAmbient = mAmbientColor;
+   }
+   else
+   {
+      mProbeInfo->mAmbient = LinearColorF(0, 0, 0, 0);
+   }
+
+   mProbeInfo->mProbeShapeType = mProbeShapeType;
+
    mProbeInfo->setPosition(getPosition());
 
    //Update the bounds
@@ -439,67 +522,64 @@ void ReflectionProbe::updateProbeParams()
    resetWorldBox();
 
    mProbeInfo->mBounds = mWorldBox;
-
-   mProbeInfo->mIntensity = mIntensity;
    mProbeInfo->mRadius = mRadius;
 
-   if (mIndrectLightingModeType == AmbientColor)
-   {
-      mProbeInfo->mAmbient = mAmbientColor;
-   }
-   else
-   {
-      mProbeInfo->mAmbient = LinearColorF(0, 0, 0, 0);
-   }
-
-   mProbeInfo->mProbeShapeType = mProbeShapeType;
+   mProbeInfo->mIsSkylight = false;
 }
 
 void ReflectionProbe::updateMaterial()
 {
    if (mReflectionModeType != DynamicCubemap)
    {
-      if (!mCubemap)
-      {
-         mCubemap = new CubemapData();
-         mCubemap->registerObject();
-      }
-
-      if ((mReflectionModeType == BakedCubemap || mReflectionModeType == SkyLight) && !mProbeUniqueID.isEmpty())
+      if ((mReflectionModeType == BakedCubemap) && !mProbeUniqueID.isEmpty())
       {
          bool validCubemap = true;
 
-         for (U32 i = 0; i < 6; ++i)
-         {
-            char faceFile[256];
-            dSprintf(faceFile, sizeof(faceFile), "%s%s_%i.png", mReflectionPath.c_str(),
-               mProbeUniqueID.c_str(), i);
+         char fileName[256];
+         dSprintf(fileName, 256, "%s%s.DDS", mReflectionPath.c_str(), mProbeUniqueID.c_str());
 
-            if (Platform::isFile(faceFile))
-               mCubemap->setCubeFaceFile(i, FileName(faceFile));
-            else
-               validCubemap = false;
+         Vector<FileName> fileNames;
+
+         if (Platform::isFile(fileName))
+         {
+            if (!mCubemap)
+            {
+               mCubemap = new CubemapData();
+               mCubemap->registerObject();
+            }
+
+            mCubemap->setCubemapFile(FileName(fileName));
+         }
+         else
+         {
+            validCubemap = false;
          }
 
          if (validCubemap)
          {
-            mCubemap->createMap();
-            mCubemap->updateFaces();
+            if (mCubemap->mCubemap)
+               mCubemap->updateFaces();
+            else
+               mCubemap->createMap();
+
+            mDirty = false;
+
+            mProbeInfo->mCubemap = &mCubemap->mCubemap;
          }
       }
+      else if (mReflectionModeType == StaticCubemap && !mCubemapName.isEmpty())
+      {
+         Sim::findObject(mCubemapName, mCubemap);
 
-      mProbeInfo->mCubemap = &mCubemap->mCubemap;
-   }
-   else if (mReflectionModeType == StaticCubemap && !mCubemapName.isEmpty())
-   {
-      Sim::findObject(mCubemapName, mCubemap);
+         mProbeInfo->mCubemap = &mCubemap->mCubemap;
+      }
    }
    else if (mReflectionModeType == DynamicCubemap && !mDynamicCubemap.isNull())
    {
       mProbeInfo->mCubemap = &mDynamicCubemap;
    }
 
-   calculateSHTerms();
+   //calculateSHTerms();
 }
 
 void ReflectionProbe::prepRenderImage(SceneRenderState *state)
@@ -524,9 +604,18 @@ void ReflectionProbe::prepRenderImage(SceneRenderState *state)
    // Get a handy pointer to our RenderPassmanager
    //RenderPassManager *renderPass = state->getRenderPass();
 
+   //Update our score based on our radius, distance
+   mProbeInfo->mScore = dist * mProbeInfo->mRadius;
+
+   Point3F vect = distVec;
+   vect /= getMax(dist, 0.001f);
+
+   mProbeInfo->mScore *= mDot(vect, state->getCameraTransform().getForwardVector());
+
+   //Register
    PROBEMGR->registerProbe(mProbeInfo, this);
 
-   if (ReflectionProbe::smRenderPreviewProbes && gEditingMission && mEditorShapeInst)
+   if (ReflectionProbe::smRenderPreviewProbes && gEditingMission && mEditorShapeInst && mCubemap != nullptr)
    {
       GFXTransformSaver saver;
 
@@ -691,7 +780,7 @@ LinearColorF ReflectionProbe::decodeSH(Point3F normal)
    return LinearColorF(mMax(result.red, 0), mMax(result.green, 0), mMax(result.blue, 0));
 }
 
-MatrixF getSideMatrix(U32 side)
+MatrixF ReflectionProbe::getSideMatrix(U32 side)
 {
    // Standard view that will be overridden below.
    VectorF vLookatPt(0.0f, 0.0f, 0.0f), vUpVec(0.0f, 0.0f, 0.0f), vRight(0.0f, 0.0f, 0.0f);
@@ -1004,7 +1093,7 @@ void ReflectionProbe::bake(String outputPath, S32 resolution)
       GFXTextureTargetRef mBaseTarget = GFX->allocRenderToTextureTarget();
 
       GFX->clearTextureStateImmediate(0);
-      if(mReflectionModeType == DynamicCubemap)
+      if (mReflectionModeType == DynamicCubemap)
          mBaseTarget->attachTexture(GFXTextureTarget::Color0, mDynamicCubemap, i);
       else
          mBaseTarget->attachTexture(GFXTextureTarget::Color0, blendTex);
@@ -1014,30 +1103,30 @@ void ReflectionProbe::bake(String outputPath, S32 resolution)
 
       switch (i)
       {
-      case 0: // D3DCUBEMAP_FACE_POSITIVE_X:
-         vLookatPt = VectorF(1.0f, 0.0f, 0.0f);
-         vUpVec = VectorF(0.0f, 1.0f, 0.0f);
-         break;
-      case 1: // D3DCUBEMAP_FACE_NEGATIVE_X:
-         vLookatPt = VectorF(-1.0f, 0.0f, 0.0f);
-         vUpVec = VectorF(0.0f, 1.0f, 0.0f);
-         break;
-      case 2: // D3DCUBEMAP_FACE_POSITIVE_Y:
-         vLookatPt = VectorF(0.0f, 1.0f, 0.0f);
-         vUpVec = VectorF(0.0f, 0.0f, -1.0f);
-         break;
-      case 3: // D3DCUBEMAP_FACE_NEGATIVE_Y:
-         vLookatPt = VectorF(0.0f, -1.0f, 0.0f);
-         vUpVec = VectorF(0.0f, 0.0f, 1.0f);
-         break;
-      case 4: // D3DCUBEMAP_FACE_POSITIVE_Z:
-         vLookatPt = VectorF(0.0f, 0.0f, 1.0f);
-         vUpVec = VectorF(0.0f, 1.0f, 0.0f);
-         break;
-      case 5: // D3DCUBEMAP_FACE_NEGATIVE_Z:
-         vLookatPt = VectorF(0.0f, 0.0f, -1.0f);
-         vUpVec = VectorF(0.0f, 1.0f, 0.0f);
-         break;
+         case 0: // D3DCUBEMAP_FACE_POSITIVE_X:
+            vLookatPt = VectorF(1.0f, 0.0f, 0.0f);
+            vUpVec = VectorF(0.0f, 1.0f, 0.0f);
+            break;
+         case 1: // D3DCUBEMAP_FACE_NEGATIVE_X:
+            vLookatPt = VectorF(-1.0f, 0.0f, 0.0f);
+            vUpVec = VectorF(0.0f, 1.0f, 0.0f);
+            break;
+         case 2: // D3DCUBEMAP_FACE_POSITIVE_Y:
+            vLookatPt = VectorF(0.0f, 1.0f, 0.0f);
+            vUpVec = VectorF(0.0f, 0.0f, -1.0f);
+            break;
+         case 3: // D3DCUBEMAP_FACE_NEGATIVE_Y:
+            vLookatPt = VectorF(0.0f, -1.0f, 0.0f);
+            vUpVec = VectorF(0.0f, 0.0f, 1.0f);
+            break;
+         case 4: // D3DCUBEMAP_FACE_POSITIVE_Z:
+            vLookatPt = VectorF(0.0f, 0.0f, 1.0f);
+            vUpVec = VectorF(0.0f, 1.0f, 0.0f);
+            break;
+         case 5: // D3DCUBEMAP_FACE_NEGATIVE_Z:
+            vLookatPt = VectorF(0.0f, 0.0f, -1.0f);
+            vUpVec = VectorF(0.0f, 1.0f, 0.0f);
+            break;
       }
 
       // create camera matrix
@@ -1056,12 +1145,6 @@ void ReflectionProbe::bake(String outputPath, S32 resolution)
       F32 nearPlane = 0.01f;
       F32 farDist = 1000.f;
 
-      if (mReflectionModeType == SkyLight)
-      {
-         nearPlane = 1000.f;
-         farDist = 10000.f;
-      }
-
       MathUtils::makeFrustum(&left, &right, &top, &bottom, M_HALFPI_F, 1.0f, nearPlane);
       Frustum frustum(false, left, right, top, bottom, nearPlane, farDist);
 
@@ -1069,7 +1152,10 @@ void ReflectionProbe::bake(String outputPath, S32 resolution)
 
       mBaseTarget->resolve();
 
-      if (mReflectionModeType != DynamicCubemap)
+      mCubemap->setCubeFaceTexture(i, blendTex);
+   }
+
+      /*if (mReflectionModeType != DynamicCubemap)
       {
          char fileName[256];
          dSprintf(fileName, 256, "%s%s_%i.png", mReflectionPath.c_str(),
@@ -1097,7 +1183,7 @@ void ReflectionProbe::bake(String outputPath, S32 resolution)
 
          bitmap.deleteImage();
       }
-   }
+   }*/
 
    if (mReflectionModeType != DynamicCubemap && validCubemap)
    {
@@ -1106,10 +1192,21 @@ void ReflectionProbe::bake(String outputPath, S32 resolution)
       else
          mCubemap->createMap();
 
+      char fileName[256];
+      dSprintf(fileName, 256, "%s%s.DDS", mReflectionPath.c_str(), mProbeUniqueID.c_str());
+
+      CubemapSaver::save(mCubemap->mCubemap, fileName);
+
+      if (!Platform::isFile(fileName))
+      {
+         validCubemap = false; //if we didn't save right, just 
+         Con::errorf("Failed to properly save out the skylight baked cubemap!");
+      }
+
       mDirty = false;
    }
 
-   calculateSHTerms();
+   //calculateSHTerms();
 
    ReflectionProbe::smRenderReflectionProbes = probeRenderState;
    setMaskBits(-1);

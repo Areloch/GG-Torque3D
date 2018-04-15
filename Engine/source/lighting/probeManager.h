@@ -76,6 +76,8 @@ struct ProbeInfo
    /// when prioritizing lights for rendering.
    F32 mScore;
 
+   bool mIsSkylight;
+
    /// Whether to render debugging visualizations
    /// for this light.
    bool mDebugRender;
@@ -219,6 +221,8 @@ public:
    /// Set a special light type.
    virtual void setSpecialProbe(SpecialProbeTypesEnum type, ProbeInfo *light );
 
+   void registerSkylight(ProbeInfo *probe, SimObject *obj);
+
    // registered before scene traversal...
    virtual void registerProbe(ProbeInfo *light, SimObject *obj );
    virtual void unregisterProbe(ProbeInfo *light );
@@ -274,6 +278,8 @@ protected:
    /// The list of global registered lights which is
    /// initialized before the scene is rendered.
    ProbeInfoList mRegisteredProbes;
+
+   ProbeInfo* mSkylight;
 
    /// The registered special light list.
    ProbeInfo *mSpecialProbes[SpecialProbeTypesCount];

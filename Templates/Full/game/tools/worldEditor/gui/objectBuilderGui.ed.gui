@@ -881,6 +881,18 @@ function ObjectBuilderGui::buildReflectionProbe(%this)
 {
    %this.objectClassName = "ReflectionProbe";
    %this.process();
+   
+   %defaultPath = filePath($Server::MissionFile) @ "/" @ fileBase($Server::MissionFile) @ "/probes/";   
+   %this.addField("reflectionPath", "TypeFilepath", "reflectionPath", %defaultPath);
+}
+
+function ObjectBuilderGui::buildSkylight(%this)
+{
+   %this.objectClassName = "Skylight";
+   %this.process();
+   
+   %defaultPath = filePath($Server::MissionFile) @ "/" @ fileBase($Server::MissionFile) @ "/probes/";   
+   %this.addField("reflectionPath", "TypeFilepath", "reflectionPath", %defaultPath);
 }
 
 //------------------------------------------------------------------------------

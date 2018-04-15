@@ -333,3 +333,31 @@ new CustomMaterial( ReflectionProbeMaterial )
    
    pixVersion = 3.0;
 };
+
+//Skylight
+new ShaderData( SklyightShader )
+{
+   DXVertexShaderFile = "shaders/common/lighting/advanced/convexGeometryV.hlsl";
+   DXPixelShaderFile  = "shaders/common/lighting/advanced/skylightP.hlsl";
+
+   OGLVertexShaderFile = "shaders/common/lighting/advanced/gl/convexGeometryV.glsl";
+   OGLPixelShaderFile  = "shaders/common/lighting/advanced/gl/skylightP.glsl";
+
+   samplerNames[0] = "$deferredBuffer";
+   samplerNames[1] = "$matInfoBuffer";
+   
+   pixVersion = 3.0;
+};
+
+new CustomMaterial( SklyightMaterial )
+{
+   shader = SklyightShader;
+   stateBlock = AL_ProbeState;
+   
+   sampler["deferredBuffer"] = "#deferred";
+   sampler["matInfoBuffer"] = "#matinfo";
+   
+   target = "indirectLighting";
+   
+   pixVersion = 3.0;
+};
