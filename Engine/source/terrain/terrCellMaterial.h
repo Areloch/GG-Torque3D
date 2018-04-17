@@ -154,7 +154,7 @@ protected:
 
    GFXTexHandle mLayerMapTexture;
 
-   NamedTexTargetRef mLightInfoTarget;
+   NamedTexTargetRef mDiffuseLightingTarget;
 
    /// The deferred material for this material.
    TerrainCellMaterial *mDeferredMat;

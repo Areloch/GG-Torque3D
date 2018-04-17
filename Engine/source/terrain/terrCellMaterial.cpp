@@ -879,10 +879,10 @@ bool TerrainCellMaterial::setupPass(   const SceneRenderState *state,
    if (  pass.lightInfoBufferConst->isValid() &&
          pass.lightParamsConst->isValid() )
    {
-      if ( !mLightInfoTarget )
-         mLightInfoTarget = NamedTexTarget::find( "directLighting" );
+      if ( !mDiffuseLightingTarget)
+         mDiffuseLightingTarget = NamedTexTarget::find( "diffuseLighting" );
 
-      GFXTextureObject *texObject = mLightInfoTarget->getTexture();
+      GFXTextureObject *texObject = mDiffuseLightingTarget->getTexture();
       
       // TODO: Sometimes during reset of the light manager we get a
       // NULL texture here.  This is corrected on the next frame, but
@@ -893,7 +893,7 @@ bool TerrainCellMaterial::setupPass(   const SceneRenderState *state,
          GFX->setTexture( pass.lightInfoBufferConst->getSamplerRegister(), texObject );
 
          const Point3I &targetSz = texObject->getSize();
-         const RectI &targetVp = mLightInfoTarget->getViewport();
+         const RectI &targetVp = mDiffuseLightingTarget->getViewport();
          Point4F rtParams;
          ScreenSpace::RenderTargetParameters(targetSz, targetVp, rtParams);
          pass.consts->setSafe( pass.lightParamsConst, rtParams );

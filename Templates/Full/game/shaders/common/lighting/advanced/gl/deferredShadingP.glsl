@@ -26,9 +26,9 @@
 #include "../../../gl/torque.glsl"
 
 uniform sampler2D colorBufferTex;
-uniform sampler2D directLightingBuffer;
+uniform sampler2D diffuseLightingBuffer;
 uniform sampler2D matInfoTex;
-uniform sampler2D indirectLightingBuffer;
+uniform sampler2D specularLightingBuffer;
 uniform sampler2D deferredTex;
 
 out vec4 OUT_col;
@@ -51,17 +51,17 @@ void main()
 	  return;
    }
    
-   vec4 directLighting = texture( directLightingBuffer, uv0 ); //shadowmap*specular
+   vec4 diffuseLighting = texture( diffuseLightingBuffer, uv0 ); //shadowmap*specular
    
-   vec3 indirectLighting = texture( indirectLightingBuffer, uv0 ).rgb; //environment mapping*lightmaps
+   vec3 specularLighting = texture( specularLightingBuffer, uv0 ).rgb; //environment mapping*lightmaps
    float metalness = matInfo.a;
       
-   float frez = directLighting.a;
+   float frez = diffuseLighting.a;
    
    vec3 diffuseColor = colorBuffer - (colorBuffer * metalness);
-   vec3 reflectColor = indirectLighting*colorBuffer;
-   colorBuffer = diffuseColor+lerp(reflectColor,indirectLighting,frez);
-   colorBuffer *= max(directLighting.rgb,vec3(0,0,0)); 
+   vec3 reflectColor = specularLighting*colorBuffer;
+   colorBuffer = diffuseColor+lerp(reflectColor,specularLighting,frez);
+   colorBuffer *= max(diffuseLighting.rgb,vec3(0,0,0)); 
    
    OUT_col =  hdrEncode(vec4(colorBuffer,1.0));
 }

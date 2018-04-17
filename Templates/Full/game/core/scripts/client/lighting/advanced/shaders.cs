@@ -86,11 +86,11 @@ new CustomMaterial( AL_VectorLightMaterial )
    sampler["shadowMap"] = "$dynamiclight";
    sampler["dynamicShadowMap"] = "$dynamicShadowMap";
    sampler["ssaoMask"] = "#ssaoMask";  
-   sampler["lightBuffer"] = "#indirectLighting";
+   sampler["specularLightBuffer"] = "#specularLighting";
    sampler["colorBuffer"] = "#color";
    sampler["matInfoBuffer"] = "#matinfo";
    
-   target = "directLighting";
+   target = "diffuseLighting";
    
    pixVersion = 3.0;
 };
@@ -163,11 +163,11 @@ new CustomMaterial( AL_PointLightMaterial )
    sampler["shadowMap"] = "$dynamiclight";
    sampler["dynamicShadowMap"] = "$dynamicShadowMap";
    sampler["cookieMap"] = "$dynamiclightmask";
-   sampler["lightBuffer"] = "#indirectLighting";
+   sampler["lightBuffer"] = "#specularLighting";
    sampler["colorBuffer"] = "#color";
    sampler["matInfoBuffer"] = "#matinfo";
    
-   target = "directLighting";
+   target = "diffuseLighting";
    
    pixVersion = 3.0;
 };
@@ -202,11 +202,11 @@ new CustomMaterial( AL_SpotLightMaterial )
    sampler["shadowMap"] = "$dynamiclight";
    sampler["dynamicShadowMap"] = "$dynamicShadowMap";
    sampler["cookieMap"] = "$dynamiclightmask";
-   sampler["lightBuffer"] = "#indirectLighting";
+   sampler["lightBuffer"] = "#specularLighting";
    sampler["colorBuffer"] = "#color";
    sampler["matInfoBuffer"] = "#matinfo";
    
-   target = "directLighting";
+   target = "diffuseLighting";
    
    pixVersion = 3.0;
 };
@@ -269,7 +269,7 @@ new CustomMaterial( AL_ParticlePointLightMaterial )
    stateBlock = AL_ConvexLightState;
    
    sampler["deferredBuffer"] = "#deferred";
-   target = "directLighting";
+   target = "diffuseLighting";
    
    pixVersion = 3.0;
 };
@@ -329,7 +329,7 @@ new CustomMaterial( ReflectionProbeMaterial )
    sampler["deferredBuffer"] = "#deferred";
    sampler["matInfoBuffer"] = "#matinfo";
    
-   target = "indirectLighting";
+   target = "specularLighting";
    
    pixVersion = 3.0;
 };
@@ -357,7 +357,7 @@ new CustomMaterial( SklyightMaterial )
    sampler["deferredBuffer"] = "#deferred";
    sampler["matInfoBuffer"] = "#matinfo";
    
-   target = "indirectLighting";
+   target = "specularLighting";
    
    pixVersion = 3.0;
 };

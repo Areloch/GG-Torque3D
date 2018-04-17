@@ -46,7 +46,7 @@ public:
    // andremwac: Deferred Rendering
    static const String ColorBufferName;
    static const String MatInfoBufferName;
-   static const String LightMapBufferName;
+   static const String SpecularLightingBufferName;
 
    // Generic Deferred Render Instance Type
    static const RenderInstType RIT_Deferred;
@@ -108,10 +108,10 @@ protected:
    GFXStateBlockRef                    mStateblock;
    NamedTexTarget                      mColorTarget;
    NamedTexTarget                      mMatInfoTarget;
-   NamedTexTarget                      mLightMapTarget;
+   NamedTexTarget                      mSpecularLightingTarget;
    GFXTexHandle                        mColorTex;
    GFXTexHandle                        mMatInfoTex;
-   GFXTexHandle                        mLightMapTex;
+   GFXTexHandle                        mSpecularLightingTex;
    GFXShaderConstBufferRef             mShaderConsts; 
 
 public:

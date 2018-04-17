@@ -120,8 +120,8 @@ function initializeWorldEditor()
    EVisibility.addOption( "Debug Render: Reflection Probes", "$Light::renderReflectionProbes", "" );
    EVisibility.addOption( "Debug Render: Probe Previews", "$Light::renderPreviewProbes", "" );
    EVisibility.addOption( "AL: Disable Shadows", "$Shadows::disable", "" );   
-   EVisibility.addOption( "AL: Light Color Viz", "$AL_LightColorVisualizeVar", "toggleLightColorViz" );
-   EVisibility.addOption( "AL: Environment Light", "$AL_LightMapShaderVar", "toggleLightMapViz" );
+   EVisibility.addOption( "AL: Diffuse Lighting Viz", "$AL_LightColorVisualizeVar", "toggleLightColorViz" );
+   EVisibility.addOption( "AL: Specular Lighting Viz", "$AL_LightMapShaderVar", "toggleLightMapViz" );
    EVisibility.addOption( "AL: Light Specular Viz", "$AL_LightSpecularVisualizeVar", "toggleLightSpecularViz" );
    EVisibility.addOption( "AL: Normals Viz", "$AL_NormalsVisualizeVar", "toggleNormalsViz" );
    EVisibility.addOption( "AL: Depth Viz", "$AL_DepthVisualizeVar", "toggleDepthViz" );

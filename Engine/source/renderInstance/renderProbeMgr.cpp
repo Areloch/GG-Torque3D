@@ -46,8 +46,9 @@ S32 QSORT_CALLBACK AscendingReflectProbeInfluence(const void* a, const void* b)
    PROFILE_SCOPE(AdvancedLightBinManager_AscendingReflectProbeInfluence);
 
    // Fetch asset definitions.
-   const ProbeRenderInst* pReflectProbeA = (ProbeRenderInst*)a;
-   const ProbeRenderInst* pReflectProbeB = (ProbeRenderInst*)b;
+   const ProbeRenderInst* pReflectProbeA = static_cast<ProbeRenderInst*>(((RenderBinManager::MainSortElem*)(a))->inst);
+   const ProbeRenderInst* pReflectProbeB = static_cast<ProbeRenderInst*>(((RenderBinManager::MainSortElem*)(b))->inst);
+   //const ProbeRenderInst* pReflectProbeB = (RenderBinManager::MainSortElem*)(b);
 
    // Sort.
    //First, immediate check on if either is a skylight. Skylight always gets the highest priority
@@ -327,19 +328,19 @@ void RenderProbeMgr::render( SceneRenderState *state )
 
    GFXTransformSaver saver;
 
-   NamedTexTarget* lightInfoTarget = NamedTexTarget::find("indirectLighting");
+   NamedTexTarget* specularLightInfoTarget = NamedTexTarget::find("specularLighting");
 
-   GFXTextureObject *indirectLightTexObject = lightInfoTarget->getTexture();
-   if (!indirectLightTexObject)
+   GFXTextureObject *specularLightTexObject = specularLightInfoTarget->getTexture();
+   if (!specularLightTexObject)
       return;
 
-   GFXTextureTargetRef indirectLightTarget = GFX->allocRenderToTextureTarget();
+   GFXTextureTargetRef specularLightTarget = GFX->allocRenderToTextureTarget();
 
-   indirectLightTarget->attachTexture(GFXTextureTarget::Color0, indirectLightTexObject);
+   specularLightTarget->attachTexture(GFXTextureTarget::Color0, specularLightTexObject);
 
    GFX->pushActiveRenderTarget();
-   GFX->setActiveRenderTarget(indirectLightTarget);
-   GFX->setViewport(lightInfoTarget->getViewport());
+   GFX->setActiveRenderTarget(specularLightTarget);
+   GFX->setViewport(specularLightInfoTarget->getViewport());
 
    // Restore transforms
    MatrixSet &matrixSet = getRenderPass()->getMatrixSet();
@@ -424,7 +425,7 @@ void RenderProbeMgr::render( SceneRenderState *state )
       }
    }
 
-   indirectLightTarget->resolve();
+   specularLightTarget->resolve();
    GFX->popActiveRenderTarget();
 
    PROBEMGR->unregisterAllProbes();

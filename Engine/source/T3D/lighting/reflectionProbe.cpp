@@ -605,12 +605,14 @@ void ReflectionProbe::prepRenderImage(SceneRenderState *state)
    //RenderPassManager *renderPass = state->getRenderPass();
 
    //Update our score based on our radius, distance
-   mProbeInfo->mScore = dist * mProbeInfo->mRadius;
+   mProbeInfo->mScore = mProbeInfo->mRadius / mMax(dist, 1.0f);
 
    Point3F vect = distVec;
-   vect /= getMax(dist, 0.001f);
+   vect.normalizeSafe();
 
    mProbeInfo->mScore *= mDot(vect, state->getCameraTransform().getForwardVector());
+
+   mProbeInfo->mScore = getId();
 
    //Register
    PROBEMGR->registerProbe(mProbeInfo, this);

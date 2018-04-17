@@ -353,6 +353,8 @@ void Skylight::updateProbeParams()
    if (mProbeInfo == nullptr)
       return;
 
+   mProbeInfo->mScore = 0; //forces it to be done first
+
    mProbeInfo->mIntensity = 1;
 
    mProbeInfo->mAmbient = LinearColorF(0, 0, 0, 0);

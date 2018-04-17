@@ -56,7 +56,7 @@ const String RenderDeferredMgr::BufferName("deferred");
 const RenderInstType RenderDeferredMgr::RIT_Deferred("Deferred");
 const String RenderDeferredMgr::ColorBufferName("color");
 const String RenderDeferredMgr::MatInfoBufferName("matinfo");
-const String RenderDeferredMgr::LightMapBufferName("indirectLighting");
+const String RenderDeferredMgr::SpecularLightingBufferName("specularLighting");
 
 IMPLEMENT_CONOBJECT(RenderDeferredMgr);
 
@@ -103,7 +103,7 @@ RenderDeferredMgr::RenderDeferredMgr( bool gatherDepth,
    mNamedTarget.registerWithName( BufferName );
    mColorTarget.registerWithName( ColorBufferName );
    mMatInfoTarget.registerWithName( MatInfoBufferName );
-   mLightMapTarget.registerWithName( LightMapBufferName );
+   mSpecularLightingTarget.registerWithName(SpecularLightingBufferName);
 
    mClearGBufferShader = NULL;
 
@@ -115,7 +115,7 @@ RenderDeferredMgr::~RenderDeferredMgr()
    GFXShader::removeGlobalMacro( "TORQUE_LINEAR_DEPTH" );
    mColorTarget.release();
    mMatInfoTarget.release();
-   mLightMapTarget.release();
+   mSpecularLightingTarget.release();
    _unregisterFeatures();
    SAFE_DELETE( mDeferredMatInstance );
 }
@@ -139,7 +139,7 @@ bool RenderDeferredMgr::setTargetSize(const Point2I &newTargetSize)
    mNamedTarget.setViewport( GFX->getViewport() );
    mColorTarget.setViewport( GFX->getViewport() );
    mMatInfoTarget.setViewport( GFX->getViewport() );
-   mLightMapTarget.setViewport( GFX->getViewport() );
+   mSpecularLightingTarget.setViewport( GFX->getViewport() );
    return ret;
 }
 
@@ -186,16 +186,16 @@ bool RenderDeferredMgr::_updateTargets()
          mTargetChain[i]->attachTexture(GFXTextureTarget::Color2, mMatInfoTarget.getTexture());
    }
 
-   if (mLightMapTex.getFormat() != mTargetFormat || mLightMapTex.getWidthHeight() != mTargetSize || GFX->recentlyReset())
+   if (mSpecularLightingTex.getFormat() != mTargetFormat || mSpecularLightingTex.getWidthHeight() != mTargetSize || GFX->recentlyReset())
    {
-      mLightMapTarget.release();
-      mLightMapTex.set(mTargetSize.x, mTargetSize.y, mTargetFormat,
+      mSpecularLightingTarget.release();
+      mSpecularLightingTex.set(mTargetSize.x, mTargetSize.y, mTargetFormat,
          &GFXRenderTargetProfile, avar("%s() - (line %d)", __FUNCTION__, __LINE__),
          1, GFXTextureManager::AA_MATCH_BACKBUFFER);
-      mLightMapTarget.setTexture(mLightMapTex);
+      mSpecularLightingTarget.setTexture(mSpecularLightingTex);
 
       for (U32 i = 0; i < mTargetChainLength; i++)
-         mTargetChain[i]->attachTexture(GFXTextureTarget::Color3, mLightMapTarget.getTexture());
+         mTargetChain[i]->attachTexture(GFXTextureTarget::Color3, mSpecularLightingTarget.getTexture());
    }
    GFX->finalizeReset();
    _initShaders();

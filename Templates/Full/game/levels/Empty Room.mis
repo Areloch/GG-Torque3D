@@ -36,7 +36,7 @@ new SimGroup(MissionGroup) {
       exposure = "1";
       zOffset = "0";
       azimuth = "0";
-      elevation = "90";
+      elevation = "65";
       moonAzimuth = "0";
       moonElevation = "45";
       castShadows = "1";
@@ -73,7 +73,7 @@ new SimGroup(MissionGroup) {
          mieScattering = "0.0045";
    };
    new Skylight() {
-      enabled = "1";
+      enabled = "0";
       StaticCubemap = "DesertSkyCubemap";
       position = "0 0 0";
       rotation = "1 0 0 0";

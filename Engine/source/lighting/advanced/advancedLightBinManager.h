@@ -100,6 +100,8 @@ public:
    /// light to compile in the SSAO mask.
    static bool smUseSSAOMask;
 
+   NamedTexTarget* mSpecularLightingTarget;
+
    // Used for console init
    AdvancedLightBinManager( AdvancedLightManager *lm = NULL, 
                             ShadowMapManager *sm = NULL,
@@ -233,7 +235,7 @@ protected:
    typedef GFXVertexPNTT FarFrustumQuadVert; 
    GFXVertexBufferHandle<FarFrustumQuadVert> mFarFrustumQuadVerts;
 
-
+   virtual bool _updateTargets();
 protected:
    //void _createMaterials();
 

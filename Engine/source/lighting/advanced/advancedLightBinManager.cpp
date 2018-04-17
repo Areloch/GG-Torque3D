@@ -42,8 +42,8 @@
 #include "console/consoleTypes.h"
 #include "math/mPolyhedron.h"
 
-const RenderInstType AdvancedLightBinManager::RIT_LightInfo( "directLighting" );
-const String AdvancedLightBinManager::smBufferName( "directLighting" );
+const RenderInstType AdvancedLightBinManager::RIT_LightInfo( "diffuseLighting" );
+const String AdvancedLightBinManager::smBufferName( "diffuseLighting" );
 
 ShadowFilterMode AdvancedLightBinManager::smShadowFilterMode = ShadowFilterMode_SoftShadowHighQuality;
 bool AdvancedLightBinManager::smPSSMDebugRender = false;
@@ -128,6 +128,8 @@ AdvancedLightBinManager::AdvancedLightBinManager( AdvancedLightManager *lm /* = 
    mNamedTarget.setConditioner( mConditioner ); 
    mNamedTarget.registerWithName( smBufferName );
 
+   mSpecularLightingTarget = NamedTexTarget::find("specularLighting");
+
    // We want a full-resolution buffer
    mTargetSizeType = RenderTexTargetBinManager::WindowSize;
 
@@ -177,6 +179,15 @@ bool AdvancedLightBinManager::setTargetSize(const Point2I &newTargetSize)
 
    // We require the viewport to match the default.
    mNamedTarget.setViewport( GFX->getViewport() );
+
+   return ret;
+}
+
+bool AdvancedLightBinManager::_updateTargets()
+{
+   PROFILE_SCOPE(AdvancedLightBinManager_updateTargets);
+
+   bool ret = Parent::_updateTargets();
 
    return ret;
 }
@@ -266,7 +277,7 @@ void AdvancedLightBinManager::render( SceneRenderState *state )
    sgData.init( state );
 
    // There are cases where shadow rendering is disabled.
-   const bool disableShadows = state->isReflectPass() || ShadowMapPass::smDisableShadows;
+   const bool disableShadows = /*state->isReflectPass() ||*/ ShadowMapPass::smDisableShadows;
 
    // Pick the right material for rendering the sunlight... we only
    // cast shadows when its enabled and we're not in a reflection.

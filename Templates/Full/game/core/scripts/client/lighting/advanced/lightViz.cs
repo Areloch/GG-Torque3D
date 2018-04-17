@@ -150,7 +150,7 @@ new ShaderData( AL_LightColorVisualizeShader )
    OGLVertexShaderFile = "shaders/common/postFx/gl/postFxV.glsl";
    OGLPixelShaderFile  = "shaders/common/lighting/advanced/gl/dbgLightColorVisualizeP.glsl";
    
-   samplerNames[0] = "directLightingBuffer";
+   samplerNames[0] = "diffuseLightingBuffer";
    
    pixVersion = 2.0;
 };
@@ -159,7 +159,7 @@ singleton PostEffect( AL_LightColorVisualize )
 {   
    shader = AL_LightColorVisualizeShader;
    stateBlock = AL_DefaultVisualizeState;
-   texture[0] = "#directLighting";
+   texture[0] = "#diffuseLighting";
    target = "$backBuffer";
    renderPriority = 9999;
 };
@@ -185,7 +185,7 @@ new ShaderData( AL_LightSpecularVisualizeShader )
    OGLVertexShaderFile = "shaders/common/postFx/gl/postFxV.glsl";
    OGLPixelShaderFile  = "shaders/common/lighting/advanced/gl/dbgLightSpecularVisualizeP.glsl";
    
-   samplerNames[0] = "directLightingBuffer";
+   samplerNames[0] = "diffuseLightingBuffer";
    
    pixVersion = 2.0;
 };
@@ -194,7 +194,7 @@ singleton PostEffect( AL_LightSpecularVisualize )
 {   
    shader = AL_LightSpecularVisualizeShader;
    stateBlock = AL_DefaultVisualizeState;
-   texture[0] = "#directLighting";
+   texture[0] = "#diffuseLighting";
    target = "$backBuffer";
    renderPriority = 9999;
 };
