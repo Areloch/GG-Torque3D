@@ -1118,6 +1118,8 @@ bool Entity::buildPolyList(PolyListContext context, AbstractPolyList* polyList, 
       return (*it)->buildPolyList(context, polyList, box, sphere);
    }*/
 
+
+
    return false;
 }
 

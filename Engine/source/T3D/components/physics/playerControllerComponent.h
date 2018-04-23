@@ -60,6 +60,8 @@
 #include "T3D/components/collision/collisionInterfaces.h"
 #endif
 
+#include "T3D/systems/physics/physicsSystem.h"
+
 class SceneRenderState;
 class PhysicsWorld;
 class PhysicsPlayer;
@@ -102,6 +104,7 @@ class PlayerControllerComponent : public Component,
    PhysicsWorld  *mPhysicsWorld;
 
    CollisionInterface* mOwnerCollisionInterface;
+   PhysicsSystemInterface* mInterfaceData;
 
    struct ContactInfo
    {

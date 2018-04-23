@@ -74,7 +74,7 @@ MeshComponent::MeshComponent() : Component(), mShape(nullptr), mRenderMode(Indiv
    mMeshAsset = StringTable->EmptyString();
    mMeshAssetId = StringTable->EmptyString();
 
-   mInterfaceData = new MeshRenderSystemInterface();
+   mInterfaceData = new MeshRenderSystemInterface(this);
 
    mRenderMode = Individual;
 }
@@ -92,6 +92,9 @@ bool MeshComponent::onAdd()
 {
    if(! Parent::onAdd())
       return false;
+
+   if (MeshRenderSystemInterface::getByOwner(this) != nullptr)
+	   bool yarp = true;
 
    // Register for the resource change signal.
    ResourceManager::get().getChangedSignal().notify( this, &MeshComponent::_onResourceChanged );

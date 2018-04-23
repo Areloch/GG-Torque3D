@@ -148,6 +148,8 @@ CollisionComponent::CollisionComponent() : Component()
    mTimeoutList = nullptr;
 
    mAnimated = false;
+
+   mInterfaceData = new CollisionSystemInterface(this);
 }
 
 CollisionComponent::~CollisionComponent()
@@ -167,10 +169,12 @@ void CollisionComponent::onComponentAdd()
 {
    Parent::onComponentAdd();
 
-   RenderComponentInterface *renderInterface = mOwner->getComponent<RenderComponentInterface>();
+   MeshRenderSystemInterface* renderInterface = MeshRenderSystemInterface::getByOwner(mOwner);
+
+   //RenderComponentInterface *renderInterface = mOwner->getComponent<RenderComponentInterface>();
    if (renderInterface)
    {
-      renderInterface->onShapeInstanceChanged.notify(this, &CollisionComponent::targetShapeChanged);
+      renderInterface->onMeshRenderDataChanged.notify(this, &CollisionComponent::targetShapeChanged);
       mOwnerRenderInterface = renderInterface;
    }
 

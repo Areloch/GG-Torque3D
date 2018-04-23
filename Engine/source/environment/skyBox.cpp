@@ -36,7 +36,7 @@
 #include "materials/sceneData.h"
 #include "T3D/gameFunctions.h"
 #include "renderInstance/renderBinManager.h"
-#include "materials/processedMaterial.h"
+//#include "materials/processedMaterial.h"
 #include "gfx/gfxDebugEvent.h"
 #include "math/util/matrixSet.h"
 

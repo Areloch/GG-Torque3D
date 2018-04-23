@@ -42,7 +42,7 @@
 #include "T3D/physics/physicsCommon.h"
 #endif
 
-struct ContactInfo 
+/*struct ContactInfo 
 {
    bool contacted, move;
    SceneObject *contactObject;
@@ -66,7 +66,7 @@ struct ContactInfo
 
    ContactInfo() { clear(); }
 
-};
+};*/
 
 class CollisionInterface// : public Interface<CollisionInterface>
 {

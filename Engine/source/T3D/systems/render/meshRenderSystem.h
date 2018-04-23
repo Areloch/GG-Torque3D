@@ -43,7 +43,7 @@ public:
 
    OptimizedPolyList       mGeometry;
 
-   MeshRenderSystemInterface() : SystemInterface(), mShapeInstance(nullptr), mTransform(MatrixF::Identity), mScale(Point3F::One), mIsClient(false), mStatic(false)
+   MeshRenderSystemInterface(Component* owner) : SystemInterface(owner), mShapeInstance(nullptr), mTransform(MatrixF::Identity), mScale(Point3F::One), mIsClient(false), mStatic(false)
    {
       mBounds = Box3F(1);
       mSphere = SphereF();
@@ -54,6 +54,8 @@ public:
       //SAFE_DELETE(mShape);
       SAFE_DELETE(mShapeInstance);
    }
+
+   Signal< void(MeshRenderSystemInterface*) > onMeshRenderDataChanged;
 };
 
 class MeshRenderSystem

@@ -34,6 +34,8 @@
 
 #include "T3D/components/coreInterfaces.h"
 #include "T3D/components/component.h"
+
+#include "T3D/systems/physics/physicsSystem.h"
 //----------------------------------------------------------------------------
 
 ProcessObject::ProcessObject()
@@ -279,6 +281,9 @@ void ProcessList::advanceObjects()
    {
       UpdateInterface::all[i]->processTick();
    }
+
+   //update the Physics System
+   PhysicsSystem::processTick();
 
    mTotalTicks++;
 

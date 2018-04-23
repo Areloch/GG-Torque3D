@@ -19,6 +19,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
+#pragma once
 
 #ifndef COMPONENT_H
 #define COMPONENT_H
@@ -221,6 +222,9 @@ public:
    virtual void checkDependencies(){}
 
    StringTableEntry getComponentName();
+
+   //This is a bit of a hack, but it lets us handle the fact that lots of our children deal with transforms and positioning
+   virtual void setTransform(MatrixF trans) {};
 };
 
 #endif // COMPONENT_H

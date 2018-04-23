@@ -124,6 +124,9 @@ PlayerControllerComponent::PlayerControllerComponent() : Component()
 
    mOwnerCollisionInterface = nullptr;
    mIntegrationCount = 0;
+
+   mInterfaceData = new PhysicsSystemInterface(this);
+   mInterfaceData->mBehaviorType = PhysicsSystemInterface::Player;
 }
 
 PlayerControllerComponent::~PlayerControllerComponent()
@@ -135,6 +138,9 @@ PlayerControllerComponent::~PlayerControllerComponent()
    }
 
    SAFE_DELETE_ARRAY(mDescription);
+
+   if (mInterfaceData)
+      SAFE_DELETE(mInterfaceData);
 }
 
 IMPLEMENT_CO_NETOBJECT_V1(PlayerControllerComponent);
@@ -195,23 +201,26 @@ void PlayerControllerComponent::componentRemovedFromOwner(Component *comp)
 
 void PlayerControllerComponent::updatePhysics(PhysicsCollision *collision)
 {
-   if (!PHYSICSMGR)
-      return;
+   if (PHYSICSMGR)
+   {
+      mInterfaceData->mPhysicsWorld = PHYSICSMGR->getWorld(isServerObject() ? "server" : "client");
 
-   mPhysicsWorld = PHYSICSMGR->getWorld(isServerObject() ? "server" : "client");
+      //first, clear the old physRep
+      SAFE_DELETE(mInterfaceData->mPlayerPhysicsRep);
 
-   //first, clear the old physRep
-   SAFE_DELETE(mPhysicsRep);
+      mInterfaceData->mPlayerPhysicsRep = PHYSICSMGR->createPlayer();
 
-   mPhysicsRep = PHYSICSMGR->createPlayer();
+      F32 runSurfaceCos = mCos(mDegToRad(moveSurfaceAngle));
 
-   F32 runSurfaceCos = mCos(mDegToRad(moveSurfaceAngle));
+      Point3F ownerBounds = mOwner->getObjBox().getExtents() * mOwner->getScale();
 
-   Point3F ownerBounds = mOwner->getObjBox().getExtents() * mOwner->getScale();
+      mInterfaceData->mPlayerPhysicsRep->init("", ownerBounds, runSurfaceCos, maxStepHeight, mOwner, mPhysicsWorld);
 
-   mPhysicsRep->init("", ownerBounds, runSurfaceCos, maxStepHeight, mOwner, mPhysicsWorld);
+      mInterfaceData->mPlayerPhysicsRep->setTransform(mOwner->getTransform());
+   }
 
-   mPhysicsRep->setTransform(mOwner->getTransform());
+   mInterfaceData->mGravity = VectorF(0, 0, 9.8);
+   mInterfaceData->mGravityMod = 1;
 }
 
 void PlayerControllerComponent::initPersistFields()
@@ -239,7 +248,7 @@ void PlayerControllerComponent::processTick()
 {
    Parent::processTick();
 
-   if (!isServerObject() || !isActive())
+   /*if (!isServerObject() || !isActive())
       return;
 
    // Warp to catch up to server
@@ -283,7 +292,7 @@ void PlayerControllerComponent::processTick()
       
       setMaskBits(VelocityMask);
       setMaskBits(PositionMask);
-   }
+   }*/
 }
 
 void PlayerControllerComponent::interpolateTick(F32 dt)
@@ -292,8 +301,10 @@ void PlayerControllerComponent::interpolateTick(F32 dt)
 
 void PlayerControllerComponent::ownerTransformSet(MatrixF *mat)
 {
-   if (mPhysicsRep)
-      mPhysicsRep->setTransform(mOwner->getTransform());
+   if (mInterfaceData->mPlayerPhysicsRep)
+      mInterfaceData->mPlayerPhysicsRep->setTransform(mOwner->getTransform());
+   else
+      mInterfaceData->mTransform = mOwner->getTransform();
 }
 
 void PlayerControllerComponent::setTransform(const MatrixF& mat)

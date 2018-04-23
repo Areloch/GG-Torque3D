@@ -57,6 +57,10 @@
 #include "T3D/physics/physicsWorld.h"
 #endif
 
+#include "T3D/systems/collision/collisionSystem.h"
+#include "T3D/systems/physics/physicsSystem.h"
+#include "T3D/systems/render/meshRenderSystem.h"
+
 class TSShapeInstance;
 class SceneRenderState;
 class CollisionComponent;
@@ -90,9 +94,10 @@ protected:
 
    StringTableEntry colisionMeshPrefix;
 
-   RenderComponentInterface* mOwnerRenderInterface;
-
+   MeshRenderSystemInterface* mOwnerRenderInterface;
    PhysicsComponentInterface* mOwnerPhysicsInterface;
+
+   CollisionSystemInterface*  mInterfaceData;
 
    //only really relevent for the collision mesh type
    //if we note an animation component is added, we flag as being animated.
