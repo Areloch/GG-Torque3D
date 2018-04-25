@@ -87,7 +87,7 @@ Component::~Component()
    SAFE_DELETE_ARRAY(mDescription);
 }
 
-IMPLEMENT_CO_NETOBJECT_V1(Component);
+IMPLEMENT_CONOBJECT(Component);
 
 //////////////////////////////////////////////////////////////////////////
 

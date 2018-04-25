@@ -36,7 +36,7 @@
 
 #include "T3D/components/coreInterfaces.h"
 #include "T3D/components/render/renderComponentInterface.h"
-#include "T3D/components/collision/collisionInterfaces.h"
+#include "T3D/components/collision/collisionComponent.h"
 
 #include "gui/controls/guiTreeViewCtrl.h"
 #include "assets/assetManager.h"
@@ -1123,8 +1123,8 @@ bool Entity::buildPolyList(PolyListContext context, AbstractPolyList* polyList, 
 
 void Entity::buildConvex(const Box3F& box, Convex* convex)
 {
-   Vector<BuildConvexInterface*> updaters = getComponents<BuildConvexInterface>();
-   for (Vector<BuildConvexInterface*>::iterator it = updaters.begin(); it != updaters.end(); it++)
+   Vector<CollisionComponent*> colliders = getComponents<CollisionComponent>();
+   for (Vector<CollisionComponent*>::iterator it = colliders.begin(); it != colliders.end(); it++)
    {
       (*it)->buildConvex(box, convex);
    }

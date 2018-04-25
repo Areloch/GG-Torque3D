@@ -21,24 +21,24 @@
 //-----------------------------------------------------------------------------
 
 #include "console/engineAPI.h"
-#include "T3D/components/collision/collisionComponent.h"
+#include "T3D/components/collision/shapeCollisionComponent.h"
 #include "materials/baseMatInstance.h"
 
-DefineConsoleMethod(CollisionComponent, getNumberOfContacts, S32, (), ,
+DefineConsoleMethod(ShapeCollisionComponent, getNumberOfContacts, S32, (), ,
    "Gets the number of contacts this collider has hit.\n"
    "@return The number of static fields defined on the object.")
 {
    return object->getCollisionList()->getCount();
 }
 
-DefineConsoleMethod(CollisionComponent, getBestContact, S32, (), ,
+DefineConsoleMethod(ShapeCollisionComponent, getBestContact, S32, (), ,
    "Gets the number of contacts this collider has hit.\n"
    "@return The number of static fields defined on the object.")
 {
    return 0;
 }
 
-DefineConsoleMethod(CollisionComponent, getContactNormal, Point3F, (), ,
+DefineConsoleMethod(ShapeCollisionComponent, getContactNormal, Point3F, (), ,
    "Gets the number of contacts this collider has hit.\n"
    "@return The number of static fields defined on the object.")
 {
@@ -53,7 +53,7 @@ DefineConsoleMethod(CollisionComponent, getContactNormal, Point3F, (), ,
    return Point3F::Zero;
 }
 
-DefineConsoleMethod(CollisionComponent, getContactMaterial, S32, (), ,
+DefineConsoleMethod(ShapeCollisionComponent, getContactMaterial, S32, (), ,
    "Gets the number of contacts this collider has hit.\n"
    "@return The number of static fields defined on the object.")
 {
@@ -69,7 +69,7 @@ DefineConsoleMethod(CollisionComponent, getContactMaterial, S32, (), ,
    return 0;
 }
 
-DefineConsoleMethod(CollisionComponent, getContactObject, S32, (), ,
+DefineConsoleMethod(ShapeCollisionComponent, getContactObject, S32, (), ,
    "Gets the number of contacts this collider has hit.\n"
    "@return The number of static fields defined on the object.")
 {
@@ -81,7 +81,7 @@ DefineConsoleMethod(CollisionComponent, getContactObject, S32, (), ,
    return 0;
 }
 
-DefineConsoleMethod(CollisionComponent, getContactPoint, Point3F, (), ,
+DefineConsoleMethod(ShapeCollisionComponent, getContactPoint, Point3F, (), ,
    "Gets the number of contacts this collider has hit.\n"
    "@return The number of static fields defined on the object.")
 {
@@ -96,7 +96,7 @@ DefineConsoleMethod(CollisionComponent, getContactPoint, Point3F, (), ,
    return Point3F::Zero;
 }
 
-DefineConsoleMethod(CollisionComponent, getContactTime, S32, (), ,
+DefineConsoleMethod(ShapeCollisionComponent, getContactTime, S32, (), ,
    "Gets the number of contacts this collider has hit.\n"
    "@return The number of static fields defined on the object.")
 {
@@ -111,7 +111,7 @@ DefineConsoleMethod(CollisionComponent, getContactTime, S32, (), ,
    return 0;
 }
 
-DefineEngineMethod(CollisionComponent, hasContact, bool, (), ,
+DefineEngineMethod(ShapeCollisionComponent, hasContact, bool, (), ,
    "@brief Apply an impulse to this object as defined by a world position and velocity vector.\n\n"
 
    "@param pos impulse world position\n"
@@ -123,7 +123,7 @@ DefineEngineMethod(CollisionComponent, hasContact, bool, (), ,
    return object->hasContact();
 }
 
-DefineEngineMethod(CollisionComponent, getCollisionCount, S32, (), ,
+DefineEngineMethod(ShapeCollisionComponent, getCollisionCount, S32, (), ,
    "@brief Apply an impulse to this object as defined by a world position and velocity vector.\n\n"
 
    "@param pos impulse world position\n"
@@ -135,7 +135,7 @@ DefineEngineMethod(CollisionComponent, getCollisionCount, S32, (), ,
    return object->getCollisionCount();
 }
 
-DefineEngineMethod(CollisionComponent, getCollisionNormal, Point3F, (S32 collisionIndex), ,
+DefineEngineMethod(ShapeCollisionComponent, getCollisionNormal, Point3F, (S32 collisionIndex), ,
    "@brief Apply an impulse to this object as defined by a world position and velocity vector.\n\n"
 
    "@param pos impulse world position\n"
@@ -147,7 +147,7 @@ DefineEngineMethod(CollisionComponent, getCollisionNormal, Point3F, (S32 collisi
    return object->getCollisionNormal(collisionIndex);
 }
 
-DefineEngineMethod(CollisionComponent, getCollisionAngle, F32, (S32 collisionIndex, VectorF upVector), ,
+DefineEngineMethod(ShapeCollisionComponent, getCollisionAngle, F32, (S32 collisionIndex, VectorF upVector), ,
    "@brief Apply an impulse to this object as defined by a world position and velocity vector.\n\n"
 
    "@param pos impulse world position\n"
@@ -159,7 +159,7 @@ DefineEngineMethod(CollisionComponent, getCollisionAngle, F32, (S32 collisionInd
    return object->getCollisionAngle(collisionIndex, upVector);
 }
 
-DefineEngineMethod(CollisionComponent, getBestCollisionAngle, F32, (VectorF upVector), ,
+DefineEngineMethod(ShapeCollisionComponent, getBestCollisionAngle, F32, (VectorF upVector), ,
    "@brief Apply an impulse to this object as defined by a world position and velocity vector.\n\n"
 
    "@param pos impulse world position\n"

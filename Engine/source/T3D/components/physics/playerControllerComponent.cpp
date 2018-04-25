@@ -37,7 +37,6 @@
 #include "collision/collision.h"
 #include "T3D/physics/physicsPlayer.h"
 #include "T3D/physics/physicsPlugin.h"
-#include "T3D/components/collision/collisionInterfaces.h"
 #include "T3D/trigger.h"
 #include "T3D/components/collision/collisionTrigger.h"
 
@@ -58,13 +57,8 @@ IMPLEMENT_CALLBACK(PlayerControllerComponent, updateMove, void, (PlayerControlle
 //////////////////////////////////////////////////////////////////////////
 // Constructor/Destructor
 //////////////////////////////////////////////////////////////////////////
-PlayerControllerComponent::PlayerControllerComponent() : Component()
+PlayerControllerComponent::PlayerControllerComponent() : PhysicsComponent()
 {
-   addComponentField("isStatic", "If enabled, object will not simulate physics", "bool", "0", "");
-   addComponentField("gravity", "The direction of gravity affecting this object, as a vector", "vector", "0 0 -9", "");
-   addComponentField("drag", "The drag coefficient that constantly affects the object", "float", "0.7", "");
-   addComponentField("mass", "The mass of the object", "float", "1", "");
-
    mBuoyancy = 0.f;
    mFriction = 0.3f;
    mElasticity = 0.4f;
@@ -117,12 +111,14 @@ PlayerControllerComponent::PlayerControllerComponent() : Component()
    //Grav mod
    mGravityMod = 1;
 
+   mGravity = Point3F(0, 0, -9.8);
+
    mInputVelocity = Point3F(0, 0, 0);
 
    mPhysicsRep = nullptr;
    mPhysicsWorld = nullptr;
 
-   mOwnerCollisionInterface = nullptr;
+   mOwnerCollisionComp = nullptr;
    mIntegrationCount = 0;
 }
 
@@ -160,6 +156,13 @@ void PlayerControllerComponent::onComponentAdd()
 {
    Parent::onComponentAdd();
 
+   CollisionComponent *collisionComp = mOwner->getComponent<CollisionComponent>();
+   if (collisionComp)
+   {
+      collisionComp->onCollisionChanged.notify(this, &PlayerControllerComponent::updatePhysics);
+      mOwnerCollisionComp = collisionComp;
+   }
+
    updatePhysics();
 }
 
@@ -168,12 +171,11 @@ void PlayerControllerComponent::componentAddedToOwner(Component *comp)
    if (comp->getId() == getId())
       return;
 
-   //test if this is a shape component!
-   CollisionInterface *collisionInterface = dynamic_cast<CollisionInterface*>(comp);
-   if (collisionInterface)
+   CollisionComponent *collisionComp = dynamic_cast<CollisionComponent*>(comp);
+   if (collisionComp)
    {
-      collisionInterface->onCollisionChanged.notify(this, &PlayerControllerComponent::updatePhysics);
-      mOwnerCollisionInterface = collisionInterface;
+      collisionComp->onCollisionChanged.notify(this, &PlayerControllerComponent::updatePhysics);
+      mOwnerCollisionComp = collisionComp;
       updatePhysics();
    }
 }
@@ -183,12 +185,11 @@ void PlayerControllerComponent::componentRemovedFromOwner(Component *comp)
    if (comp->getId() == getId()) //?????????
       return;
 
-   //test if this is a shape component!
-   CollisionInterface *collisionInterface = dynamic_cast<CollisionInterface*>(comp);
-   if (collisionInterface)
+   CollisionComponent *collisionComp = dynamic_cast<CollisionComponent*>(comp);
+   if (collisionComp)
    {
-      collisionInterface->onCollisionChanged.remove(this, &PlayerControllerComponent::updatePhysics);
-      mOwnerCollisionInterface = NULL;
+      collisionComp->onCollisionChanged.notify(this, &PlayerControllerComponent::updatePhysics);
+      mOwnerCollisionComp = nullptr;
       updatePhysics();
    }
 }
@@ -306,9 +307,6 @@ void PlayerControllerComponent::setTransform(const MatrixF& mat)
 //
 void PlayerControllerComponent::updateMove()
 {
-   if (!PHYSICSMGR)
-      return;
-
    Move *move = &mOwner->lastMove;
 
    //If we're not set to use mUseDirectMoveInput, then we allow for an override in the form of mInputVelocity
@@ -347,7 +345,12 @@ void PlayerControllerComponent::updateMove()
    moveVec += tv * move->y;
 
    // Acceleration due to gravity
-   VectorF acc(mPhysicsWorld->getGravity() * mGravityMod * TickSec);
+   VectorF acc = VectorF::Zero;
+
+   if(PHYSICSMGR)
+      acc = VectorF(mPhysicsWorld->getGravity() * mGravityMod * TickSec);
+   else
+      acc = mGravity * mGravityMod * TickSec;
 
    // Determine ground contact normal. Only look for contacts if
    // we can move and aren't mounted.
@@ -562,9 +565,6 @@ void PlayerControllerComponent::updateMove()
 
 void PlayerControllerComponent::updatePos(const F32 travelTime)
 {
-   if (!PHYSICSMGR)
-      return;
-
    PROFILE_SCOPE(PlayerControllerComponent_UpdatePos);
 
    Point3F newPos;
@@ -575,7 +575,10 @@ void PlayerControllerComponent::updatePos(const F32 travelTime)
    static CollisionList collisionList;
    collisionList.clear();
 
-   newPos = mPhysicsRep->move(mVelocity * travelTime, collisionList);
+   if(PHYSICSMGR)
+      newPos = mPhysicsRep->move(mVelocity * travelTime, collisionList);
+   else
+      newPos = _move(travelTime);
 
    bool haveCollisions = false;
    bool wasFalling = mFalling;
@@ -585,10 +588,10 @@ void PlayerControllerComponent::updatePos(const F32 travelTime)
       haveCollisions = true;
 
       //TODO: clean this up so the phys component doesn't have to tell the col interface to do this
-      CollisionInterface* colInterface = mOwner->getComponent<CollisionInterface>();
-      if (colInterface)
+      CollisionComponent* colComp = mOwner->getComponent<CollisionComponent>();
+      if (colComp)
       {
-         colInterface->handleCollisionList(collisionList, mVelocity);
+         colComp->handleCollisionList(collisionList, mVelocity);
       }
    }
 
@@ -635,12 +638,162 @@ void PlayerControllerComponent::updatePos(const F32 travelTime)
          }
       }
    }
+
+   updateContainer();
    
    MatrixF newMat;
    newMat.setPosition(newPos);
-   mPhysicsRep->setTransform(newMat);
+
+   if(PHYSICSMGR)
+      mPhysicsRep->setTransform(newMat);
 
    mOwner->setPosition(newPos);
+}
+
+Point3F PlayerControllerComponent::_move(const F32 travelTime)
+{
+   // Try and move to new pos
+   F32 totalMotion = 0.0f;
+
+   Point3F start;
+   Point3F initialPosition;
+   mOwner->getTransform().getColumn(3, &start);
+   initialPosition = start;
+
+   VectorF firstNormal(0.0f, 0.0f, 0.0f);
+   //F32 maxStep = maxStepHeight;
+   F32 time = travelTime;
+   U32 count = 0;
+   S32 sMoveRetryCount = 5;
+
+   if (!mOwnerCollisionComp)
+      return start + mVelocity * time;
+
+   mOwnerCollisionComp->clearCollisionList();
+
+   for (; count < sMoveRetryCount; count++)
+   {
+      F32 speed = mVelocity.len();
+      if (!speed)
+         break;
+
+      Point3F end = start + mVelocity * time;
+      Point3F distance = end - start;
+
+      bool collided = mOwnerCollisionComp->checkCollisions(time, &mVelocity, start);
+
+      if (mOwnerCollisionComp->getCollisionList()->getCount() != 0 && mOwnerCollisionComp->getCollisionList()->getTime() < 1.0f)
+      {
+         // Set to collision point
+         F32 velLen = mVelocity.len();
+
+         F32 dt = time * getMin(mOwnerCollisionComp->getCollisionList()->getTime(), 1.0f);
+         start += mVelocity * dt;
+         time -= dt;
+
+         totalMotion += velLen * dt;
+
+         // Back off...
+         if (velLen > 0.f)
+         {
+            F32 newT = getMin(0.01f / velLen, dt);
+            start -= mVelocity * newT;
+            totalMotion -= velLen * newT;
+         }
+
+         // Pick the surface most parallel to the face that was hit.
+         U32 colCount = mOwnerCollisionComp->getCollisionList()->getCount();
+
+         const Collision *collision = mOwnerCollisionComp->getCollision(0);
+         const Collision *cp = collision + 1;
+         const Collision *ep = collision + mOwnerCollisionComp->getCollisionList()->getCount();
+         for (; cp != ep; cp++)
+         {
+            U32 colCountLoop = mOwnerCollisionComp->getCollisionList()->getCount();
+
+            //TODO: Move this somewhere else
+            if (Entity* colEnt = dynamic_cast<Entity*>(collision->object))
+            {
+               if (CollisionComponent *colComp = colEnt->getComponent<CollisionComponent>())
+               {
+                  if (!colComp->doesBlockColliding())
+                  {
+                     continue;
+                  }
+               }
+            }
+
+            if (cp->faceDot > collision->faceDot)
+               collision = cp;
+         }
+
+         //check the last/first one just incase
+         if (Entity* colEnt = dynamic_cast<Entity*>(collision->object))
+         {
+            if (CollisionComponent *colComp = colEnt->getComponent<CollisionComponent>())
+            {
+               if (!colComp->doesBlockColliding())
+               {
+                  //if our ideal surface doesn't stop us, just move along
+                  return start + mVelocity * time;
+               }
+            }
+         }
+
+         //F32 bd = _doCollisionImpact( collision, wasFalling );
+         F32 bd = -mDot(mVelocity, collision->normal);
+
+         // Subtract out velocity
+         F32 sNormalElasticity = 0.01f;
+         VectorF dv = collision->normal * (bd + sNormalElasticity);
+         mVelocity += dv;
+         if (count == 0)
+         {
+            firstNormal = collision->normal;
+         }
+         else
+         {
+            if (count == 1)
+            {
+               // Re-orient velocity along the crease.
+               if (mDot(dv, firstNormal) < 0.0f &&
+                  mDot(collision->normal, firstNormal) < 0.0f)
+               {
+                  VectorF nv;
+                  mCross(collision->normal, firstNormal, &nv);
+                  F32 nvl = nv.len();
+                  if (nvl)
+                  {
+                     if (mDot(nv, mVelocity) < 0.0f)
+                        nvl = -nvl;
+                     nv *= mVelocity.len() / nvl;
+                     mVelocity = nv;
+                  }
+               }
+            }
+         }
+      }
+      else
+      {
+         totalMotion += (end - start).len();
+         start = end;
+         break;
+      }
+   }
+
+   U32 colCountThree = mOwnerCollisionComp->getCollisionList()->getCount();
+
+   if (colCountThree != 0)
+      bool derp = true;
+
+   if (count == sMoveRetryCount)
+   {
+      // Failed to move
+      start = initialPosition;
+      mVelocity.set(0.0f, 0.0f, 0.0f);
+   }
+
+   return start;
 }
 
 //
@@ -668,7 +821,20 @@ void PlayerControllerComponent::findContact(bool *run, bool *jump, VectorF *cont
 
    Vector<SceneObject*> overlapObjects;
 
-   mPhysicsRep->findContact(&contactObject, contactNormal, &overlapObjects);
+   if (PHYSICSMGR)
+      mPhysicsRep->findContact(&contactObject, contactNormal, &overlapObjects);
+   else
+   {
+      if (mOwnerCollisionComp)
+      {
+         mOwnerCollisionComp->findContact();
+
+         CollisionContactInfo* contactInfo = mOwnerCollisionComp->getContactInfo();
+         contactObject = contactInfo->contactObject;
+         contactNormal = &contactInfo->contactNormal;
+         overlapObjects = contactInfo->overlapObjects;
+      }
+   }
 
    F32 vd = (*contactNormal).z;
    *run = vd > mCos(mDegToRad(moveSurfaceAngle));
