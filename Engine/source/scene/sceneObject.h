@@ -387,6 +387,9 @@ class SceneObject : public NetObject, private SceneContainer::Link, public Proce
       /// Triggered when a SceneObject onRemove is called.
       static Signal< void( SceneObject* ) > smSceneObjectRemove;
 
+	  /// Triggered when a SceneObject setTransform is called.
+	  static Signal< void(SceneObject*) > smSceneObjectTransformChanged;
+
       /// Return the type mask that indicates to which broad object categories
       /// this object belongs.
       U32 getTypeMask() const { return mTypeMask; }

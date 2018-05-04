@@ -96,6 +96,7 @@ ConsoleDocClass( SceneObject,
 
 Signal< void( SceneObject* ) > SceneObject::smSceneObjectAdd;
 Signal< void( SceneObject* ) > SceneObject::smSceneObjectRemove;
+Signal< void(SceneObject*) > SceneObject::smSceneObjectTransformChanged;
 
 
 //-----------------------------------------------------------------------------
@@ -409,6 +410,9 @@ void SceneObject::setTransform( const MatrixF& mat )
 
    if( mSceneManager != NULL )
       mSceneManager->notifyObjectDirty( this );
+
+   //Anything specifically listening for transform changes(such as tools) can be informed now
+   smSceneObjectTransformChanged.trigger(this);
 
    setRenderTransform( mat );
 }
