@@ -1571,7 +1571,107 @@ function EditorTree::onRightMouseUp( %this, %itemId, %mouse, %obj )
    %haveLockAndHideEntries = true;
    
    //Set up the generic pop-up pre-emptively if we haven't already
-   if( !isObject( ETContextPopup ) )
+   %popup = new PopupMenu()
+   {
+      superClass = "MenuBuilder";
+      isPopup = "1";
+      object = -1;
+      bookmark = -1;
+   };
+   
+   if( %this.getSelectedItemsCount() > 1 )
+   {
+      %popup.item[ 0 ] = "Delete" TAB "" TAB "EditorMenuEditDelete();";
+      %popup.item[ 1 ] = "Group" TAB "" TAB "EWorldEditor.addSimGroup( true );";
+   }
+   else
+   {
+      if( %obj.isMemberOfClass( "CameraBookmark" ) )
+      {
+         %popup.bookmark = %obj;
+         
+         %popup.item[ 0 ] = "Go To Bookmark" TAB "" TAB "EditorGui.jumpToBookmark( " @ %popup.bookmark.getInternalName() @ " );";
+      }
+      else if( %obj.name $= "CameraBookmarks" )
+      {
+         %popup.item[ 0 ] = "Add Camera Bookmark" TAB "" TAB "EditorGui.addCameraBookmarkByGui();";
+      }
+      else 
+      {
+         %popup.object = %obj;
+         %haveObjectEntries = true;
+         
+         %popup.item[ 0 ] = "Rename" TAB "" TAB "EditorTree.showItemRenameCtrl( EditorTree.findItemByObjectId(" @ %popup.object @ ") );";
+         %popup.item[ 1 ] = "Delete" TAB "" TAB "EWorldEditor.deleteMissionObject(" @ %popup.object @ ");";
+         %popup.item[ 2 ] = "Inspect" TAB "" TAB "inspectObject(" @ %popup.object @ ");";
+         %popup.item[ 3 ] = "-";
+         %popup.item[ 4 ] = "Locked" TAB "" TAB "%this.object.setLocked( !" @ %popup.object @ ".locked ); EWorldEditor.syncGui();";
+         %popup.item[ 5 ] = "Hidden" TAB "" TAB "EWorldEditor.hideObject( " @ %popup.object @ ", !" @ %popup.object @ ".hidden ); EWorldEditor.syncGui();";
+         %popup.item[ 6 ] = "-";
+         %popup.item[ 7 ] = "Group" TAB "" TAB "EWorldEditor.addSimGroup( true );";
+   
+         if( %obj.isMemberOfClass( "ConvexShape" ) )
+         {
+            %popup.item[ 8 ] = "-";
+            %popup.item[ 9 ] = "Convert to Zone" TAB "" TAB "EWorldEditor.convertSelectionToPolyhedralObjects( \"Zone\" );";
+            %popup.item[ 10 ] = "Convert to Portal" TAB "" TAB "EWorldEditor.convertSelectionToPolyhedralObjects( \"Portal\" );";
+            %popup.item[ 11 ] = "Convert to Occluder" TAB "" TAB "EWorldEditor.convertSelectionToPolyhedralObjects( \"OcclusionVolume\" );";
+            %popup.item[ 12 ] = "Convert to Sound Space" TAB "" TAB "EWorldEditor.convertSelectionToPolyhedralObjects( \"SFXSpace\" );";
+         }
+         else if( %obj.isMemberOfClass( "Zone" ) ||
+               %obj.isMemberOfClass( "Portal" ) ||
+               %obj.isMemberOfClass( "OcclusionVolume" ) ||
+               %obj.isMemberOfClass( "SFXSpace" ) )
+         {
+            %popup.item[ 8 ] = "-";
+            %popup.item[ 9 ] = "Convert to ConvexShape" TAB "" TAB "EWorldEditor.convertSelectionToConvexShape();";
+         }
+         else if(%obj.getClassName() $= "SimGroup" || 
+               %obj.isMemberOfClass( "Path" ) ||
+               %obj.isMemberOfClass("Entity") )
+         {
+            //If it's not any special-handle classes above, then it'll be group-based stuff here
+            %popup.item[ 4 ] = "Toggle Lock Children" TAB "" TAB "EWorldEditor.toggleLockChildren( " @ %popup.object @ " );";
+            %popup.item[ 5 ] = "Toggle Hide Children" TAB "" TAB "EWorldEditor.toggleHideChildren( " @ %popup.object @ " );";
+            
+            %popup.item[ 8 ] = "-";
+            %popup.item[ 9 ] = "Add New Objects Here" TAB "" TAB "EWCreatorWindow.setNewObjectGroup( " @ %popup.object @ " );";
+            %popup.item[ 10 ] = "Add Children to Selection" TAB "" TAB "EWorldEditor.selectAllObjectsInSet( " @ %popup.object @ ", false );";
+            %popup.item[ 11 ] = "Remove Children from Selection" TAB "" TAB "EWorldEditor.selectAllObjectsInSet( " @ %popup.object @ ", true );";
+            
+            %hasChildren = %obj.getCount() > 0;
+            %popup.enableItem( 10, %hasChildren );
+            %popup.enableItem( 11, %hasChildren );
+            
+            %haveObjectEntries = true;
+            %haveLockAndHideEntries = false;
+            
+            //Special case for Entities, which is special-case AND does group stuff with chld objects
+            if(%obj.isMemberOfClass("Entity"))
+            {
+               %popup.item[ 12 ] = "-";
+               %popup.item[ 13 ] = "Convert to Game Object" TAB "" TAB "EWorldEditor.createGameObject( " @ %popup.object @ " );";
+               %popup.item[ 14 ] = "Duplicate Game Object" TAB "" TAB "EWorldEditor.duplicateGameObject( " @ %popup.object @ " );";
+               %popup.item[ 15 ] = "Show in Asset Browser" TAB "" TAB "EWorldEditor.showGameObjectInAssetBrowser( " @ %popup.object @ " );";
+               
+               if(!isObject(AssetDatabase.acquireAsset(%obj.gameObjectAsset)))
+               {
+                  %popup.enableItem(13, true);
+                  %popup.enableItem(14, false);
+                  %popup.enableItem(15, false);
+               }
+               else
+               {
+                  %popup.enableItem(13, false);
+                  %popup.enableItem(14, true);
+                  %popup.enableItem(15, true);
+               }
+            }
+         }  
+      }
+   }
+   
+   /*if( !isObject( ETContextPopup ) )
    {
       %popup = new PopupMenu( ETContextPopup )
       {
@@ -1589,10 +1689,10 @@ function EditorTree::onRightMouseUp( %this, %itemId, %mouse, %obj )
 
          object = -1;
       };
-   }
+   }*/
    
    // Handle multi-selection.
-   if( %this.getSelectedItemsCount() > 1 )
+   /*if( %this.getSelectedItemsCount() > 1 )
    {
       %popup = ETMultiSelectionContextPopup;
       if( !isObject( %popup ) )
@@ -1783,12 +1883,13 @@ function EditorTree::onRightMouseUp( %this, %itemId, %mouse, %obj )
 
       %popup.object = %obj;
       %haveObjectEntries = true;
-   }
+   }*/
 
    if( %haveObjectEntries )
    {         
       %popup.enableItem( 0, %obj.isNameChangeAllowed() && %obj.getName() !$= "MissionGroup" );
       %popup.enableItem( 1, %obj.getName() !$= "MissionGroup" );
+      
       if( %haveLockAndHideEntries )
       {
          %popup.checkItem( 4, %obj.locked );
@@ -1797,6 +1898,7 @@ function EditorTree::onRightMouseUp( %this, %itemId, %mouse, %obj )
       %popup.enableItem( 7, %this.isItemSelected( %itemId ) );
    }
    
+   %popup.reloadItems();
    %popup.showPopup( Canvas );
 }
 
