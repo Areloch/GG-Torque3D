@@ -54,7 +54,6 @@
 
 extern bool gEditingMission;
 extern ColorI gCanvasClearColor;
-bool ReflectionProbe::smRenderReflectionProbes = true;
 bool ReflectionProbe::smRenderPreviewProbes = true;
 
 IMPLEMENT_CO_NETOBJECT_V1(ReflectionProbe);
@@ -73,8 +72,8 @@ ConsoleDocClass(ReflectionProbe,
 ImplementEnumType(ReflectProbeType,
    "Type of mesh data available in a shape.\n"
    "@ingroup gameObjects")
-{ ProbeInfo::Sphere, "Sphere", "Sphere shaped" },
-{ ProbeInfo::Box, "Box", "Box shape" }
+{ ReflectionProbeInterface::Sphere, "Sphere", "Sphere shaped" },
+{ ReflectionProbeInterface::Box, "Box", "Box shape" }
 EndImplementEnumType;
 
 ImplementEnumType(IndrectLightingModeEnum,
@@ -105,7 +104,7 @@ ReflectionProbe::ReflectionProbe()
 
    mTypeMask = LightObjectType | MarkerObjectType;
 
-   mProbeShapeType = ProbeInfo::Sphere;
+   mProbeShapeType = ReflectionProbeInterface::Sphere;
 
    mIndrectLightingModeType = NoIndirect;
    mAmbientColor = LinearColorF(1, 1, 1, 1);
@@ -134,7 +133,7 @@ ReflectionProbe::ReflectionProbe()
 
    mResourcesCreated = false;
 
-   mProbeInfo = new ProbeInfo();
+   mProbeInfo = nullptr;
 
    mPrefilterSize = 64;
    mPrefilterMipLevels = mLog2(F32(mPrefilterSize));
@@ -142,11 +141,14 @@ ReflectionProbe::ReflectionProbe()
 
 ReflectionProbe::~ReflectionProbe()
 {
+	if (mReflectionModeType != StaticCubemap && mCubemap)
+		mCubemap->deleteObject();
+
+	if (mProbeInfo)
+		SAFE_DELETE(mProbeInfo);
+
    if (mEditorShapeInst)
       SAFE_DELETE(mEditorShapeInst);
-
-   if (mReflectionModeType != StaticCubemap && mCubemap)
-      mCubemap->deleteObject();
 }
 
 //-----------------------------------------------------------------------------
@@ -183,7 +185,7 @@ void ReflectionProbe::initPersistFields()
          &_doBake, &defaultProtectedGetFn, "Regenerate Voxel Grid", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
    endGroup("Reflection");
 
-   Con::addVariable("$Light::renderReflectionProbes", TypeBool, &ReflectionProbe::smRenderReflectionProbes,
+   Con::addVariable("$Light::renderReflectionProbes", TypeBool, &ProbeManager::smRenderReflectionProbes,
       "Toggles rendering of light frustums when the light is selected in the editor.\n\n"
       "@note Only works for shadow mapped lights.\n\n"
       "@ingroup Lighting");
@@ -333,7 +335,10 @@ bool ReflectionProbe::onAdd()
 
    // Refresh this object's material (if any)
    if (isClientObject())
-      updateMaterial();
+   {
+	   updateProbeParams();
+	   updateMaterial();
+   }
   
    setMaskBits(-1);
 
@@ -424,10 +429,10 @@ void ReflectionProbe::unpackUpdate(NetConnection *conn, BitStream *stream)
 
    if (stream->readFlag())  // ShapeTypeMask
    {
-      U32 shapeType = ProbeInfo::Sphere;
+      U32 shapeType = ReflectionProbeInterface::Sphere;
       stream->read(&shapeType);
 
-      mProbeShapeType = (ProbeInfo::ProbeShapeType)shapeType;
+      mProbeShapeType = (ReflectionProbeInterface::ProbeShapeType)shapeType;
       createGeometry();
    }
 
@@ -476,6 +481,8 @@ void ReflectionProbe::unpackUpdate(NetConnection *conn, BitStream *stream)
 
    if(isMaterialDirty)
       updateMaterial();
+
+   mProbeInfo->mDirty = true;
 }
 
 void ReflectionProbe::createGeometry()
@@ -503,7 +510,10 @@ void ReflectionProbe::createGeometry()
 void ReflectionProbe::updateProbeParams()
 {
    if (mProbeInfo == nullptr)
-      return;
+   {
+      mProbeInfo = new ReflectionProbeInterface();
+      mProbeInfo->mIsEnabled = false;
+   }
 
    if (mIndrectLightingModeType == AmbientColor)
    {
@@ -596,6 +606,17 @@ void ReflectionProbe::updateMaterial()
       mProbeInfo->mBRDFTexture = &mBrdfTexture;
    }
    //calculateSHTerms();
+
+	/*if(mProbeShapeType == ReflectionProbeInterface::Box)
+		PROBEMGR->setupConvexReflectionProbe(mProbeInfo);
+	else
+		PROBEMGR->setupSphereReflectionProbe(mProbeInfo);*/
+
+	//Make us ready to render
+	if(mEnabled)
+		mProbeInfo->mIsEnabled = true;
+	else
+		mProbeInfo->mIsEnabled = false;
 }
 
 bool ReflectionProbe::createClientResources()
@@ -645,7 +666,7 @@ void ReflectionProbe::generateTextures()
 
 void ReflectionProbe::prepRenderImage(SceneRenderState *state)
 {
-   if (!mEnabled || !ReflectionProbe::smRenderReflectionProbes)
+   if (!mEnabled || !ProbeManager::smRenderReflectionProbes)
       return;
 
    Point3F distVec = getRenderPosition() - state->getCameraPosition();
@@ -674,7 +695,7 @@ void ReflectionProbe::prepRenderImage(SceneRenderState *state)
    mProbeInfo->mScore *= mMax(mAbs(mDot(vect, state->getCameraTransform().getForwardVector())),0.001f);
 
    //Register
-   PROBEMGR->registerProbe(mProbeInfo, this);
+   //PROBEMGR->registerProbe(mProbeInfo, this);
 
    if (ReflectionProbe::smRenderPreviewProbes && gEditingMission && mEditorShapeInst && mCubemap != nullptr)
    {
@@ -751,7 +772,7 @@ void ReflectionProbe::_onRenderViz(ObjectRenderInst *ri,
    SceneRenderState *state,
    BaseMatInstance *overrideMat)
 {
-   if (!ReflectionProbe::smRenderReflectionProbes)
+   if (!ProbeManager::smRenderReflectionProbes)
       return;
 
    GFXDrawUtil *draw = GFX->getDrawUtil();
@@ -765,7 +786,7 @@ void ReflectionProbe::_onRenderViz(ObjectRenderInst *ri,
    ColorI color = ColorI::WHITE;
    color.alpha = 50;
 
-   if (mProbeShapeType == ProbeInfo::Sphere)
+   if (mProbeShapeType == ReflectionProbeInterface::Sphere)
    {
       draw->drawSphere(desc, mRadius, getPosition(), color);
    }
@@ -1144,8 +1165,8 @@ void ReflectionProbe::bake(String outputPath, S32 resolution)
    //gEditingMission = false;
 
    //Set this to true to use the prior method where it goes through the SPT_Reflect path for the bake
-   bool probeRenderState = ReflectionProbe::smRenderReflectionProbes;
-   ReflectionProbe::smRenderReflectionProbes = false;
+   bool probeRenderState = ProbeManager::smRenderReflectionProbes;
+   ProbeManager::smRenderReflectionProbes = false;
    for (U32 i = 0; i < 6; ++i)
    {
       GFXTexHandle blendTex;
@@ -1269,7 +1290,7 @@ void ReflectionProbe::bake(String outputPath, S32 resolution)
 
    //calculateSHTerms();
 
-   ReflectionProbe::smRenderReflectionProbes = probeRenderState;
+   ProbeManager::smRenderReflectionProbes = probeRenderState;
    setMaskBits(-1);
 
    if (preCapture)

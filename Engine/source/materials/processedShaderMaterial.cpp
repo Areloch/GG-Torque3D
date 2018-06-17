@@ -554,9 +554,9 @@ bool ProcessedShaderMaterial::_createPasses( MaterialFeatureData &stageFeatures,
    ShaderRenderPassData passData;
    U32 texIndex = 0;
 
-   for( U32 i=0; i < FEATUREMGR->getFeatureCount(); i++ )
+   for( U32 featureIDx=0; featureIDx < FEATUREMGR->getFeatureCount(); featureIDx++ )
    {
-      const FeatureInfo &info = FEATUREMGR->getAt( i );
+      const FeatureInfo &info = FEATUREMGR->getAt(featureIDx);
       if ( !stageFeatures.features.hasFeature( *info.type ) ) 
          continue;
 
@@ -585,7 +585,7 @@ bool ProcessedShaderMaterial::_createPasses( MaterialFeatureData &stageFeatures,
 #if defined(TORQUE_DEBUG) && defined( TORQUE_OPENGL)
       if(oldTexNumber != texIndex)
       {
-         for(int i = oldTexNumber; i < texIndex; i++)
+         for(int texNum = oldTexNumber; texNum < texIndex; texNum++)
          {
             AssertFatal(passData.mSamplerNames[ oldTexNumber ].isNotEmpty(), avar( "ERROR: ShaderGen feature %s don't set used sampler name", info.feature->getName().c_str()) );
          }
@@ -602,9 +602,9 @@ bool ProcessedShaderMaterial::_createPasses( MaterialFeatureData &stageFeatures,
    }
 
 #if defined(TORQUE_DEBUG) && defined( TORQUE_OPENGL)
-   for(int i = 0; i < texIndex; i++)
+   for(int samplerIDx = 0; samplerIDx < texIndex; samplerIDx++)
    {
-      AssertFatal(passData.mSamplerNames[ i ].isNotEmpty(),"");
+      AssertFatal(passData.mSamplerNames[samplerIDx].isNotEmpty(),"");
    }
 #endif
 

@@ -107,7 +107,7 @@ private:
    //--------------------------------------------------------------------------
    // Rendering variables
    //--------------------------------------------------------------------------
-   ProbeInfo* mProbeInfo;
+   ReflectionProbeInterface* mProbeInfo;
 
    //Reflection Contribution stuff
    ReflectionModeType mReflectionModeType;

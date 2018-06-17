@@ -112,16 +112,19 @@ Skylight::Skylight()
    mPrefilterSize = 512;
    mPrefilterMipLevels = 6;
 
-   mProbeInfo = new ProbeInfo();
+   mProbeInfo = nullptr;
 }
 
 Skylight::~Skylight()
 {
+   if (mReflectionModeType != StaticCubemap && mCubemap)
+		mCubemap->deleteObject();
+
+   if (mProbeInfo)
+		SAFE_DELETE(mProbeInfo);
+
    if (mEditorShapeInst)
       SAFE_DELETE(mEditorShapeInst);
-
-   if (mReflectionModeType != StaticCubemap && mCubemap)
-      mCubemap->deleteObject();
 }
 
 //-----------------------------------------------------------------------------
@@ -215,6 +218,8 @@ bool Skylight::onAdd()
 
       mProbeUniqueID = std::to_string(mPersistentId->getUUID().getHash()).c_str();
    }
+
+   //updateProbeParams();
 
    // Refresh this object's material (if any)
    if (isClientObject())
@@ -338,6 +343,8 @@ void Skylight::unpackUpdate(NetConnection *conn, BitStream *stream)
 
    if(isMaterialDirty)
       updateMaterial();
+
+   mProbeInfo->mDirty = true;
 }
 
 void Skylight::createGeometry()
@@ -365,13 +372,16 @@ void Skylight::createGeometry()
 void Skylight::updateProbeParams()
 {
    if (mProbeInfo == nullptr)
-      return;
+   {
+      mProbeInfo = new ReflectionProbeInterface();
+      mProbeInfo->mIsEnabled = false;
+   }
 
    mProbeInfo->mIntensity = 1;
 
    mProbeInfo->mAmbient = LinearColorF(0, 0, 0, 0);
 
-   mProbeInfo->mProbeShapeType = ProbeInfo::Sphere;
+   mProbeInfo->mProbeShapeType = ReflectionProbeInterface::Sphere;
 
    mProbeInfo->setPosition(getPosition());
 
@@ -516,6 +526,14 @@ void Skylight::updateMaterial()
       mProbeInfo->mIrradianceCubemap = &mIrridianceMap;
       mProbeInfo->mBRDFTexture = &mBrdfTexture;
    }
+
+   //PROBEMGR->setupSkylightProbe(mProbeInfo);
+
+   //Make us ready to render
+   if (mEnabled)
+	   mProbeInfo->mIsEnabled = true;
+   else
+	   mProbeInfo->mIsEnabled = false;
 }
 
 void Skylight::generateTextures()
@@ -542,7 +560,7 @@ void Skylight::generateTextures()
    char fileName[256];
    dSprintf(fileName, 256, "levels/test/irradiance.DDS");
 
-   CubemapSaver::save(mIrridianceMap, fileName);
+   //CubemapSaver::save(mIrridianceMap, fileName);
 
    if (!Platform::isFile(fileName))
    {
@@ -556,7 +574,7 @@ void Skylight::generateTextures()
    fileName[256];
    dSprintf(fileName, 256, "levels/test/prefilter.DDS");
 
-   CubemapSaver::save(mPrefilterMap, fileName);
+   //CubemapSaver::save(mPrefilterMap, fileName);
 
    if (!Platform::isFile(fileName))
    {
@@ -604,7 +622,7 @@ void Skylight::prepRenderImage(SceneRenderState *state)
    // Get a handy pointer to our RenderPassmanager
    //RenderPassManager *renderPass = state->getRenderPass();
 
-   PROBEMGR->registerSkylight(mProbeInfo, this);
+   //PROBEMGR->registerSkylight(mProbeInfo, this);
 
    if (Skylight::smRenderPreviewProbes && gEditingMission && mEditorShapeInst && mCubemap != nullptr)
    {

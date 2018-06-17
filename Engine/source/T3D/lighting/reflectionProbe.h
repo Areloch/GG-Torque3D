@@ -109,9 +109,9 @@ private:
    //--------------------------------------------------------------------------
    // Rendering variables
    //--------------------------------------------------------------------------
-   ProbeInfo::ProbeShapeType mProbeShapeType;
+   ReflectionProbeInterface::ProbeShapeType mProbeShapeType;
 
-   ProbeInfo* mProbeInfo;
+   ReflectionProbeInterface* mProbeInfo;
 
    //Indirect Lighting Contribution stuff
    IndrectLightingModeType mIndrectLightingModeType;
@@ -154,7 +154,6 @@ private:
    U32 mSpherePrimitiveCount;
 
    //Debug rendering
-   static bool smRenderReflectionProbes;
    static bool smRenderPreviewProbes;
 
    U32 mDynamicLastBakeMS;
@@ -266,7 +265,7 @@ public:
    void bake(String outputPath, S32 resolution);
 };
 
-typedef ProbeInfo::ProbeShapeType ReflectProbeType;
+typedef ReflectionProbeInterface::ProbeShapeType ReflectProbeType;
 DefineEnumType(ReflectProbeType);
 
 typedef ReflectionProbe::IndrectLightingModeType IndrectLightingModeEnum;

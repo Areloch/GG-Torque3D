@@ -478,7 +478,7 @@ struct OccluderRenderInst : public RenderInst
    void clear();
 };
 
-struct ProbeRenderInst : public RenderInst
+/*struct ProbeRenderInst : public RenderInst
 {
    LinearColorF mAmbient;
 
@@ -509,13 +509,9 @@ struct ProbeRenderInst : public RenderInst
    /// for this light.
    bool mDebugRender;
 
-   GFXPrimitiveBufferHandle primBuffer;
-   GFXVertexBufferHandle<GFXVertexPC> vertBuffer;
-   U32 numPrims;
-   U32 numVerts;
-   Vector< U32 > numIndicesForPoly;
+   
 
-   ProbeInfo::ProbeShapeType mProbeShapeType;
+   ReflectionProbeInterface::ProbeShapeType mProbeShapeType;
 
    //Spherical Harmonics data
    LinearColorF mSHTerms[9];
@@ -528,7 +524,7 @@ public:
 
    // Copies data passed in from light
    void set(const ProbeRenderInst *probeInfo);
-   void set(const ProbeInfo *probeInfo);
+   void set(const ReflectionProbeInterface *probeInfo);
 
    // Accessors
    const MatrixF& getTransform() const { return mTransform; }
@@ -557,6 +553,6 @@ public:
    void getWorldToLightProj(MatrixF *outMatrix) const;
 
    void clear();
-};
+};*/
 
 #endif // _RENDERPASSMANAGER_H_
