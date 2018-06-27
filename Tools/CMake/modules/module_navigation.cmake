@@ -21,7 +21,7 @@
 # -----------------------------------------------------------------------------
 
 # Navigation module
-option(TORQUE_NAVIGATION "Enable Navigation module" ON)
+option(TORQUE_NAVIGATION "Enable Navigation module" OFF)
 
 if(TORQUE_NAVIGATION)
 	addDef( "TORQUE_NAVIGATION_ENABLED" )
