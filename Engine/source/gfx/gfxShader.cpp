@@ -23,10 +23,8 @@
 #include "platform/platform.h"
 #include "gfx/gfxShader.h"
 
-#include "shaderGen/conditionerFeature.h"
 #include "core/volume.h"
 #include "console/engineAPI.h"
-
 
 Vector<GFXShaderMacro> GFXShader::smGlobalMacros;
 bool GFXShader::smLogErrors = true;

@@ -22,10 +22,6 @@
 
 #include "app/net/httpObject.h"
 
-#include "platform/platform.h"
-#include "core/stream/fileStream.h"
-#include "console/simBase.h"
-#include "console/consoleInternal.h"
 #include "console/engineAPI.h"
 
 IMPLEMENT_CONOBJECT(HTTPObject);

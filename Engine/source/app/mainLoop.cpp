@@ -23,31 +23,21 @@
 #include "app/mainLoop.h"
 #include "app/game.h"
 
-#include "platform/platformTimer.h"
 #include "platform/platformRedBook.h"
 #include "platform/platformVolume.h"
-#include "platform/platformMemory.h"
-#include "platform/platformTimer.h"
 #include "platform/platformNet.h"
 //#include "platform/nativeDialogs/fileDialog.h"
 #include "platform/threads/thread.h"
 
-#include "core/module.h"
 #include "core/threadStatic.h"
-#include "core/iTickable.h"
-#include "core/stream/fileStream.h"
 
 #include "windowManager/platformWindowMgr.h"
 
 #include "core/util/journal/process.h"
 #include "util/fpsTracker.h"
 
-#include "console/debugOutputConsumer.h"
-#include "console/consoleTypes.h"
-#include "console/engineAPI.h"
 #include "console/codeInterpreter.h"
 
-#include "gfx/bitmap/gBitmap.h"
 #include "gfx/gFont.h"
 //#include "gfx/video/videoCapture.h"
 #include "gfx/gfxTextureManager.h"

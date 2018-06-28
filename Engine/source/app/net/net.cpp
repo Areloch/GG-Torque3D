@@ -21,17 +21,6 @@
 //-----------------------------------------------------------------------------
 
 #include "platform/platform.h"
-#include "core/dnet.h"
-#include "core/idGenerator.h"
-#include "core/stream/bitStream.h"
-#include "console/simBase.h"
-#include "console/console.h"
-#include "console/consoleTypes.h"
-#include "sim/netConnection.h"
-#include "sim/netObject.h"
-#include "app/net/serverQuery.h"
-#include "console/engineAPI.h"
-#include <vector>
 #include "net.h"
 //----------------------------------------------------------------
 // remote procedure call console functions

@@ -22,10 +22,7 @@
 
 #include "app/net/tcpObject.h"
 
-#include "platform/platform.h"
-#include "console/simBase.h"
 #include "console/consoleInternal.h"
-#include "core/strings/stringUnit.h"
 #include "console/engineAPI.h"
 #include "core/stream/fileStream.h"
 

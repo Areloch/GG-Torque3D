@@ -26,17 +26,11 @@
 //~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
 
 #include "console/codeInterpreter.h"
-#include "console/compiler.h"
-#include "console/simBase.h"
 #include "console/telnetDebugger.h"
-#include "sim/netStringTable.h"
 #include "console/ICallMethod.h"
 #include "console/stringStack.h"
 #include "util/messaging/message.h"
-#include "core/strings/findMatch.h"
 #include "core/strings/stringUnit.h"
-#include "console/console.h"
-#include "console/consoleInternal.h"
 
 //#define TORQUE_VALIDATE_STACK
 

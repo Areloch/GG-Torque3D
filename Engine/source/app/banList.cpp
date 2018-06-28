@@ -22,8 +22,6 @@
 
 #include "app/banList.h"
 #include "core/stream/fileStream.h"
-#include "core/module.h"
-#include "console/engineAPI.h"
 
 
 IMPLEMENT_STATIC_CLASS( BanList,, "Functions for maintaing a list of banned users." );

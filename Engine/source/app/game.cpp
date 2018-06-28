@@ -29,15 +29,8 @@
 #include "platform/platformInput.h"
 
 #include "app/game.h"
-#include "math/mMath.h"
 #include "core/dnet.h"
-#include "core/stream/fileStream.h"
-#include "core/frameAllocator.h"
 #include "core/iTickable.h"
-#include "core/strings/findMatch.h"
-#include "console/simBase.h"
-#include "console/console.h"
-#include "console/consoleTypes.h"
 #include "console/engineAPI.h"
 //#include "gui/controls/guiMLTextCtrl.h"
 /*#ifdef TORQUE_TGB_ONLY
@@ -49,13 +42,9 @@
 #include "T3D/gameFunctions.h"
 #include "T3D/gameBase/gameProcess.h"
 #endif*/
-#include "platform/profiler.h"
-#include "gfx/gfxCubemap.h"
-#include "gfx/gfxTextureManager.h"
 #include "sfx/sfxSystem.h"
 
 #ifdef TORQUE_AFX_ENABLED
-#include "afx/arcaneFX.h"
 #endif
 
 #ifdef TORQUE_PLAYER

@@ -21,18 +21,8 @@
 //-----------------------------------------------------------------------------
 
 #include "platform/platform.h"
-#include "console/console.h"
-#include "console/telnetDebugger.h"
-
-#include "console/ast.h"
-#include "core/tAlgorithm.h"
-
-#include "core/strings/findMatch.h"
 #include "console/consoleInternal.h"
-#include "core/stream/fileStream.h"
 #include "console/compiler.h"
-
-#include "console/simBase.h"
 
 namespace Compiler
 {

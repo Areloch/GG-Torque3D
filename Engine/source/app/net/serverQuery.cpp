@@ -95,12 +95,7 @@
 
 #include "app/net/serverQuery.h"
 
-#include "platform/platform.h"
-#include "core/dnet.h"
-#include "core/util/tVector.h"
 #include "core/stream/bitStream.h"
-#include "console/console.h"
-#include "console/simBase.h"
 #include "app/banList.h"
 #include "app/auth.h"
 #include "sim/netConnection.h"

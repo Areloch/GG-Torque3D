@@ -21,10 +21,8 @@
 //-----------------------------------------------------------------------------
 
 #include "platform/platform.h"
-#include "console/simBase.h"
 #include "sim/netConnection.h"
 #include "core/stream/bitStream.h"
-#include "sim/netObject.h"
 #include "console/engineAPI.h"
 
 class SimpleMessageEvent : public NetEvent

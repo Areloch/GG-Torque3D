@@ -24,29 +24,21 @@
 #include "gfx/gl/gfxGLDevice.h"
 #include "platform/platformGL.h"
 
-#include "gfx/gfxCubemap.h"
 #include "gfx/screenshot.h"
-#include "gfx/gfxDrawUtil.h"
 
 #include "gfx/gl/gfxGLEnumTranslate.h"
 #include "gfx/gl/gfxGLVertexBuffer.h"
 #include "gfx/gl/gfxGLPrimitiveBuffer.h"
 #include "gfx/gl/gfxGLTextureTarget.h"
 #include "gfx/gl/gfxGLTextureManager.h"
-#include "gfx/gl/gfxGLTextureObject.h"
 #include "gfx/gl/gfxGLCubemap.h"
 #include "gfx/gl/gfxGLCardProfiler.h"
 #include "gfx/gl/gfxGLWindowTarget.h"
-#include "platform/platformDlibrary.h"
 #include "gfx/gl/gfxGLShader.h"
-#include "gfx/primBuilder.h"
-#include "console/console.h"
 #include "gfx/gl/gfxGLOcclusionQuery.h"
 #include "materials/shaderData.h"
 #include "gfx/gl/gfxGLStateCache.h"
-#include "gfx/gl/gfxGLVertexAttribLocation.h"
 #include "gfx/gl/gfxGLVertexDecl.h"
-#include "shaderGen/shaderGen.h"
 
 GFXAdapter::CreateDeviceInstanceDelegate GFXGLDevice::mCreateDeviceInstance(GFXGLDevice::createInstance); 
 

@@ -281,7 +281,6 @@ int main(int argc, const char **argv)
 
 #include "platform/platform.h"
 #include "app/mainLoop.h"
-#include "T3D/gameFunctions.h"
 
 #if defined(WIN32) || defined(_WIN32) 
 //tell switchable graphics supported systems that they need to use the beefier GPU
