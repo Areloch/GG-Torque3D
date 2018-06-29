@@ -108,7 +108,7 @@ class CSVSamplerBackend : public ISamplerBackend
    struct SampleRecord
    {
       U32			mKey;
-      U32			mType;		//< Console type code.
+      S32			mType;		//< Console type code.
       bool		mSet;
       union
       {

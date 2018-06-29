@@ -96,7 +96,7 @@
 #include "app/net/serverQuery.h"
 
 #include "core/stream/bitStream.h"
-#include "app/banList.h"
+#include "console/engineAPI.h"
 #include "app/auth.h"
 #include "sim/netConnection.h"
 #include "sim/netInterface.h"

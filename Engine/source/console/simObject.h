@@ -777,8 +777,8 @@ class SimObject: public ConsoleObject, public TamlCallbacks
       bool isDeleted() const { return mFlags.test(Deleted); }
       bool isRemoved() const { return mFlags.test(Deleted | Removed); }
       
-      virtual bool isLocked() const { return mFlags.test( Locked ); }
-      virtual void setLocked( bool b );
+      bool isLocked() const { return mFlags.test( Locked ); }
+      void setLocked( bool b );
       virtual bool isHidden() const { return mFlags.test( Hidden ); }
       virtual void setHidden(bool b);
 
