@@ -309,6 +309,8 @@ S32 TorqueMain(S32 argc, const char **argv)
    //   Memory::enableLogging("testMem.log");
    //   Memory::setBreakAlloc(104717);
 
+	//Init modules
+
    // Initialize the subsystems.
    StandardMainLoop::init();
 
@@ -329,6 +331,8 @@ S32 TorqueMain(S32 argc, const char **argv)
    // Do we need to restart?
    if( StandardMainLoop::requiresRestart() )
       Platform::restartInstance();
+
+   //Shutdown
 
    // Return.
    return StandardMainLoop::getReturnStatus();

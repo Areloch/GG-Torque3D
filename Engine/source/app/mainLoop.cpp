@@ -49,6 +49,10 @@
 #include "util/sampler.h"
 #include "platform/threads/threadPool.h"
 
+#ifdef TORQUE_DEBUG_GUARD
+#include "platform/platformMemory.h"
+#endif
+
 // For the TickMs define... fix this for T2D...
 //#include "T3D/gameBase/processList.h"
 
