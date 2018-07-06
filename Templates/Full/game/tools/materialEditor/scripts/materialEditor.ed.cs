@@ -2523,3 +2523,10 @@ function MaterialEditorGui::saveCompositeMap(%this)
     saveCompositeTexture(%roughMap,%aoMap,%metalMap,"",%channelKey, %saveAs);
     %dlg.delete();
 }
+
+singleton Material(untitled_Helmet_mat_mat2)
+{
+   mapTo = "unmapped_mat";
+   diffuseMap[0] = "untitled_Helmet_mat";
+   pixelSpecular0 = "0";
+};
