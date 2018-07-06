@@ -44,6 +44,9 @@
 #ifndef _GFXVERTEXBUFFER_H_
 #include "gfx/gfxVertexBuffer.h"
 #endif
+#ifndef REFLECTION_PROBE_ZONE_H
+#include "T3D/lighting/reflectionProbeZone.h"
+#endif
 
 #include "core/util/SystemInterfaceList.h"
 
@@ -114,6 +117,8 @@ public:
 	//Spherical Harmonics data
 	LinearColorF mSHTerms[9];
 	F32 mSHConstants[5];
+
+   ReflectionProbeZone* containingZone;
 
 	ReflectionProbeInterface();
 
