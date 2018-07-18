@@ -474,6 +474,12 @@ void Entity::interpolateTick(F32 dt)
 //Render
 void Entity::prepRenderImage(SceneRenderState *state)
 {
+   for (U32 i = 0; i < mComponents.size(); ++i)
+   {
+      RenderComponentInterface* inter = dynamic_cast<RenderComponentInterface*>(mComponents[i]);
+      if (inter)
+         inter->prepRenderImage(state);
+   }
 }
 
 //Networking
