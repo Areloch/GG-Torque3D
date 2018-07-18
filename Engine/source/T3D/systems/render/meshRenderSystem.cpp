@@ -30,7 +30,7 @@ void MeshRenderSystem::render(SceneManager *sceneManager, SceneRenderState* stat
          continue;
 
       //First, do frustum culling
-      if (viewFrustum.isCulled(MeshRenderSystemInterface::all[i]->mBounds))
+      /*if (viewFrustum.isCulled(MeshRenderSystemInterface::all[i]->mBounds))
          continue;
 
       // Set the query box for the container query.  Never
@@ -47,7 +47,7 @@ void MeshRenderSystem::render(SceneManager *sceneManager, SceneRenderState* stat
          // distance).
 
          continue;
-      }
+      }*/
 
       //We can then sort our objects by range since we have it already, so we can do occlusion culling be rendering front-to-back
 
