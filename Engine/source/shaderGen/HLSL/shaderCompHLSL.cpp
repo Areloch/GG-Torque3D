@@ -228,7 +228,7 @@ void ShaderConnectorHLSL::sortVars()
 
 void ShaderConnectorHLSL::setName(char *newName)
 {
-   dStrcpy((char*)mName, newName);
+   dStrcpy( (char*)mName, newName, 32 );
 }
 
 void ShaderConnectorHLSL::reset()
