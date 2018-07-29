@@ -191,6 +191,7 @@ enum GFXFormat
    GFXFormatR16G16,
    GFXFormatR16G16F,
    GFXFormatR10G10B10A2,
+   GFXFormatR11G11B10,
    GFXFormatD32,
    GFXFormatD24X8,
    GFXFormatD24S8,   
@@ -600,7 +601,8 @@ enum GFXShaderConstType
    GFXSCT_Int4, 
    // Samplers
    GFXSCT_Sampler,
-   GFXSCT_SamplerCube
+   GFXSCT_SamplerCube,
+   GFXSCT_SamplerCubeArray
 };
 
 

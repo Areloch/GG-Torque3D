@@ -288,22 +288,25 @@ void GBitmap::allocateBitmap(const U32 in_width, const U32 in_height, const bool
    mBytesPerPixel = 1;
    switch (mInternalFormat) 
    {
-     case GFXFormatA8:
-     case GFXFormatL8:           mBytesPerPixel = 1;
-      break;
-     case GFXFormatR8G8B8:       mBytesPerPixel = 3;
-      break;
-     case GFXFormatR8G8B8A8_LINEAR_FORCE:
-     case GFXFormatR8G8B8X8:
-     case GFXFormatR8G8B8A8:     mBytesPerPixel = 4;
-      break;
-	 case GFXFormatL16:
-     case GFXFormatR5G6B5:
-     case GFXFormatR5G5B5A1:     mBytesPerPixel = 2;
-      break;
-     default:
-      AssertFatal(false, "GBitmap::GBitmap: misunderstood format specifier");
-      break;
+      case GFXFormatA8:
+      case GFXFormatL8:           mBytesPerPixel = 1;
+         break;
+      case GFXFormatR8G8B8:       mBytesPerPixel = 3;
+         break;
+      case GFXFormatR8G8B8A8_LINEAR_FORCE:
+      case GFXFormatR8G8B8X8:
+      case GFXFormatR8G8B8A8:     mBytesPerPixel = 4;
+         break;
+      case GFXFormatL16:
+      case GFXFormatR5G6B5:
+      case GFXFormatR5G5B5A1:     mBytesPerPixel = 2;
+         break;
+      case GFXFormatR16G16B16A16F:
+      case GFXFormatR16G16B16A16: mBytesPerPixel = 8;
+         break;
+      default:
+         AssertFatal(false, "GBitmap::GBitmap: misunderstood format specifier");
+         break;
    }
 
    // Set up the mip levels, if necessary...

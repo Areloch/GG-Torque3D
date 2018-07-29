@@ -29,15 +29,26 @@
 #ifndef _TSIGNAL_H_
 #include "core/util/tSignal.h"
 #endif
-#ifndef _LIGHTINFO_H_
-#include "lighting/lightInfo.h"
-#endif
-#ifndef _LIGHTQUERY_H_
-#include "lighting/lightQuery.h"
-#endif
 #ifndef _MATRIXSET_H_
 #include "math/util/matrixSet.h"
 #endif
+#ifndef _MATINSTANCE_H_
+#include "materials/matInstance.h"
+#endif
+#ifndef _MATTEXTURETARGET_H_
+#include "materials/matTextureTarget.h"
+#endif
+#ifndef _GFXPRIMITIVEBUFFER_H_
+#include "gfx/gfxPrimitiveBuffer.h"
+#endif
+#ifndef _GFXVERTEXBUFFER_H_
+#include "gfx/gfxVertexBuffer.h"
+#endif
+#ifndef REFLECTION_PROBE_ZONE_H
+#include "T3D/lighting/reflectionProbeZone.h"
+#endif
+
+#include "core/util/SystemInterfaceList.h"
 
 class SimObject;
 class ProbeManager;
@@ -55,91 +66,94 @@ class SceneRenderState;
 class RenderDeferredMgr;
 class Frustum;
 
-struct ProbeInfo
-{
-   LinearColorF mAmbient;
-
-   MatrixF mTransform;
-
-   F32 mRadius;
-   F32 mIntensity;
-
-   Box3F mBounds;
-
-   GFXCubemapHandle *mCubemap;
-
-   /// The priority of this light used for
-   /// light and shadow scoring.
-   F32 mPriority;
-
-   /// A temporary which holds the score used
-   /// when prioritizing lights for rendering.
-   F32 mScore;
-
-   /// Whether to render debugging visualizations
-   /// for this light.
-   bool mDebugRender;
-
-   //GFXPrimitiveBufferHandle primBuffer;
-   //GFXVertexBufferHandle<GFXVertexPC> vertBuffer;
-   U32 numPrims;
-   U32 numVerts;
-   Vector< U32 > numIndicesForPoly;
-
-   enum ProbeShapeType
-   {
-      Sphere = 0,            ///< Sphere shaped
-      Box = 1,               ///< Box-based shape
-   };
-
-   ProbeShapeType mProbeShapeType;
-
-   //Spherical Harmonics data
-   LinearColorF mSHTerms[9];
-   F32 mSHConstants[5];
-
-public:
-
-   ProbeInfo();
-   ~ProbeInfo();
-
-   // Copies data passed in from another probe
-   void set(const ProbeInfo *probe);
-
-   // Accessors
-   const MatrixF& getTransform() const { return mTransform; }
-   void setTransform(const MatrixF &xfm) { mTransform = xfm; }
-
-   Point3F getPosition() const { return mTransform.getPosition(); }
-   void setPosition(const Point3F &pos) { mTransform.setPosition(pos); }
-
-   VectorF getDirection() const { return mTransform.getForwardVector(); }
-   void setDirection(const VectorF &val);
-
-   const LinearColorF& getAmbient() const { return mAmbient; }
-   void setAmbient(const LinearColorF &val) { mAmbient = val; }
-
-   void setPriority(F32 priority) { mPriority = priority; }
-   F32 getPriority() const { return mPriority; }
-
-   void setScore(F32 score) { mScore = score; }
-   F32 getScore() const { return mScore; }
-
-   bool isDebugRenderingEnabled() const { return mDebugRender; }
-   void enableDebugRendering(bool value) { mDebugRender = value; }
-
-   // Builds the world to light view projection used for
-   // shadow texture and cookie lookups.
-   void getWorldToLightProj(MatrixF *outMatrix) const;
-
-   void clear();
-};
-
-class ProbeInfoList : public Vector<ProbeInfo*>
+class ReflectionProbeInterface : public SystemInterface<ReflectionProbeInterface>
 {
 public:
-   void registerProbe(ProbeInfo *probe);
-   void unregisterProbe(ProbeInfo *probe);
+	LinearColorF mAmbient;
+
+	MatrixF mTransform;
+
+	F32 mRadius;
+	F32 mIntensity;
+
+	bool mDirty;
+
+	Box3F mBounds;
+
+	GFXCubemapHandle *mCubemap;
+
+	GFXCubemapHandle *mIrradianceCubemap;
+
+	GFXTexHandle *mBRDFTexture;
+
+	/// The priority of this light used for
+	/// light and shadow scoring.
+	F32 mPriority;
+
+	/// A temporary which holds the score used
+	/// when prioritizing lights for rendering.
+	F32 mScore;
+
+	bool mIsSkylight;
+
+	/// Whether to render debugging visualizations
+	/// for this light.
+	bool mDebugRender;
+
+	GFXPrimitiveBufferHandle primBuffer;
+	GFXVertexBufferHandle<GFXVertexPC> vertBuffer;
+	U32 numPrims;
+	U32 numVerts;
+	Vector< U32 > numIndicesForPoly;
+
+	enum ProbeShapeType
+	{
+		Sphere = 0,            ///< Sphere shaped
+		Box = 1,               ///< Box-based shape
+	};
+
+	ProbeShapeType mProbeShapeType;
+
+	//Spherical Harmonics data
+	LinearColorF mSHTerms[9];
+	F32 mSHConstants[5];
+
+   ReflectionProbeZone* containingZone;
+
+	ReflectionProbeInterface();
+
+	~ReflectionProbeInterface();
+
+	// Copies data passed in from another probe
+	void set(const ReflectionProbeInterface *probe);
+
+	// Accessors
+	const MatrixF& getTransform() const { return mTransform; }
+	void setTransform(const MatrixF &xfm) { mTransform = xfm; }
+
+	Point3F getPosition() const { return mTransform.getPosition(); }
+	void setPosition(const Point3F &pos) { mTransform.setPosition(pos); }
+
+	VectorF getDirection() const { return mTransform.getForwardVector(); }
+	void setDirection(const VectorF &val);
+
+	const LinearColorF& getAmbient() const { return mAmbient; }
+	void setAmbient(const LinearColorF &val) { mAmbient = val; }
+
+	void setPriority(F32 priority) { mPriority = priority; }
+	F32 getPriority() const { return mPriority; }
+
+	void setScore(F32 score) { mScore = score; }
+	F32 getScore() const { return mScore; }
+
+	bool isDebugRenderingEnabled() const { return mDebugRender; }
+	void enableDebugRendering(bool value) { mDebugRender = value; }
+
+	// Builds the world to light view projection used for
+	// shadow texture and cookie lookups.
+	void getWorldToLightProj(MatrixF *outMatrix) const;
+
+	void clear();
 };
 
 struct ProbeShaderConstants
@@ -169,9 +183,160 @@ struct ProbeShaderConstants
 
 typedef Map<GFXShader*, ProbeShaderConstants*> ProbeConstantMap;
 
+class ReflectProbeMatInstance : public MatInstance
+{
+	typedef MatInstance Parent;
+protected:
+	MaterialParameterHandle * mProbeParamsSC;
+	bool mInternalPass;
+
+	GFXStateBlockRef mProjectionState;
+
+public:
+	ReflectProbeMatInstance(Material &mat) : Parent(mat), mProbeParamsSC(NULL), mInternalPass(false), mProjectionState(NULL) {}
+
+	virtual bool init(const FeatureSet &features, const GFXVertexFormat *vertexFormat);
+	virtual bool setupPass(SceneRenderState *state, const SceneData &sgData);
+};
+
+class SkylightMatInstance : public MatInstance
+{
+	typedef MatInstance Parent;
+protected:
+	MaterialParameterHandle * mSkylightParamsSC;
+	bool mInternalPass;
+
+	GFXStateBlockRef mProjectionState;
+
+public:
+	SkylightMatInstance(Material &mat) : Parent(mat), mSkylightParamsSC(NULL), mInternalPass(false), mProjectionState(NULL) {}
+
+	virtual bool init(const FeatureSet &features, const GFXVertexFormat *vertexFormat);
+	virtual bool setupPass(SceneRenderState *state, const SceneData &sgData);
+};
+
+// A class to help coordinate and manage the zoning and influences/clipping of probes
+class ProbeZone
+{
+   Vector<ReflectionProbeInterface*> mProbes;
+
+   bool mEnabled;
+   bool mIsGlobal;
+
+public:
+   ProbeZone();
+   ~ProbeZone();
+
+   void recalculateInfluences();
+   void recalculateChildProbes();
+
+   U32 getProbeCount() { return mProbes.size(); }
+
+   ReflectionProbeInterface* getProbe(U32 idx)
+   {
+      if (idx < mProbes.size())
+         return mProbes[idx];
+      else
+         return nullptr;
+   }
+};
+
 class ProbeManager
 {
 public:
+	struct ReflectProbeMaterialInfo
+	{
+		ReflectProbeMatInstance *matInstance;
+
+		// { zNear, zFar, 1/zNear, 1/zFar }
+		MaterialParameterHandle *zNearFarInvNearFar;
+
+		// Far frustum plane (World Space)
+		MaterialParameterHandle *farPlane;
+
+		// Far frustum plane (View Space)
+		MaterialParameterHandle *vsFarPlane;
+
+		// -dot( farPlane, eyePos )
+		MaterialParameterHandle *negFarPlaneDotEye;
+
+		// Inverse View matrix
+		MaterialParameterHandle *invViewMat;
+
+		// Light Parameters
+		MaterialParameterHandle *probeLSPos;
+		MaterialParameterHandle *probeWSPos;
+		MaterialParameterHandle *attenuation;
+		MaterialParameterHandle *radius;
+
+		MaterialParameterHandle *useCubemap;
+		MaterialParameterHandle *cubemap;
+
+		MaterialParameterHandle *eyePosWorld;
+		MaterialParameterHandle *bbMin;
+		MaterialParameterHandle *bbMax;
+
+		MaterialParameterHandle *useSphereMode;
+
+		MaterialParameterHandle *shTerms[9];
+		MaterialParameterHandle *shConsts[5];
+
+		ReflectProbeMaterialInfo(const String &matName, const GFXVertexFormat *vertexFormat);
+
+		virtual ~ReflectProbeMaterialInfo();
+
+
+		void setViewParameters(const F32 zNear,
+			const F32 zFar,
+			const Point3F &eyePos,
+			const PlaneF &farPlane,
+			const PlaneF &_vsFarPlane,
+			const MatrixF &_inverseViewMatrix);
+
+		void setProbeParameters(const ReflectionProbeInterface *probe, const SceneRenderState* renderState, const MatrixF &worldViewOnly);
+	};
+
+	struct SkylightMaterialInfo
+	{
+		SkylightMatInstance *matInstance;
+
+		// { zNear, zFar, 1/zNear, 1/zFar }
+		MaterialParameterHandle *zNearFarInvNearFar;
+
+		// Far frustum plane (World Space)
+		MaterialParameterHandle *farPlane;
+
+		// Far frustum plane (View Space)
+		MaterialParameterHandle *vsFarPlane;
+
+		// -dot( farPlane, eyePos )
+		MaterialParameterHandle *negFarPlaneDotEye;
+
+		// Inverse View matrix
+		MaterialParameterHandle *invViewMat;
+
+		MaterialParameterHandle *useCubemap;
+		MaterialParameterHandle *cubemap;
+
+		MaterialParameterHandle *eyePosWorld;
+
+		MaterialParameterHandle *shTerms[9];
+		MaterialParameterHandle *shConsts[5];
+
+		SkylightMaterialInfo(const String &matName, const GFXVertexFormat *vertexFormat);
+
+		virtual ~SkylightMaterialInfo();
+
+
+		void setViewParameters(const F32 zNear,
+			const F32 zFar,
+			const Point3F &eyePos,
+			const PlaneF &farPlane,
+			const PlaneF &_vsFarPlane,
+			const MatrixF &_inverseViewMatrix);
+
+		void setSkylightParameters(const ReflectionProbeInterface *probe, const SceneRenderState* renderState, const MatrixF &worldViewOnly);
+	};
 
    enum SpecialProbeTypesEnum
    {
@@ -185,9 +350,6 @@ public:
 
    ///
    static void initProbeFields();
-
-   /// 
-   static ProbeInfo* createProbeInfo(ProbeInfo* light = NULL);
 
    /// The light manager activation signal.
    static Signal<void(const char*,bool)> smActivateSignal;
@@ -207,17 +369,9 @@ public:
    // Returns the active scene lighting interface for this light manager.  
    virtual AvailableSLInterfaces* getSceneLightingInterface();
 
-   // Returns a "default" light info that callers should not free.  Used for instances where we don't actually care about 
-   // the light (for example, setting default data for SceneData)
-   virtual ProbeInfo* getDefaultLight();
+   void updateDirtyProbes();
 
-   /// Returns the special light or the default light if useDefault is true.
-   /// @see getDefaultLight
-   virtual ProbeInfo* getSpecialProbe(SpecialProbeTypesEnum type,
-                                       bool useDefault = true );
-
-   /// Set a special light type.
-   virtual void setSpecialProbe(SpecialProbeTypesEnum type, ProbeInfo *light );
+   /*void registerSkylight(ProbeInfo *probe, SimObject *obj);
 
    // registered before scene traversal...
    virtual void registerProbe(ProbeInfo *light, SimObject *obj );
@@ -227,7 +381,7 @@ public:
    virtual void unregisterAllProbes();
 
    /// Returns all unsorted and un-scored lights (both global and local).
-   void getAllUnsortedProbes( Vector<ProbeInfo*> *list ) const;
+   void getAllUnsortedProbes( Vector<ProbeInfo*> *list ) const;*/
 
    /// Sets shader constants / textures for light infos
    virtual void setProbeInfo( ProcessedMaterial *pmat, 
@@ -243,6 +397,19 @@ public:
                                  const U32 textureSlot, 
                                  GFXShaderConstBuffer *shaderConsts, 
                                  ShaderConstHandles *handles );
+
+   ReflectProbeMaterialInfo* getReflectProbeMaterial();
+   SkylightMaterialInfo* getSkylightMaterial();
+
+   U32 getProbeZoneCount() { return mProbeZones.size(); }
+   ProbeZone* getProbeZone(U32 idx) 
+   { 
+      if (idx < mProbeZones.size()) 
+         return mProbeZones[idx]; 
+      else 
+         return nullptr; 
+   }
+
 protected:
 
    /// The current active light manager.
@@ -253,6 +420,15 @@ protected:
 
 public:
    ProbeShaderConstants* getProbeShaderConstants(GFXShaderConstBuffer* buffer);
+
+   // Add a reflection probe to the bin
+   void setupSkylightProbe(ReflectionProbeInterface *probeInfo);
+   void setupSphereReflectionProbe(ReflectionProbeInterface *probeInfo);
+   void setupConvexReflectionProbe(ReflectionProbeInterface *probeInfo);
+
+   /// Debug rendering
+   static bool smRenderReflectionProbes;
+
 protected:
    /// This helper function sets the shader constansts
    /// for the stock 4 light forward lighting code.
@@ -266,17 +442,6 @@ protected:
                                     GFXShaderConstHandle *probeIsSphereSC,
                                     GFXShaderConstHandle *probeLocalPosSC,
                                     GFXShaderConstBuffer *shaderConsts );
-
-   /// A dummy default light used when no lights
-   /// happen to be registered with the manager.
-   ProbeInfo *mDefaultProbe;
-  
-   /// The list of global registered lights which is
-   /// initialized before the scene is rendered.
-   ProbeInfoList mRegisteredProbes;
-
-   /// The registered special light list.
-   ProbeInfo *mSpecialProbes[SpecialProbeTypesCount];
 
    /// The root culling position used for
    /// special sun light placement.
@@ -294,6 +459,21 @@ protected:
    GFXShaderRef mLastShader;
 
    ProbeShaderConstants* mLastConstants;
+
+   // Convex geometry for lights
+   GFXVertexBufferHandle<GFXVertexPC> mSphereGeometry;
+
+   GFXPrimitiveBufferHandle mSphereIndices;
+
+   U32 mSpherePrimitiveCount;
+
+   ReflectProbeMaterialInfo* mReflectProbeMaterial;
+
+   SkylightMaterialInfo* mSkylightMaterial;
+
+   Vector<ProbeZone*> mProbeZones;
+
+   GFXVertexBufferHandle<GFXVertexPC> getSphereMesh(U32 &outNumPrimitives, GFXPrimitiveBufferHandle &outPrimitives);;
 };
 
 ProbeManager* ProbeManager::getProbeManager()

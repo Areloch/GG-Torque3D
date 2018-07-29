@@ -16,6 +16,8 @@ struct ConvexConnectP
 TORQUE_UNIFORM_SAMPLER2D(deferredBuffer, 0);
 TORQUE_UNIFORM_SAMPLER2D(matInfoBuffer, 1);
 TORQUE_UNIFORM_SAMPLERCUBE(cubeMap, 2);
+TORQUE_UNIFORM_SAMPLERCUBE(irradianceCubemap, 3);
+TORQUE_UNIFORM_SAMPLER2D(BRDFTexture, 4);
 
 uniform float4 rtParams0;
 
@@ -23,8 +25,8 @@ uniform float3 probeWSPos;
 uniform float3 probeLSPos;
 uniform float4 vsFarPlane;
 
-uniform float  lightRange;
-uniform float2 lightAttenuation;
+uniform float  radius;
+uniform float2 attenuation;
 
 uniform float4x4 invViewMat;
 
@@ -32,60 +34,78 @@ uniform float3 eyePosWorld;
 uniform float3 bbMin;
 uniform float3 bbMax;
 
-uniform float Intensity;
-
-//SHTerms
-uniform float4 SHTerms0;
-uniform float4 SHTerms1;
-uniform float4 SHTerms2;
-uniform float4 SHTerms3;
-uniform float4 SHTerms4;
-uniform float4 SHTerms5;
-uniform float4 SHTerms6;
-uniform float4 SHTerms7;
-uniform float4 SHTerms8;
-
-uniform float SHConsts0;
-uniform float SHConsts1;
-uniform float SHConsts2;
-uniform float SHConsts3;
-uniform float SHConsts4;
-
 uniform float useSphereMode;
 
-float4 decodeSH(float3 normal)
+float3 iblSpecular(float3 v, float3 n, float roughness)
 {
-   float x = normal.x;
-   float y = normal.y;
-   float z = normal.z;
+   float3 R = reflect(v, n);
+   const float MAX_REFLECTION_LOD = 6.0;
+   float3 prefilteredColor = TORQUE_TEXCUBELOD(cubeMap, float4(R, roughness * MAX_REFLECTION_LOD)).rgb;
+   float2 envBRDF = TORQUE_TEX2D(BRDFTexture, float2(max(dot(n, v), 0.0), roughness)).rg;
+   //return prefilteredColor * (envBRDF.x + envBRDF.y);
+   return prefilteredColor;
+}
 
-   float3 l00 = SHTerms0.rgb;
+// Box Projected IBL Lighting
+// Based on: http://www.gamedev.net/topic/568829-box-projected-cubemap-environment-mapping/
 
-   float3 l10 = SHTerms1.rgb;
-   float3 l11 = SHTerms2.rgb;
-   float3 l12 = SHTerms3.rgb;
+float3 boxProject(float3 wsPosition, float3 reflectDir, float3 boxWSPos, float3 boxMin, float3 boxMax)
+{ 
+    float3 nrdir = normalize(reflectDir);
+    float3 rbmax = (boxMax - wsPosition) / nrdir;
+    float3 rbmin = (boxMin - wsPosition) / nrdir;
 
-   float3 l20 = SHTerms4.rgb;
-   float3 l21 = SHTerms5.rgb;
-   float3 l22 = SHTerms6.rgb;
-   float3 l23 = SHTerms7.rgb;
-   float3 l24 = SHTerms8.rgb;
+    float3 rbminmax;
+    rbminmax.x = (nrdir.x > 0.0) ? rbmax.x : rbmin.x;
+    rbminmax.y = (nrdir.y > 0.0) ? rbmax.y : rbmin.y;
+    rbminmax.z = (nrdir.z > 0.0) ? rbmax.z : rbmin.z; 
 
-   float3 result = (
-         l00 * SHConsts0 +
+    float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
+    float3 posonbox = wsPosition + nrdir * fa;
 
-         l12 * SHConsts1 * x +
-         l10 * SHConsts1 * y +
-         l11 * SHConsts1 * z +
+    return posonbox - boxWSPos;
+}
 
-         l20 * SHConsts2 * x*y +
-         l21 * SHConsts2 * y*z +
-         l22 * SHConsts3 * (3.0*z*z - 1.0) +
-         l23 * SHConsts2 * x*z +
-         l24 * SHConsts4 * (x*x - y*y)
-      );
+float3 iblBoxDiffuse(float3 normal,
+					float3 wsPos, 
+                    TORQUE_SAMPLERCUBE(irradianceCube), 
+                    float3 boxPos,
+                    float3 boxMin,
+                    float3 boxMax)
+{
+    // Irradiance (Diffuse)
+    float3 cubeN = normalize(normal);
+    cubeN = boxProject(wsPos, cubeN, boxPos, boxMin, boxMax);
+    float3 irradiance = TORQUE_TEXCUBE(irradianceCube, cubeN).xyz;
 
-    return float4(result,1);
+    return irradiance;
+}
+
+float3 iblBoxSpecular(float3 normal,
+					float3 wsPos, 
+					float roughness,
+                    float3 viewDir, 
+                    TORQUE_SAMPLER2D(brdfTexture), 
+                    TORQUE_SAMPLERCUBE(radianceCube),
+                    float3 boxPos,
+                    float3 boxMin,
+                    float3 boxMax)
+{
+    float3 v = viewDir;
+    float3 n = normalize(normal);
+    float ndotv = clamp(dot(n, v), 0.0, 1.0);
+
+    // BRDF
+    float2 brdf = TORQUE_TEX2D(brdfTexture, float2(roughness, ndotv)).xy;
+
+    // Radiance (Specular)
+    float lod = roughness * 6.0;
+    float3 r = 2.0 * ndotv * n - v; // reflect(v, n);
+    float3 cubeR = normalize(r);
+    cubeR = boxProject(wsPos, cubeR, boxPos, boxMin, boxMax);
+    float3 radiance = TORQUE_TEXCUBELOD(radianceCube, float4(cubeR, lod)).xyz * (brdf.x + brdf.y);
+    
+    return radiance;
 }
 
 float4 main( ConvexConnectP IN ) : TORQUE_TARGET0
@@ -104,14 +124,14 @@ float4 main( ConvexConnectP IN ) : TORQUE_TARGET0
     float3 normal = deferredSample.rgb;
     float depth = deferredSample.a;
     if (depth>0.9999)
-        return float4(0,0,0,0); 
+          clip(-1);
 
     // Need world-space normal.
     float3 wsNormal = mul(float4(normal, 1), invViewMat).rgb;
 
     float4 color = float4(1, 1, 1, 1);
     float4 ref = float4(0,0,0,0);
-    float alpha = 0;
+    float alpha = 1;
 
     float3 eyeRay = getDistanceVectorToPlane( -vsFarPlane.w, IN.vsEyeDir.xyz, vsFarPlane );
     float3 viewSpacePos = eyeRay * depth;
@@ -124,20 +144,17 @@ float4 main( ConvexConnectP IN ) : TORQUE_TARGET0
 
     if(useSphereMode)
     {
-        // Eye ray - Eye -> Pixel
-        
-            
         // Build light vec, get length, clip pixel if needed
         float3 lightVec = probeLSPos - viewSpacePos;
         float lenLightV = length( lightVec );
-        clip( lightRange - lenLightV );
+        clip( radius - lenLightV );
 
         // Get the attenuated falloff.
-        float atten = attenuate( float4(1,1,1,1), lightAttenuation, lenLightV );
+        float atten = attenuate( float4(1,1,1,1), attenuation, lenLightV );
         clip( atten - 1e-6 );
 
         // Normalize lightVec
-        lightVec /= lenLightV;
+        lightVec = normalize(lightVec);
 
         // If we can do dynamic branching then avoid wasting
         // fillrate on pixels that are backfacing to the light.
@@ -159,18 +176,21 @@ float4 main( ConvexConnectP IN ) : TORQUE_TARGET0
         float3 posOnBox = worldPos.xyz + nrdir * fa;
         reflectionVec = posOnBox - probeWSPos;
 
-        //reflectionVec = mul(probeWSPos,reflectionVec);
+        reflectionVec = mul(probeWSPos,reflectionVec);
 
         ref = float4(reflectionVec, smoothness);
 
         alpha = Sat_NL_Att;
-    }
-    else
-    {
+		float roughness = 1 - matInfo.b;
 
+		float3 irradiance = TORQUE_TEXCUBELOD(irradianceCubemap, ref).rgb;
+
+		float3 specular = TORQUE_TEXCUBELOD(cubeMap, ref).rgb;// iblSpecular(wsEyeRay, wsNormal, roughness);
+
+        return float4(specular.rgb, alpha);
 
        // Build light vec, get length, clip pixel if needed
-       float3 lightVec = probeLSPos - viewSpacePos;
+       /*float3 lightVec = probeLSPos - viewSpacePos;
        float lenLightV = length(lightVec);
        //clip(lightRange - lenLightV);
 
@@ -190,29 +210,31 @@ float4 main( ConvexConnectP IN ) : TORQUE_TARGET0
        float3 rbminmax = (nrdir > 0.0) ? rbmax : rbmin;
        float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
        if (dot(lightVec, normal)<0.0f)
-          clip(fa);
-
+          clip(fa);*/
+    }
+    else
+    {
        //Try to clip anything that falls outside our box as well
        //TODO: Make it support rotated boxes as well
        if(worldPos.x > bbMax.x || worldPos.y > bbMax.y || worldPos.z > bbMax.z ||
           worldPos.x < bbMin.x || worldPos.y < bbMin.y || worldPos.z < bbMin.z)
           clip(-1);
 
-       float3 posOnBox = worldPos.xyz + nrdir * fa;
+       /*float3 posOnBox = worldPos.xyz + nrdir * fa;
        reflectionVec = posOnBox - probeWSPos;
 
        ref = float4(reflectionVec, smoothness);
 
-        alpha = 1;
+        alpha = 1;*/
     }
 
-    color = TORQUE_TEXCUBELOD(cubeMap, ref);
+    //color = TORQUE_TEXCUBELOD(cubeMap, ref);
 
-    float4 specularColor = (color);
-    float4 indirectColor = (decodeSH(wsNormal));
+    //float4 specularColor = (color);
+    //float4 indirectColor = (decodeSH(wsNormal));
 
-    color.rgb = lerp(indirectColor.rgb * 1.5, specularColor.rgb * 1.5, matInfo.b);
+    //color.rgb = lerp(indirectColor.rgb * 1.5, specularColor.rgb * 1.5, matInfo.b);
 
-    return float4(color.rgb, alpha);
-
+    //return float4(color.rgb, alpha);
+	return float4(1,1,1,1);
 }

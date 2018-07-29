@@ -86,7 +86,6 @@ public:
 
    MaterialOverrideDelegate& getMatOverrideDelegate() { return mMatOverrideDelegate; }
 
-protected:
 
    struct MainSortElem
    {
@@ -95,6 +94,7 @@ protected:
       U32 key2;
    };
 
+protected:
    void setRenderPass( RenderPassManager *rpm );
 
    /// Called from derived bins to add additional

@@ -329,7 +329,81 @@ new CustomMaterial( ReflectionProbeMaterial )
    sampler["deferredBuffer"] = "#deferred";
    sampler["matInfoBuffer"] = "#matinfo";
    
-   target = "indirectLighting";
+   pixVersion = 3.0;
+};
+
+//Skylight
+new ShaderData( IrradianceShader )
+{
+   DXVertexShaderFile = "shaders/common/lighting/advanced/cubemapV.hlsl";
+   DXPixelShaderFile  = "shaders/common/lighting/advanced/irradianceP.hlsl";
+
+   OGLVertexShaderFile = "shaders/common/lighting/advanced/gl/cubemapV.glsl";
+   OGLPixelShaderFile  = "shaders/common/lighting/advanced/gl/irradianceP.glsl";
+   
+   pixVersion = 3.0;
+};
+
+new ShaderData( PrefiterCubemapShader )
+{
+   DXVertexShaderFile = "shaders/common/lighting/advanced/cubemapV.hlsl";
+   DXPixelShaderFile  = "shaders/common/lighting/advanced/prefilterP.hlsl";
+
+   OGLVertexShaderFile = "shaders/common/lighting/advanced/gl/cubemapV.glsl";
+   OGLPixelShaderFile  = "shaders/common/lighting/advanced/gl/prefilterP.glsl";
+   
+   pixVersion = 3.0;
+};
+
+new ShaderData( BRDFLookupShader )
+{
+   DXVertexShaderFile = "shaders/common/lighting/advanced/cubemapV.hlsl";
+   DXPixelShaderFile  = "shaders/common/lighting/advanced/brdfLookupP.hlsl";
+
+   OGLVertexShaderFile = "shaders/common/lighting/advanced/gl/cubemapV.glsl";
+   OGLPixelShaderFile  = "shaders/common/lighting/advanced/gl/brdfLookupP.glsl";
+   
+   pixVersion = 3.0;
+};
+
+new ShaderData( SklyightShader )
+{
+   DXVertexShaderFile = "shaders/common/lighting/advanced/convexGeometryV.hlsl";
+   DXPixelShaderFile  = "shaders/common/lighting/advanced/skylightP.hlsl";
+
+   OGLVertexShaderFile = "shaders/common/lighting/advanced/gl/convexGeometryV.glsl";
+   OGLPixelShaderFile  = "shaders/common/lighting/advanced/gl/skylightP.glsl";
+
+   samplerNames[0] = "$deferredBuffer";
+   samplerNames[1] = "$matInfoBuffer";
+   
+   pixVersion = 3.0;
+};
+
+new CustomMaterial( SklyightMaterial )
+{
+   shader = SklyightShader;
+   stateBlock = AL_ProbeState;
+   
+   sampler["deferredBuffer"] = "#deferred";
+   sampler["matInfoBuffer"] = "#matinfo";
+   
+   pixVersion = 3.0;
+};
+
+new ShaderData( ReflectionProbeZoneShader )
+{
+   //DXVertexShaderFile = "shaders/common/lighting/advanced/cubemapV.hlsl";
+   DXVertexShaderFile = "shaders/common/VolumetricFog/VFogV.hlsl";
+   DXPixelShaderFile  = "shaders/common/lighting/advanced/reflectionProbeZoneShaderP.hlsl";
+
+   OGLVertexShaderFile = "shaders/common/lighting/advanced/gl/cubemapV.glsl";
+   OGLPixelShaderFile  = "shaders/common/lighting/advanced/gl/reflectionProbeZoneShaderP.glsl";
+   
+   samplerNames[0] = "$deferredTex";
+   samplerNames[1] = "$depthBuffer";
+   samplerNames[2] = "$frontBuffer";
+   samplerNames[3] = "$density";
    
    pixVersion = 3.0;
 };

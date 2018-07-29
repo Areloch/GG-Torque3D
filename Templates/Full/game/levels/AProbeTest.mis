@@ -41,7 +41,7 @@ new SimGroup(MissionGroup) {
       azimuth = "290";
       elevation = "50";
       color = "1 1 1 1";
-      ambient = "0.473532 0.473532 0.473532 1";
+      ambient = "0 0 0 1";
       brightness = "1";
       castShadows = "1";
       staticRefreshFreq = "250";
@@ -119,11 +119,8 @@ new SimGroup(MissionGroup) {
    };
    new ReflectionProbe() {
       enabled = "1";
-      ProbeShape = "Sphere";
+      ProbeShape = "Box";
       radius = "10";
-      Intensity = "1";
-      IndirectLightMode = "Ambient Color";
-      IndirectLight = "1 1 1 1";
       ReflectionMode = "Baked Cubemap";
       reflectionPath = "levels/probeTest/probes/";
       Bake = "0";
@@ -134,6 +131,9 @@ new SimGroup(MissionGroup) {
       canSaveDynamicFields = "1";
       persistentId = "8072e1be-2846-11e7-9f56-abd46b190c60";
          GroundColor = "0.8 0.7 0.5 1";
+         IndirectLight = "1 1 1 1";
+         IndirectLightMode = "Ambient Color";
+         Intensity = "1";
          SkyColor = "0.5 0.5 1 1";
    };
    new ConvexShape() {
@@ -243,7 +243,7 @@ new SimGroup(MissionGroup) {
    };
    new PointLight() {
       radius = "10";
-      isEnabled = "1";
+      isEnabled = "0";
       color = "0.887923 1 0.008023 1";
       brightness = "1";
       castShadows = "0";
@@ -271,6 +271,30 @@ new SimGroup(MissionGroup) {
       rotation = "1 0 0 0";
       canSave = "1";
       canSaveDynamicFields = "1";
+   };
+   new ReflectionProbeZone() {
+      shapeName = "art/environment/Fog_Cube.DAE";
+      VolumeColor = "255 253 253 255";
+      VolumeDensity = "0.3";
+      IgnoreWater = "0";
+      MinSize = "10";
+      FadeSize = "0";
+      tiles = "1";
+      modStrength = "0.5";
+      PrimSpeed = "0.5 0";
+      SecSpeed = "0.1 0.1";
+      Reflectable = "0";
+      ReflectStrength = "20";
+      useGlow = "0";
+      glowStrength = "0.3";
+      modLightRay = "0";
+      lightRayMod = "1";
+      position = "-6.99004 -29.7536 14.2141";
+      rotation = "1 0 0 0";
+      scale = "20 20 20";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+         fogColor = "200 200 200 255";
    };
 };
 //--- OBJECT WRITE END ---

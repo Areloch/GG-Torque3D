@@ -55,6 +55,11 @@ function EWCreatorWindow::init( %this )
       
       %this.registerMissionObject( "PointLight",          "Point Light" );
       %this.registerMissionObject( "SpotLight",           "Spot Light" );
+      
+      %this.registerMissionObject( "ReflectionProbe",       "Reflection Probe" );
+      %this.registerMissionObject( "ReflectionProbeZone", "Reflection Probe Zone" );
+      %this.registerMissionObject( "Skylight",       "Skylight" );
+      
       %this.registerMissionObject( "GroundCover",         "Ground Cover" );
       %this.registerMissionObject( "TerrainBlock",        "Terrain Block" );
       %this.registerMissionObject( "GroundPlane",         "Ground Plane" );
@@ -89,7 +94,7 @@ function EWCreatorWindow::init( %this )
       %this.registerMissionObject("NavMesh", "Navigation mesh");
       %this.registerMissionObject("NavPath", "Path");
       %this.registerMissionObject( "Entity",       "Entity" );
-      %this.registerMissionObject( "ReflectionProbe",       "Reflection Probe" );
+      %this.registerMissionObject( "ReflectionProbeZone",         "Reflection Probe Zone" );
       
    %this.endGroup();
    

@@ -600,7 +600,7 @@ void renderFrame(GFXTextureTargetRef* target, MatrixF transform, Frustum frustum
       PROFILE_START(GameFunctions_RenderFrame_RenderWorld);
       FrameAllocator::setWaterMark(0);
 
-      gClientSceneGraph->renderScene(SPT_Reflect, typeMask);
+      gClientSceneGraph->renderScene(SPT_Diffuse, typeMask);
 
       // renderScene leaves some states dirty, which causes problems if GameTSCtrl is the last Gui object rendered
       GFX->updateStates();

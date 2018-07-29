@@ -478,7 +478,7 @@ struct OccluderRenderInst : public RenderInst
    void clear();
 };
 
-struct ProbeRenderInst : public RenderInst
+/*struct ProbeRenderInst : public RenderInst
 {
    LinearColorF mAmbient;
 
@@ -551,6 +551,6 @@ public:
    void getWorldToLightProj(MatrixF *outMatrix) const;
 
    void clear();
-};
+};*/
 
 #endif // _RENDERPASSMANAGER_H_

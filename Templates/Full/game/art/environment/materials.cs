@@ -46,3 +46,11 @@ singleton Material(plant2)
    alphaTest = "1";
    alphaRef = "80";
 };
+
+singleton Material(Fog_Cube_NoMat)
+{
+   mapTo = "NoMat";
+   diffuseColor[0] = "0.588 0.588 0.588 1";
+   smoothness[0] = "1";
+   translucentBlendOp = "None";
+};
