@@ -95,6 +95,7 @@ function EWCreatorWindow::init( %this )
       %this.registerMissionObject("NavPath", "Path");
       %this.registerMissionObject( "Entity",       "Entity" );
       %this.registerMissionObject( "ReflectionProbeZone",         "Reflection Probe Zone" );
+      %this.registerMissionObject( "ReflectionZone", "Reflection Zone" );
       
    %this.endGroup();
    

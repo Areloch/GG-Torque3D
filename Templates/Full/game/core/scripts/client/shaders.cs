@@ -187,3 +187,11 @@ singleton ShaderData( ReflectionProbeZoneReflectionShader )
 	
    pixVersion = 3.0;
 };
+
+singleton ShaderData( ReflectionZoneShaderData )
+{
+   DXVertexShaderFile     = "shaders/common/lighting/advanced/reflectionZoneV.hlsl";
+   DXPixelShaderFile      = "shaders/common/lighting/advanced/reflectionZoneP.hlsl";   
+   
+   pixVersion = 3.0;
+};
