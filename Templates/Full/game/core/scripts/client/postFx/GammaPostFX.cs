@@ -48,13 +48,14 @@ singleton PostEffect( GammaPostFX )
    
    renderTime = "PFXBeforeBin";
    renderBin = "EditorBin";
-   renderPriority = 9999;
+   renderPriority = 9998;
       
    shader = GammaShader;
    stateBlock = GammaStateBlock;
    
    texture[0] = "$backBuffer";  
    texture[1] = $HDRPostFX::colorCorrectionRamp;  
+   textureSRGB[1] = true;
 };
 
 function GammaPostFX::preProcess( %this )

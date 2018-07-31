@@ -38,14 +38,14 @@ namespace Torque {
 }
 
 class ColorI;
-class ColorF;
+class LinearColorF;
 
 
-DECLARE_STRUCT( Vector< bool > );
-DECLARE_STRUCT( Vector< S32 > );
-DECLARE_STRUCT( Vector< F32 > );
-DECLARE_STRUCT( Torque::UUID );
-DECLARE_STRUCT( ColorI );
-DECLARE_STRUCT( ColorF );
+DECLARE_STRUCT_R(Vector< bool >);
+DECLARE_STRUCT_R(Vector< S32 >);
+DECLARE_STRUCT_R(Vector< F32 >);
+DECLARE_STRUCT_R(Torque::UUID);
+DECLARE_STRUCT_R(ColorI);
+DECLARE_STRUCT_R(LinearColorF);
 
 #endif // !_ENGINESTRUCTS_H_

@@ -1162,6 +1162,7 @@ bool EditTSCtrl::processCameraQuery(CameraQuery * query)
 
          query->cameraMatrix = camRot;
          query->cameraMatrix.setPosition(camPos);
+         query->headMatrix = query->cameraMatrix;
          query->fov = mOrthoFOV;
       }
 
@@ -1315,7 +1316,7 @@ DefineEngineMethod( EditTSCtrl, renderCircle, void, ( Point3F pos, Point3F norma
    {
       PrimBuild::color( object->mConsoleFillColor );
 
-      PrimBuild::begin( GFXTriangleFan, points.size() + 2 );
+      PrimBuild::begin( GFXTriangleStrip, points.size() + 2 );
 
       // Center point
       PrimBuild::vertex3fv( pos );

@@ -85,6 +85,14 @@ void ProcessedCustomMaterial::_setStageData()
          continue;
       }
 
+      if(filename.equal(String("$dynamicShadowMap"), String::NoCase))
+      {
+         rpd->mTexType[i] = Material::DynamicShadowMap;
+         rpd->mSamplerNames[i] = mCustomMaterial->mSamplerNames[i];
+         mMaxTex = i+1;
+         continue;
+      }
+
       if(filename.equal(String("$dynamiclightmask"), String::NoCase))
       {
          rpd->mTexType[i] = Material::DynamicLightMask;
@@ -165,7 +173,7 @@ void ProcessedCustomMaterial::_setStageData()
          continue;
       }
 
-      rpd->mTexSlot[i].texObject = _createTexture( filename, &GFXDefaultStaticDiffuseProfile );
+      rpd->mTexSlot[i].texObject = _createTexture( filename, &GFXStaticTextureSRGBProfile );
       if ( !rpd->mTexSlot[i].texObject )
       {
          mMaterial->logError("Failed to load texture %s", _getTexturePath(filename).c_str());
@@ -409,14 +417,14 @@ void ProcessedCustomMaterial::setTextureStages( SceneRenderState *state, const S
                if ( !texObject )
                   texObject = GFXTexHandle::ZERO;
 
-               if ( handles->mRTParamsSC[i]->isValid() && texObject )
+               if ( handles->mRTParamsSC[samplerRegister]->isValid() && texObject )
                {
                   const Point3I &targetSz = texObject->getSize();
                   const RectI &targetVp = texTarget->getViewport();
                   Point4F rtParams;
 
                   ScreenSpace::RenderTargetParameters(targetSz, targetVp, rtParams);
-                  shaderConsts->set(handles->mRTParamsSC[i], rtParams);
+                  shaderConsts->set(handles->mRTParamsSC[samplerRegister], rtParams);
                }
               
                GFX->setTexture( samplerRegister, texObject );

@@ -182,7 +182,6 @@ static const U32 sDeviceInfoProvider = 0;
 static const U32 sDeviceInfoName = 1;
 static const U32 sDeviceInfoUseHardware = 2;
 static const U32 sDeviceInfoMaxBuffers = 3;
-static const U32 sDeviceInfoCaps = 4;
 
 
 //-----------------------------------------------------------------------------
@@ -199,8 +198,8 @@ SFXSystem::SFXSystem()
       mStatNumVoices( 0 ),
       mStatSourceUpdateTime( 0 ),
       mStatParameterUpdateTime( 0 ),
-      mStatAmbientUpdateTime( 0 ),
       mDistanceModel( SFXDistanceModelLinear ),
+      mStatAmbientUpdateTime( 0 ),
       mDopplerFactor( 0.5 ),
       mRolloffFactor( 1.0 ),
       mSoundscapeMgr( NULL )
@@ -648,7 +647,7 @@ void SFXSystem::deleteWhenStopped( SFXSource* source )
    // If the source isn't already on the play-once source list,
    // put it there now.
    
-   Vector< SFXSource* >::iterator iter = find( mPlayOnceSources.begin(), mPlayOnceSources.end(), source );
+   Vector< SFXSource* >::iterator iter = T3D::find( mPlayOnceSources.begin(), mPlayOnceSources.end(), source );
    if( iter == mPlayOnceSources.end() )
       mPlayOnceSources.push_back( source );
 }
@@ -675,9 +674,9 @@ void SFXSystem::_onRemoveSource( SFXSource* source )
 {
    // Check if it was a play once source.
    
-   Vector< SFXSource* >::iterator iter = find( mPlayOnceSources.begin(), mPlayOnceSources.end(), source );
-   if ( iter != mPlayOnceSources.end() )
-      mPlayOnceSources.erase_fast( iter );
+   Vector< SFXSource* >::iterator sourceIter = T3D::find( mPlayOnceSources.begin(), mPlayOnceSources.end(), source );
+   if (sourceIter != mPlayOnceSources.end() )
+      mPlayOnceSources.erase_fast(sourceIter);
 
    // Update the stats.
    
@@ -685,9 +684,9 @@ void SFXSystem::_onRemoveSource( SFXSource* source )
    
    if( dynamic_cast< SFXSound* >( source ) )
    {
-      SFXSoundVector::iterator iter = find( mSounds.begin(), mSounds.end(), static_cast< SFXSound* >( source ) );
-      if( iter != mSounds.end() )
-         mSounds.erase_fast( iter );
+      SFXSoundVector::iterator vectorIter = T3D::find( mSounds.begin(), mSounds.end(), static_cast< SFXSound* >( source ) );
+      if(vectorIter != mSounds.end() )
+         mSounds.erase_fast(vectorIter);
          
       mStatNumSounds = mSounds.size();
    }
@@ -1467,7 +1466,7 @@ DefineConsoleFunction( sfxCreateSource, S32, ( const char * sfxType, const char 
    if ( track )
    {
       // In this overloaded use of the function, arg0..arg2 are x, y, and z.
-      if ( dStrIsEmpty(arg0) )
+      if ( String::isEmpty(arg0) )
       {
          source = SFX->createSource( track );
       }
@@ -1489,7 +1488,7 @@ DefineConsoleFunction( sfxCreateSource, S32, ( const char * sfxType, const char 
       }
       else
       {
-         if ( dStrIsEmpty(arg1) )
+         if ( String::isEmpty(arg1) )
          {
             source = SFX->createSource( tempProfile );
          }
@@ -1552,7 +1551,7 @@ DefineConsoleFunction( sfxPlay, S32, ( const char * trackName, const char * poin
    "Start playing the given source or create a new source for the given track and play it.\n"
    "@hide" )
 {
-   if ( dStrIsEmpty(pointOrX) )
+   if ( String::isEmpty(pointOrX) )
    {
       SFXSource* source = dynamic_cast<SFXSource*>( Sim::findObject( trackName ) );
       if ( source )
@@ -1570,11 +1569,11 @@ DefineConsoleFunction( sfxPlay, S32, ( const char * trackName, const char * poin
    }
 
    Point3F pos(0.f, 0.f, 0.f);
-   if ( !dStrIsEmpty( pointOrX ) && dStrIsEmpty( y ) && dStrIsEmpty( z )  )
+   if ( !String::isEmpty( pointOrX ) && String::isEmpty( y ) && String::isEmpty( z )  )
    {
       dSscanf( pointOrX, "%g %g %g", &pos.x, &pos.y, &pos.z );
    }
-   else if( !dStrIsEmpty( pointOrX ) && !dStrIsEmpty( y ) && !dStrIsEmpty( z ) )
+   else if( !String::isEmpty( pointOrX ) && !String::isEmpty( y ) && !String::isEmpty( z ) )
       pos.set( dAtof(pointOrX), dAtof(y), dAtof(z) );
 
    MatrixF transform;
@@ -1679,7 +1678,7 @@ DefineConsoleFunction( sfxPlayOnce, S32, ( const char * sfxType, const char * ar
    if( track )
    {
       // In this overloaded use, arg0..arg2 are x, y, z, and arg3 is the fadeInTime.
-      if (dStrIsEmpty(arg0))
+      if (String::isEmpty(arg0))
       {
          source = SFX->playOnce( track );
       }
@@ -1701,7 +1700,7 @@ DefineConsoleFunction( sfxPlayOnce, S32, ( const char * sfxType, const char * ar
       }
       else
       {
-         if (dStrIsEmpty(arg1))
+         if (String::isEmpty(arg1))
             source = SFX->playOnce( tempProfile );
          else
          {

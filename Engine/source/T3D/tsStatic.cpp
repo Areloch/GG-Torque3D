@@ -20,6 +20,11 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
+// Arcane-FX for MIT Licensed Open Source version of Torque 3D from GarageGames
+// Copyright (C) 2015 Faust Logic, Inc.
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
+
 #include "platform/platform.h"
 #include "T3D/tsStatic.h"
 
@@ -53,6 +58,9 @@
 using namespace Torque;
 
 extern bool gEditingMission;
+#ifdef TORQUE_AFX_ENABLED
+#include "afx/ce/afxZodiacMgr.h"
+#endif
 
 IMPLEMENT_CO_NETOBJECT_V1(TSStatic);
 
@@ -105,7 +113,7 @@ TSStatic::TSStatic()
    mPlayAmbient      = true;
    mAmbientThread    = NULL;
 
-   mAllowPlayerStep = true;
+   mAllowPlayerStep = false;
 
    mConvexList = new Convex;
 
@@ -124,6 +132,14 @@ TSStatic::TSStatic()
 
    mCollisionType = CollisionMesh;
    mDecalType = CollisionMesh;
+
+   mIgnoreZodiacs = false;
+   mHasGradients = false;
+   mInvertGradientRange = false;
+   mGradientRangeUser.set(0.0f, 180.0f);
+#ifdef TORQUE_AFX_ENABLED
+   afxZodiacData::convertGradientRangeFromDegrees(mGradientRange, mGradientRangeUser);
+#endif
 }
 
 TSStatic::~TSStatic()
@@ -222,6 +238,12 @@ void TSStatic::initPersistFields()
 
    endGroup("Debug");
 
+   addGroup("AFX");
+   addField("ignoreZodiacs",         TypeBool,       Offset(mIgnoreZodiacs,       TSStatic));
+   addField("useGradientRange",      TypeBool,       Offset(mHasGradients,        TSStatic));
+   addField("gradientRange",         TypePoint2F,    Offset(mGradientRangeUser,   TSStatic));
+   addField("invertGradientRange",   TypeBool,       Offset(mInvertGradientRange, TSStatic));
+   endGroup("AFX");
    Parent::initPersistFields();
 }
 
@@ -310,11 +332,10 @@ bool TSStatic::onAdd()
 
    _updateShouldTick();
 
-   // Accumulation
-   if ( isClientObject() && mShapeInstance )
+   // Accumulation and environment mapping
+   if (isClientObject() && mShapeInstance)
    {
-      if ( mShapeInstance->hasAccumulation() ) 
-         AccumulationVolume::addObject(this);
+      AccumulationVolume::addObject(this);
    }
 
    return true;
@@ -324,6 +345,8 @@ bool TSStatic::_createShape()
 {
    // Cleanup before we create.
    mCollisionDetails.clear();
+   mDecalDetails.clear();
+   mDecalDetailsPtr = 0;
    mLOSDetails.clear();
    SAFE_DELETE( mPhysicsRep );
    SAFE_DELETE( mShapeInstance );
@@ -350,11 +373,13 @@ bool TSStatic::_createShape()
          NetConnection::filesWereDownloaded() )
       return false;
 
-   mObjBox = mShape->bounds;
+   mObjBox = mShape->mBounds;
    resetWorldBox();
 
    mShapeInstance = new TSShapeInstance( mShape, isClientObject() );
 
+   if (isClientObject())
+      mShapeInstance->cloneMaterialList();
    if( isGhost() )
    {
       // Reapply the current skin
@@ -397,11 +422,29 @@ void TSStatic::prepCollision()
 
    // Cleanup any old collision data
    mCollisionDetails.clear();
+   mDecalDetails.clear();
+   mDecalDetailsPtr = 0;
    mLOSDetails.clear();
    mConvexList->nukeList();
 
    if ( mCollisionType == CollisionMesh || mCollisionType == VisibleMesh )
+   {
       mShape->findColDetails( mCollisionType == VisibleMesh, &mCollisionDetails, &mLOSDetails );
+      if ( mDecalType == mCollisionType )
+      {
+         mDecalDetailsPtr = &mCollisionDetails;
+      }
+      else if ( mDecalType == CollisionMesh || mDecalType == VisibleMesh )
+      {
+         mShape->findColDetails( mDecalType == VisibleMesh, &mDecalDetails, 0 );
+         mDecalDetailsPtr = &mDecalDetails;
+      }
+   }
+   else if ( mDecalType == CollisionMesh || mDecalType == VisibleMesh )
+   {
+      mShape->findColDetails( mDecalType == VisibleMesh, &mDecalDetails, 0 );
+      mDecalDetailsPtr = &mDecalDetails;
+   }
 
    _updatePhysics();
 }
@@ -494,6 +537,7 @@ void TSStatic::reSkin()
 {
    if ( isGhost() && mShapeInstance && mSkinNameHandle.isValidString() )
    {
+	  mShapeInstance->resetMaterialList();
       Vector<String> skins;
       String(mSkinNameHandle.getString()).split( ";", skins );
 
@@ -520,10 +564,15 @@ void TSStatic::reSkin()
 
 void TSStatic::processTick( const Move *move )
 {
-   AssertFatal( mPlayAmbient && mAmbientThread, "TSSTatic::adanceTime called with nothing to play." );
-
-   if ( isServerObject() )
+   if ( isServerObject() && mPlayAmbient && mAmbientThread )
       mShapeInstance->advanceTime( TickSec, mAmbientThread );
+
+   if ( isMounted() )
+   {
+      MatrixF mat( true );
+      mMount.object->getMountTransform(mMount.node, mMount.xfm, &mat );
+      setTransform( mat );
+   }
 }
 
 void TSStatic::interpolateTick( F32 delta )
@@ -532,14 +581,20 @@ void TSStatic::interpolateTick( F32 delta )
 
 void TSStatic::advanceTime( F32 dt )
 {
-   AssertFatal( mPlayAmbient && mAmbientThread, "TSSTatic::advanceTime called with nothing to play." );
-   
-   mShapeInstance->advanceTime( dt, mAmbientThread );
+   if ( mPlayAmbient && mAmbientThread )
+      mShapeInstance->advanceTime( dt, mAmbientThread );
+
+   if ( isMounted() )
+   {
+      MatrixF mat( true );
+      mMount.object->getRenderMountTransform( dt, mMount.node, mMount.xfm, &mat );
+      setRenderTransform( mat );
+   }
 }
 
 void TSStatic::_updateShouldTick()
 {
-   bool shouldTick = mPlayAmbient && mAmbientThread;
+   bool shouldTick = (mPlayAmbient && mAmbientThread) || isMounted();
 
    if ( isTicking() != shouldTick )
       setProcessTick( shouldTick );
@@ -670,7 +725,10 @@ void TSStatic::prepRenderImage( SceneRenderState* state )
       }
    }
    mShapeInstance->render( rdata );
-
+#ifdef TORQUE_AFX_ENABLED
+   if (!mIgnoreZodiacs && mDecalDetailsPtr != 0)
+      afxZodiacMgr::renderPolysoupZodiacs(state, this);
+#endif
    if ( mRenderNormalScalar > 0 )
    {
       ObjectRenderInst *ri = state->getRenderPass()->allocInst<ObjectRenderInst>();
@@ -708,12 +766,15 @@ void TSStatic::onScaleChanged()
       else
          _updatePhysics();
    }
+
+   setMaskBits( ScaleMask );
 }
 
 void TSStatic::setTransform(const MatrixF & mat)
 {
    Parent::setTransform(mat);
-   setMaskBits( TransformMask );
+   if ( !isMounted() )
+      setMaskBits( TransformMask );
 
    if ( mPhysicsRep )
       mPhysicsRep->setTransform( mat );
@@ -734,9 +795,15 @@ U32 TSStatic::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
 {
    U32 retMask = Parent::packUpdate(con, mask, stream);
 
-   mathWrite( *stream, getTransform() );
-   mathWrite( *stream, getScale() );
-   stream->writeString( mShapeName );
+   if ( stream->writeFlag( mask & TransformMask ) )  
+      mathWrite( *stream, getTransform() );
+
+   if ( stream->writeFlag( mask & ScaleMask ) )  
+   {
+      // Only write one bit if the scale is one.
+      if ( stream->writeFlag( mObjScale != Point3F::One ) )
+         mathWrite( *stream, mObjScale );   
+   }
 
    if ( stream->writeFlag( mask & UpdateCollisionMask ) )
       stream->write( (U32)mCollisionType );
@@ -744,17 +811,21 @@ U32 TSStatic::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
    if ( stream->writeFlag( mask & SkinMask ) )
       con->packNetStringHandleU( stream, mSkinNameHandle );
 
-   stream->write( (U32)mDecalType );
+   if (stream->writeFlag(mask & AdvancedStaticOptionsMask))
+   {
+      stream->writeString(mShapeName);
+      stream->write((U32)mDecalType);
 
-   stream->writeFlag( mAllowPlayerStep );
-   stream->writeFlag( mMeshCulling );
-   stream->writeFlag( mUseOriginSort );
+      stream->writeFlag(mAllowPlayerStep);
+      stream->writeFlag(mMeshCulling);
+      stream->writeFlag(mUseOriginSort);
 
-   stream->write( mRenderNormalScalar );
+      stream->write(mRenderNormalScalar);
 
-   stream->write( mForceDetail );
+      stream->write(mForceDetail);
 
-   stream->writeFlag( mPlayAmbient );
+      stream->writeFlag(mPlayAmbient);
+   }
 
    if ( stream->writeFlag(mUseAlphaFade) )  
    {  
@@ -763,6 +834,13 @@ U32 TSStatic::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
       stream->write(mInvertAlphaFade);  
    } 
 
+   stream->writeFlag(mIgnoreZodiacs);
+   if (stream->writeFlag(mHasGradients))
+   {
+      stream->writeFlag(mInvertGradientRange);
+      stream->write(mGradientRange.x);
+      stream->write(mGradientRange.y);
+   }
    if ( mLightPlugin )
       retMask |= mLightPlugin->packUpdate(this, AdvancedStaticOptionsMask, con, mask, stream);
 
@@ -777,14 +855,25 @@ void TSStatic::unpackUpdate(NetConnection *con, BitStream *stream)
 {
    Parent::unpackUpdate(con, stream);
 
-   MatrixF mat;
-   Point3F scale;
-   mathRead( *stream, &mat );
-   mathRead( *stream, &scale );
-   setScale( scale);
-   setTransform(mat);
+   if ( stream->readFlag() ) // TransformMask
+   {
+      MatrixF mat;
+      mathRead( *stream, &mat );
+      setTransform(mat);
+      setRenderTransform(mat);
+   }
 
-   mShapeName = stream->readSTString();
+   if ( stream->readFlag() ) // ScaleMask
+   {
+      if ( stream->readFlag() )
+      {
+         VectorF scale;
+         mathRead( *stream, &scale );
+         setScale( scale );
+      }
+      else
+         setScale( Point3F::One );
+   }
 
    if ( stream->readFlag() ) // UpdateCollisionMask
    {
@@ -812,17 +901,21 @@ void TSStatic::unpackUpdate(NetConnection *con, BitStream *stream)
       }
    }
 
-   stream->read( (U32*)&mDecalType );
+   if (stream->readFlag()) // AdvancedStaticOptionsMask
+   {
+      mShapeName = stream->readSTString();
 
-   mAllowPlayerStep = stream->readFlag();
-   mMeshCulling = stream->readFlag();   
-   mUseOriginSort = stream->readFlag();
+      stream->read((U32*)&mDecalType);
 
-   stream->read( &mRenderNormalScalar );
+      mAllowPlayerStep = stream->readFlag();
+      mMeshCulling = stream->readFlag();
+      mUseOriginSort = stream->readFlag();
 
-   stream->read( &mForceDetail );
+      stream->read(&mRenderNormalScalar);
 
-   mPlayAmbient = stream->readFlag();
+      stream->read(&mForceDetail);
+      mPlayAmbient = stream->readFlag();
+   }
 
    mUseAlphaFade = stream->readFlag();  
    if (mUseAlphaFade)
@@ -832,6 +925,14 @@ void TSStatic::unpackUpdate(NetConnection *con, BitStream *stream)
       stream->read(&mInvertAlphaFade);  
    }
 
+   mIgnoreZodiacs = stream->readFlag();
+   mHasGradients = stream->readFlag();
+   if (mHasGradients)
+   {
+      mInvertGradientRange = stream->readFlag();
+      stream->read(&mGradientRange.x);
+      stream->read(&mGradientRange.y);
+   }
    if ( mLightPlugin )
    {
       mLightPlugin->unpackUpdate(this, con, stream);
@@ -844,6 +945,7 @@ void TSStatic::unpackUpdate(NetConnection *con, BitStream *stream)
 
    if ( isProperlyAdded() )
       _updateShouldTick();
+   set_special_typing();
 }
 
 //----------------------------------------------------------------------------
@@ -954,6 +1056,11 @@ bool TSStatic::buildPolyList(PolyListContext context, AbstractPolyList* polyList
          polyList->addBox( mObjBox );
       else if ( meshType == VisibleMesh )
           mShapeInstance->buildPolyList( polyList, 0 );
+      else if (context == PLC_Decal && mDecalDetailsPtr != 0)
+      {
+         for ( U32 i = 0; i < mDecalDetailsPtr->size(); i++ )
+            mShapeInstance->buildPolyListOpcode( (*mDecalDetailsPtr)[i], polyList, box );
+      }
       else
       {
          // Everything else is done from the collision meshes
@@ -961,6 +1068,97 @@ bool TSStatic::buildPolyList(PolyListContext context, AbstractPolyList* polyList
          // special collision geometry.
          for ( U32 i = 0; i < mCollisionDetails.size(); i++ )
             mShapeInstance->buildPolyListOpcode( mCollisionDetails[i], polyList, box );
+      }
+   }
+
+   return true;
+}
+
+bool TSStatic::buildExportPolyList(ColladaUtils::ExportData* exportData, const Box3F &box, const SphereF &)
+{
+   if (!mShapeInstance)
+      return false;
+
+   if (mCollisionType == Bounds)
+   {
+      ColladaUtils::ExportData::colMesh* colMesh;
+      exportData->colMeshes.increment();
+      colMesh = &exportData->colMeshes.last();
+
+      colMesh->mesh.setTransform(&mObjToWorld, mObjScale);
+      colMesh->mesh.setObject(this);
+
+      colMesh->mesh.addBox(mObjBox);
+
+      colMesh->colMeshName = String::ToString("ColBox%d-1", exportData->colMeshes.size());
+   }
+   else if (mCollisionType == VisibleMesh)
+   {
+      ColladaUtils::ExportData::colMesh* colMesh;
+      exportData->colMeshes.increment();
+      colMesh = &exportData->colMeshes.last();
+
+      colMesh->mesh.setTransform(&mObjToWorld, mObjScale);
+      colMesh->mesh.setObject(this);
+
+      mShapeInstance->buildPolyList(&colMesh->mesh, 0);
+
+      colMesh->colMeshName = String::ToString("ColMesh%d-1", exportData->colMeshes.size());
+   }
+   else if (mCollisionType == CollisionMesh)
+   {
+      // Everything else is done from the collision meshes
+      // which may be built from either the visual mesh or
+      // special collision geometry.
+      for (U32 i = 0; i < mCollisionDetails.size(); i++)
+      {
+         ColladaUtils::ExportData::colMesh* colMesh;
+         exportData->colMeshes.increment();
+         colMesh = &exportData->colMeshes.last();
+
+         colMesh->mesh.setTransform(&mObjToWorld, mObjScale);
+         colMesh->mesh.setObject(this);
+
+         mShapeInstance->buildPolyListOpcode(mCollisionDetails[i], &colMesh->mesh, box);
+
+         colMesh->colMeshName = String::ToString("ColMesh%d-1", exportData->colMeshes.size());
+      }
+   }
+
+   //Next, process the LOD levels and materials.
+   if (isServerObject() && getClientObject())
+   {
+      TSStatic* clientShape = dynamic_cast<TSStatic*>(getClientObject());
+      U32 numDetails = clientShape->mShapeInstance->getNumDetails() - 1;
+
+      exportData->meshData.increment();
+
+      //Prep a meshData for this shape in particular
+      ColladaUtils::ExportData::meshLODData* meshData = &exportData->meshData.last();
+
+      //Fill out the info we'll need later to actually append our mesh data for the detail levels during the processing phase
+      meshData->shapeInst = clientShape->mShapeInstance;
+      meshData->originatingObject = this;
+      meshData->meshTransform = mObjToWorld;
+      meshData->scale = mObjScale;
+
+      //Iterate over all our detail levels
+      for (U32 i = 0; i < clientShape->mShapeInstance->getNumDetails(); i++)
+      {
+         TSShape::Detail detail = clientShape->mShapeInstance->getShape()->details[i];
+
+         String detailName = String::ToLower(clientShape->mShapeInstance->getShape()->getName(detail.nameIndex));
+
+         //Skip it if it's a collision or line of sight element
+         if (detailName.startsWith("col") || detailName.startsWith("los"))
+            continue;
+
+         meshData->meshDetailLevels.increment();
+
+         ColladaUtils::ExportData::detailLevel* curDetail = &meshData->meshDetailLevels.last();
+
+         //Make sure we denote the size this detail level has
+         curDetail->size = detail.size;
       }
    }
 
@@ -1160,6 +1358,29 @@ void TSStaticPolysoupConvex::getFeatures(const MatrixF& mat,const VectorF& n, Co
    // All done!
 }
 
+void TSStatic::onMount( SceneObject *obj, S32 node )
+{
+   Parent::onMount(obj, node);
+   _updateShouldTick();
+}
+
+void TSStatic::onUnmount( SceneObject *obj, S32 node )
+{
+   Parent::onUnmount( obj, node );
+   setMaskBits( TransformMask );
+   _updateShouldTick();
+}
+
+U32 TSStatic::getNumDetails()
+{
+	if (isServerObject() && getClientObject())
+	{
+		TSStatic* clientShape = dynamic_cast<TSStatic*>(getClientObject());
+		return clientShape->mShapeInstance->getNumDetails();
+	}
+	return 0;
+};
+
 //------------------------------------------------------------------------
 //These functions are duplicated in tsStatic and shapeBase.
 //They each function a little differently; but achieve the same purpose of gathering
@@ -1171,17 +1392,17 @@ DefineEngineMethod( TSStatic, getTargetName, const char*, ( S32 index ),(0),
    "@return the name of the indexed material.\n"
    "@see getTargetCount()\n")
 {
-	TSStatic *obj = dynamic_cast< TSStatic* > ( object );
-	if(obj)
-	{
-		// Try to use the client object (so we get the reskinned targets in the Material Editor)
-		if ((TSStatic*)obj->getClientObject())
-			obj = (TSStatic*)obj->getClientObject();
+   TSStatic *obj = dynamic_cast< TSStatic* > ( object );
+   if(obj)
+   {
+      // Try to use the client object (so we get the reskinned targets in the Material Editor)
+      if ((TSStatic*)obj->getClientObject())
+         obj = (TSStatic*)obj->getClientObject();
 
-		return obj->getShapeInstance()->getTargetName(index);
-	}
+      return obj->getShapeInstance()->getTargetName(index);
+   }
 
-	return "";
+   return "";
 }
 
 DefineEngineMethod( TSStatic, getTargetCount, S32,(),,
@@ -1189,23 +1410,23 @@ DefineEngineMethod( TSStatic, getTargetCount, S32,(),,
    "@return the number of materials in the shape.\n"
    "@see getTargetName()\n")
 {
-	TSStatic *obj = dynamic_cast< TSStatic* > ( object );
-	if(obj)
-	{
-		// Try to use the client object (so we get the reskinned targets in the Material Editor)
-		if ((TSStatic*)obj->getClientObject())
-			obj = (TSStatic*)obj->getClientObject();
+   TSStatic *obj = dynamic_cast< TSStatic* > ( object );
+   if(obj)
+   {
+      // Try to use the client object (so we get the reskinned targets in the Material Editor)
+      if ((TSStatic*)obj->getClientObject())
+         obj = (TSStatic*)obj->getClientObject();
 
-		return obj->getShapeInstance()->getTargetCount();
-	}
+      return obj->getShapeInstance()->getTargetCount();
+   }
 
-	return -1;
+   return -1;
 }
 
 // This method is able to change materials per map to with others. The material that is being replaced is being mapped to
 // unmapped_mat as a part of this transition
 
-DefineEngineMethod( TSStatic, changeMaterial, void, ( const char* mapTo, Material* oldMat, Material* newMat ),("",NULL,NULL),
+DefineEngineMethod( TSStatic, changeMaterial, void, ( const char* mapTo, Material* oldMat, Material* newMat ),("",nullAsType<Material*>(),nullAsType<Material*>()),
    "@brief Change one of the materials on the shape.\n\n"
 
    "This method changes materials per mapTo with others. The material that "
@@ -1231,8 +1452,10 @@ DefineEngineMethod( TSStatic, changeMaterial, void, ( const char* mapTo, Materia
       return;
    }
 
+   TSMaterialList* shapeMaterialList = object->getShape()->materialList;
+
    // Check the mapTo name exists for this shape
-   S32 matIndex = object->getShape()->materialList->getMaterialNameList().find_next(String(mapTo));
+   S32 matIndex = shapeMaterialList->getMaterialNameList().find_next(String(mapTo));
    if (matIndex < 0)
    {
       Con::errorf("TSShape::changeMaterial failed: Invalid mapTo name '%s'", mapTo);
@@ -1250,13 +1473,13 @@ DefineEngineMethod( TSStatic, changeMaterial, void, ( const char* mapTo, Materia
 
    // Replace instances with the new material being traded in. Lets make sure that we only
    // target the specific targets per inst, this is actually doing more than we thought
-   delete object->getShape()->materialList->mMatInstList[matIndex];
-   object->getShape()->materialList->mMatInstList[matIndex] = newMat->createMatInstance();
+   delete shapeMaterialList->mMatInstList[matIndex];
+   shapeMaterialList->mMatInstList[matIndex] = newMat->createMatInstance();
 
    // Finish up preparing the material instances for rendering
    const GFXVertexFormat *flags = getGFXVertexFormat<GFXVertexPNTTB>();
    FeatureSet features = MATMGR->getDefaultFeatures();
-   object->getShape()->materialList->getMaterialInst(matIndex)->init( features, flags );
+   shapeMaterialList->getMaterialInst(matIndex)->init(features, flags);
 }
 
 DefineEngineMethod( TSStatic, getModelFile, const char *, (),,
@@ -1264,10 +1487,50 @@ DefineEngineMethod( TSStatic, getModelFile, const char *, (),,
 
    "@return the shape filename\n\n"
    "@tsexample\n"
-		"// Acquire the model filename used on this shape.\n"
-		"%modelFilename = %obj.getModelFile();\n"
+      "// Acquire the model filename used on this shape.\n"
+      "%modelFilename = %obj.getModelFile();\n"
    "@endtsexample\n"
    )
 {
-	return object->getShapeFileName();
+   return object->getShapeFileName();
 }
+
+void TSStatic::set_special_typing()
+{
+   if (mCollisionType == VisibleMesh || mCollisionType == CollisionMesh)
+      mTypeMask |= InteriorLikeObjectType;
+   else
+      mTypeMask &= ~InteriorLikeObjectType;
+}
+
+void TSStatic::onStaticModified(const char* slotName, const char*newValue)
+{
+#ifdef TORQUE_AFX_ENABLED
+   if (slotName == afxZodiacData::GradientRangeSlot)
+   {
+      afxZodiacData::convertGradientRangeFromDegrees(mGradientRange, mGradientRangeUser);
+      return;
+   }
+#endif
+
+   set_special_typing();
+}
+
+void TSStatic::setSelectionFlags(U8 flags)
+{
+   Parent::setSelectionFlags(flags);
+
+   if (!mShapeInstance || !isClientObject())  
+      return;  
+  
+   if (!mShapeInstance->ownMaterialList())  
+      return;  
+  
+   TSMaterialList* pMatList = mShapeInstance->getMaterialList();  
+   for (S32 j = 0; j < pMatList->size(); j++)   
+   {  
+      BaseMatInstance * bmi = pMatList->getMaterialInst(j);  
+      bmi->setSelectionHighlighting(needsSelectionHighlighting());  
+   }  
+}
+

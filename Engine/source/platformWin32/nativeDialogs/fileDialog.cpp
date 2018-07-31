@@ -79,7 +79,7 @@ static LRESULT PASCAL OKBtnFolderHackProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
             char *filePath;
 #ifdef UNICODE
             char fileBuf[MAX_PATH];
-            convertUTF16toUTF8(ofn->lpstrFile, fileBuf, sizeof(fileBuf));
+            convertUTF16toUTF8(ofn->lpstrFile, fileBuf);
             filePath = fileBuf;
 #else
             filePath = ofn->lpstrFile;
@@ -140,9 +140,9 @@ static UINT_PTR CALLBACK FolderHookProc(HWND hdlg, UINT uMsg, WPARAM wParam, LPA
 
                      char filePath[MAX_PATH];
 #ifdef UNICODE
-                     convertUTF16toUTF8(buf, filePath, sizeof(filePath));
+                     convertUTF16toUTF8(buf, filePath);
 #else
-                     dStrcpy( filePath, buf );
+                     dStrcpy( filePath, buf, MAX_PATH );
 #endif
 
                      // [tom, 12/8/2006] Hack to remove files from the list because
@@ -158,7 +158,7 @@ static UINT_PTR CALLBACK FolderHookProc(HWND hdlg, UINT uMsg, WPARAM wParam, LPA
                            
 #ifdef UNICODE
                            char buf2[MAX_PATH];
-                           convertUTF16toUTF8(buf, buf2, sizeof(buf2));
+                           convertUTF16toUTF8(buf, buf2);
 #else
                            char *buf2 = buf;
 #endif
@@ -324,17 +324,17 @@ bool FileDialog::Execute()
    UTF16 pszFileTitle[MAX_PATH];
    UTF16 pszDefaultExtension[MAX_PATH];
    // Convert parameters to UTF16*'s
-   convertUTF8toUTF16((UTF8 *)mData.mDefaultFile, pszFile, sizeof(pszFile));
-   convertUTF8toUTF16((UTF8 *)mData.mDefaultPath, pszInitialDir, sizeof(pszInitialDir));
-   convertUTF8toUTF16((UTF8 *)mData.mTitle, pszTitle, sizeof(pszTitle));
-   convertUTF8toUTF16((UTF8 *)mData.mFilters, pszFilter, sizeof(pszFilter) );
+   convertUTF8toUTF16((UTF8 *)mData.mDefaultFile, pszFile);
+   convertUTF8toUTF16((UTF8 *)mData.mDefaultPath, pszInitialDir);
+   convertUTF8toUTF16((UTF8 *)mData.mTitle, pszTitle);
+   convertUTF8toUTF16((UTF8 *)mData.mFilters, pszFilter);
 #else
    // Not Unicode, All char*'s!
    char pszFile[MAX_PATH];
    char pszFilter[1024];
    char pszFileTitle[MAX_PATH];
-   dStrcpy( pszFile, mData.mDefaultFile );
-   dStrcpy( pszFilter, mData.mFilters );
+   dStrcpy( pszFile, mData.mDefaultFile, MAX_PATH );
+   dStrcpy( pszFilter, mData.mFilters, 1024 );
    const char* pszInitialDir = mData.mDefaultPath;
    const char* pszTitle = mData.mTitle;
    
@@ -442,12 +442,12 @@ bool FileDialog::Execute()
    // Handle Result Properly for Unicode as well as ANSI
 #ifdef UNICODE
    if(pszFileTitle[0] || ! ( mData.mStyle & FileDialogData::FDS_OPEN && mData.mStyle & FileDialogData::FDS_MULTIPLEFILES ))
-      convertUTF16toUTF8( (UTF16*)pszFile, (UTF8*)pszResult, sizeof(pszResult));
+      convertUTF16toUTF8( (UTF16*)pszFile, pszResult);
    else
       convertUTF16toUTF8DoubleNULL( (UTF16*)pszFile, (UTF8*)pszResult, sizeof(pszResult));
 #else
    if(pszFileTitle[0] || ! ( mData.mStyle & FileDialogData::FDS_OPEN && mData.mStyle & FileDialogData::FDS_MULTIPLEFILES ))
-      dStrcpy(pszResult,pszFile);
+      dStrcpy(pszResult,pszFile,MAX_PATH);
    else
    {
       // [tom, 1/4/2007] pszResult is a double-NULL terminated, NULL separated list in this case so we can't just dSstrcpy()
@@ -614,7 +614,7 @@ bool FileDialog::setDefaultPath( void *object, const char *index, const char *da
 
    // Copy and Backslash the path (Windows dialogs are VERY picky about this format)
    static char szPathValidate[512];
-   dStrcpy( szPathValidate, data );
+   dStrcpy( szPathValidate, data, 512 );
 
    Platform::makeFullPathName( data,szPathValidate, sizeof(szPathValidate));
    backslash( szPathValidate );

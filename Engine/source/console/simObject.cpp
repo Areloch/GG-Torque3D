@@ -20,6 +20,11 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
+// Arcane-FX for MIT Licensed Open Source version of Torque 3D from GarageGames
+// Copyright (C) 2015 Faust Logic, Inc.
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
+
 #include "platform/platform.h"
 #include "platform/platformMemory.h"
 #include "console/simObject.h"
@@ -34,7 +39,9 @@
 #include "core/frameAllocator.h"
 #include "core/stream/fileStream.h"
 #include "core/fileObject.h"
+#include "persistence/taml/tamlCustom.h"
 
+#include "sim/netObject.h"
 
 IMPLEMENT_CONOBJECT( SimObject );
 
@@ -48,6 +55,7 @@ ConsoleDocClass( SimObject,
 bool SimObject::smForceId = false;
 SimObjectId SimObject::smForcedId = 0;
 
+bool SimObject::preventNameChanging = false;
 
 namespace Sim
 {
@@ -63,11 +71,11 @@ namespace Sim
 
 SimObject::SimObject()
 {
-   objectName            = NULL;
+   mObjectName = NULL;
    mOriginalName         = NULL;
    mInternalName         = NULL;
-   nextNameObject        = (SimObject*)-1;
-   nextManagerNameObject = (SimObject*)-1;
+   nextNameObject        = nullptr;
+   nextManagerNameObject = nullptr;
    nextIdObject          = NULL;
 
    mFilename             = NULL;
@@ -80,20 +88,27 @@ SimObject::SimObject()
    mNotifyList   = NULL;
    mFlags.set( ModStaticFields | ModDynamicFields );
 
+   mProgenitorFile = StringTable->EmptyString();
+
    mFieldDictionary = NULL;
-   mCanSaveFieldDictionary	=	true;
+   mCanSaveFieldDictionary =  true;
 
    mClassName = NULL;
    mSuperClassName = NULL;
 
    mCopySource = NULL;
    mPersistentId = NULL;
+   is_temp_clone = false;
 }
 
 //-----------------------------------------------------------------------------
 
 SimObject::~SimObject()
 {
+   // if this is a temp-clone, we don't delete any members that were shallow-copied
+   // over from the source datablock.
+   if (is_temp_clone)
+      return;
    if( mFieldDictionary )
    {
       delete mFieldDictionary;
@@ -111,12 +126,12 @@ SimObject::~SimObject()
    if( mCopySource )
       mCopySource->unregisterReference( &mCopySource );
 
-   AssertFatal(nextNameObject == (SimObject*)-1,avar(
+   AssertFatal(nextNameObject == nullptr,avar(
       "SimObject::~SimObject:  Not removed from dictionary: name %s, id %i",
-      objectName, mId));
-   AssertFatal(nextManagerNameObject == (SimObject*)-1,avar(
+	   mObjectName, mId));
+   AssertFatal(nextManagerNameObject == nullptr,avar(
       "SimObject::~SimObject:  Not removed from manager dictionary: name %s, id %i",
-      objectName,mId));
+	   mObjectName,mId));
    AssertFatal(mFlags.test(Added) == 0, "SimObject::object "
       "missing call to SimObject::onRemove");
 }
@@ -134,7 +149,7 @@ void SimObject::initPersistFields()
 {
    addGroup( "Ungrouped" );
 
-      addProtectedField( "name", TypeName, Offset(objectName, SimObject), &setProtectedName, &defaultProtectedGetFn, 
+      addProtectedField( "name", TypeName, Offset(mObjectName, SimObject), &setProtectedName, &defaultProtectedGetFn,
          "Optional global name of this object." );
                   
    endGroup( "Ungrouped" );
@@ -196,8 +211,8 @@ String SimObject::describeSelf() const
    
    if( mId != 0 )
       desc = avar( "%s|id: %i", desc.c_str(), mId );
-   if( objectName )
-      desc = avar( "%s|name: %s", desc.c_str(), objectName );
+   if(mObjectName)
+      desc = avar( "%s|name: %s", desc.c_str(), mObjectName);
    if( mInternalName )
       desc = avar( "%s|internal: %s", desc.c_str(), mInternalName );
    if( mNameSpace )
@@ -212,6 +227,19 @@ String SimObject::describeSelf() const
    return desc;
 }
 
+// Copies dynamic fields from one object to another, optionally limited by the settings for
+// <filter> and <no_replace>. When true, <no_replace> prohibits the replacement of fields that
+// already have a value. When <filter> is specified, only fields with leading characters that
+// exactly match the characters in <filter> are copied. 
+void SimObject::assignDynamicFieldsFrom(SimObject* from, const char* filter, bool no_replace)
+{
+   if (from->mFieldDictionary)
+   {
+      if( mFieldDictionary == NULL )
+         mFieldDictionary = new SimFieldDictionary;
+      mFieldDictionary->assignFrom(from->mFieldDictionary, filter, no_replace);
+   }
+}
 //=============================================================================
 //    Persistence.
 //=============================================================================
@@ -292,7 +320,7 @@ void SimObject::writeFields(Stream &stream, U32 tabStop)
 
          U32 nBufferSize = dStrlen( val ) + 1;
          FrameTemp<char> valCopy( nBufferSize );
-         dStrcpy( (char *)valCopy, val );
+         dStrcpy( (char *)valCopy, val, nBufferSize );
 
          if (!writeField(f->pFieldname, valCopy))
             continue;
@@ -319,7 +347,7 @@ void SimObject::writeFields(Stream &stream, U32 tabStop)
          }
 
          expandEscape((char*)expandedBuffer + dStrlen(expandedBuffer), val);
-         dStrcat(expandedBuffer, "\";\r\n");
+         dStrcat(expandedBuffer, "\";\r\n", expandedBufferSize);
 
          stream.writeTabs(tabStop);
          stream.write(dStrlen(expandedBuffer),expandedBuffer);
@@ -374,12 +402,12 @@ bool SimObject::save(const char *pcFileName, bool bOnlySelected, const char *pre
    char docRoot[256];
    char modRoot[256];
 
-   dStrcpy(docRoot, pcFileName);
+   dStrcpy(docRoot, pcFileName, 256);
    char *p = dStrrchr(docRoot, '/');
    if (p) *++p = '\0';
    else  docRoot[0] = '\0';
 
-   dStrcpy(modRoot, pcFileName);
+   dStrcpy(modRoot, pcFileName, 256);
    p = dStrchr(modRoot, '/');
    if (p) *++p = '\0';
    else  modRoot[0] = '\0';
@@ -435,6 +463,97 @@ SimPersistID* SimObject::getOrCreatePersistentId()
        mPersistentId->incRefCount();
    }
    return mPersistentId;
+}
+
+
+
+void SimObject::onTamlCustomRead(TamlCustomNodes const& customNodes)
+{
+   // Debug Profiling.
+   //PROFILE_SCOPE(SimObject_OnTamlCustomRead);
+
+   // Fetch field list.
+   const AbstractClassRep::FieldList& fieldList = getFieldList();
+   const U32 fieldCount = fieldList.size();
+   for (U32 index = 0; index < fieldCount; ++index)
+   {
+      // Fetch field.
+      const AbstractClassRep::Field* pField = &fieldList[index];
+
+      // Ignore if field not appropriate.
+      if (pField->type == AbstractClassRep::StartArrayFieldType || pField->elementCount > 1)
+      {
+         // Find cell custom node.
+         const TamlCustomNode* pCustomCellNodes = NULL;
+         if (pField->pGroupname != NULL)
+            pCustomCellNodes = customNodes.findNode(pField->pGroupname);
+         if (!pCustomCellNodes)
+         {
+            char* niceFieldName = const_cast<char *>(pField->pFieldname);
+            niceFieldName[0] = dToupper(niceFieldName[0]);
+            String str_niceFieldName = String(niceFieldName);
+            pCustomCellNodes = customNodes.findNode(str_niceFieldName + "s");
+         }
+
+         // Continue if we have explicit cells.
+         if (pCustomCellNodes != NULL)
+         {
+            // Fetch children cell nodes.
+            const TamlCustomNodeVector& cellNodes = pCustomCellNodes->getChildren();
+
+            U8 idx = 0;
+            // Iterate cells.
+            for (TamlCustomNodeVector::const_iterator cellNodeItr = cellNodes.begin(); cellNodeItr != cellNodes.end(); ++cellNodeItr)
+            {
+               char buf[5];
+               dSprintf(buf, 5, "%d", idx);
+
+               // Fetch cell node.
+               TamlCustomNode* pCellNode = *cellNodeItr;
+
+               // Fetch node name.
+               StringTableEntry nodeName = pCellNode->getNodeName();
+
+               // Is this a valid alias?
+               if (nodeName != pField->pFieldname)
+               {
+                  // No, so warn.
+                  Con::warnf("SimObject::onTamlCustomRead() - Encountered an unknown custom name of '%s'.  Only '%s' is valid.", nodeName, pField->pFieldname);
+                  continue;
+               }
+
+               // Fetch fields.
+               const TamlCustomFieldVector& fields = pCellNode->getFields();
+
+               // Iterate property fields.
+               for (TamlCustomFieldVector::const_iterator fieldItr = fields.begin(); fieldItr != fields.end(); ++fieldItr)
+               {
+                  // Fetch field.
+                  const TamlCustomField* cField = *fieldItr;
+
+                  // Fetch field name.
+                  StringTableEntry fieldName = cField->getFieldName();
+
+                  const AbstractClassRep::Field* field = findField(fieldName);
+
+                  // Check common fields.
+                  if (field)
+                  {
+                     setDataField(fieldName, buf, cField->getFieldValue());
+                  }
+                  else
+                  {
+                     // Unknown name so warn.
+                     Con::warnf("SimObject::onTamlCustomRead() - Encountered an unknown custom field name of '%s'.", fieldName);
+                     continue;
+                  }
+               }
+
+               idx++;
+            }
+         }
+      }
+   }
 }
 
 //-----------------------------------------------------------------------------
@@ -501,7 +620,7 @@ void SimObject::setDeclarationLine(U32 lineNumber)
 bool SimObject::registerObject()
 {
    AssertFatal( !mFlags.test( Added ), "reigsterObject - Object already registered!");
-	mFlags.clear(Deleted | Removed);
+   mFlags.clear(Deleted | Removed);
 
    if(smForceId)
    {
@@ -518,11 +637,11 @@ bool SimObject::registerObject()
    AssertFatal(Sim::gIdDictionary && Sim::gNameDictionary, 
       "SimObject::registerObject - tried to register an object before Sim::init()!");
 
-   Sim::gIdDictionary->insert(this);	
+   Sim::gIdDictionary->insert(this);   
 
    Sim::gNameDictionary->insert(this);
 
-	// Notify object
+   // Notify object
    bool ret = onAdd();
 
    if(!ret)
@@ -570,10 +689,10 @@ void SimObject::deleteObject()
 
 void SimObject::_destroySelf()
 {
-	AssertFatal( !isDeleted(), "SimObject::destroySelf - Object has already been deleted" );
-	AssertFatal( !isRemoved(), "SimObject::destroySelf - Object in the process of being removed" );
+   AssertFatal( !isDeleted(), "SimObject::destroySelf - Object has already been deleted" );
+   AssertFatal( !isRemoved(), "SimObject::destroySelf - Object in the process of being removed" );
 
-	mFlags.set( Deleted );
+   mFlags.set( Deleted );
 
    if( mFlags.test( Added ) )
       unregisterObject();
@@ -635,9 +754,9 @@ void SimObject::setId(SimObjectId newId)
 
 void SimObject::assignName(const char *name)
 {
-   if( objectName && !isNameChangeAllowed() )
+   if(mObjectName && !isNameChangeAllowed() )
    {
-      Con::errorf( "SimObject::assignName - not allowed to change name of object '%s'", objectName );
+      Con::errorf( "SimObject::assignName - not allowed to change name of object '%s'", mObjectName);
       return;
    }
    
@@ -662,7 +781,7 @@ void SimObject::assignName(const char *name)
       Sim::gNameDictionary->remove( this );
    }
       
-   objectName = newName;
+   mObjectName = newName;
    
    if( mGroup )
       mGroup->mNameDictionary.insert( this );
@@ -795,6 +914,12 @@ void SimObject::assignFieldsFrom(SimObject *parent)
 
             if((*f->setDataFn)( this, NULL, bufferSecure ) )
                Con::setData(f->type, (void *) (((const char *)this) + f->offset), j, 1, &fieldVal, f->table);
+
+            if (f->networkMask != 0)
+            {
+               NetObject* netObj = static_cast<NetObject*>(this);
+               netObj->setMaskBits(f->networkMask);
+            }
          }
       }
    }
@@ -824,6 +949,29 @@ void SimObject::setDataField(StringTableEntry slotName, const char *array, const
 
          S32 array1 = array ? dAtoi(array) : 0;
 
+         // Here we check to see if <this> is a datablock and if <value>
+         // starts with "$$". If both true than save value as a runtime substitution.
+         if (dynamic_cast<SimDataBlock*>(this) && value[0] == '$' && value[1] == '$')
+         {
+            if (!this->allowSubstitutions())
+            {
+               Con::errorf("Substitution Error: %s datablocks do not allow \"$$\" field substitutions. [%s]", 
+                  this->getClassName(), this->getName());
+               return;
+            }
+
+            if (fld->doNotSubstitute)
+            {
+               Con::errorf("Substitution Error: field \"%s\" of datablock %s prohibits \"$$\" field substitutions. [%s]", 
+                  slotName, this->getClassName(), this->getName());
+               return;
+            }
+
+            // add the substitution
+            ((SimDataBlock*)this)->addSubstitution(slotName, array1, value);
+            return;
+         }
+		 
          if(array1 >= 0 && array1 < fld->elementCount && fld->elementCount >= 1)
          {
             // If the set data notify callback returns true, then go ahead and
@@ -847,6 +995,12 @@ void SimObject::setDataField(StringTableEntry slotName, const char *array, const
 
             if(fld->validator)
                fld->validator->validateType(this, (void *) (((const char *)this) + fld->offset));
+
+            if (fld->networkMask != 0)
+            {
+               NetObject* netObj = static_cast<NetObject*>(this);
+               netObj->setMaskBits(fld->networkMask);
+            }
 
             onStaticModified( slotName, value );
 
@@ -874,8 +1028,8 @@ void SimObject::setDataField(StringTableEntry slotName, const char *array, const
       else
       {
          char buf[256];
-         dStrcpy(buf, slotName);
-         dStrcat(buf, array);
+         dStrcpy(buf, slotName, 256);
+         dStrcat(buf, array, 256);
          StringTableEntry permanentSlotName = StringTable->insert(buf);
          mFieldDictionary->setFieldValue(permanentSlotName, value);
          onDynamicModified( permanentSlotName, value );
@@ -915,8 +1069,8 @@ const char *SimObject::getDataField(StringTableEntry slotName, const char *array
       else
       {
          static char buf[256];
-         dStrcpy(buf, slotName);
-         dStrcat(buf, array);
+         dStrcpy(buf, slotName, 256);
+         dStrcat(buf, array, 256);
          if (const char* val = mFieldDictionary->getFieldValue(StringTable->insert(buf)))
             return val;
       }
@@ -924,6 +1078,220 @@ const char *SimObject::getDataField(StringTableEntry slotName, const char *array
 
    return "";
 }
+
+
+const char *SimObject::getPrefixedDataField(StringTableEntry fieldName, const char *array)
+{
+   // Sanity!
+   AssertFatal(fieldName != NULL, "Cannot get field value with NULL field name.");
+
+   // Fetch field value.
+   const char* pFieldValue = getDataField(fieldName, array);
+
+   // Sanity.
+   //AssertFatal(pFieldValue != NULL, "Field value cannot be NULL.");
+   if (!pFieldValue)
+      return NULL;
+
+   // Return without the prefix if there's no value.
+   if (*pFieldValue == 0)
+      return StringTable->EmptyString();
+
+   // Fetch the field prefix.
+   StringTableEntry fieldPrefix = getDataFieldPrefix(fieldName);
+
+   // Sanity!
+   AssertFatal(fieldPrefix != NULL, "Field prefix cannot be NULL.");
+
+   // Calculate a buffer size including prefix.
+   const U32 valueBufferSize = dStrlen(fieldPrefix) + dStrlen(pFieldValue) + 1;
+
+   // Fetch a buffer.
+   char* pValueBuffer = Con::getReturnBuffer(valueBufferSize);
+
+   // Format the value buffer.
+   dSprintf(pValueBuffer, valueBufferSize, "%s%s", fieldPrefix, pFieldValue);
+
+   return pValueBuffer;
+}
+
+//-----------------------------------------------------------------------------
+
+void SimObject::setPrefixedDataField(StringTableEntry fieldName, const char *array, const char *value)
+{
+   // Sanity!
+   AssertFatal(fieldName != NULL, "Cannot set object field value with NULL field name.");
+   AssertFatal(value != NULL, "Field value cannot be NULL.");
+
+   // Set value without prefix if there's no value.
+   if (*value == 0)
+   {
+      setDataField(fieldName, NULL, value);
+      return;
+   }
+
+   // Fetch the field prefix.
+   StringTableEntry fieldPrefix = getDataFieldPrefix(fieldName);
+
+   // Sanity.
+   AssertFatal(fieldPrefix != NULL, "Field prefix cannot be NULL.");
+
+   // Do we have a field prefix?
+   if (fieldPrefix == StringTable->EmptyString())
+   {
+      // No, so set the data field in the usual way.
+      setDataField(fieldName, NULL, value);
+      return;
+   }
+
+   // Yes, so fetch the length of the field prefix.
+   const U32 fieldPrefixLength = dStrlen(fieldPrefix);
+
+   // Yes, so does it start with the object field prefix?
+   if (dStrnicmp(value, fieldPrefix, fieldPrefixLength) != 0)
+   {
+      // No, so set the data field in the usual way.
+      setDataField(fieldName, NULL, value);
+      return;
+   }
+
+   // Yes, so set the data excluding the prefix.
+   setDataField(fieldName, NULL, value + fieldPrefixLength);
+}
+
+//-----------------------------------------------------------------------------
+
+const char *SimObject::getPrefixedDynamicDataField(StringTableEntry fieldName, const char *array, const S32 fieldType)
+{
+   // Sanity!
+   AssertFatal(fieldName != NULL, "Cannot get field value with NULL field name.");
+
+   // Fetch field value.
+   const char* pFieldValue = getDataField(fieldName, array);
+
+   // Sanity.
+   AssertFatal(pFieldValue != NULL, "Field value cannot be NULL.");
+
+   // Return the field if no field type is specified.
+   if (fieldType == -1)
+      return pFieldValue;
+
+   // Return without the prefix if there's no value.
+   if (*pFieldValue == 0)
+      return StringTable->EmptyString();
+
+   // Fetch the console base type.
+   ConsoleBaseType* pConsoleBaseType = ConsoleBaseType::getType(fieldType);
+
+   // Did we find the console base type?
+   if (pConsoleBaseType == NULL)
+   {
+      // No, so warn.
+      Con::warnf("getPrefixedDynamicDataField() - Invalid field type '%d' specified for field '%s' with value '%s'.",
+         fieldType, fieldName, pFieldValue);
+   }
+
+   // Fetch the field prefix.
+   StringTableEntry fieldPrefix = pConsoleBaseType->getTypePrefix();
+
+   // Sanity!
+   AssertFatal(fieldPrefix != NULL, "Field prefix cannot be NULL.");
+
+   // Calculate a buffer size including prefix.
+   const U32 valueBufferSize = dStrlen(fieldPrefix) + dStrlen(pFieldValue) + 1;
+
+   // Fetch a buffer.
+   char* pValueBuffer = Con::getReturnBuffer(valueBufferSize);
+
+   // Format the value buffer.
+   dSprintf(pValueBuffer, valueBufferSize, "%s%s", fieldPrefix, pFieldValue);
+
+   return pValueBuffer;
+}
+
+//-----------------------------------------------------------------------------
+
+void SimObject::setPrefixedDynamicDataField(StringTableEntry fieldName, const char *array, const char *value, const S32 fieldType)
+{
+   // Sanity!
+   AssertFatal(fieldName != NULL, "Cannot set object field value with NULL field name.");
+   AssertFatal(value != NULL, "Field value cannot be NULL.");
+
+   // Set value without prefix if no field type was specified.
+   if (fieldType == -1)
+   {
+      setDataField(fieldName, NULL, value);
+      return;
+   }
+
+   // Fetch the console base type.
+   ConsoleBaseType* pConsoleBaseType = ConsoleBaseType::getType(fieldType);
+
+   // Did we find the console base type?
+   if (pConsoleBaseType == NULL)
+   {
+      // No, so warn.
+      Con::warnf("setPrefixedDynamicDataField() - Invalid field type '%d' specified for field '%s' with value '%s'.",
+         fieldType, fieldName, value);
+   }
+
+   // Set value without prefix if there's no value or we didn't find the console base type.
+   if (*value == 0 || pConsoleBaseType == NULL)
+   {
+      setDataField(fieldName, NULL, value);
+      return;
+   }
+
+   // Fetch the field prefix.
+   StringTableEntry fieldPrefix = pConsoleBaseType->getTypePrefix();
+
+   // Sanity.
+   AssertFatal(fieldPrefix != NULL, "Field prefix cannot be NULL.");
+
+   // Do we have a field prefix?
+   if (fieldPrefix == StringTable->EmptyString())
+   {
+      // No, so set the data field in the usual way.
+      setDataField(fieldName, NULL, value);
+      return;
+   }
+
+   // Yes, so fetch the length of the field prefix.
+   const U32 fieldPrefixLength = dStrlen(fieldPrefix);
+
+   // Yes, so does it start with the object field prefix?
+   if (dStrnicmp(value, fieldPrefix, fieldPrefixLength) != 0)
+   {
+      // No, so set the data field in the usual way.
+      setDataField(fieldName, NULL, value);
+      return;
+   }
+
+   // Yes, so set the data excluding the prefix.
+   setDataField(fieldName, NULL, value + fieldPrefixLength);
+}
+
+//-----------------------------------------------------------------------------
+
+StringTableEntry SimObject::getDataFieldPrefix(StringTableEntry fieldName)
+{
+   // Sanity!
+   AssertFatal(fieldName != NULL, "Cannot get field prefix with NULL field name.");
+
+   // Find the field.
+   const AbstractClassRep::Field* pField = findField(fieldName);
+
+   // Return nothing if field was not found.
+   if (pField == NULL)
+      return StringTable->EmptyString();
+
+   // Yes, so fetch the console base type.
+   ConsoleBaseType* pConsoleBaseType = ConsoleBaseType::getType(pField->type);
+
+   // Fetch the type prefix.
+   return pConsoleBaseType->getTypePrefix();
+}
+
 
 //-----------------------------------------------------------------------------
 
@@ -942,8 +1310,8 @@ U32 SimObject::getDataFieldType( StringTableEntry slotName, const char* array )
    else
    {
       static char buf[256];
-      dStrcpy( buf, slotName );
-      dStrcat( buf, array );
+      dStrcpy( buf, slotName, 256 );
+      dStrcat( buf, array, 256 );
 
       return mFieldDictionary->getFieldType( StringTable->insert( buf ) );
    }
@@ -965,8 +1333,8 @@ void SimObject::setDataFieldType(const U32 fieldTypeId, StringTableEntry slotNam
    else
    {
       static char buf[256];
-      dStrcpy( buf, slotName );
-      dStrcat( buf, array );
+      dStrcpy( buf, slotName, 256 );
+      dStrcat( buf, array, 256 );
 
       mFieldDictionary->setFieldType( StringTable->insert( buf ), fieldTypeId );
       onDynamicModified( slotName, mFieldDictionary->getFieldValue(slotName) );
@@ -986,8 +1354,8 @@ void SimObject::setDataFieldType(const char *typeName, StringTableEntry slotName
    else
    {
       static char buf[256];
-      dStrcpy( buf, slotName );
-      dStrcat( buf, array );
+      dStrcpy( buf, slotName, 256 );
+      dStrcat( buf, array, 256 );
       StringTableEntry permanentSlotName = StringTable->insert(buf);
 
       mFieldDictionary->setFieldType( permanentSlotName, typeName );
@@ -995,6 +1363,43 @@ void SimObject::setDataFieldType(const char *typeName, StringTableEntry slotName
    }
 }
 
+// This is the copy-constructor used to create temporary datablock clones.
+// The <temp_clone> argument is added to distinguish this copy-constructor
+// from any general-purpose copy-constructor that might be needed in the
+// future. <temp_clone> should always be true when creating temporary 
+// datablock clones.
+//
+SimObject::SimObject(const SimObject& other, bool temp_clone)
+{
+   is_temp_clone = temp_clone;
+
+   mObjectName = other.mObjectName;
+   mOriginalName = other.mOriginalName;
+   nextNameObject = other.nextNameObject;
+   nextManagerNameObject = other.nextManagerNameObject;
+   nextIdObject = other.nextIdObject;
+   mGroup = other.mGroup;
+   mFlags = other.mFlags;
+   mCopySource = other.mCopySource;
+   mFieldDictionary = other.mFieldDictionary;
+   //mIdString = other.mIdString; // special treatment (see below)
+   mFilename = other.mFilename;
+   mDeclarationLine = other.mDeclarationLine;
+   mNotifyList = other.mNotifyList;
+   mId = other.mId;
+   mInternalName = other.mInternalName;
+   mCanSaveFieldDictionary = other.mCanSaveFieldDictionary;
+   mPersistentId = other.mPersistentId;
+   mNameSpace = other.mNameSpace;
+   mClassName = other.mClassName;
+   mSuperClassName = other.mSuperClassName;
+   preventNameChanging = other.preventNameChanging;
+
+   if (mId)
+      dSprintf( mIdString, sizeof( mIdString ), "%u", mId );
+   else
+      mIdString[ 0 ] = '\0';
+}
 //-----------------------------------------------------------------------------
 
 void SimObject::dumpClassHierarchy()
@@ -1003,7 +1408,7 @@ void SimObject::dumpClassHierarchy()
    while(pRep)
    {
       Con::warnf("%s ->", pRep->getClassName());
-      pRep	=	pRep->getParentClass();
+      pRep  =  pRep->getParentClass();
    }
 }
 
@@ -1071,7 +1476,7 @@ bool SimObject::isChildOfGroup(SimGroup* pGroup)
    if(pGroup == dynamic_cast<SimGroup*>(this))
       return true;
 
-   SimGroup* temp	=	mGroup;
+   SimGroup* temp =  mGroup;
    while(temp)
    {
       if(temp == pGroup)
@@ -1407,10 +1812,11 @@ void SimObject::linkNamespaces()
    // while still having the class namespace fields matching the current
    // setup.
 
-   AssertWarn( mNameSpace == NULL, "SimObject::linkNamespaces -- Namespace linkage already in place" );
-   if( mNameSpace )
+   if (mNameSpace)
+   {
+      Con::warnf("SimObject::linkNamespaces -- Namespace linkage already in place %s", mNameSpace->getName());
       return;
-
+   }
    // Get the namespace for the C++ class.
 
    Namespace* cppNamespace = getClassRep()->getNameSpace();
@@ -1599,7 +2005,8 @@ void SimObject::unlinkNamespaces()
 
    // Handle object name.
 
-   if (mNameSpace && mNameSpace->mClassRep == NULL)
+   StringTableEntry objectName = getName();
+   if( objectName && objectName[ 0 ] )
       mNameSpace->decRefCountToParent();
 
    mNameSpace = NULL;
@@ -1809,6 +2216,8 @@ bool SimObject::setProtectedParent( void *obj, const char *index, const char *da
 
 bool SimObject::setProtectedName(void *obj, const char *index, const char *data)
 {   
+   if (preventNameChanging)
+      return false;
    SimObject *object = static_cast<SimObject*>(obj);
    
    if ( object->isProperlyAdded() )
@@ -2305,6 +2714,16 @@ DefineEngineMethod( SimObject, dump, void, ( bool detailed ), ( false ),
       }
    }
 
+   // If the object is a datablock with substitution statements,
+   // they get printed out as part of the dump.
+   if (dynamic_cast<SimDataBlock*>(object))
+   {
+      if (((SimDataBlock*)object)->getSubstitutionCount() > 0)
+      {
+         Con::printf("Substitution Fields:");
+         ((SimDataBlock*)object)->printSubstitutions();
+      }
+   }
    Con::printf( "Dynamic Fields:" );
    if(object->getFieldDictionary())
       object->getFieldDictionary()->printFields(object);
@@ -2577,7 +2996,7 @@ DefineConsoleMethod( SimObject, isMemberOfClass, bool, ( const char* className )
          return true;
       }
 
-      pRep	=	pRep->getParentClass();
+      pRep  =  pRep->getParentClass();
    }
 
    return false;

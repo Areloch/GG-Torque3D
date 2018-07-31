@@ -27,7 +27,7 @@
 #include "shaderGen/langElement.h"
 #include "shaderGen/shaderOp.h"
 #include "shaderGen/conditionerFeature.h"
-#include "renderInstance/renderPrePassMgr.h"
+#include "renderInstance/renderDeferredMgr.h"
 #include "materials/processedMaterial.h"
 #include "materials/materialFeatureTypes.h"
 
@@ -41,7 +41,7 @@
 void DeferredSpecMapGLSL::processPix( Vector<ShaderComponent*> &componentList, const MaterialFeatureData &fd )
 {
    // Get the texture coord.
-   Var *texCoord = getInTexCoord( "texCoord", "vec2", true, componentList );
+   Var *texCoord = getInTexCoord( "texCoord", "vec2", componentList );
 
    // search for color var
    Var *material = (Var*) LangElement::find( getOutputTargetVarName(ShaderFeature::RenderTarget2) );
@@ -62,7 +62,8 @@ void DeferredSpecMapGLSL::processPix( Vector<ShaderComponent*> &componentList, c
    specularMap->uniform = true;
    specularMap->sampler = true;
    specularMap->constNum = Var::getTexUnitNum();
-   LangElement *texOp = new GenOp( "tex2D(@, @)", specularMap, texCoord );
+   //matinfo.g slot reserved for AO later
+   meta->addStatement(new GenOp("   @.g = 1.0;\r\n", material));
    meta->addStatement(new GenOp("   @.b = dot(tex2D(@, @).rgb, vec3(0.3, 0.59, 0.11));\r\n", material, specularMap, texCoord));
    meta->addStatement(new GenOp("   @.a = tex2D(@, @).a;\r\n", material, specularMap, texCoord));
    output = meta;
@@ -97,7 +98,6 @@ void DeferredSpecMapGLSL::processVert( Vector<ShaderComponent*> &componentList,
    MultiLine *meta = new MultiLine;
    getOutTexCoord(   "texCoord", 
                      "vec2", 
-                     true, 
                      fd.features[MFT_TexAnim], 
                      meta, 
                      componentList );
@@ -158,17 +158,17 @@ void DeferredSpecVarsGLSL::processPix( Vector<ShaderComponent*> &componentList, 
    specPower->uniform = true;
    specPower->constSortPos = cspPotentialPrimitive;
 
-	MultiLine *meta = new MultiLine;
-   meta->addStatement(new GenOp("   @.b = @/128;\r\n", material, specStrength));
-   meta->addStatement(new GenOp("   @.a = @/5;\r\n", material, specPower));
+   MultiLine *meta = new MultiLine;
+   //matinfo.g slot reserved for AO later
+   meta->addStatement(new GenOp("   @.g = 1.0;\r\n", material));
+   meta->addStatement(new GenOp("   @.a = @/128;\r\n", material, specPower));
+   meta->addStatement(new GenOp("   @.b = @/5;\r\n", material, specStrength));
    output = meta;
 }
 
 // Black -> Blue and Alpha of Color Buffer (representing no specular)
 void DeferredEmptySpecGLSL::processPix( Vector<ShaderComponent*> &componentList, const MaterialFeatureData &fd )
-{
-        MultiLine *meta = new MultiLine;
- 
+{    
    // search for material var
    Var *material = (Var*) LangElement::find( getOutputTargetVarName(ShaderFeature::RenderTarget2) );
    if ( !material )
@@ -179,78 +179,10 @@ void DeferredEmptySpecGLSL::processPix( Vector<ShaderComponent*> &componentList,
       material->setName( getOutputTargetVarName(ShaderFeature::RenderTarget2) );
       material->setStructName("OUT");
    }
-   
-   meta->addStatement(new GenOp( "   @ = vec4(0.0);\r\n", material ));
+
+   MultiLine * meta = new MultiLine;
+   //matinfo.g slot reserved for AO later
+   meta->addStatement(new GenOp("   @.g = 1.0;\r\n", material));
+   meta->addStatement(new GenOp("   @.ba = vec2(0.0);\r\n", material));
    output = meta;
-}
-
-// Tranlucency -> Green of Material Info Buffer.
-void DeferredTranslucencyMapGLSL::processPix( Vector<ShaderComponent*> &componentList, const MaterialFeatureData &fd )
-{
-	MultiLine *meta = new MultiLine;
-
-   // Get the texture coord.
-   Var *texCoord = getInTexCoord( "texCoord", "vec2", true, componentList );
-
-   // search for color var
-   Var *material = (Var*) LangElement::find( getOutputTargetVarName(ShaderFeature::RenderTarget2) );
-   if ( !material )
-   {
-      // create color var
-      material = new Var;
-      material->setType( "vec4" );
-      material->setName( getOutputTargetVarName(ShaderFeature::RenderTarget2) );
-      material->setStructName("OUT");
-   }
-
-   // create texture var
-   Var *translucencyMap = new Var;
-   translucencyMap->setType( "sampler2D" );
-   translucencyMap->setName( "translucencyMap" );
-   translucencyMap->uniform = true;
-   translucencyMap->sampler = true;
-   translucencyMap->constNum = Var::getTexUnitNum();
-
-   meta->addStatement(new GenOp("   @.g = dot(tex2D(@, @).rgb, vec3(0.3, 0.59, 0.11));\r\n", material, translucencyMap, texCoord));
-   output = meta;
-   
-}
-
-ShaderFeature::Resources DeferredTranslucencyMapGLSL::getResources( const MaterialFeatureData &fd )
-{
-   Resources res; 
-   res.numTex = 1;
-   res.numTexReg = 1;
-
-   return res;
-}
-
-void DeferredTranslucencyMapGLSL::setTexData(   Material::StageData &stageDat,
-                                       const MaterialFeatureData &fd,
-                                       RenderPassData &passData,
-                                       U32 &texIndex )
-{
-   GFXTextureObject *tex = stageDat.getTex( MFT_TranslucencyMap );
-   if ( tex )
-   {
-      passData.mTexType[ texIndex ] = Material::Standard;
-      passData.mSamplerNames[ texIndex ] = "translucencyMap";
-      passData.mTexSlot[ texIndex++ ].texObject = tex;
-   }
-}
-
-// Tranlucency -> Green of Material Info Buffer.
-void DeferredTranslucencyEmptyGLSL::processPix( Vector<ShaderComponent*> &componentList, const MaterialFeatureData &fd )
-{
-   // search for material var
-   Var *material = (Var*) LangElement::find( getOutputTargetVarName(ShaderFeature::RenderTarget2) );
-   if ( !material )
-   {
-      // create color var
-      material = new Var;
-      material->setType( "vec4" );
-      material->setName( getOutputTargetVarName(ShaderFeature::RenderTarget2) );
-   }
-   output = new GenOp( "   @.g = 0.0;\r\n", material );
-   
 }

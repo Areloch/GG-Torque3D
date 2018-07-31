@@ -92,6 +92,12 @@ void GBufferConditionerGLSL::processVert( Vector<ShaderComponent*> &componentLis
 
    // grab incoming vert normal
    Var *inNormal = (Var*) LangElement::find( "normal" );
+   if (!inNormal)
+   {
+      inNormal = new Var("normal", "vec3");
+      meta->addStatement(new GenOp("   @ = vec3( 0.0, 0.0, 1.0 );\r\n", new DecOp(inNormal)));
+      Con::errorf("ShagerGen: Something went bad with ShaderGen. The normal should be already defined.");
+   }
    AssertFatal( inNormal, "Something went bad with ShaderGen. The normal should be already defined." );
 
    // grab output for gbuffer normal
@@ -108,7 +114,7 @@ void GBufferConditionerGLSL::processVert( Vector<ShaderComponent*> &componentLis
       // TODO: Total hack because Conditioner is directly derived
       // from ShaderFeature and not from ShaderFeatureGLSL.
       NamedFeatureGLSL dummy( String::EmptyString );
-      dummy.mInstancingFormat = mInstancingFormat;
+      dummy.setInstancingFormat( mInstancingFormat );
       Var *worldViewOnly = dummy.getWorldView( componentList, fd.features[MFT_UseInstancing], meta );
 
       meta->addStatement(  new GenOp("   @ = tMul(@, float4( normalize(@), 0.0 ) ).xyz;\r\n", 
@@ -139,7 +145,6 @@ void GBufferConditionerGLSL::processPix(  Vector<ShaderComponent*> &componentLis
       gbNormal->setName( "gbNormal" );
       gbNormal->setStructName( "IN" );
       gbNormal->setType( "float3" );
-      gbNormal->mapsToSampler = false;
       gbNormal->uniform = false;
    }
 
@@ -157,7 +162,7 @@ void GBufferConditionerGLSL::processPix(  Vector<ShaderComponent*> &componentLis
 
    LangElement *outputDecl = new DecOp( unconditionedOut );
 
-   // If we're doing prepass blending then we need 
+   // If we're doing deferred blending then we need 
    // to steal away the alpha channel before the 
    // conditioner stomps on it.
    Var *alphaVal = NULL;
@@ -168,7 +173,7 @@ void GBufferConditionerGLSL::processPix(  Vector<ShaderComponent*> &componentLis
    }
 
    // If using interlaced normals, invert the normal
-   if(fd.features[MFT_InterlacedPrePass])
+   if(fd.features[MFT_InterlacedDeferred])
    {
       // NOTE: Its safe to not call ShaderFeatureGLSL::addOutVpos() in the vertex
       // shader as for SM 3.0 nothing is needed there.
@@ -184,7 +189,7 @@ void GBufferConditionerGLSL::processPix(  Vector<ShaderComponent*> &componentLis
    meta->addStatement( new GenOp("   @ = @;", outputDecl, new GenOp( "float4(normalize(@), @)", gbNormal, depth ) ) );
    meta->addStatement( assignOutput( unconditionedOut ) );
 
-   // If we have an alpha var then we're doing prepass lerp blending.
+   // If we have an alpha var then we're doing deferred lerp blending.
    if ( alphaVal )
    {
       Var *outColor = (Var*)LangElement::find( getOutputTargetVarName( DefaultTarget ) );
@@ -221,10 +226,10 @@ Var* GBufferConditionerGLSL::printMethodHeader( MethodType methodType, const Str
       methodVar->setType("float4");
       DecOp *methodDecl = new DecOp(methodVar);
 
-      Var *prepassSampler = new Var;
-      prepassSampler->setName("prepassSamplerVar");
-      prepassSampler->setType("sampler2D");
-      DecOp *prepassSamplerDecl = new DecOp(prepassSampler);
+      Var *deferredSampler = new Var;
+      deferredSampler->setName("deferredSamplerVar");
+      deferredSampler->setType("sampler2D");
+      DecOp *deferredSamplerDecl = new DecOp(deferredSampler);
 
       Var *screenUV = new Var;
       screenUV->setName("screenUVVar");
@@ -236,24 +241,15 @@ Var* GBufferConditionerGLSL::printMethodHeader( MethodType methodType, const Str
       bufferSample->setType("float4");
       DecOp *bufferSampleDecl = new DecOp(bufferSample); 
 
-      meta->addStatement( new GenOp( "@(@, @)\r\n", methodDecl, prepassSamplerDecl, screenUVDecl ) );
+      meta->addStatement( new GenOp( "@(@, @)\r\n", methodDecl, deferredSamplerDecl, screenUVDecl ) );
 
       meta->addStatement( new GenOp( "{\r\n" ) );
 
       meta->addStatement( new GenOp( "   // Sampler g-buffer\r\n" ) );
 
-#ifdef TORQUE_OS_XENON
-      meta->addStatement( new GenOp( "   @;\r\n", bufferSampleDecl ) );
-      meta->addStatement( new GenOp( "   asm { tfetch2D @, @, @, MagFilter = point, MinFilter = point, MipFilter = point };\r\n", bufferSample, screenUV, prepassSampler ) );
-#else
       // The gbuffer has no mipmaps, so use tex2dlod when 
       // possible so that the shader compiler can optimize.
-      meta->addStatement( new GenOp( "   #if TORQUE_SM >= 30\r\n" ) );
-      meta->addStatement( new GenOp( "      @ = tex2Dlod(@, float4(@,0,0));\r\n", bufferSampleDecl, prepassSampler, screenUV ) );
-      meta->addStatement( new GenOp( "   #else\r\n" ) );
-      meta->addStatement( new GenOp( "      @ = tex2D(@, @);\r\n", bufferSampleDecl, prepassSampler, screenUV ) );
-      meta->addStatement( new GenOp( "   #endif\r\n\r\n" ) );
-#endif
+      meta->addStatement( new GenOp( "@ = tex2Dlod(@, float4(@,0,0));\r\n", bufferSampleDecl, deferredSampler, screenUV ) );
 
       // We don't use this way of passing var's around, so this should cause a crash
       // if something uses this improperly

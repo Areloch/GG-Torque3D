@@ -25,6 +25,8 @@
 #include "console/console.h"
 #include "math/mMathFn.h"
 #include "math/mRandom.h"
+#include "math/mMath.h"
+#include "math/mathUtils.h"
 
 #include "console/engineAPI.h"
 
@@ -101,6 +103,19 @@ DefineConsoleFunction( mRound, S32, ( F32 v  ),,
     "@ingroup Math" )  
 {
    return mRound(v);
+}
+
+DefineConsoleFunction( mRoundColour, F32, ( F32 v, S32 n ), (0),
+   "Round v to the nth decimal place or the nearest whole number by default."
+   "@param v Value to roundn"
+   "@param n Number of decimal places to round to, 0 by defaultn"
+   "@return The rounded value as a S32."
+   "@ingroup Math")
+{
+   if (n <= 0)
+      return mRound(v);
+   else
+      return mRound(v, n);
 }
 
 DefineConsoleFunction( mCeil, S32, ( F32 v ),,
@@ -273,6 +288,29 @@ DefineConsoleFunction( mSaturate, F32, ( F32 v ),,
    return mClampF( v, 0.0f, 1.0f );
 }
 
+DefineConsoleFunction(mWrapF, F32, (F32 v, F32 min, F32 max), ,
+	"Wrap the specified value between two bounds.\n"
+	"@param v Input value."
+	"@param min Minimum Bound."
+	"@param max Maximum Bound."
+	"@returns The specified value wrapped to the specified bounds."
+	"@ingroup Math")
+{
+	return mWrapF(v, min, max);
+}
+
+DefineConsoleFunction(mWrap, S32, (S32 v, S32 min, S32 max), ,
+	"Wrap the specified value between two bounds.\n"
+	"@param v Input value."
+	"@param min Minimum Bound."
+	"@param max Maximum Bound."
+	"@returns The specified value wrapped to the specified bounds."
+	"@ingroup Math")
+{
+	return mWrap(v, min, max);
+}
+
+
 DefineConsoleFunction( getMax, F32, ( F32 v1, F32 v2 ),,
     "Calculate the greater of two specified numbers.\n"
     "@param v1 Input value."
@@ -327,4 +365,51 @@ DefineConsoleFunction( mIsPow2, bool, ( S32 v ),,
     "@ingroup Math" )
 {
    return isPow2( v );
+}
+
+DefineConsoleFunction( mRandomDir, Point3F, (Point3F axis, F32 angleMin, F32 angleMax),,
+   "Returns a randomized direction based on a starting axis and the min/max angles.\n"
+   "@param axis Main axis to deviate the direction from."
+   "@param angleMin minimum amount of deviation from the axis."
+   "@param angleMax maximum amount of deviation from the axis."
+   "@returns Randomized direction vector."
+   "@ingroup Math")
+{
+   return MathUtils::randomDir(axis, angleMin, angleMax);
+}
+
+DefineConsoleFunction( mRandomPointInSphere, Point3F, (F32 radius), ,
+   "Returns a randomized point inside a sphere of a given radius.\n"
+   "@param radius The radius of the sphere to find a point in."
+   "@returns Randomized point inside a sphere."
+   "@ingroup Math")
+{
+   return MathUtils::randomPointInSphere(radius);
+}
+
+DefineConsoleFunction( mGetAngleBetweenVectors, F32, (VectorF vecA, VectorF vecB), ,
+   "Returns angle between two vectors.\n"
+   "@param vecA First input vector."
+   "@param vecB Second input vector."
+   "@returns Angle between both vectors in radians."
+   "@ingroup Math")
+{
+   return MathUtils::getAngleBetweenVectors(vecA, vecB);
+}
+
+DefineConsoleFunction(mGetSignedAngleBetweenVectors, F32, (VectorF vecA, VectorF vecB, VectorF norm), (VectorF::Zero, VectorF::Zero, VectorF::Zero),
+   "Returns signed angle between two vectors, using a normal for orientation.\n"
+   "@param vecA First input vector."
+   "@param vecB Second input vector."
+   "@param norm Normal/Cross Product vector."
+   "@returns Angle between both vectors in radians."
+   "@ingroup Math")
+{
+   if (vecA.isZero() || vecB.isZero() || norm.isZero())
+   {
+      Con::errorf("mGetSignedAngleBetweenVectors - Error! Requires all 3 vectors used to be non-zero!");
+      return 0;
+   }
+
+   return MathUtils::getSignedAngleBetweenVectors(vecA, vecB, norm);
 }

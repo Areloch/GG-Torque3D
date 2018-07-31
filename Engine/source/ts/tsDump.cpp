@@ -171,19 +171,21 @@ void TSShapeInstance::dump(Stream & stream)
    bool foundSkin = false;
    for (i=0; i<mShape->objects.size(); i++)
    {
-      if (mShape->objects[i].nodeIndex<0) // must be a skin
+      TSShape::Object& currentObject = mShape->objects[i];
+
+      if (currentObject.nodeIndex<0) // must be a skin
       {
          if (!foundSkin)
             dumpLine("\r\n   Skins:\r\n");
          foundSkin=true;
          const char * skinName = "";
-         S32 nameIndex = mShape->objects[i].nameIndex;
+         S32 nameIndex = currentObject.nameIndex;
          if (nameIndex>=0)
             skinName = mShape->getName(nameIndex);
          dumpLine(avar("      Skin %s with following details: ",skinName));
-         for (S32 num=0; num<mShape->objects[i].numMeshes; num++)
+         for (S32 num=0; num<currentObject.numMeshes; num++)
          {
-            if (mShape->meshes[mShape->objects[i].startMeshIndex + num])
+            if (mShape->meshes[currentObject.startMeshIndex + num])
                dumpLine(avar(" %i",(S32)mShape->details[num].size));
          }
          dumpLine("\r\n");
@@ -195,10 +197,10 @@ void TSShapeInstance::dump(Stream & stream)
    dumpLine("\r\n   Sequences:\r\n");
    for (i = 0; i < mShape->sequences.size(); i++)
    {
-      const char *name = "(none)";
+      const char *seqName = "(none)";
       if (mShape->sequences[i].nameIndex != -1)
-         name = mShape->getName(mShape->sequences[i].nameIndex);
-      dumpLine(avar("      %3d: %s%s%s\r\n", i, name,
+		  seqName = mShape->getName(mShape->sequences[i].nameIndex);
+      dumpLine(avar("      %3d: %s%s%s\r\n", i, seqName,
          mShape->sequences[i].isCyclic() ? " (cyclic)" : "",
          mShape->sequences[i].isBlend() ? " (blend)" : ""));
    }
@@ -210,9 +212,9 @@ void TSShapeInstance::dump(Stream & stream)
       for (i=0; i<(S32)ml->size(); i++)
       {
          U32 flags = ml->getFlags(i);
-         const String& name = ml->getMaterialName(i);
+         const String& matName = ml->getMaterialName(i);
          dumpLine(avar(
-            "   material #%i: '%s'%s.", i, name.c_str(),
+            "   material #%i: '%s'%s.", i, matName.c_str(),
             flags & (TSMaterialList::S_Wrap|TSMaterialList::T_Wrap) ? "" : " not tiled")
          );
          if (flags & TSMaterialList::Translucent)

@@ -237,6 +237,19 @@ inline F32 mClampF(F32 val, F32 low, F32 high)
    return (F32) getMax(getMin(val, high), low);
 }
 
+inline S32 mWrap(S32 val, S32 low, S32 high)
+{
+	int len = high - low;
+	return low + (val >= 0 ? val % len : -val % len ? len - (-val % len) : 0);
+
+}
+
+inline F32 mWrapF(F32 val, F32 low, F32 high)
+{
+	F32 t = fmod(val - low, high - low);
+	return t < 0 ? t + high : t + low;
+}
+
 /// Template function for doing a linear interpolation between any two
 /// types which implement operators for scalar multiply and addition.
 template <typename T>
@@ -320,6 +333,11 @@ inline F32 mLog(const F32 val)
    return (F32) log(val);
 }
 
+inline F32 mLog2(const F32 val)
+{
+   return (F32) log2(val);
+}
+
 inline F32 mExp(const F32 val)
 {
    return (F32) exp(val);
@@ -380,6 +398,10 @@ inline F64 mLog(const F64 val)
    return (F64) log(val);
 }
 
+inline F64 mLog2(const F64 val)
+{
+   return (F64) log2(val);
+}
 
 inline F32 mCatmullrom(F32 t, F32 p0, F32 p1, F32 p2, F32 p3)
 {

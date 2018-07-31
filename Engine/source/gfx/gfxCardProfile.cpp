@@ -206,7 +206,7 @@ DefineEngineStaticMethod( GFXCardProfilerAPI, getVendor, String, (),,
 }
 
 DefineEngineStaticMethod( GFXCardProfilerAPI, getRenderer, String, (),,
-   "Returns the renderer name.  For example D3D9 or OpenGL." )
+   "Returns the renderer name.  For example D3D11 or OpenGL." )
 {
 	return GFX->getCardProfiler()->getRendererString();
 }
@@ -232,3 +232,14 @@ DefineEngineStaticMethod( GFXCardProfilerAPI, queryProfile, S32, ( const char *n
 {
 	return (S32)GFX->getCardProfiler()->queryProfile( name, (U32)defaultValue );
 }
+
+
+DefineEngineStaticMethod( GFXCardProfilerAPI, getBestDepthFormat, String, (),,
+                         "Returns the card name." )
+{
+    if (GFX->getCardProfiler()->queryProfile("GL::Workaround::intel_mac_depth", false))
+        return "GFXFormatD16";
+    else
+        return "GFXFormatD24S8";
+}
+

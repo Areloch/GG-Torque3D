@@ -380,7 +380,8 @@ function ShapeEdSelectWindow::navigate( %this, %address )
 
       // Ignore assets in the tools folder
       %fullPath = makeRelativePath( %fullPath, getMainDotCSDir() );
-      %splitPath = strreplace( %fullPath, "/", " " );
+      %splitPath = strreplace( %fullPath, " ", "_" );
+      %splitPath = strreplace( %splitPath, "/", " " );
       if ( getWord( %splitPath, 0 ) $= "tools" )
       {
          %fullPath = findNextFileMultiExpr( %filePatterns );
@@ -393,6 +394,7 @@ function ShapeEdSelectWindow::navigate( %this, %address )
       // Add this file's path ( parent folders ) to the
       // popup menu if it isn't there yet.
       %temp = strreplace( %pathFolders, " ", "/" );
+      %temp = strreplace( %temp, "_", " " );
       %r = ShapeEdSelectMenu.findText( %temp );
       if ( %r == -1 )
          ShapeEdSelectMenu.add( %temp );
@@ -1132,7 +1134,7 @@ function ShapeEdNodes::onDeleteNode( %this )
 function ShapeEdNodeTreeView::getChildIndexByName( %this, %name )
 {
    %id = %this.findItemByName( %name );
-   %parentId = %this.getParent( %id );
+   %parentId = %this.getParentItem( %id );
    %childId = %this.getChild( %parentId );
    if ( %childId <= 0 )
       return 0;   // bad!
@@ -2204,15 +2206,22 @@ function ShapeEdTriggerList::updateItem( %this, %oldFrame, %oldState, %frame, %s
 
 function ShapeEdSequences::onAddTrigger( %this )
 {
-   // Can only add triggers if a sequence is selected
-   %seqName = ShapeEdSequenceList.getSelectedName();
-   if ( %seqName !$= "" )
-   {
-      // Add a new trigger at the current frame
-      %frame = mRound( ShapeEdSeqSlider.getValue() );
-      %state = ShapeEdTriggerList.rowCount() % 30;
-      ShapeEditor.doAddTrigger( %seqName, %frame, %state );
-   }
+    // Can only add triggers if a sequence is selected
+    %seqName = ShapeEdSequenceList.getSelectedName();
+    if ( %seqName !$= "" )
+    {
+        // Add a new trigger at the current frame
+        %frame = mRound( ShapeEdSeqSlider.getValue() ) - %this-->startFrame.getText();
+        if ((%frame < 0) || (%frame > %this-->endFrame.getText() - %this-->startFrame.getText()))
+        {
+            MessageBoxOK( "Error", "Trigger out of range of the selected animation." );
+        }
+        else
+        {
+        %state = ShapeEdTriggerList.rowCount() % 30;
+        ShapeEditor.doAddTrigger( %seqName, %frame, %state );
+        }
+    }
 }
 
 function ShapeEdTriggerList::onDeleteSelection( %this )
@@ -2399,7 +2408,7 @@ function ShapeEdDetailTree::onDefineIcons(%this)
 // a mesh)
 function ShapeEdDetailTree::isDetailItem( %this, %id )
 {
-   return ( %this.getParent( %id ) == 1 );
+   return ( %this.getParentItem( %id ) == 1 );
 }
 
 // Get the detail level index from the ID of an item in the details tree view
@@ -2409,7 +2418,7 @@ function ShapeEdDetailTree::getDetailLevelFromItem( %this, %id )
       %detSize = %this.getItemValue( %id );
       
    else
-      %detSize = %this.getItemValue( %this.getParent( %id ) );
+      %detSize = %this.getItemValue( %this.getParentItem( %id ) );
    return ShapeEditor.shape.getDetailLevelIndex( %detSize );
 }
 
@@ -2443,7 +2452,7 @@ function ShapeEdDetailTree::removeMeshEntry( %this, %name, %size )
    if ( ShapeEditor.shape.getDetailLevelIndex( %size ) < 0 )
    {
       // Last mesh of a detail level has been removed => remove the detail level
-      %this.removeItem( %this.getParent( %id ) );
+      %this.removeItem( %this.getParentItem( %id ) );
       ShapeEdDetails.update_onDetailsChanged();
    }
    else

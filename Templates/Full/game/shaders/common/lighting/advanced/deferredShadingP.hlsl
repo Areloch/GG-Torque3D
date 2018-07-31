@@ -20,21 +20,26 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#include "shadergen:/autogenConditioners.h"
+#include "../../shaderModelAutoGen.hlsl"
 #include "../../postfx/postFx.hlsl"
 #include "shaders/common/torque.hlsl"
 
+TORQUE_UNIFORM_SAMPLER2D(colorBufferTex,0);
+TORQUE_UNIFORM_SAMPLER2D(lightDeferredTex,1);
+TORQUE_UNIFORM_SAMPLER2D(matInfoTex,2);
+TORQUE_UNIFORM_SAMPLER2D(deferredTex,3);
 
-float4 main( PFXVertToPix IN, 
-             uniform sampler2D colorBufferTex : register(S0),
-             uniform sampler2D lightPrePassTex : register(S1),
-             uniform sampler2D matInfoTex : register(S2)) : COLOR0
+float4 main( PFXVertToPix IN ) : TORQUE_TARGET0
 {        
-   float4 lightBuffer = tex2D( lightPrePassTex, IN.uv0 );
-   float4 colorBuffer = tex2D( colorBufferTex, IN.uv0 );
-   float4 matInfo = tex2D( matInfoTex, IN.uv0 );
+   float4 lightBuffer = TORQUE_TEX2D( lightDeferredTex, IN.uv0 );
+   float4 colorBuffer = TORQUE_TEX2D( colorBufferTex, IN.uv0 );
+   float4 matInfo = TORQUE_TEX2D( matInfoTex, IN.uv0 );
    float specular = saturate(lightBuffer.a);
+   float depth = TORQUE_DEFERRED_UNCONDITION( deferredTex, IN.uv0 ).w;
 
+   if (depth>0.9999)
+      return float4(0,0,0,0);
+	  
    // Diffuse Color Altered by Metalness
    bool metalness = getFlag(matInfo.r, 3);
    if ( metalness )
@@ -42,8 +47,8 @@ float4 main( PFXVertToPix IN,
       colorBuffer *= (1.0 - colorBuffer.a);
    }
 
-   colorBuffer *= float4(lightBuffer.rgb, 1.0);
    colorBuffer += float4(specular, specular, specular, 1.0);
+   colorBuffer *= float4(lightBuffer.rgb, 1.0);
 
-   return hdrEncode( colorBuffer );   
+   return hdrEncode( float4(colorBuffer.rgb, 1.0) );   
 }

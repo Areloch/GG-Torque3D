@@ -105,13 +105,13 @@ protected:
 
    SimObjectPtr<Material> mMaterial;
    
-   GFXVertexBufferHandle<GFXVertexPNTT> mVB;
+   GFXVertexBufferHandle<GFXVertexPNT> mVB;
 
    GFXVertexBufferHandle<GFXVertexPC> mFogBandVB;
    Material *mFogBandMat;
    BaseMatInstance *mFogBandMatInst;
 
-   ColorF mLastFogColor;
+   LinearColorF mLastFogColor;
 
    bool mDrawBottom;
    bool mIsVBDirty;

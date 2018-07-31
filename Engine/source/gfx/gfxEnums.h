@@ -39,8 +39,8 @@
 
 enum GFXBufferType
 {
-      GFXBufferTypeStatic,   ///< Static vertex buffers are created and filled one time.
-                   ///< incur a performance penalty.  Resizing a static vertex buffer is not
+      GFXBufferTypeStatic,   ///< Static vertex buffers are created and rarely updated.
+                   ///< Updating might incur a performance penalty.  Resizing a static vertex buffer is not
                    ///< allowed.
       GFXBufferTypeDynamic,  ///< Dynamic vertex buffers are meant for vertices that can be changed
                    ///< often.  Vertices written into dynamic vertex buffers will remain valid
@@ -48,7 +48,9 @@ enum GFXBufferType
                    ///< allowed.
       GFXBufferTypeVolatile, ///< Volatile vertex or index buffers are meant for vertices or indices that are essentially
                    ///< only used once.  They can be resized without any performance penalty.
-      
+
+      GFXBufferTypeImmutable, ///< Immutable buffers must specify the data when creating the buffer. Cannot be modified.
+
       GFXBufferType_COUNT ///< Number of buffer types.
 };
 
@@ -67,7 +69,6 @@ enum GFXPrimitiveType
    GFXLineStrip,
    GFXTriangleList,
    GFXTriangleStrip,
-   GFXTriangleFan,
    GFXPT_COUNT
 };
 
@@ -177,11 +178,12 @@ enum GFXFormat
 
    // 24 bit texture formats...
    GFXFormatR8G8B8,// first in group...
-
+   GFXFormatR8G8B8_SRGB,
    // 32 bit texture formats...
    GFXFormatR8G8B8A8,// first in group...
    GFXFormatR8G8B8X8,
    GFXFormatB8G8R8A8,
+   GFXFormatR8G8B8A8_SRGB,
    GFXFormatR32F,
    GFXFormatR16G16,
    GFXFormatR16G16F,
@@ -191,6 +193,9 @@ enum GFXFormat
    GFXFormatD24S8,   
    GFXFormatD24FS8,
 
+   // Guaranteed RGBA8 (for apis which really dont like bgr)
+   GFXFormatR8G8B8A8_LINEAR_FORCE,
+
    // 64 bit texture formats...
    GFXFormatR16G16B16A16,// first in group...
    GFXFormatR16G16B16A16F,
@@ -198,12 +203,16 @@ enum GFXFormat
    // 128 bit texture formats...
    GFXFormatR32G32B32A32F,// first in group...
 
-   // unknown size...
-   GFXFormatDXT1,// first in group...
-   GFXFormatDXT2,
-   GFXFormatDXT3,
-   GFXFormatDXT4,
-   GFXFormatDXT5,
+   // unknown size...Block compression
+   GFXFormatBC1,  //dxt1
+   GFXFormatBC2,  //dxt2/3
+   GFXFormatBC3,  //dxt4/5
+   GFXFormatBC4,  //3dc+ / ati1
+   GFXFormatBC5,  //3dc / ati2
+   // compressed sRGB formats   
+   GFXFormatBC1_SRGB,
+   GFXFormatBC2_SRGB,
+   GFXFormatBC3_SRGB,
 
    GFXFormat_COUNT,
 
@@ -213,7 +222,7 @@ enum GFXFormat
    GFXFormat_32BIT = GFXFormatR8G8B8A8,
    GFXFormat_64BIT = GFXFormatR16G16B16A16,
    GFXFormat_128BIT = GFXFormatR32G32B32A32F,
-   GFXFormat_UNKNOWNSIZE = GFXFormatDXT1,
+   GFXFormat_UNKNOWNSIZE = GFXFormatBC1
 };
 
 /// Returns the byte size of the pixel for non-compressed formats.
@@ -276,10 +285,8 @@ enum GFXBlend
 enum GFXAdapterType 
 {
    OpenGL = 0,
-   Direct3D9,
-   Direct3D8,
+   Direct3D11,
    NullDevice,
-   Direct3D9_360,
    GFXAdapterType_Count
 };
 
@@ -578,7 +585,9 @@ enum GFXShaderConstType
    GFXSCT_Float4, 
    // Matrices
    GFXSCT_Float2x2, 
-   GFXSCT_Float3x3, 
+   GFXSCT_Float3x3,
+   GFXSCT_Float3x4,
+   GFXSCT_Float4x3,
    GFXSCT_Float4x4, 
    // Scalar
    GFXSCT_Int, 
@@ -617,6 +626,9 @@ enum GFXDeclType
    /// A four-component, packed, unsigned bytes mapped to 0 to 1 range.
    /// @see GFXVertexColor
    GFXDeclType_Color,
+
+   /// Four-component, packed, unsigned bytes ranged 0-255
+   GFXDeclType_UByte4,
 
    /// The count of total GFXDeclTypes.
    GFXDeclType_COUNT,

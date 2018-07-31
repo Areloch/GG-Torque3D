@@ -25,12 +25,18 @@
 #include "core/strings/stringFunctions.h"
 #include "console/console.h"
 
+#ifdef TORQUE_OS_WIN
+   #include "tWGL.h"
+#endif
+
 namespace GL
 {
    void gglPerformBinds()
    {
-      GLenum err = glewInit();
-      AssertFatal(GLEW_OK == err, avar("Error: %s\n", glewGetErrorString(err)) );
+      if (!gladLoadGL()) 
+      {
+	     AssertFatal(false, "Unable to load GLAD. Make sure your OpenGL drivers are up to date!");
+      }
    }
 
    void gglPerformExtensionBinds(void *context)

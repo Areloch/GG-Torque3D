@@ -73,14 +73,26 @@ U32 CloudLayer::smVertCount = smVertStride * smVertStride;
 U32 CloudLayer::smTriangleCount = smStrideMinusOne * smStrideMinusOne * 2;
 
 CloudLayer::CloudLayer()
-: mBaseColor( 0.9f, 0.9f, 0.9f, 1.0f ),
-  mCoverage( 0.5f ),
+: mLastTime( 0 ),
+  mBaseColor( 0.9f, 0.9f, 0.9f, 1.0f ),
   mExposure( 1.0f ),
-  mWindSpeed( 1.0f ),
-  mLastTime( 0 )
+  mCoverage( 0.5f ),
+  mWindSpeed( 1.0f )
 {
    mTypeMask |= EnvironmentObjectType | StaticObjectType;
    mNetFlags.set(Ghostable | ScopeAlways);
+
+   mModelViewProjSC =
+   mAmbientColorSC =
+   mSunColorSC =
+   mSunVecSC =
+   mTexScaleSC =
+   mBaseColorSC =
+   mCoverageSC =
+   mExposureSC =
+   mEyePosWorldSC = 0;
+
+   mTexOffsetSC[0] = mTexOffsetSC[1] = mTexOffsetSC[2] = 0;
 
    mTexScale[0] = 1.0;
    mTexScale[1] = 1.0;
@@ -341,12 +353,12 @@ void CloudLayer::renderObject( ObjectRenderInst *ri, SceneRenderState *state, Ba
    mShaderConsts->setSafe( mEyePosWorldSC, camPos );
 
    LightInfo *lightinfo = LIGHTMGR->getSpecialLight(LightManager::slSunLightType);
-   const ColorF &sunlight = state->getAmbientLightColor();
+   const LinearColorF &sunlight = state->getAmbientLightColor();
 
    Point3F ambientColor( sunlight.red, sunlight.green, sunlight.blue );
    mShaderConsts->setSafe( mAmbientColorSC, ambientColor );   
 
-   const ColorF &sunColor = lightinfo->getColor();
+   const LinearColorF &sunColor = lightinfo->getColor();
    Point3F data( sunColor.red, sunColor.green, sunColor.blue );
    mShaderConsts->setSafe( mSunColorSC, data );
 
@@ -386,10 +398,10 @@ void CloudLayer::_initTexture()
    }
 
    if ( mTextureName.isNotEmpty() )
-      mTexture.set( mTextureName, &GFXDefaultStaticDiffuseProfile, "CloudLayer" );
+      mTexture.set( mTextureName, &GFXStaticTextureSRGBProfile, "CloudLayer" );
 
    if ( mTexture.isNull() )
-      mTexture.set( GFXTextureManager::getWarningTexturePath(), &GFXDefaultStaticDiffuseProfile, "CloudLayer" );
+      mTexture.set( GFXTextureManager::getWarningTexturePath(), &GFXStaticTextureSRGBProfile, "CloudLayer" );
 }
 
 void CloudLayer::_initBuffers()

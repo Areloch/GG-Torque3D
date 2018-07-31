@@ -20,6 +20,11 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
+// Arcane-FX for MIT Licensed Open Source version of Torque 3D from GarageGames
+// Copyright (C) 2015 Faust Logic, Inc.
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
+
 #include "platform/platform.h"
 #include "platform/platformInput.h"
 
@@ -48,6 +53,10 @@
 #include "gfx/gfxCubemap.h"
 #include "gfx/gfxTextureManager.h"
 #include "sfx/sfxSystem.h"
+
+#ifdef TORQUE_AFX_ENABLED
+#include "afx/arcaneFX.h"
+#endif
 
 #ifdef TORQUE_PLAYER
 // See matching #ifdef in editor/editor.cpp
@@ -162,6 +171,13 @@ DefineConsoleFunction( setNetPort, bool, (int port, bool bind), (true), "(int po
    return Net::openPort((S32)port, bind);
 }
 
+DefineConsoleFunction(isAddressTypeAvailable, bool, (int addressType), , "(protocol id)"
+	"@brief Determines if a specified address type can be reached.\n\n"
+	"@ingroup Networking")
+{
+	return Net::isAddressTypeAvailable((NetAddress::Type)addressType);
+}
+
 DefineConsoleFunction( closeNetPort, void, (), , "()" 
    "@brief Closes the current network port\n\n"
    "@ingroup Networking")
@@ -202,12 +218,37 @@ DefineConsoleFunction( getRealTime, S32, (), , "()"
    return Platform::getRealMilliseconds();
 }
 
+ConsoleFunction( getLocalTime, const char *, 1, 1, "Return the current local time as: weekday month day year hour min sec.\n\n"
+                "Local time is platform defined.")
+{
+   Platform::LocalTime lt;
+   Platform::getLocalTime(lt);
+
+   static const U32 bufSize = 128;
+   char *retBuffer = Con::getReturnBuffer(bufSize);
+   dSprintf(retBuffer, bufSize, "%d %d %d %d %02d %02d %02d",
+      lt.weekday,
+      lt.month + 1,
+      lt.monthday,
+      lt.year + 1900,
+      lt.hour,
+      lt.min,
+      lt.sec);
+
+   return retBuffer;
+}
+
 ConsoleFunctionGroupEnd(Platform);
 
 //-----------------------------------------------------------------------------
 
 bool clientProcess(U32 timeDelta)
 {
+#ifdef TORQUE_AFX_ENABLED
+   // Required heartbeat call on the client side which must come
+   // before the advanceTime() calls are made to the scene objects.
+   arcaneFX::advanceTime(timeDelta);
+#endif
    bool ret = true;
 
 #ifndef TORQUE_TGB_ONLY

@@ -29,7 +29,7 @@
 #include "materials/processedMaterial.h"
 #include "materials/materialFeatureTypes.h"
 #include "shaderGen/shaderGenVars.h"
-
+#include "shaderGen/shaderGen.h"
 
 void BumpFeatGLSL::processVert(  Vector<ShaderComponent*> &componentList, 
                                  const MaterialFeatureData &fd )
@@ -42,7 +42,6 @@ void BumpFeatGLSL::processVert(  Vector<ShaderComponent*> &componentList,
    // Output the texture coord.
    getOutTexCoord(   "texCoord", 
                      "vec2", 
-                     true, 
                      useTexAnim, 
                      meta, 
                      componentList );
@@ -64,7 +63,7 @@ void BumpFeatGLSL::processPix(   Vector<ShaderComponent*> &componentList,
 	output = meta;
 
    // Get the texture coord.
-   Var *texCoord = getInTexCoord( "texCoord", "vec2", true, componentList );
+   Var *texCoord = getInTexCoord( "texCoord", "vec2", componentList );
 
    // Sample the bumpmap.
    Var *bumpMap = getNormalMapTex();
@@ -156,7 +155,7 @@ void BumpFeatGLSL::processPix(   Vector<ShaderComponent*> &componentList,
       bumpMap->sampler = true;
       bumpMap->constNum = Var::getTexUnitNum();
 		
-      texCoord = getInTexCoord( "detCoord", "vec2", true, componentList );
+      texCoord = getInTexCoord( "detCoord", "vec2", componentList );
       texOp = new GenOp( "tex2D(@, @)", bumpMap, texCoord );
 		
       Var *detailBump = new Var;
@@ -236,7 +235,7 @@ void BumpFeatGLSL::setTexData(   Material::StageData &stageDat,
 
 
 ParallaxFeatGLSL::ParallaxFeatGLSL()
-   : mIncludeDep( "shaders/common/gl/torque.glsl" )
+   : mIncludeDep(ShaderGen::smCommonShaderPath + String("/gl/torque.glsl" ))
 {
    addDependency( &mIncludeDep );
 }
@@ -267,7 +266,6 @@ void ParallaxFeatGLSL::processVert( Vector<ShaderComponent*> &componentList,
    // Add the texture coords.
    getOutTexCoord(   "texCoord", 
                      "vec2", 
-						true, 
 						fd.features[MFT_TexAnim], 
 						meta, 
 						componentList );
@@ -291,14 +289,6 @@ void ParallaxFeatGLSL::processVert( Vector<ShaderComponent*> &componentList,
    meta->addStatement( new GenOp( "   @ = tMul( @, float3( @.xyz - @ ) );\r\n", 
       outNegViewTS, objToTangentSpace, inPos, eyePos ) );
 
-   // TODO: I'm at a loss at why i need to flip the binormal/y coord
-   // to get a good view vector for parallax. Lighting works properly
-   // with the TS matrix as is... but parallax does not.
-   //
-   // Someone figure this out!
-   //
-   meta->addStatement( new GenOp( "   @.y = -@.y;\r\n", outNegViewTS, outNegViewTS ) );  
-
    // If we have texture anim matrix the tangent
    // space view vector may need to be rotated.
    Var *texMat = (Var*)LangElement::find( "texMat" );
@@ -320,7 +310,7 @@ void ParallaxFeatGLSL::processPix(  Vector<ShaderComponent*> &componentList,
    MultiLine *meta = new MultiLine;
 	
    // Order matters... get this first!
-   Var *texCoord = getInTexCoord( "texCoord", "vec2", true, componentList );
+   Var *texCoord = getInTexCoord( "texCoord", "vec2", componentList );
 	
    ShaderConnector *connectComp = dynamic_cast<ShaderConnector *>( componentList[C_CONNECTOR] );
 	
@@ -347,15 +337,15 @@ void ParallaxFeatGLSL::processPix(  Vector<ShaderComponent*> &componentList,
    Var *normalMap = getNormalMapTex();
 	
    // Call the library function to do the rest.
-   if (fd.features.hasFeature(MFT_IsDXTnm, getProcessIndex()))
+   if (fd.features.hasFeature(MFT_IsBC3nm, getProcessIndex()))
    {
       meta->addStatement(new GenOp("   @.xy += parallaxOffsetDxtnm( @, @.xy, @, @ );\r\n",
-         texCoord, normalMap, texCoord, negViewTS, parallaxInfo));
+      texCoord, normalMap, texCoord, negViewTS, parallaxInfo));
    }
    else
    {
       meta->addStatement(new GenOp("   @.xy += parallaxOffset( @, @.xy, @, @ );\r\n",
-         texCoord, normalMap, texCoord, negViewTS, parallaxInfo));
+      texCoord, normalMap, texCoord, negViewTS, parallaxInfo));
    }
    
    // TODO: Fix second UV maybe?
@@ -373,9 +363,9 @@ ShaderFeature::Resources ParallaxFeatGLSL::getResources( const MaterialFeatureDa
    // We add the outViewTS to the outputstructure.
    res.numTexReg = 1;
 	
-   // If this isn't a prepass then we will be
+   // If this isn't a deferred then we will be
    // creating the normal map here.
-   if ( !fd.features.hasFeature( MFT_PrePassConditioner ) )
+   if ( !fd.features.hasFeature( MFT_DeferredConditioner ) )
       res.numTex = 1;
 	
    return res;
@@ -416,7 +406,6 @@ void NormalsOutFeatGLSL::processVert(  Vector<ShaderComponent*> &componentList,
    outNormal->setName( "wsNormal" );
    outNormal->setStructName( "OUT" );
    outNormal->setType( "vec3" );
-   outNormal->mapsToSampler = false;
 	
    // Find the incoming vertex normal.
    Var *inNormal = (Var*)LangElement::find( "normal" );   

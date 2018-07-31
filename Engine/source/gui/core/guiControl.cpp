@@ -20,6 +20,11 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
+// Arcane-FX for MIT Licensed Open Source version of Torque 3D from GarageGames
+// Copyright (C) 2015 Faust Logic, Inc.
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
+
 #include "platform/platform.h"
 #include "gui/core/guiControl.h"
 
@@ -175,6 +180,9 @@ ImplementEnumType( GuiHorizontalSizing,
 	{ GuiControl::horizResizeLeft,            "left"      },
    { GuiControl::horizResizeCenter,          "center"    },
    { GuiControl::horizResizeRelative,        "relative"  },
+   { GuiControl::horizResizeAspectLeft,      "aspectLeft" },
+   { GuiControl::horizResizeAspectRight,     "aspectRight" },
+   { GuiControl::horizResizeAspectCenter,    "aspectCenter" },
 	{ GuiControl::horizResizeWindowRelative,  "windowRelative"  }
 EndImplementEnumType;
 
@@ -186,28 +194,31 @@ ImplementEnumType( GuiVerticalSizing,
 	{ GuiControl::vertResizeTop,              "top"        },
    { GuiControl::vertResizeCenter,           "center"     },
    { GuiControl::vertResizeRelative,         "relative"   },
+   { GuiControl::vertResizeAspectTop,        "aspectTop"  },
+   { GuiControl::vertResizeAspectBottom,     "aspectBottom" },
+   { GuiControl::vertResizeAspectCenter,     "aspectCenter" },
 	{ GuiControl::vertResizeWindowRelative,   "windowRelative"   }
 EndImplementEnumType;
 
 //-----------------------------------------------------------------------------
 
 GuiControl::GuiControl() : mAddGroup( NULL ),
-                           mLayer(0),
                            mBounds(0,0,64,64),
-                           mMinExtent(8,2),
                            mProfile(NULL),
-                           mLangTable(NULL),
-                           mFirstResponder(NULL),
+                           mTooltipProfile(NULL),
+                           mTipHoverTime(1000),
                            mVisible(true),
                            mActive(true),
                            mAwake(false),
-                           mHorizSizing(horizResizeRight),
-                           mVertSizing(vertResizeBottom),
-                           mTooltipProfile(NULL),
-                           mTipHoverTime(1000),
                            mIsContainer(false),
-									mCanResize(true),
-                           mCanHit( true )
+                           mCanResize(true),
+                           mCanHit( true ),
+                           mLayer(0),
+                           mMinExtent(8,2),
+                           mLangTable(NULL),
+                           mFirstResponder(NULL),
+                           mHorizSizing(horizResizeRight),
+                           mVertSizing(vertResizeBottom)
 {
    mConsoleVariable     = StringTable->EmptyString();
    mAcceleratorKey      = StringTable->EmptyString();
@@ -218,6 +229,7 @@ GuiControl::GuiControl() : mAddGroup( NULL ),
 
    mCanSaveFieldDictionary = false;
    mNotifyChildrenResized = true;
+   fade_amt = 1.0f;
 }
 
 //-----------------------------------------------------------------------------
@@ -270,11 +282,11 @@ void GuiControl::initPersistFields()
 
       addField("variable",          TypeString,       Offset(mConsoleVariable, GuiControl),
          "Name of the variable to which the value of this control will be synchronized." );
-      addField("command",           TypeRealString,   Offset(mConsoleCommand, GuiControl),
+      addField("command",           TypeCommand,   Offset(mConsoleCommand, GuiControl),
          "Command to execute on the primary action of the control.\n\n"
          "@note Within this script snippet, the control on which the #command is being executed is bound to "
             "the global variable $ThisControl." );
-      addField("altCommand",        TypeRealString,   Offset(mAltConsoleCommand, GuiControl),
+      addField("altCommand",        TypeCommand,   Offset(mAltConsoleCommand, GuiControl),
          "Command to execute on the secondary action of the control.\n\n"
          "@note Within this script snippet, the control on which the #altCommand is being executed is bound to "
             "the global variable $ThisControl." );
@@ -465,6 +477,8 @@ bool GuiControl::defaultTooltipRender( const Point2I &hoverPos, const Point2I &c
 
    GFont *font = mTooltipProfile->mFont;
 
+   GFXDrawUtil* drawUtil = GFX->getDrawUtil();
+
    // Support for multi-line tooltip text...
 
    Vector<U32> startLineOffsets, lineLengths;
@@ -521,12 +535,12 @@ bool GuiControl::defaultTooltipRender( const Point2I &hoverPos, const Point2I &c
    GFX->setClipRect( rect );
 
    // Draw Filler bit, then border on top of that
-   GFX->getDrawUtil()->drawRectFill( rect, mTooltipProfile->mFillColor );
-   GFX->getDrawUtil()->drawRect( rect, mTooltipProfile->mBorderColor );
+   drawUtil->drawRectFill( rect, mTooltipProfile->mFillColor );
+   drawUtil->drawRect( rect, mTooltipProfile->mBorderColor );
 
    // Draw the text centered in the tool tip box...
 
-   GFX->getDrawUtil()->setBitmapModulation( mTooltipProfile->mFontColor );
+   drawUtil->setBitmapModulation( mTooltipProfile->mFontColor );
 
    for ( U32 i = 0; i < lineLengths.size(); i++ )
    {      
@@ -534,7 +548,7 @@ bool GuiControl::defaultTooltipRender( const Point2I &hoverPos, const Point2I &c
       const UTF8 *line = renderTip.c_str() + startLineOffsets[i];
       U32 lineLen = lineLengths[i];
 
-      GFX->getDrawUtil()->drawTextN( font, start + offset, line, lineLen, mProfile->mFontColors );
+      drawUtil->drawTextN( font, start + offset, line, lineLen, mProfile->mFontColors );
    }
 
    GFX->setClipRect( oldClip );
@@ -602,6 +616,8 @@ void GuiControl::setUpdate()
 void GuiControl::renderJustifiedText(Point2I offset, Point2I extent, const char *text)
 {
    GFont *font = mProfile->mFont;
+   if(!font)
+      return;
    S32 textWidth = font->getStrWidthPrecise((const UTF8*)text);
    U32 textHeight = font->getHeight();
 
@@ -1366,6 +1382,36 @@ void GuiControl::parentResized(const RectI &oldParentRect, const RectI &newParen
       newPosition.x = newLeft;
       newExtent.x = newWidth;
    }
+   else if (mHorizSizing == horizResizeAspectLeft && oldParentRect.extent.x != 0)
+   {
+      S32 newLeft = mRoundToNearest((F32(newPosition.x) / F32(oldParentRect.extent.x)) * F32(newParentRect.extent.x));
+      S32 newWidth = mRoundToNearest((F32(newExtent.x) / F32(oldParentRect.extent.y)) * F32(newParentRect.extent.y));
+
+      newPosition.x = newLeft;
+      newExtent.x = newWidth;
+   }
+   else if (mHorizSizing == horizResizeAspectRight && oldParentRect.extent.x != 0)
+   {
+      S32 newLeft = mRoundToNearest((F32(newPosition.x) / F32(oldParentRect.extent.x)) * F32(newParentRect.extent.x));
+      S32 newWidth = mRoundToNearest((F32(newExtent.x) / F32(oldParentRect.extent.y)) * F32(newParentRect.extent.y)); //origional aspect ratio corrected width
+      S32 rWidth = mRoundToNearest((F32(newExtent.x) / F32(oldParentRect.extent.x)) * F32(newParentRect.extent.x)); //parent aspect ratio relative width
+
+      S32 offset = rWidth - newWidth; // account for change in relative width
+      newLeft += offset;
+      newPosition.x = newLeft;
+      newExtent.x = newWidth;
+   }
+   else if (mHorizSizing == horizResizeAspectCenter && oldParentRect.extent.x != 0)
+   {
+      S32 newLeft = mRoundToNearest((F32(newPosition.x) / F32(oldParentRect.extent.x)) * F32(newParentRect.extent.x));
+      S32 newWidth = mRoundToNearest((F32(newExtent.x) / F32(oldParentRect.extent.y)) * F32(newParentRect.extent.y)); //origional aspect ratio corrected width
+      S32 rWidth = mRoundToNearest((F32(newExtent.x) / F32(oldParentRect.extent.x)) * F32(newParentRect.extent.x)); //parent aspect ratio relative width
+
+      S32 offset = rWidth - newWidth; // account for change in relative width
+      newLeft += offset/2;
+      newPosition.x = newLeft;
+      newExtent.x = newWidth;
+   }
 
 	if (mVertSizing == vertResizeCenter)
 	   newPosition.y = (newParentRect.extent.y - getHeight()) >> 1;
@@ -1378,6 +1424,36 @@ void GuiControl::parentResized(const RectI &oldParentRect, const RectI &newParen
       S32 newTop = mRoundToNearest( ( F32( newPosition.y ) / F32( oldParentRect.extent.y ) ) * F32( newParentRect.extent.y ) );
       S32 newHeight = mRoundToNearest( ( F32( newExtent.y ) / F32( oldParentRect.extent.y ) ) * F32( newParentRect.extent.y ) );
 
+      newPosition.y = newTop;
+      newExtent.y = newHeight;
+   }
+   else if (mVertSizing == vertResizeAspectTop && oldParentRect.extent.y != 0)
+   {
+      S32 newTop = mRoundToNearest((F32(newPosition.y) / F32(oldParentRect.extent.y)) * F32(newParentRect.extent.y));
+      S32 newHeight = mRoundToNearest((F32(newExtent.y) / F32(oldParentRect.extent.x)) * F32(newParentRect.extent.x));
+
+      newPosition.y = newTop;
+      newExtent.y = newHeight;
+   }
+   else if (mVertSizing == vertResizeAspectBottom && oldParentRect.extent.y != 0)
+   {
+      S32 newTop = mRoundToNearest((F32(newPosition.y) / F32(oldParentRect.extent.y)) * F32(newParentRect.extent.y));
+      S32 newHeight = mRoundToNearest((F32(newExtent.y) / F32(oldParentRect.extent.x)) * F32(newParentRect.extent.x)); //origional aspect ratio corrected hieght
+      S32 rHeight = mRoundToNearest((F32(newExtent.y) / F32(oldParentRect.extent.y)) * F32(newParentRect.extent.y)); //parent aspect ratio relative hieght
+
+      S32 offset = rHeight - newHeight; // account for change in relative hieght
+      newTop += offset;
+      newPosition.y = newTop;
+      newExtent.y = newHeight;
+   }
+   else if (mVertSizing == vertResizeAspectCenter && oldParentRect.extent.y != 0)
+   {
+      S32 newTop = mRoundToNearest((F32(newPosition.y) / F32(oldParentRect.extent.y)) * F32(newParentRect.extent.y));
+      S32 newHeight = mRoundToNearest((F32(newExtent.y) / F32(oldParentRect.extent.x)) * F32(newParentRect.extent.x)); //origional aspect ratio corrected hieght
+      S32 rHeight = mRoundToNearest((F32(newExtent.y) / F32(oldParentRect.extent.y)) * F32(newParentRect.extent.y)); //parent aspect ratio relative hieght
+
+      S32 offset = rHeight - newHeight; // account for change in relative hieght
+      newTop += offset / 2;
       newPosition.y = newTop;
       newExtent.y = newHeight;
    }
@@ -1753,41 +1829,48 @@ void GuiControl::write(Stream &stream, U32 tabStop, U32 flags)
 {
    //note: this will return false if either we, or any of our parents, are non-save controls
    bool bCanSave	= ( flags & IgnoreCanSave ) || ( flags & NoCheckParentCanSave && getCanSave() ) || getCanSaveParent();
-   StringTableEntry steName = mAddGroup->getInternalName();
-   if(bCanSave && mAddGroup && (steName != NULL) && (steName != StringTable->insert("null")) && getName() )
+   
+   if (bCanSave && mAddGroup)
    {
-      MutexHandle handle;
-      handle.lock(mMutex);
+      StringTableEntry steName = mAddGroup->getInternalName();
 
-      // export selected only?
-      if((flags & SelectedOnly) && !isSelected())
+      if ((steName != NULL) && (steName != StringTable->insert("null")) && getName())
       {
-         for(U32 i = 0; i < size(); i++)
-            (*this)[i]->write(stream, tabStop, flags);
+         MutexHandle handle;
+         handle.lock(mMutex);
+
+         // export selected only?
+         if ((flags & SelectedOnly) && !isSelected())
+         {
+            for (U32 i = 0; i < size(); i++)
+               (*this)[i]->write(stream, tabStop, flags);
+
+            return;
+
+         }
+
+         stream.writeTabs(tabStop);
+         char buffer[1024];
+         dSprintf(buffer, sizeof(buffer), "new %s(%s,%s) {\r\n", getClassName(), getName() ? getName() : "", mAddGroup->getInternalName());
+         stream.write(dStrlen(buffer), buffer);
+         writeFields(stream, tabStop + 1);
+
+         if (size())
+         {
+            stream.write(2, "\r\n");
+            for (U32 i = 0; i < size(); i++)
+               (*this)[i]->write(stream, tabStop + 1, flags);
+         }
+
+         stream.writeTabs(tabStop);
+         stream.write(4, "};\r\n");
 
          return;
-
       }
-
-      stream.writeTabs(tabStop);
-      char buffer[1024];
-      dSprintf(buffer, sizeof(buffer), "new %s(%s,%s) {\r\n", getClassName(), getName() ? getName() : "", mAddGroup->getInternalName());
-      stream.write(dStrlen(buffer), buffer);
-      writeFields(stream, tabStop + 1);
-
-      if(size())
-      {
-         stream.write(2, "\r\n");
-         for(U32 i = 0; i < size(); i++)
-            (*this)[i]->write(stream, tabStop + 1, flags);
-      }
-
-      stream.writeTabs(tabStop);
-      stream.write(4, "};\r\n");
    }
-   else if (bCanSave)
+   
+   if (bCanSave)
       Parent::write( stream, tabStop, flags );
-
 }
 
 //=============================================================================
@@ -2380,7 +2463,8 @@ void GuiControl::getCursor(GuiCursor *&cursor, bool &showCursor, const GuiEvent 
       // so set it back before we change it again.
 
       PlatformWindow *pWindow = static_cast<GuiCanvas*>(getRoot())->getPlatformWindow();
-      AssertFatal(pWindow != NULL,"GuiControl without owning platform window!  This should not be possible.");
+      if (!pWindow)
+         return;
       PlatformCursorController *pController = pWindow->getCursorController();
       AssertFatal(pController != NULL,"PlatformWindow without an owned CursorController!");
 
@@ -2486,7 +2570,7 @@ DefineEngineMethod( GuiControl, findHitControls, const char*, ( S32 x, S32 y, S3
       return "";
    
    char* buffer = Con::getReturnBuffer( s.size() );
-   dStrcpy( buffer, s.c_str() );
+   dStrcpy( buffer, s.c_str(), s.size() );
    
    return buffer;
 }
@@ -2613,21 +2697,24 @@ DefineEngineMethod( GuiControl, setValue, void, ( const char* value ),,
    object->setScriptValue( value );
 }
 
-//ConsoleMethod( GuiControl, getValue, const char*, 2, 2, "")
-DefineConsoleMethod( GuiControl, getValue, const char*, (), , "")
+DefineEngineMethod( GuiControl, getValue, const char*, (),,
+   "Get the value associated with the control.\n"
+   "@return value for the control.\n" )
 {
    return object->getScriptValue();
 }
 
-//ConsoleMethod( GuiControl, makeFirstResponder, void, 3, 3, "(bool isFirst)")
-DefineConsoleMethod( GuiControl, makeFirstResponder, void, (bool isFirst), , "(bool isFirst)")
+DefineEngineMethod( GuiControl, makeFirstResponder, void, ( bool isFirst ),,
+   "Make this control the first responder.\n"
+   "@param isFirst True to make first responder, false to not.\n" )
 {
    //object->makeFirstResponder(dAtob(argv[2]));
    object->makeFirstResponder(isFirst);
 }
 
-//ConsoleMethod( GuiControl, isActive, bool, 2, 2, "")
-DefineConsoleMethod( GuiControl, isActive, bool, (), , "")
+DefineEngineMethod( GuiControl, isActive, bool, (),,
+   "Check if this control is active or not.\n"
+   "@return True if it's active, false if not.\n" )
 {
    return object->isActive();
 }
@@ -2635,7 +2722,8 @@ DefineConsoleMethod( GuiControl, isActive, bool, (), , "")
 //-----------------------------------------------------------------------------
 
 DefineEngineMethod( GuiControl, setActive, void, ( bool state ), ( true ),
-   "" )
+   "Set the control as active or inactive."
+   "@param state True to set the control as active, false to set it as inactive.")
 {
    object->setActive( state );
 }
@@ -2815,9 +2903,9 @@ DefineConsoleMethod( GuiControl, setExtent, void, ( const char* extOrX, const ch
    "@hide" )
 {
    Point2I extent;
-   if(!dStrIsEmpty(extOrX) && dStrIsEmpty(y))
+   if(!String::isEmpty(extOrX) && String::isEmpty(y))
       dSscanf(extOrX, "%d %d", &extent.x, &extent.y);
-   else if(!dStrIsEmpty(extOrX) && !dStrIsEmpty(y))
+   else if(!String::isEmpty(extOrX) && !String::isEmpty(y))
    {
       extent.x = dAtoi(extOrX);
       extent.y = dAtoi(y);

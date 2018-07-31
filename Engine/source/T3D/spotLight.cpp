@@ -122,6 +122,8 @@ void SpotLight::_conformLights()
    mLight->setColor( mColor );
    mLight->setBrightness( mBrightness );
    mLight->setCastShadows( mCastShadows );
+   mLight->setStaticRefreshFreq(mStaticRefreshFreq);
+   mLight->setDynamicRefreshFreq(mDynamicRefreshFreq);
    mLight->setPriority( mPriority );
 
    mOuterConeAngle = getMax( 0.01f, mOuterConeAngle );
@@ -200,7 +202,7 @@ void SpotLight::_renderViz( SceneRenderState *state )
    desc.setBlend( true );
 
    // Base the color on the light color.
-   ColorI color( mColor );
+   ColorI color = mColor.toColorI();
    color.alpha = 16;
 
    F32 radius = mRange * mSin( mDegToRad( mOuterConeAngle * 0.5f ) );

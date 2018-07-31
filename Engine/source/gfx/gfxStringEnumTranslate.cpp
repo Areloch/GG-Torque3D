@@ -134,7 +134,9 @@ void GFXStringEnumTranslate::init()
    INIT_LOOKUPTABLE( GFXStringTextureFormat, GFXFormat, const char * );
    GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatR8G8B8 );
    GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatR8G8B8A8 );
+   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatR8G8B8A8_SRGB);
    GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatR8G8B8X8 );
+   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatB8G8R8A8 );
    GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatR32F );
    GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatR5G6B5 );
    GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatR5G5B5A1 );
@@ -143,11 +145,11 @@ void GFXStringEnumTranslate::init()
    GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatA8L8 );
    GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatA8 );
    GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatL8 );
-   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatDXT1 );
-   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatDXT2 );
-   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatDXT3 );
-   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatDXT4 );
-   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatDXT5 );
+   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatBC1 );
+   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatBC2 );
+   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatBC3 );
+   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatBC4 );
+   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatBC5 );
    GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatD32 );
    GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatD24X8 );
    GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatD24S8 );
@@ -162,6 +164,12 @@ void GFXStringEnumTranslate::init()
    GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatR16F );
    GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatR16G16F );
    GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatR10G10B10A2 );
+
+   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatR8G8B8_SRGB );
+   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatR8G8B8A8_LINEAR_FORCE );
+   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatBC1_SRGB );
+   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatBC2_SRGB );
+   GFX_STRING_ASSIGN_MACRO( GFXStringTextureFormat, GFXFormatBC3_SRGB );
    VALIDATE_LOOKUPTABLE( GFXStringTextureFormat, GFXFormat);
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
@@ -346,7 +354,6 @@ void GFXStringEnumTranslate::init()
    GFX_STRING_ASSIGN_MACRO( GFXStringPrimType, GFXLineStrip );
    GFX_STRING_ASSIGN_MACRO( GFXStringPrimType, GFXTriangleList );
    GFX_STRING_ASSIGN_MACRO( GFXStringPrimType, GFXTriangleStrip );
-   GFX_STRING_ASSIGN_MACRO( GFXStringPrimType, GFXTriangleFan );
    VALIDATE_LOOKUPTABLE( GFXStringPrimType, GFXPT );
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------

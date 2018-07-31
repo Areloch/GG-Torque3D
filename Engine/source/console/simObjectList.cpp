@@ -23,7 +23,8 @@
 #include "platform/platform.h"
 #include "console/simObjectList.h"
 
-#include "console/console.h"
+#include "console/simBase.h"
+#include "console/engineAPI.h"
 #include "console/sim.h"
 #include "console/simObject.h"
 
@@ -32,7 +33,7 @@ String SimObjectList::smSortScriptCallbackFn;
 
 bool SimObjectList::pushBack(SimObject* obj)
 {
-   if (find(begin(),end(),obj) == end())
+   if (T3D::find(begin(),end(),obj) == end())
    {
       push_back(obj);
       return true;
@@ -43,7 +44,7 @@ bool SimObjectList::pushBack(SimObject* obj)
 
 bool SimObjectList::pushBackForce(SimObject* obj)
 {
-   iterator itr = find(begin(),end(),obj);
+   iterator itr = T3D::find(begin(),end(),obj);
    if (itr == end())
    {
       push_back(obj);
@@ -63,7 +64,7 @@ bool SimObjectList::pushBackForce(SimObject* obj)
 
 bool SimObjectList::pushFront(SimObject* obj)
 {
-   if (find(begin(),end(),obj) == end())
+   if (T3D::find(begin(),end(),obj) == end())
    {
       push_front(obj);
       return true;
@@ -74,7 +75,7 @@ bool SimObjectList::pushFront(SimObject* obj)
 
 bool SimObjectList::remove(SimObject* obj)
 {
-   iterator ptr = find(begin(),end(),obj);
+   iterator ptr = T3D::find(begin(),end(),obj);
    if (ptr != end())
    {
       erase(ptr);
@@ -86,7 +87,7 @@ bool SimObjectList::remove(SimObject* obj)
 
 bool SimObjectList::removeStable(SimObject* obj)
 {
-   iterator ptr = find(begin(),end(),obj);
+   iterator ptr = T3D::find(begin(),end(),obj);
    if (ptr != end())
    {
       erase(ptr);

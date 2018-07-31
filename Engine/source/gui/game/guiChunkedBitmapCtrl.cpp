@@ -65,10 +65,10 @@ ConsoleDocClass( GuiChunkedBitmapCtrl,
 
 void GuiChunkedBitmapCtrl::initPersistFields()
 {
-   addGroup("GuiChunkedBitmapCtrl");		
+   addGroup("GuiChunkedBitmapCtrl");      
    addField( "bitmap",        TypeFilename,  Offset( mBitmapName, GuiChunkedBitmapCtrl ), "This is the bitmap to render to the control." );
    addField( "useVariable",   TypeBool,      Offset( mUseVariable, GuiChunkedBitmapCtrl ), "This decides whether to use the \"bitmap\" file "
-	                                                                                      "or a bitmap stored in \"variable\"");
+                                                                                         "or a bitmap stored in \"variable\"");
    addField( "tile",          TypeBool,      Offset( mTile, GuiChunkedBitmapCtrl ), "This is no longer in use");
    endGroup("GuiChunkedBitmapCtrl");
    Parent::initPersistFields();
@@ -86,7 +86,7 @@ DefineEngineMethod( GuiChunkedBitmapCtrl, setBitmap, void, (const char* filename
 
 GuiChunkedBitmapCtrl::GuiChunkedBitmapCtrl()
 {
-   mBitmapName = StringTable->insert("");
+   mBitmapName = StringTable->EmptyString();
    mUseVariable = false;
    mTile = false;
 }
@@ -137,7 +137,7 @@ void GuiChunkedBitmapCtrl::renderRegion(const Point2I &offset, const Point2I &ex
 
    F32 widthScale = F32(extent.x) / F32(mTexHandle.getWidth());
    F32 heightScale = F32(extent.y) / F32(mTexHandle.getHeight());
-   GFX->setBitmapModulation(ColorF(1,1,1));
+   GFX->setBitmapModulation(LinearColorF(1,1,1));
    for(U32 i = 0; i < widthCount; i++)
    {
       for(U32 j = 0; j < heightCount; j++)

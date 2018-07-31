@@ -24,6 +24,7 @@
 // a server is constructed.
 exec("./camera.cs");
 exec("./triggers.cs");
+exec("./VolumetricFog.cs");
 exec("./inventory.cs");
 exec("./shapeBase.cs");
 exec("./item.cs");
@@ -31,6 +32,7 @@ exec("./health.cs");
 exec("./projectile.cs");
 exec("./radiusDamage.cs");
 exec("./teleporter.cs");
+exec("./physicsShape.cs");
 
 // Load our supporting weapon script, it contains methods used by all weapons.
 exec("./weapon.cs");

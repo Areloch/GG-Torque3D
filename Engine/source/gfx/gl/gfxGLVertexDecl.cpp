@@ -15,7 +15,7 @@ void GFXGLVertexDecl::init(const GFXVertexFormat *format)
 void GFXGLVertexDecl::prepareVertexFormat() const
 {
    AssertFatal(mFormat, "GFXGLVertexDecl - Not inited");
-   if( gglHasExtension(ARB_vertex_attrib_binding) )
+   if( GFXGL->mCapabilities.vertexAttributeBinding )
    {
       for ( U32 i=0; i < glVerticesFormat.size(); i++ )
       {
@@ -36,7 +36,7 @@ void GFXGLVertexDecl::prepareBuffer_old(U32 stream, GLint mBuffer, GLint mDiviso
    PROFILE_SCOPE(GFXGLVertexDecl_prepare);
    AssertFatal(mFormat, "GFXGLVertexDecl - Not inited");
 
-   if( gglHasExtension(ARB_vertex_attrib_binding) )
+   if( GFXGL->mCapabilities.vertexAttributeBinding )
       return;   
 
 	// Bind the buffer...
@@ -104,6 +104,8 @@ void GFXGLVertexDecl::_initVerticesFormat(U32 stream)
 
       if(element.getStreamIndex() != stream)
          continue;
+
+      AssertFatal(!mFormat->hasBlendIndices() || !element.isSemantic(GFXSemantic::TEXCOORD) || (mFormat->hasBlendIndices() && element.isSemantic(GFXSemantic::TEXCOORD) && element.getSemanticIndex() < 2), "skinning with more than 2 used texcoords!");
 
       vertexSize += element.getSizeInBytes();
    }
@@ -181,6 +183,28 @@ void GFXGLVertexDecl::_initVerticesFormat(U32 stream)
          glElement.attrIndex = Torque::GL_VertexAttrib_Color;
          glElement.elementCount = element.getSizeInBytes();
          glElement.normalized = true;
+         glElement.type = GL_UNSIGNED_BYTE;
+         glElement.stride = vertexSize;
+         glElement.pointerFirst = (void*)buffer;
+
+         buffer += element.getSizeInBytes();
+      }
+      else if ( element.isSemantic( GFXSemantic::BLENDWEIGHT ) )
+      {
+         glElement.attrIndex = Torque::GL_VertexAttrib_BlendWeight0 + element.getSemanticIndex();
+         glElement.elementCount = 4;
+         glElement.normalized = false;
+         glElement.type = GL_FLOAT;
+         glElement.stride = vertexSize;
+         glElement.pointerFirst = (void*)buffer;
+
+         buffer += element.getSizeInBytes();
+      }
+      else if ( element.isSemantic( GFXSemantic::BLENDINDICES ) )
+      {
+         glElement.attrIndex = Torque::GL_VertexAttrib_BlendIndex0 + element.getSemanticIndex();
+         glElement.elementCount = 4;
+         glElement.normalized = false;
          glElement.type = GL_UNSIGNED_BYTE;
          glElement.stride = vertexSize;
          glElement.pointerFirst = (void*)buffer;

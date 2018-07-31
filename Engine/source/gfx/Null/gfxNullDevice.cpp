@@ -276,14 +276,16 @@ GFXNullDevice::~GFXNullDevice()
 GFXVertexBuffer *GFXNullDevice::allocVertexBuffer( U32 numVerts, 
                                                    const GFXVertexFormat *vertexFormat,
                                                    U32 vertSize, 
-                                                   GFXBufferType bufferType ) 
+                                                   GFXBufferType bufferType,
+                                                   void* data ) 
 {
    return new GFXNullVertexBuffer(GFX, numVerts, vertexFormat, vertSize, bufferType);
 }
 
 GFXPrimitiveBuffer *GFXNullDevice::allocPrimitiveBuffer( U32 numIndices, 
                                                          U32 numPrimitives, 
-                                                         GFXBufferType bufferType) 
+                                                         GFXBufferType bufferType,
+                                                         void* data ) 
 {
    return new GFXNullPrimitiveBuffer(GFX, numIndices, numPrimitives, bufferType);
 }
@@ -307,7 +309,7 @@ void GFXNullDevice::enumerateAdapters( Vector<GFXAdapter*> &adapterList )
    vm.resolution.set(800,600);
    toAdd->mAvailableModes.push_back(vm);
 
-   dStrcpy(toAdd->mName, "GFX Null Device");
+   dStrcpy(toAdd->mName, "GFX Null Device", GFXAdapter::MaxAdapterNameLen);
 
    adapterList.push_back(toAdd);
 }

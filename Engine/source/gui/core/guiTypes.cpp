@@ -63,12 +63,12 @@ ConsoleDocClass( GuiCursor,
 GFX_ImplementTextureProfile(GFXGuiCursorProfile,
                             GFXTextureProfile::DiffuseMap, 
                             GFXTextureProfile::PreserveSize |
-                            GFXTextureProfile::Static, 
+                            GFXTextureProfile::Static | GFXTextureProfile::SRGB,
                             GFXTextureProfile::NONE);
 GFX_ImplementTextureProfile(GFXDefaultGUIProfile,
                             GFXTextureProfile::DiffuseMap, 
                             GFXTextureProfile::PreserveSize |
-                            GFXTextureProfile::Static |
+                            GFXTextureProfile::Static | GFXTextureProfile::SRGB |
                             GFXTextureProfile::NoPadding, 
                             GFXTextureProfile::NONE);
 
@@ -200,7 +200,7 @@ bool GuiControlProfile::protectedSetBitmap( void *object, const char *index, con
 
       //verify the bitmap
       if (profile->mBitmapName && profile->mBitmapName[0] && dStricmp(profile->mBitmapName, "texhandle") != 0 &&
-         !profile->mTextureObject.set( profile->mBitmapName, &GFXDefaultPersistentProfile, avar("%s() - mTextureObject (line %d)", __FUNCTION__, __LINE__) ))
+         !profile->mTextureObject.set( profile->mBitmapName, &GFXTexturePersistentProfile, avar("%s() - mTextureObject (line %d)", __FUNCTION__, __LINE__) ))
          Con::errorf("Failed to load profile bitmap (%s)",profile->mBitmapName);
 
       // If we've got a special border, make sure it's usable.
@@ -269,6 +269,7 @@ GuiControlProfile::GuiControlProfile(void) :
    mFillColor(255,0,255,255),
    mFillColorHL(255,0,255,255),
    mFillColorNA(255,0,255,255),
+   mFillColorERR(255,0,0,255),
    mFillColorSEL(255,0,255,255),
    mBorderColor(255,0,255,255),
    mBorderColorHL(255,0,255,255),
@@ -334,6 +335,7 @@ GuiControlProfile::GuiControlProfile(void) :
       mFillColor     = def->mFillColor;
       mFillColorHL   = def->mFillColorHL;
       mFillColorNA   = def->mFillColorNA;
+      mFillColorERR  = def->mFillColorERR;
       mFillColorSEL  = def->mFillColorSEL;
 
       mBorder        = def->mBorder;
@@ -398,6 +400,7 @@ void GuiControlProfile::initPersistFields()
       addField("fillColor",     TypeColorI,     Offset(mFillColor, GuiControlProfile));
       addField("fillColorHL",   TypeColorI,     Offset(mFillColorHL, GuiControlProfile));
       addField("fillColorNA",   TypeColorI,     Offset(mFillColorNA, GuiControlProfile));
+      addField("fillColorERR",  TypeColorI,     Offset(mFillColorERR, GuiControlProfile));
       addField("fillColorSEL",  TypeColorI,     Offset(mFillColorSEL, GuiControlProfile));
       addField("border",        TypeS32,        Offset(mBorder, GuiControlProfile),
          "Border type (0=no border)." );
@@ -563,7 +566,7 @@ S32 GuiControlProfile::constructBitmapArray()
 
    if( mTextureObject.isNull() )
    {   
-      if ( !mBitmapName || !mBitmapName[0] || !mTextureObject.set( mBitmapName, &GFXDefaultPersistentProfile, avar("%s() - mTextureObject (line %d)", __FUNCTION__, __LINE__) ))
+      if ( !mBitmapName || !mBitmapName[0] || !mTextureObject.set( mBitmapName, &GFXTexturePersistentSRGBProfile, avar("%s() - mTextureObject (line %d)", __FUNCTION__, __LINE__) ))
          return 0;
    }
 
@@ -652,7 +655,7 @@ void GuiControlProfile::incLoadCount()
       //
 
       if (mBitmapName && mBitmapName[0] && dStricmp(mBitmapName, "texhandle") != 0 &&
-         !mTextureObject.set( mBitmapName, &GFXDefaultPersistentProfile, avar("%s() - mTextureObject (line %d)", __FUNCTION__, __LINE__) ))
+         !mTextureObject.set( mBitmapName, &GFXTexturePersistentSRGBProfile, avar("%s() - mTextureObject (line %d)", __FUNCTION__, __LINE__) ))
          Con::errorf("Failed to load profile bitmap (%s)",mBitmapName);
 
       constructBitmapArray();
@@ -695,9 +698,12 @@ bool GuiControlProfile::loadFont()
    return true;
 }
 
-DefineConsoleMethod( GuiControlProfile, getStringWidth, S32, ( const char * pString ), , "( pString )" )
+DefineEngineMethod( GuiControlProfile, getStringWidth, S32, (const char* string),,
+   "Get the width of the string in pixels.\n"
+   "@param string String to get the width of."
+   "@return width of the string in pixels." )
 {
-    return object->mFont->getStrNWidth( pString, dStrlen( pString ) );
+   return object->mFont->getStrNWidth( string, dStrlen( string ) );
 }
 
 //-----------------------------------------------------------------------------
@@ -714,7 +720,7 @@ IMPLEMENT_STRUCT( RectSpacingI,
       
 END_IMPLEMENT_STRUCT;
 
-ConsoleType( RectSpacingI, TypeRectSpacingI, RectSpacingI )
+ConsoleType(RectSpacingI, TypeRectSpacingI, RectSpacingI, "")
 ImplementConsoleTypeCasters( TypeRectSpacingI, RectSpacingI )
 
 ConsoleGetType( TypeRectSpacingI )

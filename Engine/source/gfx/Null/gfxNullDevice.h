@@ -101,7 +101,7 @@ protected:
 
    virtual void setLightInternal(U32 lightStage, const GFXLightInfo light, bool lightEnable);
    virtual void setLightMaterialInternal(const GFXLightMaterial mat) { };
-   virtual void setGlobalAmbientInternal(ColorF color) { };
+   virtual void setGlobalAmbientInternal(LinearColorF color) { };
 
    /// @name State Initalization.
    /// @{
@@ -115,10 +115,12 @@ protected:
    virtual GFXVertexBuffer *allocVertexBuffer(  U32 numVerts, 
                                                 const GFXVertexFormat *vertexFormat, 
                                                 U32 vertSize, 
-                                                GFXBufferType bufferType );
+                                                GFXBufferType bufferType,
+                                                void* data = NULL );
    virtual GFXPrimitiveBuffer *allocPrimitiveBuffer(  U32 numIndices, 
                                                       U32 numPrimitives, 
-                                                      GFXBufferType bufferType );
+                                                      GFXBufferType bufferType,
+                                                      void* data = NULL );
 
    virtual GFXVertexDecl* allocVertexDecl( const GFXVertexFormat *vertexFormat ) { return NULL; }
    virtual void setVertexDecl( const GFXVertexDecl *decl ) {  }
@@ -148,7 +150,7 @@ public:
    virtual GFXShader* createShader() { return NULL; };
 
 
-   virtual void clear( U32 flags, ColorI color, F32 z, U32 stencil ) { };
+   virtual void clear( U32 flags, const LinearColorF& color, F32 z, U32 stencil ) { };
    virtual bool beginSceneInternal() { return true; };
    virtual void endSceneInternal() { };
 

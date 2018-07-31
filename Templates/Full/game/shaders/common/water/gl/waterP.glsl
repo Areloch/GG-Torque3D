@@ -116,7 +116,7 @@ float fresnel(float NdotV, float bias, float power)
 // Uniforms                                                                  
 //-----------------------------------------------------------------------------
 uniform sampler2D      bumpMap;
-uniform sampler2D    prepassTex;
+uniform sampler2D    deferredTex;
 uniform sampler2D    reflectMap;
 uniform sampler2D      refractBuff;
 uniform samplerCube  skyMap;
@@ -165,9 +165,9 @@ void main()
    // Convert from WorldSpace to EyeSpace.
    float pixelDepth = PIXEL_DIST / farPlaneDist; 
    
-   vec2 prepassCoord = viewportCoordToRenderTarget( IN_posPostWave, rtParams1 );
+   vec2 deferredCoord = viewportCoordToRenderTarget( IN_posPostWave, rtParams1 );
 
-   float startDepth = prepassUncondition( prepassTex, prepassCoord ).w;  
+   float startDepth = deferredUncondition( deferredTex, deferredCoord ).w;  
    
    // The water depth in world units of the undistorted pixel.
    float startDelta = ( startDepth - pixelDepth );
@@ -189,14 +189,14 @@ void main()
    vec4 distortPos = IN_posPostWave;
    distortPos.xy += distortDelta;      
       
-   prepassCoord = viewportCoordToRenderTarget( distortPos, rtParams1 );   
+   deferredCoord = viewportCoordToRenderTarget( distortPos, rtParams1 );   
 
-   // Get prepass depth at the position of this distorted pixel.
-   float prepassDepth = prepassUncondition( prepassTex, prepassCoord ).w;      
-   if ( prepassDepth > 0.99 )
-     prepassDepth = 5.0;
+   // Get deferred depth at the position of this distorted pixel.
+   float deferredDepth = deferredUncondition( deferredTex, deferredCoord ).w;      
+   if ( deferredDepth > 0.99 )
+     deferredDepth = 5.0;
     
-   float delta = ( prepassDepth - pixelDepth ) * farPlaneDist;
+   float delta = ( deferredDepth - pixelDepth ) * farPlaneDist;
       
    if ( delta < 0.0 )
    {
@@ -209,7 +209,7 @@ void main()
    } 
    else
    {
-      float diff = ( prepassDepth - startDepth ) * farPlaneDist;
+      float diff = ( deferredDepth - startDepth ) * farPlaneDist;
    
       if ( diff < 0 )
       {
@@ -221,13 +221,13 @@ void main()
          distortPos = IN_posPostWave;         
          distortPos.xy += distortDelta;    
         
-         prepassCoord = viewportCoordToRenderTarget( distortPos, rtParams1 );
+         deferredCoord = viewportCoordToRenderTarget( distortPos, rtParams1 );
 
-         // Get prepass depth at the position of this distorted pixel.
-         prepassDepth = prepassUncondition( prepassTex, prepassCoord ).w;
-	 if ( prepassDepth > 0.99 )
-            prepassDepth = 5.0;
-         delta = ( prepassDepth - pixelDepth ) * farPlaneDist;
+         // Get deferred depth at the position of this distorted pixel.
+         deferredDepth = deferredUncondition( deferredTex, deferredCoord ).w;
+	 if ( deferredDepth > 0.99 )
+            deferredDepth = 5.0;
+         delta = ( deferredDepth - pixelDepth ) * farPlaneDist;
       }
        
       if ( delta < 0.1 )
@@ -295,7 +295,7 @@ void main()
    foamColor.rgb *= FOAM_OPACITY * foamAmt * foamColor.a;
    
    // Get reflection map color.
-   vec4 refMapColor = hdrDecode( texture( reflectMap, reflectCoord ) );  
+   vec4 refMapColor = texture( reflectMap, reflectCoord );  
    
    // If we do not have a reflection texture then we use the cubemap.
    refMapColor = mix( refMapColor, texture( skyMap, reflectionVec ), NO_REFLECT );
@@ -324,6 +324,7 @@ void main()
    
    // Calculate the water "base" color based on depth.
    vec4 waterBaseColor = baseColor * texture( depthGradMap, saturate( delta / depthGradMax ) );
+   waterBaseColor = waterBaseColor;
       
    // Modulate baseColor by the ambientColor.
    waterBaseColor *= vec4( ambientColor.rgb, 1 );     
@@ -355,7 +356,7 @@ void main()
    // Get some specular reflection.
    vec3 newbump = bumpNorm;
    newbump.xy *= 3.5;
-   newbump = normalize( bumpNorm );
+   newbump = normalize( newbump );
    vec3 halfAng = normalize( eyeVec + -lightVec );
    float specular = saturate( dot( newbump, halfAng ) );
    specular = pow( specular, SPEC_POWER );   

@@ -66,6 +66,8 @@ Sun::Sun()
    mSunAzimuth = 0.0f;
    mSunElevation = 35.0f;
    mCastShadows = true;
+   mStaticRefreshFreq = 250;
+   mDynamicRefreshFreq = 8;
 
    mAnimateSun = false;
    mTotalTime = 0.0f;
@@ -163,7 +165,10 @@ void Sun::initPersistFields()
          "Adjust the Sun's global contrast/intensity");      
 
       addField( "castShadows", TypeBool, Offset( mCastShadows, Sun ), 
-         "Enables/disables shadows cast by objects due to Sun light");      
+         "Enables/disables shadows cast by objects due to Sun light");    
+
+      addField("staticRefreshFreq", TypeS32, Offset(mStaticRefreshFreq, Sun), "static shadow refresh rate (milliseconds)");
+      addField("dynamicRefreshFreq", TypeS32, Offset(mDynamicRefreshFreq, Sun), "dynamic shadow refresh rate (milliseconds)", AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
 
    endGroup( "Lighting" );
 
@@ -220,7 +225,9 @@ U32 Sun::packUpdate(NetConnection *conn, U32 mask, BitStream *stream )
       stream->write( mLightColor );
       stream->write( mLightAmbient );
       stream->write( mBrightness );      
-      stream->writeFlag( mCastShadows );
+      stream->writeFlag( mCastShadows ); 
+      stream->write(mStaticRefreshFreq);
+      stream->write(mDynamicRefreshFreq);
       stream->write( mFlareScale );
 
       if ( stream->writeFlag( mFlareData ) )
@@ -254,6 +261,8 @@ void Sun::unpackUpdate( NetConnection *conn, BitStream *stream )
       stream->read( &mLightAmbient );
       stream->read( &mBrightness );      
       mCastShadows = stream->readFlag();
+      stream->read(&mStaticRefreshFreq);
+      stream->read(&mDynamicRefreshFreq);
       stream->read( &mFlareScale );
 
       if ( stream->readFlag() )
@@ -385,7 +394,7 @@ void Sun::setElevation( F32 elevation )
    setMaskBits( UpdateMask ); // TODO: Break out the masks to save some space!
 }
 
-void Sun::setColor( const ColorF &color )
+void Sun::setColor( const LinearColorF &color )
 {
    mLightColor = color;
    _conformLights();
@@ -426,6 +435,8 @@ void Sun::_conformLights()
    // directional color are the same.
    bool castShadows = mLightColor != mLightAmbient && mCastShadows; 
    mLight->setCastShadows( castShadows );
+   mLight->setStaticRefreshFreq(mStaticRefreshFreq);
+   mLight->setDynamicRefreshFreq(mDynamicRefreshFreq);
 }
 
 void Sun::_initCorona()
@@ -456,15 +467,15 @@ void Sun::_renderCorona( ObjectRenderInst *ri, SceneRenderState *state, BaseMatI
    Point3F points[4];
    points[0] = Point3F(-BBRadius, 0.0, -BBRadius);
    points[1] = Point3F( -BBRadius, 0.0, BBRadius);
-   points[2] = Point3F( BBRadius, 0.0,  BBRadius);
-   points[3] = Point3F( BBRadius, 0.0,  -BBRadius);
+   points[2] = Point3F( BBRadius, 0.0,  -BBRadius);
+   points[3] = Point3F(BBRadius, 0.0, BBRadius);
 
    static const Point2F sCoords[4] = 
    {
       Point2F( 0.0f, 0.0f ),
       Point2F( 0.0f, 1.0f ),      
-      Point2F( 1.0f, 1.0f ),
-      Point2F( 1.0f, 0.0f )
+      Point2F( 1.0f, 0.0f ),
+      Point2F(1.0f, 1.0f)
    };
 
    // Get info we need to adjust points
@@ -479,7 +490,7 @@ void Sun::_renderCorona( ObjectRenderInst *ri, SceneRenderState *state, BaseMatI
       points[i] += mLightWorldPos;
    }
 
-   ColorF vertColor;
+   LinearColorF vertColor;
    if ( mCoronaUseLightColor )
       vertColor = mLightColor;
    else
@@ -492,7 +503,7 @@ void Sun::_renderCorona( ObjectRenderInst *ri, SceneRenderState *state, BaseMatI
 
    for ( S32 i = 0; i < 4; i++ )
    {
-      pVert->color.set( vertColor );
+      pVert->color.set( vertColor.toColorI());
       pVert->point.set( points[i] );
       pVert->texCoord.set( sCoords[i].x, sCoords[i].y );
       pVert++;
@@ -514,7 +525,7 @@ void Sun::_renderCorona( ObjectRenderInst *ri, SceneRenderState *state, BaseMatI
       mCoronaMatInst->setSceneInfo( state, sgData );
 
       GFX->setVertexBuffer( vb );      
-      GFX->drawPrimitive( GFXTriangleFan, 0, 2 );
+      GFX->drawPrimitive( GFXTriangleStrip, 0, 2 );
    }
 }
 

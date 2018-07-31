@@ -26,6 +26,7 @@
 #include "shaderGen/shaderComp.h"
 #include "shaderGen/langElement.h"
 #include "gfx/gfxDevice.h"
+#include "gfx/gl/gfxGLVertexAttribLocation.h"
 
 
 Var * AppVertConnectorGLSL::getElement(   RegisterType type, 
@@ -101,6 +102,32 @@ Var * AppVertConnectorGLSL::getElement(   RegisterType type,
          return newVar;
       }
 
+      case RT_BLENDINDICES:
+      {
+         Var *newVar = new Var;
+         newVar->constNum = mCurBlendIndicesElem;
+         mElementList.push_back(newVar);
+         char out[32];
+         const U32 blendIndicesOffset = Torque::GL_VertexAttrib_BlendIndex0 - Torque::GL_VertexAttrib_TexCoord0;
+         dSprintf((char*)out, sizeof(out), "vTexCoord%d", blendIndicesOffset + mCurBlendIndicesElem);
+         mCurBlendIndicesElem += 1;
+         newVar->setConnectName(out);
+         return newVar;
+      }
+
+      case RT_BLENDWEIGHT:
+      {
+         Var *newVar = new Var;
+         newVar->constNum = mCurBlendWeightsElem;
+         mElementList.push_back(newVar);
+         char out[32];
+         const U32 blendWeightsOffset = Torque::GL_VertexAttrib_BlendWeight0 - Torque::GL_VertexAttrib_TexCoord0;
+         dSprintf((char*)out, sizeof(out), "vTexCoord%d", blendWeightsOffset + mCurBlendWeightsElem);
+         mCurBlendWeightsElem += 1;
+         newVar->setConnectName(out);
+         return newVar;
+      }
+
       default:
          break;
    }
@@ -115,7 +142,7 @@ void AppVertConnectorGLSL::sortVars()
 
 void AppVertConnectorGLSL::setName( char *newName )
 {
-   dStrcpy( (char*)mName, newName );
+   dStrcpy( (char*)mName, newName, 32 );
 }
 
 void AppVertConnectorGLSL::reset()
@@ -260,7 +287,7 @@ void VertPixelConnectorGLSL::sortVars()
 
 void VertPixelConnectorGLSL::setName( char *newName )
 {
-   dStrcpy( (char*)mName, newName );
+   dStrcpy( (char*)mName, newName, 32 );
 }
 
 void VertPixelConnectorGLSL::reset()
@@ -373,17 +400,7 @@ Vector<String> initDeprecadedDefines()
 
 void VertPixelConnectorGLSL::printStructDefines( Stream &stream, bool in )
 {
-   const char* connectionDir;
-
-   if(in)
-   {       
-      connectionDir = "IN";
-   }
-   else
-   {
-     
-      connectionDir = "OUT";
-   }
+   const char* connectionDir = in ? "IN" : "OUT";
 
    static Vector<String> deprecatedDefines = initDeprecadedDefines();
 
@@ -405,13 +422,8 @@ void VertPixelConnectorGLSL::printStructDefines( Stream &stream, bool in )
       {
          dSprintf((char*)output, sizeof(output), "#define %s_%s _%s_\r\n", connectionDir, var->name, var->connectName);
          stream.write( dStrlen((char*)output), output );
-      }
-
-      if( deprecatedDefines.contains((char*)var->name))
          continue;
-
-      dSprintf((char*)output, sizeof(output), "#define %s %s_%s\r\n", var->name, connectionDir, var->name);
-      stream.write( dStrlen((char*)output), output );
+      }
    }
 
    stream.write( dStrlen((char*)newLine), newLine );

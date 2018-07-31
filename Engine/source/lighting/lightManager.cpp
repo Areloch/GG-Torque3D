@@ -36,7 +36,7 @@
 #include "T3D/gameBase/gameConnection.h"
 #include "gfx/gfxStringEnumTranslate.h"
 #include "console/engineAPI.h"
-#include "renderInstance/renderPrePassMgr.h"
+#include "renderInstance/renderDeferredMgr.h"
 
 
 Signal<void(const char*,bool)> LightManager::smActivateSignal;
@@ -46,11 +46,11 @@ LightManager *LightManager::smActiveLM = NULL;
 LightManager::LightManager( const char *name, const char *id )
    :  mName( name ),
       mId( id ),
-      mIsActive( false ),      
-      mSceneManager( NULL ),
+      mIsActive( false ),
       mDefaultLight( NULL ),
-      mAvailableSLInterfaces( NULL ),
-      mCullPos( Point3F::Zero )
+      mSceneManager( NULL ),
+      mCullPos( Point3F::Zero ),
+      mAvailableSLInterfaces( NULL )
 { 
    _getLightManagers().insert( mName, this );
 
@@ -227,6 +227,15 @@ void LightManager::registerGlobalLights( const Frustum *frustum, bool staticLigh
       // Cull the lights using the frustum.
       getSceneManager()->getContainer()->findObjectList( *frustum, lightMask, &activeLights );
 
+      for (U32 i = 0; i < activeLights.size(); ++i)
+      {
+         if (!getSceneManager()->mRenderedObjectsList.contains(activeLights[i]))
+         {
+            activeLights.erase(i);
+            --i;
+         }
+      }
+
       // Store the culling position for sun placement
       // later... see setSpecialLight.
       mCullPos = frustum->getPosition();
@@ -297,7 +306,7 @@ void LightManager::_update4LightConsts(   const SceneData &sgData,
                                           GFXShaderConstHandle *lightInvRadiusSqSC,
                                           GFXShaderConstHandle *lightSpotDirSC,
                                           GFXShaderConstHandle *lightSpotAngleSC,
-										  GFXShaderConstHandle *lightSpotFalloffSC,
+                                GFXShaderConstHandle *lightSpotFalloffSC,
                                           GFXShaderConstBuffer *shaderConsts )
 {
    PROFILE_SCOPE( LightManager_Update4LightConsts );
@@ -308,7 +317,7 @@ void LightManager::_update4LightConsts(   const SceneData &sgData,
          lightInvRadiusSqSC->isValid() ||
          lightSpotDirSC->isValid() ||
          lightSpotAngleSC->isValid() ||
-		 lightSpotFalloffSC->isValid() )
+       lightSpotFalloffSC->isValid() )
    {
       PROFILE_SCOPE( LightManager_Update4LightConsts_setLights );
 
@@ -317,7 +326,7 @@ void LightManager::_update4LightConsts(   const SceneData &sgData,
       static AlignedArray<Point4F> lightColors( 4, sizeof( Point4F ) );
       static Point4F lightInvRadiusSq;
       static Point4F lightSpotAngle;
-	  static Point4F lightSpotFalloff;
+     static Point4F lightSpotFalloff;
       F32 range;
       
       // Need to clear the buffers so that we don't leak
@@ -350,10 +359,10 @@ void LightManager::_update4LightConsts(   const SceneData &sgData,
             lightSpotDirs[2][i] = lightDir.z;
             
             if ( light->getType() == LightInfo::Spot )
-			{
+         {
                lightSpotAngle[i] = mCos( mDegToRad( light->getOuterConeAngle() / 2.0f ) ); 
-			   lightSpotFalloff[i] = 1.0f / getMax( F32_MIN, mCos( mDegToRad( light->getInnerConeAngle() / 2.0f ) ) - lightSpotAngle[i] );
-			}
+            lightSpotFalloff[i] = 1.0f / getMax( F32_MIN, mCos( mDegToRad( light->getInnerConeAngle() / 2.0f ) ) - lightSpotAngle[i] );
+         }
 
          // Prescale the light color by the brightness to 
          // avoid doing this in the shader.
@@ -370,7 +379,7 @@ void LightManager::_update4LightConsts(   const SceneData &sgData,
 
          shaderConsts->setSafe( lightSpotDirSC, lightSpotDirs );
          shaderConsts->setSafe( lightSpotAngleSC, lightSpotAngle );
-		 shaderConsts->setSafe( lightSpotFalloffSC, lightSpotFalloff );
+       shaderConsts->setSafe( lightSpotFalloffSC, lightSpotFalloff );
 
       
    }
@@ -410,15 +419,15 @@ bool LightManager::lightScene( const char* callback, const char* param )
    return sl->lightScene( callback, flags );
 }
 
-RenderPrePassMgr* LightManager::_findPrePassRenderBin()
+RenderDeferredMgr* LightManager::_findDeferredRenderBin()
 {
    RenderPassManager* rpm = getSceneManager()->getDefaultRenderPass();
    for( U32 i = 0; i < rpm->getManagerCount(); i++ )
    {
       RenderBinManager *bin = rpm->getManager( i );
-      if( bin->getRenderInstType() == RenderPrePassMgr::RIT_PrePass )
+      if( bin->getRenderInstType() == RenderDeferredMgr::RIT_Deferred )
       {
-         return ( RenderPrePassMgr* ) bin;
+         return ( RenderDeferredMgr* ) bin;
       }
    }
 
@@ -433,7 +442,7 @@ DefineEngineFunction( setLightManager, bool, ( const char *name ),,
    return gClientSceneGraph->setLightManager( name );
 }
 
-DefineEngineFunction( lightScene, bool, ( const char *completeCallbackFn, const char *mode ), ( NULL, NULL ),
+DefineEngineFunction( lightScene, bool, ( const char *completeCallbackFn, const char *mode ), ( nullAsType<const char*>(), nullAsType<const char*>() ),
    "Will generate static lighting for the scene if supported by the active light manager.\n\n"
    "If mode is \"forceAlways\", the lightmaps will be regenerated regardless of whether "
    "lighting cache files can be written to. If mode is \"forceWritable\", then the lightmaps "

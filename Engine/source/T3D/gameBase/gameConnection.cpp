@@ -20,6 +20,11 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
+// Arcane-FX for MIT Licensed Open Source version of Torque 3D from GarageGames
+// Copyright (C) 2015 Faust Logic, Inc.
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
+
 #include "platform/platform.h"
 #include "T3D/gameBase/gameConnection.h"
 
@@ -39,6 +44,9 @@
 #include "console/engineAPI.h"
 #include "math/mTransform.h"
 
+#include "T3D/entity.h"
+#include "T3D/components/coreInterfaces.h"
+
 #ifdef TORQUE_HIFI_NET
    #include "T3D/gameBase/hifi/hifiMoveList.h"
 #elif defined TORQUE_EXTENDED_MOVE
@@ -47,6 +55,13 @@
    #include "T3D/gameBase/std/stdMoveList.h"
 #endif
 
+#ifdef AFX_CAP_DATABLOCK_CACHE 
+#include "core/stream/fileStream.h"
+#endif 
+
+#ifdef TORQUE_AFX_ENABLED
+#include "afx/arcaneFX.h"
+#endif
 //----------------------------------------------------------------------------
 #define MAX_MOVE_PACKET_SENDS 4
 
@@ -168,9 +183,28 @@ IMPLEMENT_CALLBACK( GameConnection, onFlash, void, (bool state), (state),
    "either is on or both are off.  Typically this is used to enable the flash postFx.\n\n"
    "@param state Set to true if either the damage flash or white out conditions are active.\n\n");
 
+#ifdef AFX_CAP_DATABLOCK_CACHE 
+StringTableEntry GameConnection::server_cache_filename = "";
+StringTableEntry GameConnection::client_cache_filename = "";
+bool GameConnection::server_cache_on = false;
+bool GameConnection::client_cache_on = false;
+#endif 
 //----------------------------------------------------------------------------
 GameConnection::GameConnection()
 {
+#ifdef TORQUE_AFX_ENABLED
+   mRolloverObj = NULL;
+   mPreSelectedObj = NULL;
+   mSelectedObj = NULL;
+   mChangedSelectedObj = false;
+   mPreSelectTimestamp = 0;
+   zoned_in = false;
+#endif
+   
+#ifdef AFX_CAP_DATABLOCK_CACHE 
+   client_db_stream = new InfiniteBitStream;
+   server_cache_CRC = 0xffffffff;
+#endif 
    mLagging = false;
    mControlObject = NULL;
    mCameraObject = NULL;
@@ -235,11 +269,16 @@ GameConnection::GameConnection()
 
 GameConnection::~GameConnection()
 {
+   setDisplayDevice(NULL);
    delete mAuthInfo;
    for(U32 i = 0; i < mConnectArgc; i++)
       dFree(mConnectArgv[i]);
    dFree(mJoinPassword);
    delete mMoveList;
+
+#ifdef AFX_CAP_DATABLOCK_CACHE
+   delete client_db_stream;
+#endif 
 }
 
 //----------------------------------------------------------------------------
@@ -401,7 +440,7 @@ bool GameConnection::readConnectAccept(BitStream *stream, const char **errorStri
 void GameConnection::writeConnectRequest(BitStream *stream)
 {
    Parent::writeConnectRequest(stream);
-   stream->writeString(GameString);
+   stream->writeString(TORQUE_APP_NAME);
    stream->write(CurrentProtocolVersion);
    stream->write(MinRequiredProtocolVersion);
    stream->writeString(mJoinPassword);
@@ -418,7 +457,7 @@ bool GameConnection::readConnectRequest(BitStream *stream, const char **errorStr
    U32 currentProtocol, minProtocol;
    char gameString[256];
    stream->readString(gameString);
-   if(dStrcmp(gameString, GameString))
+   if(dStrcmp(gameString, TORQUE_APP_NAME))
    {
       *errorString = "CHR_GAME";
       return false;
@@ -459,6 +498,14 @@ bool GameConnection::readConnectRequest(BitStream *stream, const char **errorStr
       return false;
    }
    ConsoleValueRef connectArgv[MaxConnectArgs + 3];
+   ConsoleValue connectArgvValue[MaxConnectArgs + 3];
+
+   for(U32 i = 0; i < mConnectArgc+3; i++)
+   {
+      connectArgv[i].value = &connectArgvValue[i];
+      connectArgvValue[i].init();
+   }
+
    for(U32 i = 0; i < mConnectArgc; i++)
    {
       char argString[256];
@@ -466,11 +513,11 @@ bool GameConnection::readConnectRequest(BitStream *stream, const char **errorStr
       mConnectArgv[i] = dStrdup(argString);
       connectArgv[i + 3] = mConnectArgv[i];
    }
-   connectArgv[0] = "onConnectRequest";
-   connectArgv[1] = 0;
+   connectArgvValue[0].setStackStringValue("onConnectRequest");
+   connectArgvValue[1].setIntValue(0);
    char buffer[256];
    Net::addressToString(getNetAddress(), buffer);
-   connectArgv[2] = buffer;
+   connectArgvValue[2].setStackStringValue(buffer);
 
    // NOTE: Cannot convert over to IMPLEMENT_CALLBACK as it has variable args.
    const char *ret = Con::execute(this, mConnectArgc + 3, connectArgv);
@@ -542,7 +589,9 @@ void GameConnection::setControlObject(GameBase *obj)
       obj->setControllingClient(this);
 
       // Update the camera's FOV to match the new control object
-      setControlCameraFov( obj->getCameraFov() );
+      //but only if we don't have a specific camera object
+      if (!mCameraObject)
+         setControlCameraFov(obj->getCameraFov());
    }
 
    // Okay, set our control object.
@@ -665,6 +714,48 @@ bool GameConnection::getControlCameraTransform(F32 dt, MatrixF* mat)
    return true;
 }
 
+bool GameConnection::getControlCameraHeadTransform(IDisplayDevice *display, MatrixF *transform)
+{
+   GameBase* obj = getCameraObject();
+   if (!obj)
+      return false;
+
+   GameBase* cObj = obj;
+   while ((cObj = cObj->getControlObject()) != 0)
+   {
+      if (cObj->useObjsEyePoint())
+         obj = cObj;
+   }
+
+   obj->getEyeCameraTransform(display, -1, transform);
+
+   return true;
+}
+
+bool GameConnection::getControlCameraEyeTransforms(IDisplayDevice *display, MatrixF *transforms)
+{
+   GameBase* obj = getCameraObject();
+   if(!obj)
+      return false;
+
+   GameBase* cObj = obj;
+   while((cObj = cObj->getControlObject()) != 0)
+   {
+      if(cObj->useObjsEyePoint())
+         obj = cObj;
+   }
+
+   // Perform operation on left & right eyes. For each we need to calculate the world space 
+   // of the rotated eye offset and add that onto the camera world space.
+   for (U32 i=0; i<2; i++)
+   {
+      obj->getEyeCameraTransform(display, i, &transforms[i]);
+   }
+
+   return true;
+}
+
+
 bool GameConnection::getControlCameraDefaultFov(F32 * fov)
 {
    //find the last control object in the chain (client->player->turret->whatever...)
@@ -696,7 +787,18 @@ bool GameConnection::getControlCameraFov(F32 * fov)
    }
    if (cObj)
    {
-      *fov = cObj->getCameraFov();
+      if (Entity* ent = dynamic_cast<Entity*>(cObj))
+      {
+         if (CameraInterface* camInterface = ent->getComponent<CameraInterface>())
+         {
+            *fov = camInterface->getCameraFov();
+         }
+      }
+      else
+      {
+         *fov = cObj->getCameraFov();
+      }
+
       return(true);
    }
 
@@ -714,7 +816,22 @@ bool GameConnection::isValidControlCameraFov(F32 fov)
       obj = obj->getControlObject();
    }
 
-   return cObj ? cObj->isValidCameraFov(fov) : NULL;
+   if (cObj)
+   {
+      if (Entity* ent = dynamic_cast<Entity*>(cObj))
+      {
+         if (CameraInterface* camInterface = ent->getComponent<CameraInterface>())
+         {
+            return camInterface->isValidCameraFov(fov);
+         }
+      }
+      else
+      {
+         return cObj->isValidCameraFov(fov);
+      }
+   }
+
+   return NULL;
 }
 
 bool GameConnection::setControlCameraFov(F32 fov)
@@ -729,9 +846,25 @@ bool GameConnection::setControlCameraFov(F32 fov)
    }
    if (cObj)
    {
-      // allow shapebase to clamp fov to its datablock values
-      cObj->setCameraFov(mClampF(fov, MinCameraFov, MaxCameraFov));
-      F32 newFov = cObj->getCameraFov();
+      F32 newFov = 90.f;
+      if (Entity* ent = dynamic_cast<Entity*>(cObj))
+      {
+         if (CameraInterface* camInterface = ent->getComponent<CameraInterface>())
+         {
+            camInterface->setCameraFov(mClampF(fov, MinCameraFov, MaxCameraFov));
+            newFov = camInterface->getCameraFov();
+         }
+         else
+         {
+            Con::errorf("Attempted to setControlCameraFov, but we don't have a camera!");
+         }
+      }
+      else
+      {
+         // allow shapebase to clamp fov to its datablock values
+         cObj->setCameraFov(mClampF(fov, MinCameraFov, MaxCameraFov));
+         newFov = cObj->getCameraFov();
+      }
 
       // server fov of client has 1degree resolution
       if( S32(newFov) != S32(mCameraFov) || newFov != fov )
@@ -800,8 +933,8 @@ void GameConnection::onRemove()
       // clientgroup and what not (this is so that we can disconnect from a local server
       // without needing to destroy and recreate the server before we can connect to it 
       // again).
-	   // Safe-delete as we don't know whether the server connection is currently being
-	   // worked on.
+      // Safe-delete as we don't know whether the server connection is currently being
+      // worked on.
       getRemoteConnection()->safeDeleteObject();
       setRemoteConnectionObject(NULL);
    }
@@ -991,8 +1124,10 @@ bool GameConnection::readDemoStartBlock(BitStream *stream)
 
 void GameConnection::demoPlaybackComplete()
 {
-   static ConsoleValueRef demoPlaybackArgv[1] = { "demoPlaybackComplete" };
-   Sim::postCurrentEvent(Sim::getRootGroup(), new SimConsoleEvent(1, demoPlaybackArgv, false));
+   static const char* demoPlaybackArgv[1] = { "demoPlaybackComplete" };
+   static StringStackConsoleWrapper demoPlaybackCmd(1, demoPlaybackArgv);
+
+   Sim::postCurrentEvent(Sim::getRootGroup(), new SimConsoleEvent(demoPlaybackCmd.argc, demoPlaybackCmd.argv, false));
    Parent::demoPlaybackComplete();
 }
 
@@ -1027,6 +1162,20 @@ void GameConnection::readPacket(BitStream *bstream)
    if (isConnectionToServer())
    {
       mMoveList->clientReadMovePacket(bstream);
+
+#ifdef TORQUE_AFX_ENABLED
+      // selected object - do we have a change in status?
+      if (bstream->readFlag()) 
+      { 
+         if (bstream->readFlag()) 
+         { 
+            S32 gIndex = bstream->readInt(NetConnection::GhostIdBitSize);
+            setSelectedObj(static_cast<SceneObject*>(resolveGhost(gIndex)));
+         }
+         else
+            setSelectedObj(NULL);
+      }
+#endif
 
       bool hadFlash = mDamageFlash > 0 || mWhiteOut > 0;
       mDamageFlash = 0;
@@ -1112,10 +1261,17 @@ void GameConnection::readPacket(BitStream *bstream)
 
       if (bstream->readFlag())
       {
+         bool callScript = false;
+         if (mCameraObject.isNull())
+            callScript = true;
+
          S32 gIndex = bstream->readInt(NetConnection::GhostIdBitSize);
          GameBase* obj = dynamic_cast<GameBase*>(resolveGhost(gIndex));
          setCameraObject(obj);
          obj->readPacketData(this, bstream);
+
+         if (callScript)
+            initialControlSet_callback();
       }
       else
          setCameraObject(0);
@@ -1264,6 +1420,37 @@ void GameConnection::writePacket(BitStream *bstream, PacketNotify *note)
       // all the damage flash & white out
 
       S32 gIndex = -1;
+#ifdef TORQUE_AFX_ENABLED
+      if (mChangedSelectedObj)
+      {
+         S32 gidx;
+         // send NULL player
+         if ((mSelectedObj == NULL) || mSelectedObj.isNull())
+         {
+            bstream->writeFlag(true);
+            bstream->writeFlag(false);
+            mChangedSelectedObj = false;
+         }
+         // send ghost-idx
+         else if ((gidx = getGhostIndex(mSelectedObj)) != -1)
+         {
+            Con::printf("SEND OBJECT SELECTION");
+            bstream->writeFlag(true);
+            bstream->writeFlag(true);
+            bstream->writeInt(gidx, NetConnection::GhostIdBitSize);
+            mChangedSelectedObj = false;
+         }
+         // not fully changed yet
+         else
+         {
+            bstream->writeFlag(false);
+            mChangedSelectedObj = true;
+         }
+      }
+      else
+         bstream->writeFlag(false);
+#endif
+		 
       if (!mControlObject.isNull())
       {
          gIndex = getGhostIndex(mControlObject);
@@ -1485,6 +1672,14 @@ void GameConnection::preloadNextDataBlock(bool hadNewFiles)
          sendConnectionMessage(DataBlocksDownloadDone, mDataBlockSequence);
 
 //          gResourceManager->setMissingFileLogging(false);
+
+#ifdef AFX_CAP_DATABLOCK_CACHE 
+         // This should be the last of the datablocks. An argument of false
+         // indicates that this is a client save.
+         if (clientCacheEnabled())
+            saveDatablockCache(false);
+#endif 
+
          return;
       }
       mFilesWereDownloaded = hadNewFiles;
@@ -1648,7 +1843,11 @@ DefineEngineMethod( GameConnection, transmitDataBlocks, void, (S32 sequence),,
     const U32 iCount = pGroup->size();
 
     // If this is the local client...
+#ifdef AFX_CAP_DATABLOCK_CACHE 
+    if (GameConnection::getLocalClientConnection() == object && !GameConnection::serverCacheEnabled())
+#else
     if (GameConnection::getLocalClientConnection() == object)
+#endif 
     {
         // Set up a pointer to the datablock.
         SimDataBlock* pDataBlock = 0;
@@ -1691,6 +1890,13 @@ DefineEngineMethod( GameConnection, transmitDataBlocks, void, (S32 sequence),,
 
             // Ensure that the client knows that the datablock send is done...
             object->sendConnectionMessage(GameConnection::DataBlocksDone, object->getDataBlockSequence());
+        }
+
+        if (iCount == 0)
+        {
+           //if we have no datablocks to send, we still need to be able to complete the level load process
+           //so fire off our callback anyways
+           object->sendConnectionMessage(GameConnection::DataBlocksDone, object->getDataBlockSequence());
         }
     } 
     else
@@ -2036,6 +2242,13 @@ void GameConnection::consoleInit()
       "@ingroup Networking\n");
 
    // Con::addVariable("specialFog", TypeBool, &SceneGraph::useSpecial);
+
+#ifdef AFX_CAP_DATABLOCK_CACHE 
+   Con::addVariable("$Pref::Server::DatablockCacheFilename",  TypeString,   &server_cache_filename);
+   Con::addVariable("$pref::Client::DatablockCacheFilename",  TypeString,   &client_cache_filename);
+   Con::addVariable("$Pref::Server::EnableDatablockCache",    TypeBool,     &server_cache_on);
+   Con::addVariable("$pref::Client::EnableDatablockCache",    TypeBool,     &client_cache_on);
+#endif 
 }
 
 DefineEngineMethod( GameConnection, startRecording, void, (const char* fileName),,
@@ -2231,3 +2444,523 @@ DefineEngineMethod( GameConnection, getVisibleGhostDistance, F32, (),,
 {
    return object->getVisibleGhostDistance();
 }
+
+#ifdef TORQUE_AFX_ENABLED 
+// The object selection code here is, in part, based, on functionality described
+// in the following resource:
+// Object Selection in Torque by Dave Myers 
+//   http://www.garagegames.com/index.php?sec=mg&mod=resource&page=view&qid=7335
+
+ConsoleMethod(GameConnection, setSelectedObj, bool, 3, 4, "(object, [propagate_to_client])")
+{
+   SceneObject* pending_selection;
+   if (!Sim::findObject(argv[2], pending_selection))
+      return false;
+
+   bool propagate_to_client = (argc > 3) ? dAtob(argv[3]) : false;
+   object->setSelectedObj(pending_selection, propagate_to_client);
+
+   return true;
+}
+
+ConsoleMethod(GameConnection, getSelectedObj, S32, 2, 2, "()")
+{
+   SimObject* selected = object->getSelectedObj();
+   return (selected) ? selected->getId(): -1;
+}
+
+ConsoleMethod(GameConnection, clearSelectedObj, void, 2, 3, "([propagate_to_client])")
+{
+   bool propagate_to_client = (argc > 2) ? dAtob(argv[2]) : false;
+   object->setSelectedObj(NULL, propagate_to_client);
+}
+
+ConsoleMethod(GameConnection, setPreSelectedObjFromRollover, void, 2, 2, "()")
+{
+   object->setPreSelectedObjFromRollover();
+}
+
+ConsoleMethod(GameConnection, clearPreSelectedObj, void, 2, 2, "()")
+{
+   object->clearPreSelectedObj();
+}
+
+ConsoleMethod(GameConnection, setSelectedObjFromPreSelected, void, 2, 2, "()")
+{
+   object->setSelectedObjFromPreSelected();
+}
+
+void GameConnection::setSelectedObj(SceneObject* so, bool propagate_to_client) 
+{ 
+   if (!isConnectionToServer())
+   {
+      // clear previously selected object
+      if (mSelectedObj)
+         clearNotify(mSelectedObj);
+
+      // save new selection
+      mSelectedObj = so; 
+
+      // mark selected object
+      if (mSelectedObj)
+         deleteNotify(mSelectedObj);
+
+      // mark selection dirty
+      if (propagate_to_client)
+         mChangedSelectedObj = true; 
+
+      return;
+   }
+
+   // clear previously selected object
+   if (mSelectedObj)
+   {
+      mSelectedObj->setSelectionFlags(mSelectedObj->getSelectionFlags() & ~SceneObject::SELECTED);
+      clearNotify(mSelectedObj);
+      Con::executef(this, "onObjectDeselected", mSelectedObj->getIdString());
+   }
+
+   // save new selection
+   mSelectedObj = so; 
+
+   // mark selected object
+   if (mSelectedObj)
+   {
+      mSelectedObj->setSelectionFlags(mSelectedObj->getSelectionFlags() | SceneObject::SELECTED);
+      deleteNotify(mSelectedObj);
+   }
+
+   // mark selection dirty
+   //mChangedSelectedObj = true; 
+
+   // notify appropriate script of the change
+   if (mSelectedObj)
+      Con::executef(this, "onObjectSelected", mSelectedObj->getIdString());
+}
+
+void GameConnection::setRolloverObj(SceneObject* so) 
+{ 
+   // save new selection
+   mRolloverObj = so;  
+
+   // notify appropriate script of the change
+   Con::executef(this, "onObjectRollover", (mRolloverObj) ? mRolloverObj->getIdString() : "");
+}
+
+void GameConnection::setPreSelectedObjFromRollover()
+{
+   mPreSelectedObj = mRolloverObj;
+   mPreSelectTimestamp = Platform::getRealMilliseconds();
+}
+
+void GameConnection::clearPreSelectedObj()
+{
+   mPreSelectedObj = 0;
+   mPreSelectTimestamp = 0;
+}
+
+void GameConnection::setSelectedObjFromPreSelected()
+{
+   U32 now = Platform::getRealMilliseconds();
+   if (now - mPreSelectTimestamp < arcaneFX::sTargetSelectionTimeoutMS)
+      setSelectedObj(mPreSelectedObj);
+   mPreSelectedObj = 0;
+}
+
+void GameConnection::onDeleteNotify(SimObject* obj)
+{
+   if (obj == mSelectedObj)
+      setSelectedObj(NULL);
+
+   Parent::onDeleteNotify(obj);
+}
+#endif
+
+#ifdef AFX_CAP_DATABLOCK_CACHE 
+
+void GameConnection::tempDisableStringBuffering(BitStream* bs) const 
+{ 
+   bs->setStringBuffer(0); 
+}
+
+void GameConnection::restoreStringBuffering(BitStream* bs) const 
+{ 
+   bs->clearStringBuffer();
+}              
+
+// rewind to stream postion and then move raw bytes into client_db_stream
+// for caching purposes.
+void GameConnection::repackClientDatablock(BitStream* bstream, S32 start_pos)
+{
+   static U8 bit_buffer[Net::MaxPacketDataSize];
+
+   if (!clientCacheEnabled() || !client_db_stream)
+      return;
+
+   S32 cur_pos = bstream->getCurPos();
+   S32 n_bits = cur_pos - start_pos;
+   if (n_bits <= 0)
+      return;
+
+   bstream->setCurPos(start_pos);
+   bstream->readBits(n_bits, bit_buffer);
+   bstream->setCurPos(cur_pos);
+
+   //S32 start_pos2 = client_db_stream->getCurPos();
+   client_db_stream->writeBits(n_bits, bit_buffer);
+}
+
+#define CLIENT_CACHE_VERSION_CODE 47241113
+
+void GameConnection::saveDatablockCache(bool on_server)
+{
+   InfiniteBitStream bit_stream;
+   BitStream* bstream = 0;
+
+   if (on_server)
+   {
+      SimDataBlockGroup *g = Sim::getDataBlockGroup();
+
+      // find the first one we haven't sent:
+      U32 i, groupCount = g->size();
+      S32 key = this->getDataBlockModifiedKey();
+      for (i = 0; i < groupCount; i++)
+         if (((SimDataBlock*)(*g)[i])->getModifiedKey() > key)
+            break;
+
+      // nothing to save
+      if (i == groupCount) 
+         return;
+
+      bstream = &bit_stream;
+
+      for (;i < groupCount; i++) 
+      {
+         SimDataBlock* obj = (SimDataBlock*)(*g)[i];
+         GameConnection* gc = this;
+         NetConnection* conn = this;
+         SimObjectId id = obj->getId();
+
+         if (bstream->writeFlag(gc->getDataBlockModifiedKey() < obj->getModifiedKey()))        // A - flag
+         {
+            if (obj->getModifiedKey() > gc->getMaxDataBlockModifiedKey())
+               gc->setMaxDataBlockModifiedKey(obj->getModifiedKey());
+
+            bstream->writeInt(id - DataBlockObjectIdFirst,DataBlockObjectIdBitSize);            // B - int
+
+            S32 classId = obj->getClassId(conn->getNetClassGroup());
+            bstream->writeClassId(classId, NetClassTypeDataBlock, conn->getNetClassGroup());    // C - id
+            bstream->writeInt(i, DataBlockObjectIdBitSize);                                     // D - int
+            bstream->writeInt(groupCount, DataBlockObjectIdBitSize + 1);                        // E - int
+            obj->packData(bstream);
+         }
+      }
+   }
+   else
+   {
+      bstream = client_db_stream;
+   }
+
+   if (bstream->getPosition() <= 0)
+      return;
+
+   // zero out any leftover bits short of an even byte count
+   U32 n_leftover_bits = (bstream->getPosition()*8) - bstream->getCurPos();
+   if (n_leftover_bits >= 0 && n_leftover_bits <= 8)
+   {
+      // note - an unusual problem regarding setCurPos() results when there 
+      // are no leftover bytes. Adding a buffer byte in this case avoids the problem.
+      if (n_leftover_bits == 0)
+         n_leftover_bits = 8;
+      U8 bzero = 0;
+      bstream->writeBits(n_leftover_bits, &bzero);
+   }
+
+   // this is where we actually save the file
+   const char* filename = (on_server) ? server_cache_filename : client_cache_filename;
+   if (filename && filename[0] != '\0')
+   {
+      FileStream* f_stream;
+      if((f_stream = FileStream::createAndOpen(filename, Torque::FS::File::Write )) == NULL)
+      {
+         Con::printf("Failed to open file '%s'.", filename);
+         return;
+      }
+
+      U32 save_sz = bstream->getPosition();
+
+      if (!on_server)
+      {
+         f_stream->write((U32)CLIENT_CACHE_VERSION_CODE);
+         f_stream->write(save_sz);
+         f_stream->write(server_cache_CRC);
+         f_stream->write((U32)CLIENT_CACHE_VERSION_CODE);
+      }
+
+      f_stream->write(save_sz, bstream->getBuffer());
+
+      // zero out any leftover bytes short of a 4-byte multiple
+      while ((save_sz % 4) != 0)
+      {
+         f_stream->write((U8)0);
+         save_sz++;
+      }
+
+      delete f_stream;
+   }
+
+   if (!on_server)
+      client_db_stream->clear();
+}
+
+static bool afx_saved_db_cache = false;
+static U32 afx_saved_db_cache_CRC = 0xffffffff;
+
+void GameConnection::resetDatablockCache()
+{
+   afx_saved_db_cache = false;
+   afx_saved_db_cache_CRC = 0xffffffff;
+}
+
+ConsoleFunction(resetDatablockCache, void, 1, 1, "resetDatablockCache()")
+{
+   GameConnection::resetDatablockCache();
+}
+
+ConsoleFunction(isDatablockCacheSaved, bool, 1, 1, "resetDatablockCache()")
+{
+   return afx_saved_db_cache;
+}
+
+ConsoleFunction(getDatablockCacheCRC, S32, 1, 1, "getDatablockCacheCRC()")
+{
+   return (S32)afx_saved_db_cache_CRC;
+}
+
+ConsoleFunction(extractDatablockCacheCRC, S32, 2, 2, "extractDatablockCacheCRC(filename)")
+{
+   FileStream f_stream;
+   const char* fileName = argv[1];
+   if(!f_stream.open(fileName, Torque::FS::File::Read))
+   {
+      Con::errorf("Failed to open file '%s'.", fileName);
+      return -1;
+   }
+
+   U32 stream_sz = f_stream.getStreamSize();
+   if (stream_sz < 4*32)
+   {
+      Con::errorf("File '%s' is not a valid datablock cache.", fileName);
+      f_stream.close();
+      return -1;
+   }
+
+   U32 pre_code; f_stream.read(&pre_code);
+   U32 save_sz; f_stream.read(&save_sz);
+   U32 crc_code; f_stream.read(&crc_code);
+   U32 post_code; f_stream.read(&post_code);
+
+   f_stream.close();
+
+   if (pre_code != post_code)
+   {
+      Con::errorf("File '%s' is not a valid datablock cache.", fileName);
+      return -1;
+   }
+
+   if (pre_code != (U32)CLIENT_CACHE_VERSION_CODE)
+   {
+      Con::errorf("Version of datablock cache file '%s' does not match version of running software.", fileName);
+      return -1;
+   }
+
+   return (S32)crc_code;
+}
+
+ConsoleFunction(setDatablockCacheCRC, void, 2, 2, "setDatablockCacheCRC(crc)")
+{
+   GameConnection *conn = GameConnection::getConnectionToServer();
+   if(!conn)
+      return;
+
+   U32 crc_u = (U32)dAtoi(argv[1]);
+   conn->setServerCacheCRC(crc_u);
+}
+
+ConsoleMethod( GameConnection, saveDatablockCache, void, 2, 2, "saveDatablockCache()")
+{
+   if (GameConnection::serverCacheEnabled() && !afx_saved_db_cache)
+   {
+      // Save the datablocks to a cache file. An argument
+      // of true indicates that this is a server save.
+      object->saveDatablockCache(true);
+      afx_saved_db_cache = true;
+      afx_saved_db_cache_CRC = 0xffffffff;
+
+      static char filename_buffer[1024];
+      String filename(Torque::Path::CleanSeparators(object->serverCacheFilename()));
+      Con::expandScriptFilename(filename_buffer, sizeof(filename_buffer), filename.c_str());
+      Torque::Path givenPath(Torque::Path::CompressPath(filename_buffer));
+      Torque::FS::FileNodeRef fileRef = Torque::FS::GetFileNode(givenPath);
+      if ( fileRef == NULL )
+         Con::errorf("saveDatablockCache() failed to get CRC for file '%s'.", filename.c_str());
+      else
+         afx_saved_db_cache_CRC = (S32)fileRef->getChecksum();
+   }
+}
+
+ConsoleMethod( GameConnection, loadDatablockCache, void, 2, 2, "loadDatablockCache()")
+{
+   if (GameConnection::clientCacheEnabled())
+   {
+      object->loadDatablockCache();
+   }
+}
+
+ConsoleMethod( GameConnection, loadDatablockCache_Begin, bool, 2, 2, "loadDatablockCache_Begin()")
+{
+   if (GameConnection::clientCacheEnabled())
+   {
+      return object->loadDatablockCache_Begin();
+   }
+
+   return false;
+}
+
+ConsoleMethod( GameConnection, loadDatablockCache_Continue, bool, 2, 2, "loadDatablockCache_Continue()")
+{
+   if (GameConnection::clientCacheEnabled())
+   {
+      return object->loadDatablockCache_Continue();
+   }
+
+   return false;
+}
+
+static char*        afx_db_load_buf = 0;
+static U32          afx_db_load_buf_sz = 0;
+static BitStream*   afx_db_load_bstream = 0;
+
+void GameConnection::loadDatablockCache()
+{
+   if (!loadDatablockCache_Begin())
+      return;
+
+   while (loadDatablockCache_Continue())
+      ;
+}
+
+bool GameConnection::loadDatablockCache_Begin()
+{
+   if (!client_cache_filename || client_cache_filename[0] == '\0')
+   {
+      Con::errorf("No filename was specified for the client datablock cache.");
+      return false;
+   }
+
+   // open cache file
+   FileStream f_stream;
+   if(!f_stream.open(client_cache_filename, Torque::FS::File::Read))
+   {
+      Con::errorf("Failed to open file '%s'.", client_cache_filename);
+      return false;
+   }
+
+   // get file size
+   U32 stream_sz = f_stream.getStreamSize();
+   if (stream_sz <= 4*4)
+   {
+      Con::errorf("File '%s' is too small to be a valid datablock cache.", client_cache_filename);
+      f_stream.close();
+      return false;
+   }
+
+   // load header data
+   U32 pre_code; f_stream.read(&pre_code);
+   U32 save_sz; f_stream.read(&save_sz);
+   U32 crc_code; f_stream.read(&crc_code);
+   U32 post_code; f_stream.read(&post_code);
+
+   // validate header info 
+   if (pre_code != post_code)
+   {
+      Con::errorf("File '%s' is not a valid datablock cache.", client_cache_filename);
+      f_stream.close();
+      return false;
+   }
+   if (pre_code != (U32)CLIENT_CACHE_VERSION_CODE)
+   {
+      Con::errorf("Version of datablock cache file '%s' does not match version of running software.", client_cache_filename);
+      f_stream.close();
+      return false;
+   }
+
+   // allocated the in-memory buffer
+   afx_db_load_buf_sz = stream_sz - (4*4);
+   afx_db_load_buf = new char[afx_db_load_buf_sz];
+
+   // load data from file into memory
+   if (!f_stream.read(stream_sz, afx_db_load_buf))
+   {
+      Con::errorf("Failed to read data from file '%s'.", client_cache_filename);
+      f_stream.close();
+      delete [] afx_db_load_buf;
+      afx_db_load_buf = 0;
+      afx_db_load_buf_sz = 0;
+      return false;
+   }
+
+   // close file
+   f_stream.close();
+
+   // At this point we have the whole cache in memory
+
+   // create a bitstream from the in-memory buffer
+   afx_db_load_bstream = new BitStream(afx_db_load_buf, afx_db_load_buf_sz);
+
+   return true;
+}
+
+bool GameConnection::loadDatablockCache_Continue()
+{
+   if (!afx_db_load_bstream)
+      return false;
+
+   // prevent repacking of datablocks during load
+   BitStream* save_client_db_stream = client_db_stream;
+   client_db_stream = 0;
+
+   bool all_finished = false;
+
+   // loop through at most 16 datablocks
+   BitStream *bstream = afx_db_load_bstream;
+   for (S32 i = 0; i < 16; i++)
+   {
+      S32 save_pos = bstream->getCurPos();
+      if (!bstream->readFlag())
+      {
+         all_finished = true;
+         break;
+      }
+      bstream->setCurPos(save_pos);
+      SimDataBlockEvent evt;
+      evt.unpack(this, bstream);
+      evt.process(this);
+   }
+
+   client_db_stream = save_client_db_stream;
+
+   if (all_finished)
+   {
+      delete afx_db_load_bstream;
+      afx_db_load_bstream = 0;
+      delete [] afx_db_load_buf;
+      afx_db_load_buf = 0;
+      afx_db_load_buf_sz = 0;
+      return false;
+   }
+
+   return true;
+}
+
+#endif 

@@ -35,7 +35,7 @@
 // Collada <light> elements are very similar, but are arranged as separate, unrelated
 // classes. These template functions are used to provide a simple way to access the
 // common elements.
-template<class T> static void resolveLightColor(T* light, ColorF& color)
+template<class T> static void resolveLightColor(T* light, LinearColorF& color)
 {
    if (light->getColor())
    {
@@ -80,7 +80,7 @@ static void processNodeLights(AppNode* appNode, const MatrixF& offset, SimGroup*
       }
 
       LightBase* pLight = 0;
-      ColorF color(ColorF::WHITE);
+      LinearColorF color(LinearColorF::WHITE);
       Point3F attenuation(0, 1, 1);
 
       if (technique->getAmbient()) {
@@ -168,7 +168,7 @@ DefineConsoleFunction( loadColladaLights, bool, (const char * filename, const ch
    // the MissionGroup if not specified.
    SimGroup* missionGroup = dynamic_cast<SimGroup*>(Sim::findObject("MissionGroup"));
    SimGroup* group = 0;
-   if (!dStrIsEmpty(parentGroup)){
+   if (!String::isEmpty(parentGroup)){
       if (!Sim::findObject(parentGroup, group)) {
          // Create the group if it could not be found
          group = new SimGroup;
@@ -187,7 +187,7 @@ DefineConsoleFunction( loadColladaLights, bool, (const char * filename, const ch
 
    // Optional object to provide the base transform
    MatrixF offset(true);
-   if (!dStrIsEmpty(baseObject)){
+   if (!String::isEmpty(baseObject)){
       SceneObject *obj;
       if (Sim::findObject(baseObject, obj))
          offset = obj->getTransform();

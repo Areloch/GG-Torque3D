@@ -157,7 +157,7 @@ bool NetConnection::mFilesWereDownloaded = false;
 
 static inline U32 HashNetAddress(const NetAddress *addr)
 {
-   return *((U32 *)addr->netNum) % NetConnection::HashTableSize;
+   return addr->getHash() % NetConnection::HashTableSize;
 }
 
 NetConnection *NetConnection::lookup(const NetAddress *addr)
@@ -215,7 +215,7 @@ U32 NetConnection::getSequence()
 static U32 gPacketRateToServer = 32;
 static U32 gPacketUpdateDelayToServer = 32;
 static U32 gPacketRateToClient = 10;
-static U32 gPacketSize = 200;
+static U32 gPacketSize = 508;
 
 void NetConnection::consoleInit()
 {
@@ -316,7 +316,10 @@ void NetConnection::checkMaxRate()
    {
       packetRateToServer = 128;
       packetRateToClient = 128;
-      packetSize = 1024;
+      // These changes introduced in T3D 1.1 Preview reduce the packet headroom which leads
+      // to some spells and effects running out of room when dynamic variables are used
+      // to send launch-time parameters to clients.
+      packetSize = 512;
    }
 
    gPacketUpdateDelayToServer = 1024 / packetRateToServer;
@@ -1421,7 +1424,7 @@ DefineEngineMethod( NetConnection, connect, void, (const char* remoteAddress),,
    )
 {
    NetAddress addr;
-   if(!Net::stringToAddress(remoteAddress, &addr))
+   if (Net::stringToAddress(remoteAddress, &addr) != Net::NoError)
    {
       Con::errorf("NetConnection::connect: invalid address - %s", remoteAddress);
       return;

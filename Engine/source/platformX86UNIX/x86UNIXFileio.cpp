@@ -211,7 +211,7 @@ bool dPathCopy(const char *fromName, const char *toName, bool nooverwrite)
        dStrncpy(pathEl, currChar, pathElLen);
        pathEl[pathElLen] = '\0';
        dStrncpy(testPath, tempBuf, MaxPath);
-       dStrcat(testPath, pathEl);
+       dStrcat(testPath, pathEl, MaxPath);
        if (stat(testPath, &filestat) != -1)
        {
           dStrncpy(tempBuf, testPath, MaxPath);
@@ -226,7 +226,7 @@ bool dPathCopy(const char *fromName, const char *toName, bool nooverwrite)
              if (dStricmp(pathEl, ent->d_name) == 0)
              {
                 foundMatch = true;
-                dStrcat(tempBuf, ent->d_name);
+                dStrcat(tempBuf, ent->d_name, MaxPath);
                 break;
              }
           }
@@ -238,7 +238,7 @@ bool dPathCopy(const char *fromName, const char *toName, bool nooverwrite)
        }
        if (*termChar == '/')
        {
-          dStrcat(tempBuf, "/");
+          dStrcat(tempBuf, "/", MaxPath);
           termChar++;
           currChar = termChar;
        }
@@ -325,7 +325,7 @@ bool dPathCopy(const char *fromName, const char *toName, bool nooverwrite)
     if (modType == TOUCH)
        return(utime(prefPathName, 0) != -1);
     else if (modType == DELETE)
-       return (remove(prefPathName) != -1);
+       return (remove(prefPathName) == 0);
     else
        AssertFatal(false, "Unknown File Mod type");
     return false;
@@ -935,7 +935,7 @@ bool dPathCopy(const char *fromName, const char *toName, bool nooverwrite)
 
     TempAlloc< UTF8 > buf( dStrlen( newDir ) + 2 );
 
-    dStrcpy( buf, newDir );
+    dStrcpy( buf, newDir, buf.size );
 
     ForwardSlash( buf );
     return chdir( buf ) == 0;
@@ -1140,51 +1140,90 @@ bool dPathCopy(const char *fromName, const char *toName, bool nooverwrite)
    return false;
  }
 
+ bool Platform::fileDelete(const char * name)
+ {
+   return ModifyFile(name, DELETE);
+ }
+
  static bool recurseDumpDirectories(const char *basePath, const char *subPath, Vector<StringTableEntry> &directoryVector, S32 currentDepth, S32 recurseDepth, bool noBasePath)
  {
    char Path[1024];
    DIR *dip;
    struct dirent *d;
 
-   if (subPath && (dStrncmp(subPath, "", 1) != 0))
-     {
-       if ((basePath[dStrlen(basePath) - 1]) == '/')
- 	dSprintf(Path, 1024, "%s%s", basePath, subPath);
-       else
- 	dSprintf(Path, 1024, "%s/%s", basePath, subPath);
-     }
+   dsize_t trLen = basePath ? dStrlen(basePath) : 0;
+   dsize_t subtrLen = subPath ? dStrlen(subPath) : 0;
+   char trail = trLen > 0 ? basePath[trLen - 1] : '\0';
+   char subTrail = subtrLen > 0 ? subPath[subtrLen - 1] : '\0';
+   char subLead = subtrLen > 0 ? subPath[0] : '\0';
+
+   if (trail == '/')
+   {
+      if (subPath && (dStrncmp(subPath, "", 1) != 0))
+      {
+         if (subTrail == '/')
+            dSprintf(Path, 1024, "%s%s", basePath, subPath);
+         else
+            dSprintf(Path, 1024, "%s%s/", basePath, subPath);
+      }
+      else
+         dSprintf(Path, 1024, "%s", basePath);
+   }
    else
-     dSprintf(Path, 1024, "%s", basePath);
+   {
+      if (subPath && (dStrncmp(subPath, "", 1) != 0))
+      {
+         if (subTrail == '/')
+            dSprintf(Path, 1024, "%s%s", basePath, subPath);
+         else
+            dSprintf(Path, 1024, "%s%s/", basePath, subPath);
+      }
+      else
+         dSprintf(Path, 1024, "%s/", basePath);
+   }
+
    dip = opendir(Path);
    if (dip == NULL)
      return false;
+
    //////////////////////////////////////////////////////////////////////////
    // add path to our return list ( provided it is valid )
    //////////////////////////////////////////////////////////////////////////
    if (!Platform::isExcludedDirectory(subPath))
-     {
-       if (noBasePath)
- 	{
- 	  // We have a path and it's not an empty string or an excluded directory
- 	  if ( (subPath && (dStrncmp (subPath, "", 1) != 0)) )
- 	    directoryVector.push_back(StringTable->insert(subPath));
- 	}
-       else
- 	{
- 	  if ( (subPath && (dStrncmp(subPath, "", 1) != 0)) )
- 	    {
- 	      char szPath[1024];
- 	      dMemset(szPath, 0, 1024);
- 	      if ( (basePath[dStrlen(basePath) - 1]) != '/')
- 		dSprintf(szPath, 1024, "%s%s", basePath, subPath);
- 	      else
- 		dSprintf(szPath, 1024, "%s%s", basePath, &subPath[1]);
- 	      directoryVector.push_back(StringTable->insert(szPath));
- 	    }
- 	  else
- 	    directoryVector.push_back(StringTable->insert(basePath));
- 	}
-     }
+   {
+      if (noBasePath)
+      {
+         // We have a path and it's not an empty string or an excluded directory
+         if ( (subPath && (dStrncmp (subPath, "", 1) != 0)) )
+            directoryVector.push_back(StringTable->insert(subPath));
+      }
+      else
+      {
+         if ( (subPath && (dStrncmp(subPath, "", 1) != 0)) )
+         {
+            char szPath[1024];
+            dMemset(szPath, 0, 1024);
+            if (trail == '/')
+            {
+               if ((basePath[dStrlen(basePath) - 1]) != '/')
+                  dSprintf(szPath, 1024, "%s%s", basePath, &subPath[1]);
+               else
+                  dSprintf(szPath, 1024, "%s%s", basePath, subPath);
+            }
+            else
+            {
+               if ((basePath[dStrlen(basePath) - 1]) != '/')
+                  dSprintf(szPath, 1024, "%s%s", basePath, subPath);
+               else
+                  dSprintf(szPath, 1024, "%s/%s", basePath, subPath);
+            }
+
+            directoryVector.push_back(StringTable->insert(szPath));
+         }
+         else
+            directoryVector.push_back(StringTable->insert(basePath));
+      }
+   }
    //////////////////////////////////////////////////////////////////////////
    // Iterate through and grab valid directories
    //////////////////////////////////////////////////////////////////////////
@@ -1228,7 +1267,7 @@ bool dPathCopy(const char *fromName, const char *toName, bool nooverwrite)
  	    {
  	      char child[1024];
  	      if ( (basePath[dStrlen(basePath) - 1]) == '/')
- 		dStrcpy (child, d->d_name);
+ 		dStrcpy (child, d->d_name, 1024);
  	      else
  		dSprintf(child, 1024, "/%s", d->d_name);
  	      if (currentDepth < recurseDepth || recurseDepth == -1)

@@ -588,7 +588,7 @@ const char* DInputDevice::getName()
 {
 #ifdef UNICODE
    static UTF8 buf[512];
-   convertUTF16toUTF8(mDeviceInstance.tszInstanceName, buf, sizeof(buf));
+   convertUTF16toUTF8(mDeviceInstance.tszInstanceName, buf);
    return (const char *)buf;
 #else
    return mDeviceInstance.tszInstanceName;
@@ -600,7 +600,7 @@ const char* DInputDevice::getProductName()
 {
 #ifdef UNICODE
    static UTF8 buf[512];
-   convertUTF16toUTF8(mDeviceInstance.tszProductName, buf, sizeof(buf));
+   convertUTF16toUTF8(mDeviceInstance.tszProductName, buf);
    return (const char *)buf;
 #else
    return mDeviceInstance.tszProductName;
@@ -1552,31 +1552,32 @@ const char* DInputDevice::getJoystickAxesString()
       switch ( mObjInfo[i].mInst )
       {
          case SI_XAXIS:
-            dStrcat( buf, "\tX" );
+            dStrcat( buf, "\tX", 64 );
             break;
          case SI_YAXIS:
-            dStrcat( buf, "\tY" );
+            dStrcat( buf, "\tY", 64 );
             break;
          case SI_ZAXIS:
-            dStrcat( buf, "\tZ" );
+            dStrcat( buf, "\tZ", 64 );
             break;
          case SI_RXAXIS:
-            dStrcat( buf, "\tR" );
+            dStrcat( buf, "\tR", 64 );
             break;
          case SI_RYAXIS:
-            dStrcat( buf, "\tU" );
+            dStrcat( buf, "\tU", 64 );
             break;
          case SI_RZAXIS:
-            dStrcat( buf, "\tV" );
+            dStrcat( buf, "\tV", 64 );
             break;
          case SI_SLIDER:
-            dStrcat( buf, "\tS" );
+            dStrcat( buf, "\tS", 64 );
             break;
       }
    }
 
-   char* returnString = Con::getReturnBuffer( dStrlen( buf ) + 1 );
-   dStrcpy( returnString, buf );
+   dsize_t returnLen = dStrlen(buf) + 1;
+   char* returnString = Con::getReturnBuffer(returnLen);
+   dStrcpy( returnString, buf, returnLen );
    return( returnString );
 }
 

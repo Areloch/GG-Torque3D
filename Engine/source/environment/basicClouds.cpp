@@ -63,6 +63,12 @@ BasicClouds::BasicClouds()
    mTypeMask |= EnvironmentObjectType | StaticObjectType;
    mNetFlags.set(Ghostable | ScopeAlways);
 
+   mTimeSC = 0;
+   mModelViewProjSC = 0;
+   mTexScaleSC = 0;
+   mTexDirectionSC = 0;
+   mTexOffsetSC = 0;
+
    mLayerEnabled[0] = true;
    mLayerEnabled[1] = true;
    mLayerEnabled[2] = true;
@@ -335,10 +341,10 @@ void BasicClouds::_initTexture()
       }
 
       if ( mTexName[i].isNotEmpty() )
-      mTexture[i].set( mTexName[i], &GFXDefaultStaticDiffuseProfile, "BasicClouds" );
+      mTexture[i].set( mTexName[i], &GFXStaticTextureSRGBProfile, "BasicClouds" );
 
       if ( mTexture[i].isNull() )
-         mTexture[i].set( GFXTextureManager::getWarningTexturePath(), &GFXDefaultStaticDiffuseProfile, "BasicClouds" );
+         mTexture[i].set( GFXTextureManager::getWarningTexturePath(), &GFXStaticTextureSRGBProfile, "BasicClouds" );
    }
 }
 

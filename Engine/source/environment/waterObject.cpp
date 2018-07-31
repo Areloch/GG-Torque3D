@@ -50,7 +50,6 @@ GFXImplementVertexFormat( GFXWaterVertex )
 {
    addElement( "POSITION", GFXDeclType_Float3 );
    addElement( "NORMAL", GFXDeclType_Float3 );
-   addElement( "COLOR", GFXDeclType_Color );   
    addElement( "TEXCOORD", GFXDeclType_Float2, 0 );
    addElement( "TEXCOORD", GFXDeclType_Float4, 1 );   
 }
@@ -162,7 +161,7 @@ ConsoleDocClass( WaterObject,
    "\t- Paramable water fog and color shift.\n\n"
 
    "It will, however, look significantly different depending on the LightingManager "
-   "that is active. With Basic Lighting, we do not have a prepass texture to "
+   "that is active. With Basic Lighting, we do not have a deferred texture to "
    "lookup per-pixel depth and therefore cannot use our rendering techniques that depend on it.\n\n"   
 
    "In particular, the following field groups are not used under Basic Lighting:\n"
@@ -180,34 +179,34 @@ ConsoleDocClass( WaterObject,
 WaterObject::WaterObject()
  : mViscosity( 1.0f ),
    mDensity( 1.0f ),
-   mReflectivity( 0.5f ),
-   mReflectNormalUp( true ),   
+   mLiquidType( "Water" ),
+   mFresnelBias( 0.3f ),
+   mFresnelPower( 6.0f ),
+   mReflectNormalUp( true ),
+   mReflectivity( 0.5f ),   
    mDistortStartDist( 0.1f ),
    mDistortEndDist( 20.0f ),
    mDistortFullDepth( 3.5f ),
-   mUndulateMaxDist(50.0f),
    mOverallFoamOpacity( 1.0f ),
    mFoamMaxDepth( 2.0f ),
    mFoamAmbientLerp( 0.5f ),
    mFoamRippleInfluence( 0.05f ),
-   mUnderwaterPostFx( NULL ),
-   mLiquidType( "Water" ),
-   mFresnelBias( 0.3f ),
-   mFresnelPower( 6.0f ),
    mClarity( 0.5f ),
-   mBasicLighting( false ),
+   mUnderwaterColor(9, 6, 5, 240),
+   mUndulateMaxDist(50.0f),
    mMiscParamW( 0.0f ),
-   mOverallWaveMagnitude( 1.0f ),
+   mUnderwaterPostFx( NULL ),
    mOverallRippleMagnitude( 0.1f ),
-   mCubemap( NULL ),
-   mSoundAmbience( NULL ),
+   mOverallWaveMagnitude( 1.0f ),
+   mBasicLighting( false ),
    mSpecularPower( 48.0f ),
+   mSoundAmbience( NULL ),
+   mCubemap( NULL ),
    mSpecularColor( 1.0f, 1.0f, 1.0f, 1.0f ),
-   mDepthGradientMax( 50.0f ),
    mEmissive( false ),
-   mUnderwaterColor(9, 6, 5, 240)
+   mDepthGradientMax( 50.0f )
 {
-   mTypeMask = WaterObjectType | StaticObjectType;
+   mTypeMask = WaterObjectType;
 
    for( U32 i=0; i < MAX_WAVES; i++ )
    {
@@ -827,25 +826,25 @@ void WaterObject::drawUnderwaterFilter( SceneRenderState *state )
    // draw quad
    
 
-   GFXVertexBufferHandle<GFXVertexPC> verts( GFX, 4, GFXBufferTypeVolatile );
+   GFXVertexBufferHandle<GFXVertexPCT> verts( GFX, 4, GFXBufferTypeVolatile );
    verts.lock();
 
-   verts[0].point.set( -1.0 - copyOffsetX, -1.0 + copyOffsetY, 0.0 );
+   verts[0].point.set(1.0 - copyOffsetX, -1.0 + copyOffsetY, 0.0);
    verts[0].color = mUnderwaterColor;
 
-   verts[1].point.set( -1.0 - copyOffsetX, 1.0 + copyOffsetY, 0.0 );
+   verts[1].point.set(1.0 - copyOffsetX, 1.0 + copyOffsetY, 0.0);
    verts[1].color = mUnderwaterColor;
 
-   verts[2].point.set( 1.0 - copyOffsetX, 1.0 + copyOffsetY, 0.0 );
+   verts[2].point.set(-1.0 - copyOffsetX, -1.0 + copyOffsetY, 0.0);
    verts[2].color = mUnderwaterColor;
 
-   verts[3].point.set( 1.0 - copyOffsetX, -1.0 + copyOffsetY, 0.0 );
+   verts[3].point.set(-1.0 - copyOffsetX, 1.0 + copyOffsetY, 0.0);
    verts[3].color = mUnderwaterColor;
 
    verts.unlock();
 
    GFX->setVertexBuffer( verts );
-   GFX->drawPrimitive( GFXTriangleFan, 0, 2 );
+   GFX->drawPrimitive( GFXTriangleStrip, 0, 2 );
 
    // reset states / transforms
    GFX->setProjectionMatrix( proj );
@@ -1023,7 +1022,7 @@ void WaterObject::setShaderParams( SceneRenderState *state, BaseMatInstance *mat
    matParams->setSafe(paramHandles.mDistortionParamsSC, distortionParams );
 
    LightInfo *sun = LIGHTMGR->getSpecialLight(LightManager::slSunLightType);
-   const ColorF &sunlight = state->getAmbientLightColor();
+   const LinearColorF &sunlight = state->getAmbientLightColor();
    Point3F ambientColor = mEmissive ? Point3F::One : sunlight;
    matParams->setSafe(paramHandles.mAmbientColorSC, ambientColor );
    matParams->setSafe(paramHandles.mLightDirSC, sun->getDirection() );
@@ -1037,7 +1036,7 @@ void WaterObject::setShaderParams( SceneRenderState *state, BaseMatInstance *mat
    Point4F specularParams( mSpecularColor.red, mSpecularColor.green, mSpecularColor.blue, mSpecularPower );   
    if ( !mEmissive )
    {
-      const ColorF &sunColor = sun->getColor();
+      const LinearColorF &sunColor = sun->getColor();
       F32 brightness = sun->getBrightness();
       specularParams.x *= sunColor.red * brightness;
       specularParams.y *= sunColor.green * brightness;
@@ -1142,7 +1141,7 @@ bool WaterObject::initMaterial( S32 idx )
       else
          mat = MATMGR->createMatInstance( mSurfMatName[idx] );
 
-      const GFXVertexFormat *flags = getGFXVertexFormat<GFXVertexPC>();
+      const GFXVertexFormat *flags = getGFXVertexFormat<GFXVertexPCT>();
 
       if ( mat && mat->init( MATMGR->getDefaultFeatures(), flags ) )
       {      
@@ -1160,22 +1159,22 @@ bool WaterObject::initMaterial( S32 idx )
 void WaterObject::initTextures()
 {
    if ( mRippleTexName.isNotEmpty() )
-      mRippleTex.set( mRippleTexName, &GFXDefaultStaticDiffuseProfile, "WaterObject::mRippleTex" );
+      mRippleTex.set( mRippleTexName, &GFXStaticTextureSRGBProfile, "WaterObject::mRippleTex" );
    if ( mRippleTex.isNull() )
-      mRippleTex.set( GFXTextureManager::getWarningTexturePath(), &GFXDefaultStaticDiffuseProfile, "WaterObject::mRippleTex" );
+      mRippleTex.set( GFXTextureManager::getWarningTexturePath(), &GFXStaticTextureSRGBProfile, "WaterObject::mRippleTex" );
 
    if ( mDepthGradientTexName.isNotEmpty() )
-      mDepthGradientTex.set( mDepthGradientTexName, &GFXDefaultStaticDiffuseProfile, "WaterObject::mDepthGradientTex" );
+      mDepthGradientTex.set( mDepthGradientTexName, &GFXStaticTextureSRGBProfile, "WaterObject::mDepthGradientTex" );
    if ( mDepthGradientTex.isNull() )
-      mDepthGradientTex.set( GFXTextureManager::getWarningTexturePath(), &GFXDefaultStaticDiffuseProfile, "WaterObject::mDepthGradientTex" );
+      mDepthGradientTex.set( GFXTextureManager::getWarningTexturePath(), &GFXStaticTextureSRGBProfile, "WaterObject::mDepthGradientTex" );
    
    if ( mNamedDepthGradTex.isRegistered() )
       mNamedDepthGradTex.setTexture( mDepthGradientTex );
 
    if ( mFoamTexName.isNotEmpty() )
-      mFoamTex.set( mFoamTexName, &GFXDefaultStaticDiffuseProfile, "WaterObject::mFoamTex" );
+      mFoamTex.set( mFoamTexName, &GFXStaticTextureSRGBProfile, "WaterObject::mFoamTex" );
    if ( mFoamTex.isNull() )
-      mFoamTex.set( GFXTextureManager::getWarningTexturePath(), &GFXDefaultStaticDiffuseProfile, "WaterObject::mFoamTex" );
+      mFoamTex.set( GFXTextureManager::getWarningTexturePath(), &GFXStaticTextureSRGBProfile, "WaterObject::mFoamTex" );
 
    if ( mCubemapName.isNotEmpty() )
       Sim::findObject( mCubemapName, mCubemap );   

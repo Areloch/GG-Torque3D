@@ -41,6 +41,9 @@ GFX_ImplementTextureProfile(ShadowMapTexProfile,
 
 
 MODULE_BEGIN( ShadowMapManager )
+#ifndef TORQUE_BASIC_LIGHTING
+   MODULE_SHUTDOWN_AFTER(Scene)
+#endif
 
    MODULE_INIT
    {
@@ -78,6 +81,16 @@ AFTER_MODULE_INIT( Sim )
    Con::NotifyDelegate shadowCallback( &ShadowMapManager::updateShadowDisable );
    Con::addVariableNotify( "$pref::Shadows::disable", shadowCallback );
    Con::addVariableNotify( "$Shadows::disable", shadowCallback );
+
+   Con::addVariable("$pref::Shadows::teleportDist",
+      TypeF32, &ShadowMapPass::smShadowsTeleportDist,
+      "Minimum distance moved per frame to determine that we are teleporting.\n");
+   Con::addVariableNotify("$pref::Shadows::teleportDist", shadowCallback);
+
+   Con::addVariable("$pref::Shadows::turnRate",
+      TypeF32, &ShadowMapPass::smShadowsTurnRate,
+      "Minimum angle moved per frame to determine that we are turning quickly.\n");
+   Con::addVariableNotify("$pref::Shadows::turnRate", shadowCallback);
 }
 
 Signal<void(void)> ShadowMapManager::smShadowDeactivateSignal;
@@ -86,6 +99,7 @@ Signal<void(void)> ShadowMapManager::smShadowDeactivateSignal;
 ShadowMapManager::ShadowMapManager() 
 :  mShadowMapPass(NULL), 
    mCurrentShadowMap(NULL),
+   mCurrentDynamicShadowMap(NULL),
    mIsActive(false)
 {
 }
@@ -98,9 +112,15 @@ void ShadowMapManager::setLightShadowMapForLight( LightInfo *light )
 {
    ShadowMapParams *params = light->getExtended<ShadowMapParams>();
    if ( params )
+   {
       mCurrentShadowMap = params->getShadowMap();
+      mCurrentDynamicShadowMap = params->getShadowMap(true);
+   }
    else 
+   {
       mCurrentShadowMap = NULL;
+      mCurrentDynamicShadowMap = NULL;
+   }
 }
 
 void ShadowMapManager::activate()

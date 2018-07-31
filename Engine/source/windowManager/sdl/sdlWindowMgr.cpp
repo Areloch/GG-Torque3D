@@ -24,6 +24,7 @@
 #include "gfx/gfxDevice.h"
 #include "core/util/journal/process.h"
 #include "core/strings/unicode.h"
+#include "gfx/bitmap/gBitmap.h"
 
 #include "SDL.h"
 
@@ -58,6 +59,8 @@ PlatformWindowManagerSDL::PlatformWindowManagerSDL()
 
    mDisplayWindow = true;
    mOffscreenRender = false;
+
+   mInputState = KeyboardInputState::NONE;
 
    buildMonitorsList();
 }
@@ -153,7 +156,7 @@ PlatformWindow *PlatformWindowManagerSDL::createWindow(GFXDevice *device, const 
 {
    // Do the allocation.
    PlatformWindowSDL *window = new PlatformWindowSDL();   
-   U32 windowFlags = /*SDL_WINDOW_SHOWN |*/ SDL_WINDOW_RESIZABLE;
+   U32 windowFlags = /*SDL_WINDOW_SHOWN |*/ SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
 
    if(GFX->getAdapterType() == OpenGL)
        windowFlags |= SDL_WINDOW_OPENGL;
@@ -162,6 +165,59 @@ PlatformWindow *PlatformWindowManagerSDL::createWindow(GFXDevice *device, const 
    window->mWindowId = SDL_GetWindowID( window->mWindowHandle );
    window->mOwningManager = this;
    mWindowMap[ window->mWindowId ] = window;
+
+   //Now, fetch our window icon, if any
+   Torque::Path iconPath = Torque::Path(Con::getVariable( "$Core::windowIcon" ));
+
+   if (iconPath.getExtension() == String("bmp"))
+   {
+      Con::errorf("Unable to use bmp format images for the window icon. Please use a different format.");
+   }
+   else
+   {
+      Resource<GBitmap> img = GBitmap::load(iconPath);
+      if (img != NULL)
+      {
+         U32 pitch;
+         U32 width = img->getWidth();
+         bool hasAlpha = img->getHasTransparency();
+         U32 depth;
+
+         if (hasAlpha)
+         {
+            pitch = 4 * width;
+            depth = 32;
+         }
+         else
+         {
+            pitch = 3 * width;
+            depth = 24;
+         }
+
+         Uint32 rmask, gmask, bmask, amask;
+         if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+         {
+            S32 shift = hasAlpha ? 8 : 0;
+            rmask = 0xff000000 >> shift;
+            gmask = 0x00ff0000 >> shift;
+            bmask = 0x0000ff00 >> shift;
+            amask = 0x000000ff >> shift;
+         }
+         else
+         {
+            rmask = 0x000000ff;
+            gmask = 0x0000ff00;
+            bmask = 0x00ff0000;
+            amask = hasAlpha ? 0xff000000 : 0;
+         }
+
+         SDL_Surface* iconSurface = SDL_CreateRGBSurfaceFrom(img->getAddress(0, 0), img->getWidth(), img->getHeight(), depth, pitch, rmask, gmask, bmask, amask);
+
+         SDL_SetWindowIcon(window->mWindowHandle, iconSurface);
+
+         SDL_FreeSurface(iconSurface);
+      }
+   }
 
    if(device)
    {
@@ -173,6 +229,13 @@ PlatformWindow *PlatformWindowManagerSDL::createWindow(GFXDevice *device, const 
    {
       Con::warnf("PlatformWindowManagerSDL::createWindow - created a window with no device!");
    }
+
+   //Set it up for drag-n-drop events 
+#ifdef TORQUE_TOOLS
+   SDL_EventState(SDL_DROPBEGIN, SDL_ENABLE);
+   SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+   SDL_EventState(SDL_DROPCOMPLETE, SDL_ENABLE);
+#endif
 
    linkWindow(window);
 
@@ -214,6 +277,14 @@ void PlatformWindowManagerSDL::_process()
             break;
          }
 
+         case SDL_MOUSEWHEEL:
+         {
+            PlatformWindowSDL *window = mWindowMap[evt.wheel.windowID];
+            if (window)
+               window->_processSDLEvent(evt);
+            break;
+         }
+
          case SDL_MOUSEMOTION:
          {
             PlatformWindowSDL *window = mWindowMap[evt.motion.windowID];
@@ -247,6 +318,39 @@ void PlatformWindowManagerSDL::_process()
             break;
          }
 
+         case(SDL_DROPBEGIN):
+         {
+            if (!Con::isFunction("onDropBegin"))
+               break;
+
+            Con::executef("onDropBegin");
+         }
+
+         case (SDL_DROPFILE):
+         {
+            // In case if dropped file
+            if (!Con::isFunction("onDropFile"))
+               break;
+
+            char* fileName = evt.drop.file;
+
+            if (!Platform::isFile(fileName))
+               break;
+
+            Con::executef("onDropFile", StringTable->insert(fileName));
+
+            SDL_free(fileName);    // Free dropped_filedir memory
+            break;
+         }
+
+         case(SDL_DROPCOMPLETE):
+         {
+            if (!Con::isFunction("onDropEnd"))
+               break;
+
+            Con::executef("onDropEnd");
+         }
+
          default:
          {
             //Con::printf("Event: %d", evt.type);
@@ -254,6 +358,21 @@ void PlatformWindowManagerSDL::_process()
       }
    }
 
+   // After the event loop is processed, we can now see if we have to notify
+   // SDL that we want text based events. This fixes a bug where text based
+   // events would be generated while key presses would still be happening.
+   // See KeyboardInputState for further documentation.
+   if (mInputState != KeyboardInputState::NONE)
+   {
+      // Update text mode toggling.
+      if (mInputState == KeyboardInputState::TEXT_INPUT)
+         SDL_StartTextInput();
+      else
+         SDL_StopTextInput();
+
+      // Done until we need to update it again.
+      mInputState = KeyboardInputState::NONE;
+   }
 }
 
 PlatformWindow * PlatformWindowManagerSDL::getWindowById( WindowId id )
@@ -335,9 +454,10 @@ void PlatformWindowManagerSDL::raiseCurtain()
    // TODO SDL
 }
 
-bool Platform::closeSplashWindow()
+void PlatformWindowManagerSDL::updateSDLTextInputState(KeyboardInputState state)
 {
-    return true;
+   // Force update state. This will respond at the end of the event loop.
+   mInputState = state;
 }
 
 void Platform::openFolder(const char* path )
@@ -363,7 +483,11 @@ void InitWindowingSystem()
 }
 
 AFTER_MODULE_INIT(gfx)
-{   
-   int res = SDL_Init( SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS | SDL_INIT_NOPARACHUTE );
-   AssertFatal(res != -1, "SDL init error");
+{
+   int res = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS | SDL_INIT_NOPARACHUTE);
+   AssertFatal(res != -1, avar("SDL error:%s", SDL_GetError()));
+
+   // By default, SDL enables text input. We disable it on initialization, and
+   // we will enable it whenever the time is right.
+   SDL_StopTextInput();
 }

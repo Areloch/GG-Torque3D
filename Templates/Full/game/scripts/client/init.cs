@@ -72,7 +72,6 @@ function initClient()
    configureCanvas();
 
    // Load up the Game GUIs
-   exec("art/gui/defaultGameProfiles.cs");
    exec("art/gui/playGui.gui");
    exec("art/gui/chatHud.gui");
    exec("art/gui/playerList.gui");
@@ -112,7 +111,8 @@ function initClient()
 
    if (isFile("./config.cs"))
       exec("./config.cs");
-
+   if (isFile("./config_vehicle.cs"))
+      exec("./config_vehicle.cs");
    loadMaterials();
 
    // Really shouldn't be starting the networking unless we are

@@ -34,8 +34,8 @@ SFXALDevice::SFXALDevice(  SFXProvider *provider,
                            S32 maxBuffers )
    :  Parent( name, provider, useHardware, maxBuffers ),
       mOpenAL( openal ), 
-      mDevice( NULL ), 
       mContext( NULL ),
+      mDevice( NULL ), 
       mRolloffFactor( 1.0f )
 {
    mMaxBuffers = getMax( maxBuffers, 8 );
@@ -61,7 +61,8 @@ SFXALDevice::SFXALDevice(  SFXProvider *provider,
    AssertFatal( mDevice != NULL && mContext != NULL, "Failed to create OpenAL device and/or context!" );
 
    // Start the update thread.
-#ifndef TORQUE_OS_LINUX
+   // TODO AsyncPeriodicUpdateThread support for Linux/Mac
+#ifdef TORQUE_OS_WIN
    if( !Con::getBoolVariable( "$_forceAllMainThread" ) )
    {
       SFXInternal::gUpdateThread = new AsyncPeriodicUpdateThread

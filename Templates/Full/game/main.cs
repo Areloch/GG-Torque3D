@@ -28,6 +28,8 @@ $defaultGame = "scripts";
 
 // Set profile directory
 $Pref::Video::ProfilePath = "core/profile";
+$Core::windowIcon = "core/torque.png";
+$Core::splashWindowImage = "art/gui/splash.png";
 
 function createCanvas(%windowTitle)
 {
@@ -40,8 +42,10 @@ function createCanvas(%windowTitle)
    // Create the Canvas
    %foo = new GuiCanvas(Canvas)
    {
-      displayWindow = false;
+      displayWindow = $platform !$= "windows";
    };
+
+   $GameCanvas = %foo;
    
    // Set the window title
    if (isObject(Canvas))
@@ -55,7 +59,7 @@ $displayHelp = false;
 
 // Use these to record and play back crashes
 //saveJournal("editorOnFileQuitCrash.jrn");
-//playJournal("editorOnFileQuitCrash.jrn", false);
+//playJournal("editorOnFileQuitCrash.jrn");
 
 //------------------------------------------------------------------------------
 // Check if a script file exists, compiled or not.
@@ -184,10 +188,8 @@ function displayHelp() {
       "  <game_name>            Works like the -game argument\n"@
       "  -dir <dir_name>        Add <dir_name> to list of directories\n"@
       "  -console               Open a separate console\n"@
-      "  -show <shape>          Deprecated\n"@
       "  -jSave  <file_name>    Record a journal\n"@
       "  -jPlay  <file_name>    Play back a journal\n"@
-      "  -jDebug <file_name>    Play back a journal and issue an int3 at the end\n"@
       "  -help                  Display this help message\n"
    );
 }
@@ -249,6 +251,12 @@ if ($displayHelp) {
 else {
    onStart();
    echo("Engine initialized...");
+
+   ModuleDatabase.scanModules( "" );
+
+   //You can also explicitly decalre some modules here to be loaded by default if they are part of your game
+   //Ex: ModuleDatabase.LoadExplicit( "AppCore" );
+   ModuleDatabase.LoadGroup( "Game" );
 
    if( !$isDedicated )
    {

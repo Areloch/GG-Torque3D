@@ -20,6 +20,10 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
+// Arcane-FX for MIT Licensed Open Source version of Torque 3D from GarageGames
+// Copyright (C) 2015 Faust Logic, Inc.
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
 #include "platform/platform.h"
 
 #include "sfx/sfxDescription.h"
@@ -134,8 +138,8 @@ SFXDescription::SFXDescription()
       mFadeLoops( false ),
       mStreamPacketSize( SFXInternal::SFXAsyncStream::DEFAULT_STREAM_PACKET_LENGTH ),
       mStreamReadAhead( SFXInternal::SFXAsyncStream::DEFAULT_STREAM_LOOKAHEAD ),
-      mPriority( 1.0f ),
       mScatterDistance( 0.f, 0.f, 0.f ),
+      mPriority( 1.0f ),
       mSourceGroup( NULL )
 {
    dMemset( mParameters, 0, sizeof( mParameters ) );
@@ -164,17 +168,48 @@ SFXDescription::SFXDescription( const SFXDescription& desc )
       mFadeOutEase( desc.mFadeOutEase ),
       mFadeLoops( desc.mFadeLoops ),
       mStreamPacketSize( desc.mStreamPacketSize ),
-      mStreamReadAhead( desc.mStreamReadAhead ),
       mUseReverb( desc.mUseReverb ),
+      mStreamReadAhead( desc.mStreamReadAhead ),
       mReverb( desc.mReverb ),
-      mPriority( desc.mPriority ),
-      mScatterDistance( desc.mScatterDistance )
+      mScatterDistance( desc.mScatterDistance ),
+      mPriority( desc.mPriority )
 {
    for( U32 i = 0; i < MaxNumParameters; ++ i )
       mParameters[ i ] = desc.mParameters[ i ];
 }
 
 //-----------------------------------------------------------------------------
+
+SFXDescription::SFXDescription(const SFXDescription& other, bool temp_clone)
+   : SimDataBlock(other, temp_clone),
+      mVolume( other.mVolume ),
+      mPitch( other.mPitch ),
+      mIsLooping( other.mIsLooping ),
+      mIsStreaming( other.mIsStreaming ),
+      mIs3D( other.mIs3D ),
+      mUseHardware( other.mUseHardware ),
+      mMinDistance( other.mMinDistance ),
+      mMaxDistance( other.mMaxDistance ),
+      mConeInsideAngle( other.mConeInsideAngle ),
+      mConeOutsideAngle( other.mConeOutsideAngle ),
+      mConeOutsideVolume( other.mConeOutsideVolume ),
+      mRolloffFactor( other.mRolloffFactor ),
+      mSourceGroup( other.mSourceGroup ),
+      mFadeInTime( other.mFadeInTime ),
+      mFadeOutTime( other.mFadeOutTime ),
+      mFadeInEase( other.mFadeInEase ),
+      mFadeOutEase( other.mFadeOutEase ),
+      mFadeLoops( other.mFadeLoops ),
+      mStreamPacketSize( other.mStreamPacketSize ),
+      mStreamReadAhead( other.mStreamReadAhead ),
+      mUseReverb( other.mUseReverb ),
+      mReverb( other.mReverb ),
+      mPriority( other.mPriority ),
+      mScatterDistance( other.mScatterDistance )
+{
+   for( U32 i = 0; i < MaxNumParameters; ++ i )
+      mParameters[ i ] = other.mParameters[ i ];
+}
 
 void SFXDescription::initPersistFields()
 {
@@ -652,3 +687,24 @@ void SFXDescription::inspectPostApply()
    if( SFX )
       SFX->notifyDescriptionChanged( this );
 }
+// This allows legacy AudioDescription datablocks to be recognized as an alias
+// for SFXDescription. It is intended to ease the transition from older scripts
+// especially those that still need to support pre-1.7 applications.
+// (This maybe removed in future releases so treat as deprecated.)
+class AudioDescription : public SFXDescription
+{
+	typedef SFXDescription Parent;
+public:
+	DECLARE_CONOBJECT(AudioDescription);
+};
+
+IMPLEMENT_CO_DATABLOCK_V1(AudioDescription);
+
+ConsoleDocClass( AudioDescription,
+   "@brief Allows legacy AudioDescription datablocks to be treated as SFXDescription datablocks.\n\n"
+
+   "@ingroup afxMisc\n"
+   "@ingroup AFX\n"
+   "@ingroup Datablocks\n"
+);
+

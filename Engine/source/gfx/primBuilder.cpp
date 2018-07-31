@@ -117,7 +117,6 @@ GFXVertexBuffer * endToBuffer( U32 &numPrims )
       }
 
       case GFXTriangleStrip:
-      case GFXTriangleFan:
       {
          numPrims = mCurVertIndex - 2;
          break;
@@ -171,7 +170,6 @@ void end( bool useGenericShaders )
       }
 
       case GFXTriangleStrip:
-      case GFXTriangleFan:
       {
          stripStart = 2;
          vertStride = 1;
@@ -303,9 +301,9 @@ void color( const ColorI &inColor )
    mCurColor = inColor;
 }
 
-void color( const ColorF &inColor )
+void color( const LinearColorF &inColor )
 {
-   mCurColor = inColor;
+   mCurColor = LinearColorF(inColor).toColorI();
 }
 
 void color3i( U8 red, U8 green, U8 blue )

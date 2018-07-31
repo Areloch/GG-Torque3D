@@ -81,8 +81,8 @@ ConsoleDocClass( Forest,
 
 Forest::Forest()
    :  mDataFileName( NULL ),
-      mReflectionLodScalar( 2.0f ),
       mConvexList( new Convex() ),
+      mReflectionLodScalar( 2.0f ),
       mZoningDirty( false )
 {
    mTypeMask |= EnvironmentObjectType | StaticShapeObjectType | StaticObjectType;
@@ -354,7 +354,7 @@ void Forest::createNewFile()
 
 void Forest::saveDataFile( const char *path )
 {
-   if ( path )
+   if ( path && !String::isEmpty(path))
       mDataFileName = StringTable->insert( path );
 
    if ( mData )

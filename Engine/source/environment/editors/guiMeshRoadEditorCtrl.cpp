@@ -59,29 +59,28 @@ GuiMeshRoadEditorCtrl::GuiMeshRoadEditorCtrl()
 	// tool palette
 	mSelectMeshRoadMode("MeshRoadEditorSelectMode"),
 	mAddMeshRoadMode("MeshRoadEditorAddRoadMode"),
-	mMovePointMode("MeshRoadEditorMoveMode"),
-	mRotatePointMode("MeshRoadEditorRotateMode"),
-	mScalePointMode("MeshRoadEditorScaleMode"),
 	mAddNodeMode("MeshRoadEditorAddNodeMode"),
 	mInsertPointMode("MeshRoadEditorInsertPointMode"),
 	mRemovePointMode("MeshRoadEditorRemovePointMode"),
-	mMode(mSelectMeshRoadMode),
-
-	mHasCopied( false ),
-   mIsDirty( false ),
-   mRoadSet( NULL ),
-   mSelNode( -1 ),
-   mSelRoad( NULL ),
-   mHoverRoad( NULL ),
-   mHoverNode( -1 ),
-   mDefaultWidth( 10.0f ),
-   mDefaultDepth( 5.0f ),
-   mDefaultNormal( 0,0,1 ),
-   mAddNodeIdx( 0 ),
-   mNodeHalfSize( 4,4 ),
-   mHoverSplineColor( 255,0,0,255 ),
-   mSelectedSplineColor( 0,255,0,255 ),
-   mHoverNodeColor( 255,255,255,255 )
+	mMovePointMode("MeshRoadEditorMoveMode"),
+    mScalePointMode("MeshRoadEditorScaleMode"),
+	mRotatePointMode("MeshRoadEditorRotateMode"),
+    mIsDirty( false ),
+    mRoadSet( NULL ),
+    mSelNode( -1 ),
+    mHoverNode( -1 ),
+    mAddNodeIdx( 0 ),
+    mSelRoad( NULL ),
+    mHoverRoad( NULL ),
+    mMode(mSelectMeshRoadMode),
+    mDefaultWidth( 10.0f ),
+    mDefaultDepth( 5.0f ),
+    mDefaultNormal( 0,0,1 ),
+    mNodeHalfSize( 4,4 ),
+    mHoverSplineColor( 255,0,0,255 ),
+    mSelectedSplineColor( 0,255,0,255 ),
+    mHoverNodeColor( 255,255,255,255 ),
+	mHasCopied( false )
 {   
 	mMaterialName[Top] = StringTable->insert("DefaultRoadMaterialTop");
 	mMaterialName[Bottom] = StringTable->insert("DefaultRoadMaterialOther");
@@ -1091,7 +1090,7 @@ F32 GuiMeshRoadEditorCtrl::getNodeDepth()
    return 0.0f;
 }
 
-void GuiMeshRoadEditorCtrl::setNodePosition( Point3F pos )
+void GuiMeshRoadEditorCtrl::setNodePosition(const Point3F& pos)
 {
    if ( mSelRoad && mSelNode != -1 )
    {
@@ -1133,11 +1132,11 @@ void GuiMeshRoadEditorCtrl::setSelectedNode( S32 node )
    mSelNode = node;
    if ( mSelNode != -1 )
    {
-      const MeshRoadNode &node = mSelRoad->mNodes[mSelNode];
+      const MeshRoadNode &curNode = mSelRoad->mNodes[mSelNode];
 
       MatrixF objMat = mSelRoad->getNodeTransform(mSelNode);      
-      Point3F objScale( node.width, 1.0f, node.depth );
-      Point3F worldPos = node.point;
+      Point3F objScale(curNode.width, 1.0f, curNode.depth );
+      Point3F worldPos = curNode.point;
       
       mGizmo->set( objMat, worldPos, objScale );
    }
@@ -1248,7 +1247,7 @@ DefineConsoleMethod( GuiMeshRoadEditorCtrl, setNodeNormal, void, (Point3F normal
 
 DefineConsoleMethod( GuiMeshRoadEditorCtrl, setSelectedRoad, void, (const char * objName), (""), "" )
 {
-   if ( dStrIsEmpty(objName) )
+   if ( String::isEmpty(objName) )
       object->setSelectedRoad(NULL);
    else
    {

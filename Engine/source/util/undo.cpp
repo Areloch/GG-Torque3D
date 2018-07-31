@@ -504,7 +504,7 @@ void UndoManager::popCompound( bool discard )
 DefineConsoleMethod(UndoAction, addToManager, void, (const char * undoManager), (""), "action.addToManager([undoManager])")
 {
    UndoManager *theMan = NULL;
-   if (!dStrIsEmpty(undoManager))
+   if (!String::isEmpty(undoManager))
    {
       SimObject *obj = Sim::findObject(undoManager);
       if(obj)
@@ -545,8 +545,9 @@ DefineConsoleMethod(UndoManager, getNextUndoName, const char *, (),, "UndoManage
    const char *name = object->getNextUndoName();
    if(!name)
       return NULL;
-   char *ret = Con::getReturnBuffer(dStrlen(name) + 1);
-   dStrcpy(ret, name);
+   dsize_t retLen = dStrlen(name) + 1;
+   char *ret = Con::getReturnBuffer(retLen);
+   dStrcpy(ret, name, retLen);
    return ret;
 }
 
@@ -556,8 +557,9 @@ DefineConsoleMethod(UndoManager, getNextRedoName, const char *, (),, "UndoManage
    const char *name = object->getNextRedoName();
    if(!name)
       return NULL;
-   char *ret = Con::getReturnBuffer(dStrlen(name) + 1);
-   dStrcpy(ret, name);
+   dsize_t retLen = dStrlen(name) + 1;
+   char *ret = Con::getReturnBuffer(retLen);
+   dStrcpy(ret, name, retLen);
    return ret;
 }
 

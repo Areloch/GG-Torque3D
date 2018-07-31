@@ -49,7 +49,6 @@ GFXDeclareVertexFormat( GFXWaterVertex )
 {
    Point3F point;
    Point3F normal;
-   GFXVertexColor color;
    Point2F undulateData;
    Point4F horizonFactor;
 };
@@ -213,7 +212,7 @@ protected:
    F32 mFresnelBias;
    F32 mFresnelPower;
    F32 mSpecularPower;
-   ColorF mSpecularColor;
+   LinearColorF mSpecularColor;
    bool mEmissive;
 
    // Reflection

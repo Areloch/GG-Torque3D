@@ -116,6 +116,8 @@ void PointLight::_conformLights()
 
    mLight->setBrightness( mBrightness );
    mLight->setCastShadows( mCastShadows );
+   mLight->setStaticRefreshFreq(mStaticRefreshFreq);
+   mLight->setDynamicRefreshFreq(mDynamicRefreshFreq);
    mLight->setPriority( mPriority );
 
    // Update the bounds and scale to fit our light.
@@ -165,7 +167,7 @@ void PointLight::_renderViz( SceneRenderState *state )
    desc.setBlend( true );
 
    // Base the sphere color on the light color.
-   ColorI color( mColor );
+   ColorI color = mColor.toColorI();
    color.alpha = 16;
 
    draw->drawSphere( desc, mRadius, getPosition(), color );

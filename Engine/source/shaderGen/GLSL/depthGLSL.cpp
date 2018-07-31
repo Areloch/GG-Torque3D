@@ -25,7 +25,7 @@
 
 #include "materials/materialFeatureTypes.h"
 #include "materials/materialFeatureData.h"
-
+#include "terrain/terrFeatureTypes.h"
 
 void EyeSpaceDepthOutGLSL::processVert(   Vector<ShaderComponent*> &componentList, 
                                           const MaterialFeatureData &fd )
@@ -67,7 +67,6 @@ void EyeSpaceDepthOutGLSL::processPix( Vector<ShaderComponent*> &componentList,
    wsEyeVec->setName( "wsEyeVec" );
    wsEyeVec->setStructName( "IN" );
    wsEyeVec->setType( "float4" );
-   wsEyeVec->mapsToSampler = false;
    wsEyeVec->uniform = false;
 
    // get shader constants
@@ -85,7 +84,12 @@ void EyeSpaceDepthOutGLSL::processPix( Vector<ShaderComponent*> &componentList,
    LangElement *depthOutDecl = new DecOp( depthOut );
 
    meta->addStatement( new GenOp( "#ifndef CUBE_SHADOW_MAP\r\n" ) );
-   meta->addStatement( new GenOp( "   @ = dot(@, (@.xyz / @.w));\r\n", depthOutDecl, vEye, wsEyeVec, wsEyeVec ) );
+   
+   if (fd.features.hasFeature(MFT_TerrainBaseMap))
+      meta->addStatement(new GenOp("   @ =min(0.9999, dot(@, (@.xyz / @.w)));\r\n", depthOutDecl, vEye, wsEyeVec, wsEyeVec));
+   else
+      meta->addStatement(new GenOp("   @ = dot(@, (@.xyz / @.w));\r\n", depthOutDecl, vEye, wsEyeVec, wsEyeVec));
+      
    meta->addStatement( new GenOp( "#else\r\n" ) );
 
    Var *farDist = (Var*)Var::find( "oneOverFarplane" );
@@ -103,7 +107,7 @@ void EyeSpaceDepthOutGLSL::processPix( Vector<ShaderComponent*> &componentList,
 
    // If there isn't an output conditioner for the pre-pass, than just write
    // out the depth to rgba and return.
-   if( !fd.features[MFT_PrePassConditioner] )
+   if( !fd.features[MFT_DeferredConditioner] )
       meta->addStatement( new GenOp( "   @;\r\n", assignColor( new GenOp( "float4(float3(@),1)", depthOut ), Material::None ) ) );
    
    output = meta;
@@ -148,7 +152,6 @@ void DepthOutGLSL::processPix(   Vector<ShaderComponent*> &componentList,
    depthVar->setName( "depth" );
    depthVar->setStructName( "IN" );
    depthVar->setType( "float" );
-   depthVar->mapsToSampler = false;
    depthVar->uniform = false;
 
    /*

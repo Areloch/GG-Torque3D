@@ -500,7 +500,7 @@ void MessageVector::insertLine(const U32   position,
 
    U32 len = dStrlen(newMessage) + 1;
    char* copy = new char[len];
-   dStrcpy(copy, newMessage);
+   dStrcpy(copy, newMessage, len);
 
    mMessageLines.insert(position);
    mMessageLines[position].message    = copy;
@@ -575,12 +575,13 @@ void MessageVector::registerSpectator(SpectatorCallback callBack, void *spectato
    }
 
    mSpectators.increment();
-   mSpectators.last().callback = callBack;
-   mSpectators.last().key      = spectatorKey;
+   SpectatorRef& lastSpectatorRef = mSpectators.last();
+   lastSpectatorRef.callback = callBack;
+   lastSpectatorRef.key = spectatorKey;
 
    // Need to message this spectator of all the lines currently inserted...
    for (i = 0; i < mMessageLines.size(); i++) {
-      (*mSpectators.last().callback)(mSpectators.last().key,
+      (*lastSpectatorRef.callback)(lastSpectatorRef.key,
                                      LineInserted, i);
    }
 }

@@ -129,10 +129,10 @@ PrecipitationData::PrecipitationData()
 {
    soundProfile      = NULL;
 
-   mDropName         = StringTable->insert("");
-   mDropShaderName   = StringTable->insert("");
-   mSplashName       = StringTable->insert("");
-   mSplashShaderName = StringTable->insert("");
+   mDropName         = StringTable->EmptyString();
+   mDropShaderName   = StringTable->EmptyString();
+   mSplashName       = StringTable->EmptyString();
+   mSplashShaderName = StringTable->EmptyString();
 
    mDropsPerSide     = 4;
    mSplashesPerSide  = 2;
@@ -248,7 +248,7 @@ Precipitation::Precipitation()
    mDropAnimateMS    = 0;
 
    mUseLighting = false;
-   mGlowIntensity = ColorF( 0,0,0,0 );
+   mGlowIntensity = LinearColorF( 0,0,0,0 );
 
    mReflect = false;
 
@@ -298,6 +298,7 @@ Precipitation::Precipitation()
    mSplashShaderCameraPosSC = NULL;
    mSplashShaderAmbientSC = NULL;
 
+   mMaxVBDrops = 5000;
 }
 
 Precipitation::~Precipitation()
@@ -603,7 +604,7 @@ void Precipitation::initMaterials()
    mDropShader = NULL;
    mSplashShader = NULL;
 
-   if( dStrlen(pd->mDropName) > 0 && !mDropHandle.set(pd->mDropName, &GFXDefaultStaticDiffuseProfile, avar("%s() - mDropHandle (line %d)", __FUNCTION__, __LINE__)) )
+   if( dStrlen(pd->mDropName) > 0 && !mDropHandle.set(pd->mDropName, &GFXStaticTextureSRGBProfile, avar("%s() - mDropHandle (line %d)", __FUNCTION__, __LINE__)) )
       Con::warnf("Precipitation::initMaterials - failed to locate texture '%s'!", pd->mDropName);
 
    if ( dStrlen(pd->mDropShaderName) > 0 )
@@ -624,7 +625,7 @@ void Precipitation::initMaterials()
       }
    }
 
-   if( dStrlen(pd->mSplashName) > 0 && !mSplashHandle.set(pd->mSplashName, &GFXDefaultStaticDiffuseProfile, avar("%s() - mSplashHandle (line %d)", __FUNCTION__, __LINE__)) )
+   if( dStrlen(pd->mSplashName) > 0 && !mSplashHandle.set(pd->mSplashName, &GFXStaticTextureSRGBProfile, avar("%s() - mSplashHandle (line %d)", __FUNCTION__, __LINE__)) )
       Con::warnf("Precipitation::initMaterials - failed to locate texture '%s'!", pd->mSplashName);
 
    if ( dStrlen(pd->mSplashShaderName) > 0 )
@@ -963,7 +964,7 @@ void Precipitation::initRenderObjects()
 
    // Create a volitile vertex buffer which
    // we'll lock and fill every frame.
-   mRainVB.set(GFX, mMaxVBDrops * 4, GFXBufferTypeVolatile);
+   mRainVB.set(GFX, mMaxVBDrops * 4, GFXBufferTypeDynamic);
 
    // Init the index buffer for rendering the
    // entire or a partially filled vb.
@@ -1293,7 +1294,7 @@ void Precipitation::interpolateTick(F32 delta)
 void Precipitation::processTick(const Move *)
 {
    //nothing to do on the server
-   if (isServerObject() || mDataBlock == NULL)
+   if (isServerObject() || mDataBlock == NULL || isHidden())
       return;
 
    const U32 currTime = Platform::getVirtualMilliseconds();
@@ -1514,10 +1515,6 @@ void Precipitation::renderObject(ObjectRenderInst *ri, SceneRenderState *state, 
    if (overrideMat)
       return;
 
-#ifdef TORQUE_OS_XENON
-   return;
-#endif
-
    GameConnection* conn = GameConnection::getConnectionToServer();
    if (!conn)
       return; //need connection to server
@@ -1557,7 +1554,7 @@ void Precipitation::renderObject(ObjectRenderInst *ri, SceneRenderState *state, 
    Point3F pos;
    VectorF orthoDir, velocity, right, up, rightUp(0.0f, 0.0f, 0.0f), leftUp(0.0f, 0.0f, 0.0f);
    F32 distance = 0;
-   GFXVertexPT* vertPtr = NULL;
+   GFXVertexPCT* vertPtr = NULL;
    const Point2F *tc;
 
    // Do this here and we won't have to in the loop!
@@ -1584,7 +1581,7 @@ void Precipitation::renderObject(ObjectRenderInst *ri, SceneRenderState *state, 
    // shader.  Once the lighting and shadow systems
    // are added into TSE we can expand this to include
    // the N nearest lights to the camera + the ambient.
-   ColorF ambient( 1, 1, 1 );
+   LinearColorF ambient( 1, 1, 1 );
    if ( mUseLighting )
    {
       const LightInfo *sunlight = LIGHTMGR->getSpecialLight(LightManager::slSunLightType);

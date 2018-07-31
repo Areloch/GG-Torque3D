@@ -494,8 +494,6 @@ void GuiDecalEditorCtrl::renderScene(const RectI & updateRect)
    PROFILE_SCOPE( GuiDecalEditorCtrl_renderScene );
 
    GFXTransformSaver saver;
-
-   RectI bounds = getBounds();
    
    ColorI hlColor(0,255,0,255);
    ColorI regColor(255,0,0,255);
@@ -905,7 +903,7 @@ ConsoleDocClass( DICreateUndoAction,
 				"@internal");
 
 DICreateUndoAction::DICreateUndoAction( const UTF8* actionName )
-   :  UndoAction( actionName )
+   :  UndoAction( actionName ), mEditor(0), mDatablockId(0)
 {
 }
 
@@ -918,7 +916,7 @@ void DICreateUndoAction::initPersistFields()
    Parent::initPersistFields();
 }
 
-void DICreateUndoAction::addDecal( DecalInstance decal )
+void DICreateUndoAction::addDecal(const DecalInstance& decal)
 {
 	mDecalInstance = decal;
 	mDatablockId = decal.mDataBlock->getId();
@@ -993,7 +991,7 @@ ConsoleDocClass( DIDeleteUndoAction,
 				"@internal");
 
 DIDeleteUndoAction::DIDeleteUndoAction( const UTF8 *actionName )
-   :  UndoAction( actionName )
+   :  UndoAction( actionName ), mEditor(0), mDatablockId(0)
 {
 }
 
@@ -1006,7 +1004,7 @@ void DIDeleteUndoAction::initPersistFields()
    Parent::initPersistFields();
 }
 
-void DIDeleteUndoAction::deleteDecal( DecalInstance decal )
+void DIDeleteUndoAction::deleteDecal(const DecalInstance& decal)
 {
 	mDecalInstance = decal;
 	mDatablockId = decal.mDataBlock->getId();
@@ -1081,7 +1079,7 @@ ConsoleDocClass( DBDeleteUndoAction,
 				"@internal");
 
 DBDeleteUndoAction::DBDeleteUndoAction( const UTF8 *actionName )
-   :  UndoAction( actionName )
+   :  UndoAction( actionName ), mEditor(0), mDatablockId(0)
 {
 }
 
@@ -1094,7 +1092,7 @@ void DBDeleteUndoAction::initPersistFields()
    Parent::initPersistFields();
 }
 
-void DBDeleteUndoAction::deleteDecal( DecalInstance decal )
+void DBDeleteUndoAction::deleteDecal(const DecalInstance& decal)
 {
 	mDecalInstanceVec.increment();
    mDecalInstanceVec.last() = decal;
@@ -1190,7 +1188,7 @@ ConsoleDocClass( DBRetargetUndoAction,
 				"@internal");
 
 DBRetargetUndoAction::DBRetargetUndoAction( const UTF8 *actionName )
-   :  UndoAction( actionName )
+   :  UndoAction( actionName ), mEditor(0), mDBFromId(0), mDBToId(0)
 {
 }
 

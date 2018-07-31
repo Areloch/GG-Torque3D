@@ -52,9 +52,9 @@ ConsoleDocClass( GuiRiverEditorCtrl,
 );
 
 GuiRiverEditorCtrl::GuiRiverEditorCtrl()
- : mDefaultNormal( 0, 0, 1 ),
-   mDefaultWidth( 10.0f ),
-   mDefaultDepth( 5.0f )
+ : mDefaultWidth( 10.0f ),
+   mDefaultDepth( 5.0f ),
+   mDefaultNormal( 0, 0, 1 )
 {   
 	// Each of the mode names directly correlates with the River Editor's
 	// tool palette
@@ -1235,7 +1235,7 @@ F32 GuiRiverEditorCtrl::getNodeDepth()
    return 0.0f;
 }
 
-void GuiRiverEditorCtrl::setNodePosition( Point3F pos )
+void GuiRiverEditorCtrl::setNodePosition(const Point3F& pos)
 {
    if ( mSelRiver && mSelNode != -1 )
    {
@@ -1277,11 +1277,11 @@ void GuiRiverEditorCtrl::setSelectedNode( S32 node )
    mSelNode = node;
    if ( mSelNode != -1 )
    {
-      const RiverNode &node = mSelRiver->mNodes[mSelNode];
+      const RiverNode &curNode = mSelRiver->mNodes[mSelNode];
 
       MatrixF objMat = mSelRiver->getNodeTransform(mSelNode);      
-      Point3F objScale( node.width, 1.0f, node.depth );
-      Point3F worldPos = node.point;
+      Point3F objScale(curNode.width, 1.0f, curNode.depth );
+      Point3F worldPos = curNode.point;
 
       mGizmo->set( objMat, worldPos, objScale );
    }

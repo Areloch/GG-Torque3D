@@ -39,7 +39,6 @@ public:
    ///
    Var* getOutTexCoord( const char *name,
                         const char *type,
-                        bool mapsToSampler,
                         bool useTexAnim,
                         MultiLine *meta,
                         Vector<ShaderComponent*> &componentList );
@@ -48,7 +47,6 @@ public:
    /// to the input connector if it doesn't exist.
    static Var* getInTexCoord( const char *name,
                               const char *type,
-                              bool mapsToSampler,
                               Vector<ShaderComponent*> &componentList );
 
    static Var* getInColor( const char *name,
@@ -188,6 +186,9 @@ class VertPositionHLSL : public ShaderFeatureHLSL
 public:
    virtual void processVert( Vector<ShaderComponent*> &componentList,
                              const MaterialFeatureData &fd );
+
+   virtual void processPix( Vector<ShaderComponent*> &componentList,
+                            const MaterialFeatureData &fd);
                              
    virtual String getName()
    {
@@ -658,6 +659,18 @@ public:
                                   MaterialFeatureData *outFeatureData );
 };
 
+/// Hardware Skinning
+class HardwareSkinningFeatureHLSL : public ShaderFeatureHLSL
+{
+protected:
+
+public:
+
+   virtual void processVert(  Vector<ShaderComponent*> &componentList,
+                              const MaterialFeatureData &fd );
+
+   virtual String getName() { return "Hardware Skinning"; }
+};
 
 class DeferredSkyHLSL : public ShaderFeatureHLSL
 {

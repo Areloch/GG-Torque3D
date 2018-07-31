@@ -90,12 +90,12 @@ GuiGraphCtrl::GuiGraphCtrl()
 
    AssertWarn( MaxPlots == 6, "Only 6 plot colors initialized.  Update following code if you change MaxPlots." );
 
-   mGraphColor[ 0 ] = ColorF( 1.0, 1.0, 1.0 );
-   mGraphColor[ 1 ] = ColorF( 1.0, 0.0, 0.0 );
-   mGraphColor[ 2 ] = ColorF( 0.0, 1.0, 0.0 );
-   mGraphColor[ 3 ] = ColorF( 0.0, 0.0, 1.0 );
-   mGraphColor[ 4 ] = ColorF( 0.0, 1.0, 1.0 );
-   mGraphColor[ 5 ] = ColorF( 0.0, 0.0, 0.0 );
+   mGraphColor[ 0 ] = LinearColorF( 1.0, 1.0, 1.0 );
+   mGraphColor[ 1 ] = LinearColorF( 1.0, 0.0, 0.0 );
+   mGraphColor[ 2 ] = LinearColorF( 0.0, 1.0, 0.0 );
+   mGraphColor[ 3 ] = LinearColorF( 0.0, 0.0, 1.0 );
+   mGraphColor[ 4 ] = LinearColorF( 0.0, 1.0, 1.0 );
+   mGraphColor[ 5 ] = LinearColorF( 0.0, 0.0, 0.0 );
 }
 
 //-----------------------------------------------------------------------------
@@ -168,7 +168,7 @@ void GuiGraphCtrl::onRender(Point2I offset, const RectI &updateRect)
 		F32 Scale = F32( getExtent().y ) / F32( mGraphMax[ k ] * 1.05 );
       
       const S32 numSamples = mGraphData[ k ].size();
-
+	  F32 graphOffset;
       switch( mGraphType[ k ] )
       {
          case Bar:
@@ -177,24 +177,24 @@ void GuiGraphCtrl::onRender(Point2I offset, const RectI &updateRect)
 
             for( S32 sample = 0; sample < numSamples; ++ sample )
             {                  
-               PrimBuild::begin( GFXTriangleFan, 4 );
+               PrimBuild::begin( GFXTriangleStrip, 4 );
                PrimBuild::color( mGraphColor[ k ] );
 
-               F32 offset = F32( getExtent().x ) / F32( MaxDataPoints ) * F32( sample + 1 );
+			   graphOffset = F32( getExtent().x ) / F32( MaxDataPoints ) * F32( sample + 1 );
 
                PrimBuild::vertex2f( globalPos.x + prevOffset,
                   midPointY - ( getDatum( k, sample ) * Scale ) );
 
-               PrimBuild::vertex2f( globalPos.x + offset,
+               PrimBuild::vertex2f( globalPos.x + graphOffset,
                   midPointY - ( getDatum( k, sample ) * Scale ) );
 
-               PrimBuild::vertex2f( globalPos.x + offset,
+               PrimBuild::vertex2f( globalPos.x + graphOffset,
                   midPointY );
 
                PrimBuild::vertex2f( globalPos.x + prevOffset,
                   midPointY );
 
-               prevOffset = offset;
+               prevOffset = graphOffset;
 
                PrimBuild::end();
             }
@@ -209,12 +209,12 @@ void GuiGraphCtrl::onRender(Point2I offset, const RectI &updateRect)
 
             for( S32 sample = 0; sample < numSamples; ++ sample )
             {
-               F32 offset = F32( getExtent().x ) / F32( MaxDataPoints - 1 ) * F32( sample );
+				graphOffset = F32( getExtent().x ) / F32( MaxDataPoints - 1 ) * F32( sample );
 
-               PrimBuild::vertex2f( globalPos.x + offset,
+               PrimBuild::vertex2f( globalPos.x + graphOffset,
                   midPointY );
 
-               PrimBuild::vertex2f( globalPos.x + offset,
+               PrimBuild::vertex2f( globalPos.x + graphOffset,
                   midPointY - ( getDatum( k, sample ) * Scale ) );
             }
 
@@ -234,9 +234,9 @@ void GuiGraphCtrl::onRender(Point2I offset, const RectI &updateRect)
 
             for( S32 sample = 0; sample < numSamples; ++ sample )
             {
-               F32 offset = F32( getExtent().x ) / F32( MaxDataPoints - 1 ) * F32( sample );
+			   graphOffset = F32( getExtent().x ) / F32( MaxDataPoints - 1 ) * F32( sample );
 
-               PrimBuild::vertex2f( globalPos.x + offset,
+               PrimBuild::vertex2f( globalPos.x + graphOffset,
                   midPointY - ( getDatum( k, sample ) * Scale ) );
             }
 

@@ -20,6 +20,11 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
+// Arcane-FX for MIT Licensed Open Source version of Torque 3D from GarageGames
+// Copyright (C) 2015 Faust Logic, Inc.
+//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
+
 #include "platform/platform.h"
 #include "terrain/terrData.h"
 
@@ -150,9 +155,9 @@ DefineConsoleFunction( getTerrainUnderWorldPoint, S32, (const char* ptOrX, const
                                                       "@hide")
 {
    Point3F pos;
-   if(!dStrIsEmpty(ptOrX) && dStrIsEmpty(y) && dStrIsEmpty(z))
+   if(!String::isEmpty(ptOrX) && String::isEmpty(y) && String::isEmpty(z))
       dSscanf(ptOrX, "%f %f %f", &pos.x, &pos.y, &pos.z);
-   else if(!dStrIsEmpty(ptOrX) && !dStrIsEmpty(y) && !dStrIsEmpty(z))
+   else if(!String::isEmpty(ptOrX) && !String::isEmpty(y) && !String::isEmpty(z))
    {
       pos.x = dAtof(ptOrX);
       pos.y = dAtof(y);
@@ -176,31 +181,32 @@ ImplementEnumType(baseTexFormat,
 { TerrainBlock::NONE, "NONE", "No cached terrain.\n" },
 { TerrainBlock::DDS, "DDS", "Cache the terrain in a DDS format.\n" },
 { TerrainBlock::PNG, "PNG", "Cache the terrain in a PNG format.\n" },
-{ TerrainBlock::JPG, "JPG", "Cache the terrain in a JPG format.\n" },
 EndImplementEnumType;
 
 TerrainBlock::TerrainBlock()
- : mSquareSize( 1.0f ),
-   mCastShadows( true ),
-   mScreenError( 16 ),   
-   mDetailsDirty( false ),
-   mLayerTexDirty( false ),
-   mLightMap( NULL ),
+ : mLightMap( NULL ),
    mLightMapSize( 256 ),
-   mMaxDetailDistance( 0.0f ),
-   mCell( NULL ),
    mCRC( 0 ),
-   mBaseTexSize( 1024 ),
-   mBaseTexFormat( TerrainBlock::JPG ),
-   mBaseMaterial( NULL ),
-   mDefaultMatInst( NULL ),
+   mMaxDetailDistance( 0.0f ),
    mBaseTexScaleConst( NULL ),
    mBaseTexIdConst( NULL ),
+   mDetailsDirty( false ),
+   mLayerTexDirty( false ),
+   mBaseTexSize( 1024 ),
+   mBaseTexFormat( TerrainBlock::DDS ),
+   mCell( NULL ),
+   mBaseMaterial( NULL ),
+   mDefaultMatInst( NULL ),
+   mSquareSize( 1.0f ),
    mPhysicsRep( NULL ),
+   mScreenError( 16 ),
+   mCastShadows( true ),
    mZoningDirty( false )
 {
    mTypeMask = TerrainObjectType | StaticObjectType | StaticShapeObjectType;
    mNetFlags.set(Ghostable | ScopeAlways);
+   mIgnoreZodiacs = false;
+   zode_primBuffer = 0;
 }
 
 
@@ -219,6 +225,7 @@ TerrainBlock::~TerrainBlock()
    if (editor)
       editor->detachTerrain(this);
 #endif
+   deleteZodiacPrimitiveBuffer();
 }
 
 void TerrainBlock::_onTextureEvent( GFXTexCallbackCode code )
@@ -287,8 +294,14 @@ bool TerrainBlock::_setBaseTexFormat(void *obj, const char *index, const char *d
       {
          terrain->mBaseTexFormat = (BaseTexFormat)eTable[i].mInt;
          terrain->_updateMaterials();
+
+         if (terrain->isServerObject()) return false;
          terrain->_updateLayerTexture();
-         terrain->_updateBaseTexture(true);
+         // If the cached base texture is older that the terrain file or
+         // it doesn't exist then generate and cache it.
+         String baseCachePath = terrain->_getBaseTexCacheFileName();
+         if (Platform::compareModifiedTimes(baseCachePath, terrain->mTerrFileName) < 0)
+            terrain->_updateBaseTexture(true);
          break;
       }
    }
@@ -333,7 +346,7 @@ bool TerrainBlock::setFile( const FileName &terrFileName )
    return true;
 }
 
-void TerrainBlock::setFile( Resource<TerrainFile> terr )
+void TerrainBlock::setFile(const Resource<TerrainFile>& terr)
 {
    mFile = terr;
    mTerrFileName = terr.getPath();
@@ -867,7 +880,7 @@ GFXTextureObject* TerrainBlock::getLightMapTex()
    if ( mLightMapTex.isNull() && mLightMap )
    {
       mLightMapTex.set( mLightMap, 
-                        &GFXDefaultStaticDiffuseProfile, 
+                        &GFXStaticTextureProfile, 
                         false, 
                         "TerrainBlock::getLightMapTex()" );
    }
@@ -960,7 +973,7 @@ bool TerrainBlock::onAdd()
          _updateBaseTexture( true );
 
       // The base texture should have been cached by now... so load it.
-      mBaseTex.set( baseCachePath, &GFXDefaultStaticDiffuseProfile, "TerrainBlock::mBaseTex" );
+      mBaseTex.set( baseCachePath, &GFXStaticTextureSRGBProfile, "TerrainBlock::mBaseTex" );
 
       GFXTextureManager::addEventDelegate( this, &TerrainBlock::_onTextureEvent );
       MATMGR->getFlushSignal().notify( this, &TerrainBlock::_onFlushMaterials );
@@ -1001,6 +1014,7 @@ void TerrainBlock::_rebuildQuadtree()
 
    // Build the shared PrimitiveBuffer.
    mCell->createPrimBuffer( &mPrimBuffer );
+   deleteZodiacPrimitiveBuffer();
 }
 
 void TerrainBlock::_updatePhysics()
@@ -1143,6 +1157,9 @@ void TerrainBlock::initPersistFields()
 
    endGroup( "Misc" );
 
+   addGroup("AFX");
+   addField("ignoreZodiacs",     TypeBool,      Offset(mIgnoreZodiacs,    TerrainBlock));
+   endGroup("AFX");
    Parent::initPersistFields();
 
    removeField( "scale" );
@@ -1193,6 +1210,7 @@ U32 TerrainBlock::packUpdate(NetConnection* con, U32 mask, BitStream *stream)
       stream->write( mScreenError );
 
    stream->writeInt(mBaseTexFormat, 32);
+   stream->writeFlag(mIgnoreZodiacs);
 
    return retMask;
 }
@@ -1262,6 +1280,7 @@ void TerrainBlock::unpackUpdate(NetConnection* con, BitStream *stream)
       stream->read( &mScreenError );
 
    mBaseTexFormat = (BaseTexFormat)stream->readInt(32);
+   mIgnoreZodiacs = stream->readFlag();
 }
 
 void TerrainBlock::getMinMaxHeight( F32 *minHeight, F32 *maxHeight ) const 
@@ -1284,20 +1303,20 @@ DefineEngineMethod( TerrainBlock, save, bool, ( const char* fileName),,
 				   "@return True if file save was successful, false otherwise")
 {
 	char filename[256];
-	dStrcpy(filename,fileName);
+	dStrcpy(filename,fileName,256);
    char *ext = dStrrchr(filename, '.');
    if (!ext || dStricmp(ext, ".ter") != 0)
-      dStrcat(filename, ".ter");
+      dStrcat(filename, ".ter", 256);
    return static_cast<TerrainBlock*>(object)->save(filename);
 }
 
 //ConsoleMethod(TerrainBlock, save, bool, 3, 3, "(string fileName) - saves the terrain block's terrain file to the specified file name.")
 //{
 //   char filename[256];
-//   dStrcpy(filename,argv[2]);
+//   dStrcpy(filename,argv[2],256);
 //   char *ext = dStrrchr(filename, '.');
 //   if (!ext || dStricmp(ext, ".ter") != 0)
-//      dStrcat(filename, ".ter");
+//      dStrcat(filename, ".ter", 256);
 //   return static_cast<TerrainBlock*>(object)->save(filename);
 //}
 
@@ -1327,9 +1346,9 @@ DefineConsoleFunction( getTerrainHeight, F32, (const char* ptOrX, const char* y)
    F32 height = 0.0f;
 
    Point2F pos;
-   if(!dStrIsEmpty(ptOrX) && dStrIsEmpty(y))
+   if(!String::isEmpty(ptOrX) && String::isEmpty(y))
       dSscanf(ptOrX, "%f %f", &pos.x, &pos.y);
-   else if(!dStrIsEmpty(ptOrX) && !dStrIsEmpty(y))
+   else if(!String::isEmpty(ptOrX) && !String::isEmpty(y))
    {
       pos.x = dAtof(ptOrX);
       pos.y = dAtof(y);
@@ -1374,9 +1393,9 @@ DefineConsoleFunction( getTerrainHeightBelowPosition, F32, (const char* ptOrX, c
 	F32 height = 0.0f;
 
    Point3F pos;
-   if(!dStrIsEmpty(ptOrX) && dStrIsEmpty(y) && dStrIsEmpty(z))
+   if(!String::isEmpty(ptOrX) && String::isEmpty(y) && String::isEmpty(z))
       dSscanf(ptOrX, "%f %f %f", &pos.x, &pos.y, &pos.z);
-   else if(!dStrIsEmpty(ptOrX) && !dStrIsEmpty(y) && !dStrIsEmpty(z))
+   else if(!String::isEmpty(ptOrX) && !String::isEmpty(y) && !String::isEmpty(z))
    {
       pos.x = dAtof(ptOrX);
       pos.y = dAtof(y);
@@ -1400,3 +1419,19 @@ DefineConsoleFunction( getTerrainHeightBelowPosition, F32, (const char* ptOrX, c
 	
 	return height;
 }
+const U16* TerrainBlock::getZodiacPrimitiveBuffer()
+{ 
+   if (!zode_primBuffer && !mIgnoreZodiacs)
+      TerrCell::createZodiacPrimBuffer(&zode_primBuffer);
+   return zode_primBuffer;
+}
+
+void TerrainBlock::deleteZodiacPrimitiveBuffer()
+{
+   if (zode_primBuffer != 0)
+   {
+      delete [] zode_primBuffer;
+      zode_primBuffer = 0;
+   }
+}
+

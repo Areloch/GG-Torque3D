@@ -87,29 +87,34 @@ U32 Var::texUnitCount = 0;
 
 Var::Var()
 {
-   dStrcpy( (char*)type, "float4" );
+   dStrcpy( (char*)type, "float4", 32 );
    structName[0] = '\0';
+   connectName[0] = '\0';
+   constSortPos = cspUninit;
+   constNum = 0;
+   texCoordNum = 0;
    uniform = false;
    vertData = false;
    connector = false;
    sampler = false;
-   mapsToSampler = false;
-   texCoordNum = 0;
-   constSortPos = cspUninit;
    arraySize = 1;
+   texture = false;
+   rank = 0;
 }
 
 Var::Var( const char *inName, const char *inType )
 {
    structName[0] = '\0';
+   connectName[0] = '\0';
    uniform = false;
    vertData = false;
    connector = false;
    sampler = false;
-   mapsToSampler = false;
    texCoordNum = 0;
    constSortPos = cspUninit;
    arraySize = 1;
+   texture = false;
+   rank = 0;
 
    setName( inName );
    setType( inType );

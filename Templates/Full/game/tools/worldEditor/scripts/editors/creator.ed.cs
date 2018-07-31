@@ -46,6 +46,7 @@ function EWCreatorWindow::init( %this )
       %this.registerMissionObject( "SFXEmitter",          "Sound Emitter" );
       %this.registerMissionObject( "Precipitation" );
       %this.registerMissionObject( "ParticleEmitterNode", "Particle Emitter" );
+      %this.registerMissionObject( "VolumetricFog", "Volumetric Fog" );
       %this.registerMissionObject( "RibbonNode", "Ribbon" );
       
       // Legacy features. Users should use Ground Cover and the Forest Editor.   
@@ -84,9 +85,9 @@ function EWCreatorWindow::init( %this )
       %this.registerMissionObject( "SFXSpace",      "Sound Space" );
       %this.registerMissionObject( "OcclusionVolume", "Occlusion Volume" );
       %this.registerMissionObject( "AccumulationVolume", "Accumulation Volume" );
+      %this.registerMissionObject( "Entity", "Entity" );
+
       %this.registerMissionObject( "OfflineLPV", "Offline LPV" );
-      %this.registerMissionObject("NavMesh", "Navigation mesh");
-      %this.registerMissionObject("NavPath", "Path");
       
    %this.endGroup();
    
@@ -179,12 +180,6 @@ function EWCreatorWindow::createStatic( %this, %file )
    if ( !$missionRunning )
       return;
 
-   if(isFunction("getObjectLimit") && MissionGroup.getFullCount() >= getObjectLimit())
-   {
-      MessageBoxOKBuy( "Object Limit Reached", "You have exceeded the object limit of " @ getObjectLimit() @ " for this demo. You can remove objects if you would like to add more.", "", "Canvas.showPurchaseScreen(\"objectlimit\");" );
-      return;
-   }
-
    if( !isObject(%this.objectGroup) )
       %this.setNewObjectGroup( MissionGroup );
 
@@ -202,12 +197,6 @@ function EWCreatorWindow::createPrefab( %this, %file )
 {
    if ( !$missionRunning )
       return;
-
-   if(isFunction("getObjectLimit") && MissionGroup.getFullCount() >= getObjectLimit())
-   {
-      MessageBoxOKBuy( "Object Limit Reached", "You have exceeded the object limit of " @ getObjectLimit() @ " for this demo. You can remove objects if you would like to add more.", "", "Canvas.showPurchaseScreen(\"objectlimit\");" );
-      return;
-   }
 
    if( !isObject(%this.objectGroup) )
       %this.setNewObjectGroup( MissionGroup );
@@ -227,12 +216,6 @@ function EWCreatorWindow::createObject( %this, %cmd )
    if ( !$missionRunning )
       return;
 
-   if(isFunction("getObjectLimit") && MissionGroup.getFullCount() >= getObjectLimit())
-   {
-      MessageBoxOKBuy( "Object Limit Reached", "You have exceeded the object limit of " @ getObjectLimit() @ " for this demo. You can remove objects if you would like to add more.", "", "Canvas.showPurchaseScreen(\"objectlimit\");" );
-      return;
-   }
-      
    if( !isObject(%this.objectGroup) )
       %this.setNewObjectGroup( MissionGroup );
 
@@ -338,7 +321,8 @@ function EWCreatorWindow::navigate( %this, %address )
          }
 
          %fullPath = makeRelativePath( %fullPath, getMainDotCSDir() );                                  
-         %splitPath = strreplace( %fullPath, "/", " " );     
+         %splitPath = strreplace( %fullPath, " ", "_" );
+         %splitPath = strreplace( %splitPath, "/", " " );
          if( getWord(%splitPath, 0) $= "tools" )
          {
             %fullPath = findNextFileMultiExpr( getFormatExtensions() );
@@ -352,6 +336,7 @@ function EWCreatorWindow::navigate( %this, %address )
          // Add this file's path (parent folders) to the
          // popup menu if it isn't there yet.
          %temp = strreplace( %pathFolders, " ", "/" );         
+         %temp = strreplace( %temp, "_", " " );
          %r = CreatorPopupMenu.findText( %temp );
          if ( %r == -1 )
          {
@@ -450,7 +435,8 @@ function EWCreatorWindow::navigate( %this, %address )
       while ( %fullPath !$= "" )
       {         
          %fullPath = makeRelativePath( %fullPath, getMainDotCSDir() );                                  
-         %splitPath = strreplace( %fullPath, "/", " " );     
+         %splitPath = strreplace( %fullPath, " ", "_" );
+         %splitPath = strreplace( %splitPath, "/", " " );
          if( getWord(%splitPath, 0) $= "tools" )
          {
             %fullPath = findNextFile( %expr );
@@ -464,6 +450,7 @@ function EWCreatorWindow::navigate( %this, %address )
          // Add this file's path (parent folders) to the
          // popup menu if it isn't there yet.
          %temp = strreplace( %pathFolders, " ", "/" );         
+         %temp = strreplace( %temp, "_", " " );
          %r = CreatorPopupMenu.findText( %temp );
          if ( %r == -1 )
          {
@@ -471,7 +458,7 @@ function EWCreatorWindow::navigate( %this, %address )
          }
          
          // Is this file in the current folder?        
-         if ( stricmp( %pathFolders, %address ) == 0 )
+         if ( (%dirCount == 0 && %address $= "") || stricmp( %pathFolders, %address ) == 0 )
          {
             %this.addPrefabIcon( %fullPath );            
          }

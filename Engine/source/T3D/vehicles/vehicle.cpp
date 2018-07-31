@@ -46,6 +46,9 @@
 #include "gfx/primBuilder.h"
 #include "gfx/gfxDrawUtil.h"
 #include "materials/materialDefinition.h"
+#include "T3D/physics/physicsPlugin.h"
+#include "T3D/physics/physicsBody.h"
+#include "T3D/physics/physicsCollision.h"
 
 
 namespace {
@@ -59,8 +62,6 @@ static F32 sWorkingQueryBoxSizeMultiplier = 2.0f;  // How much larger should the
                                                    // The larger this number the less often the working list
                                                    // will be updated due to motion, but any non-static shape
                                                    // that moves into the query box will not be noticed.
-
-const U32 sMoveRetryCount = 3;
 
 // Client prediction
 const S32 sMaxWarpTicks = 3;           // Max warp duration in ticks
@@ -203,7 +204,8 @@ VehicleData::VehicleData()
    dMemset(waterSound, 0, sizeof(waterSound));
 
    collDamageThresholdVel = 20;
-   collDamageMultiplier   = 0.05f;
+   collDamageMultiplier = 0.05f;
+   enablePhysicsRep = true;
 }
 
 
@@ -275,7 +277,7 @@ void VehicleData::packData(BitStream* stream)
    stream->write(body.friction);
    for (i = 0; i < Body::MaxSounds; i++)
       if (stream->writeFlag(body.sound[i]))
-         stream->writeRangedU32(packed? SimObjectId((uintptr_t)body.sound[i]):
+         stream->writeRangedU32(mPacked ? SimObjectId((uintptr_t)body.sound[i]):
                                 body.sound[i]->getId(),DataBlockObjectIdFirst,
                                 DataBlockObjectIdLast);
 
@@ -315,6 +317,7 @@ void VehicleData::packData(BitStream* stream)
    stream->write(softSplashSoundVel);
    stream->write(medSplashSoundVel);
    stream->write(hardSplashSoundVel);
+   stream->write(enablePhysicsRep);
 
    // write the water sound profiles
    for(i = 0; i < MaxSounds; i++)
@@ -411,6 +414,7 @@ void VehicleData::unpackData(BitStream* stream)
    stream->read(&softSplashSoundVel);
    stream->read(&medSplashSoundVel);
    stream->read(&hardSplashSoundVel);
+   stream->read(&enablePhysicsRep);
 
    // write the water sound profiles
    for(i = 0; i < MaxSounds; i++)
@@ -465,6 +469,11 @@ void VehicleData::unpackData(BitStream* stream)
 
 void VehicleData::initPersistFields()
 {
+   addGroup("Physics");
+   addField("enablePhysicsRep", TypeBool, Offset(enablePhysicsRep, VehicleData),
+      "@brief Creates a representation of the object in the physics plugin.\n");
+   endGroup("Physics");
+
    addField( "jetForce", TypeF32, Offset(jetForce, VehicleData),
       "@brief Additional force applied to the vehicle when it is jetting.\n\n"
       "For WheeledVehicles, the force is applied in the forward direction. For "
@@ -682,6 +691,8 @@ Vehicle::Vehicle()
    mWorkingQueryBox.minExtents.set(-1e9f, -1e9f, -1e9f);
    mWorkingQueryBox.maxExtents.set(-1e9f, -1e9f, -1e9f);
    mWorkingQueryBoxCountDown = sWorkingQueryBoxStaleThreshold;
+
+   mPhysicsRep = NULL;
 }
 
 U32 Vehicle::getCollisionMask()
@@ -695,6 +706,25 @@ Point3F Vehicle::getVelocity() const
    return mRigid.linVelocity;
 }
 
+void Vehicle::_createPhysics()
+{
+   SAFE_DELETE(mPhysicsRep);
+
+   if (!PHYSICSMGR || !mDataBlock->enablePhysicsRep)
+      return;
+
+   TSShape *shape = mShapeInstance->getShape();
+   PhysicsCollision *colShape = NULL;
+   colShape = shape->buildColShape(false, getScale());
+
+   if (colShape)
+   {
+      PhysicsWorld *world = PHYSICSMGR->getWorld(isServerObject() ? "server" : "client");
+      mPhysicsRep = PHYSICSMGR->createBody();
+      mPhysicsRep->init(colShape, 0, PhysicsBody::BF_KINEMATIC, this, world);
+      mPhysicsRep->setTransform(getTransform());
+   }
+}
 //----------------------------------------------------------------------------
 
 bool Vehicle::onAdd()
@@ -776,11 +806,15 @@ bool Vehicle::onAdd()
    mConvex.box.maxExtents.convolve(mObjScale);
    mConvex.findNodeTransform();
 
+   _createPhysics();
+
    return true;
 }
 
 void Vehicle::onRemove()
 {
+   SAFE_DELETE(mPhysicsRep);
+
    U32 i=0;
    for( i=0; i<VehicleData::VC_NUM_DUST_EMITTERS; i++ )
    {
@@ -823,6 +857,8 @@ void Vehicle::processTick(const Move* move)
    PROFILE_SCOPE( Vehicle_ProcessTick );
 
    Parent::processTick(move);
+   if ( isMounted() )
+      return;
 
    // Warp to catch up to server
    if (mDelta.warpCount < mDelta.warpTicks)
@@ -880,6 +916,11 @@ void Vehicle::processTick(const Move* move)
       setPosition(mRigid.linPosition, mRigid.angPosition);
       setMaskBits(PositionMask);
       updateContainer();
+
+      //TODO: Only update when position has actually changed
+      //no need to check if mDataBlock->enablePhysicsRep is false as mPhysicsRep will be NULL if it is
+      if (mPhysicsRep)
+         mPhysicsRep->moveKinematicTo(getTransform());
    }
 }
 
@@ -888,6 +929,8 @@ void Vehicle::interpolateTick(F32 dt)
    PROFILE_SCOPE( Vehicle_InterpolateTick );
 
    Parent::interpolateTick(dt);
+   if ( isMounted() )
+      return;
 
    if(dt == 0.0f)
       setRenderPosition(mDelta.pos, mDelta.rot[1]);
@@ -966,92 +1009,94 @@ void Vehicle::getCameraParameters(F32 *min,F32* max,Point3F* off,MatrixF* rot)
 
 //----------------------------------------------------------------------------
 
-void Vehicle::getCameraTransform(F32* pos,MatrixF* mat)
+void Vehicle::getCameraTransform(F32* pos, MatrixF* mat)
 {
    // Returns camera to world space transform
    // Handles first person / third person camera position
    if (isServerObject() && mShapeInstance)
       mShapeInstance->animateNodeSubtrees(true);
 
-   if (*pos == 0) {
+   if (*pos == 0) 
+   {
       getRenderEyeTransform(mat);
-      return;
-   }
-
-   // Get the shape's camera parameters.
-   F32 min,max;
-   MatrixF rot;
-   Point3F offset;
-   getCameraParameters(&min,&max,&offset,&rot);
-
-   // Start with the current eye position
-   MatrixF eye;
-   getRenderEyeTransform(&eye);
-
-   // Build a transform that points along the eye axis
-   // but where the Z axis is always up.
-   if (mDataBlock->cameraRoll)
-      mat->mul(eye,rot);
-   else 
-   {
-      MatrixF cam(1);
-      VectorF x,y,z(0,0,1);
-      eye.getColumn(1, &y);
-      mCross(y, z, &x);
-      x.normalize();
-      mCross(x, y, &z);
-      z.normalize();
-      cam.setColumn(0,x);
-      cam.setColumn(1,y);
-      cam.setColumn(2,z);
-      mat->mul(cam,rot);
-   }
-
-   // Camera is positioned straight back along the eye's -Y axis.
-   // A ray is cast to make sure the camera doesn't go through
-   // anything solid.
-   VectorF vp,vec;
-   vp.x = vp.z = 0;
-   vp.y = -(max - min) * *pos;
-   eye.mulV(vp,&vec);
-
-   // Use the camera node as the starting position if it exists.
-   Point3F osp,sp;
-   if (mDataBlock->cameraNode != -1) 
-   {
-      mShapeInstance->mNodeTransforms[mDataBlock->cameraNode].getColumn(3,&osp);
-      getRenderTransform().mulP(osp,&sp);
    }
    else
-      eye.getColumn(3,&sp);
+   {
+      // Get the shape's camera parameters.
+      F32 min, max;
+      MatrixF rot;
+      Point3F offset;
+      getCameraParameters(&min, &max, &offset, &rot);
 
-   // Make sure we don't hit ourself...
-   disableCollision();
-   if (isMounted())
-      getObjectMount()->disableCollision();
+      // Start with the current eye position
+      MatrixF eye;
+      getRenderEyeTransform(&eye);
 
-   // Cast the ray into the container database to see if we're going
-   // to hit anything.
-   RayInfo collision;
-   Point3F ep = sp + vec + offset + mCameraOffset;
-   if (mContainer->castRay(sp, ep,
+      // Build a transform that points along the eye axis
+      // but where the Z axis is always up.
+      if (mDataBlock->cameraRoll)
+         mat->mul(eye, rot);
+      else
+      {
+         MatrixF cam(1);
+         VectorF x, y, z(0, 0, 1);
+         eye.getColumn(1, &y);
+         mCross(y, z, &x);
+         x.normalize();
+         mCross(x, y, &z);
+         z.normalize();
+         cam.setColumn(0, x);
+         cam.setColumn(1, y);
+         cam.setColumn(2, z);
+         mat->mul(cam, rot);
+      }
+
+      // Camera is positioned straight back along the eye's -Y axis.
+      // A ray is cast to make sure the camera doesn't go through
+      // anything solid.
+      VectorF vp, vec;
+      vp.x = vp.z = 0;
+      vp.y = -(max - min) * *pos;
+      eye.mulV(vp, &vec);
+
+      // Use the camera node as the starting position if it exists.
+      Point3F osp, sp;
+      if (mDataBlock->cameraNode != -1)
+      {
+         mShapeInstance->mNodeTransforms[mDataBlock->cameraNode].getColumn(3, &osp);
+         getRenderTransform().mulP(osp, &sp);
+      }
+      else
+         eye.getColumn(3, &sp);
+
+      // Make sure we don't hit ourself...
+      disableCollision();
+      if (isMounted())
+         getObjectMount()->disableCollision();
+
+      // Cast the ray into the container database to see if we're going
+      // to hit anything.
+      RayInfo collision;
+      Point3F ep = sp + vec + offset + mCameraOffset;
+      if (mContainer->castRay(sp, ep,
          ~(WaterObjectType | GameBaseObjectType | DefaultObjectType | sTriggerMask),
          &collision) == true) {
 
-      // Shift the collision point back a little to try and
-      // avoid clipping against the front camera plane.
-      F32 t = collision.t - (-mDot(vec, collision.normal) / vec.len()) * 0.1;
-      if (t > 0.0f)
-         ep = sp + offset + mCameraOffset + (vec * t);
-      else
-         eye.getColumn(3,&ep);
-   }
-   mat->setColumn(3,ep);
+         // Shift the collision point back a little to try and
+         // avoid clipping against the front camera plane.
+         F32 t = collision.t - (-mDot(vec, collision.normal) / vec.len()) * 0.1;
+         if (t > 0.0f)
+            ep = sp + offset + mCameraOffset + (vec * t);
+         else
+            eye.getColumn(3, &ep);
+      }
+      mat->setColumn(3, ep);
 
-   // Re-enable our collision.
-   if (isMounted())
-      getObjectMount()->enableCollision();
-   enableCollision();
+      // Re-enable our collision.
+      if (isMounted())
+         getObjectMount()->enableCollision();
+      enableCollision();
+   }
 
    // Apply Camera FX.
    mat->mul( gCamFXMgr.getTrans() );
@@ -1319,7 +1364,7 @@ bool Vehicle::updateCollision(F32 dt)
 
    mCollisionList.clear();
    CollisionState *state = mConvex.findClosestState(cmat, getScale(), mDataBlock->collisionTol);
-   if (state && state->dist <= mDataBlock->collisionTol) 
+   if (state && state->mDist <= mDataBlock->collisionTol) 
    {
       //resolveDisplacement(ns,state,dt);
       mConvex.getCollisionInfo(cmat, getScale(), &mCollisionList, mDataBlock->collisionTol);
@@ -1452,8 +1497,8 @@ bool Vehicle::resolveDisplacement(Rigid& ns,CollisionState *state, F32 dt)
 {
    PROFILE_SCOPE( Vehicle_ResolveDisplacement );
 
-   SceneObject* obj = (state->a->getObject() == this)?
-       state->b->getObject(): state->a->getObject();
+   SceneObject* obj = (state->mA->getObject() == this)?
+       state->mB->getObject(): state->mA->getObject();
 
    if (obj->isDisplacable() && ((obj->getTypeMask() & ShapeBaseObjectType) != 0))
    {

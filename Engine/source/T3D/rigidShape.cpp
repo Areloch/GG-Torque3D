@@ -153,7 +153,7 @@ ConsoleDocClass( RigidShape,
 );
 
 
-IMPLEMENT_CALLBACK( RigidShape, onEnterLiquid, void, ( const char* objId, const char* waterCoverage, const char* liquidType ),
+IMPLEMENT_CALLBACK( RigidShape, onEnterLiquid, void, ( const char* objId, F32 waterCoverage, const char* liquidType ),
 													 ( objId, waterCoverage, liquidType ),
    "@brief Called whenever this RigidShape object enters liquid.\n\n"
    "@param objId The ID of the rigidShape object.\n"
@@ -186,8 +186,6 @@ IMPLEMENT_CALLBACK( RigidShape, onLeaveLiquid, void, ( const char* objId, const 
 //----------------------------------------------------------------------------
 
 namespace {
-
-   const U32 sMoveRetryCount = 3;
 
    // Client prediction
    const S32 sMaxWarpTicks = 3;           // Max warp duration in ticks
@@ -732,6 +730,8 @@ void RigidShape::onRemove()
 void RigidShape::processTick(const Move* move)
 {     
    Parent::processTick(move);
+   if ( isMounted() )
+      return;
 
    // Warp to catch up to server
    if (mDelta.warpCount < mDelta.warpTicks) 
@@ -795,6 +795,8 @@ void RigidShape::processTick(const Move* move)
 void RigidShape::interpolateTick(F32 dt)
 {     
    Parent::interpolateTick(dt);
+   if ( isMounted() )
+      return;
 
    if(dt == 0.0f)
       setRenderPosition(mDelta.pos, mDelta.rot[1]);
@@ -813,6 +815,9 @@ void RigidShape::advanceTime(F32 dt)
    Parent::advanceTime(dt);
 
    updateFroth(dt);
+
+   if ( isMounted() )
+      return;
 
    // Update 3rd person camera offset.  Camera update is done
    // here as it's a client side only animation.
@@ -1088,7 +1093,7 @@ void RigidShape::updatePos(F32 dt)
       // Water script callbacks      
       if (!inLiquid && mWaterCoverage != 0.0f) 
       {
-         onEnterLiquid_callback(getIdString(), Con::getFloatArg(mWaterCoverage), mLiquidType.c_str() );
+         onEnterLiquid_callback(getIdString(), mWaterCoverage, mLiquidType.c_str() );
          inLiquid = true;
       }
       else if (inLiquid && mWaterCoverage == 0.0f) 
@@ -1189,7 +1194,7 @@ bool RigidShape::updateCollision(F32 dt)
 
    mCollisionList.clear();
    CollisionState *state = mConvex.findClosestState(cmat, getScale(), mDataBlock->collisionTol);
-   if (state && state->dist <= mDataBlock->collisionTol) 
+   if (state && state->mDist <= mDataBlock->collisionTol) 
    {
       //resolveDisplacement(ns,state,dt);
       mConvex.getCollisionInfo(cmat, getScale(), &mCollisionList, mDataBlock->collisionTol);
@@ -1321,8 +1326,8 @@ bool RigidShape::resolveContacts(Rigid& ns,CollisionList& cList,F32 dt)
 
 bool RigidShape::resolveDisplacement(Rigid& ns,CollisionState *state, F32 dt)
 {
-   SceneObject* obj = (state->a->getObject() == this)?
-      state->b->getObject(): state->a->getObject();
+   SceneObject* obj = (state->mA->getObject() == this)?
+      state->mB->getObject(): state->mA->getObject();
 
    if (obj->isDisplacable() && ((obj->getTypeMask() & ShapeBaseObjectType) != 0))
    {

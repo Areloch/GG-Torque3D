@@ -32,13 +32,13 @@
 
 GuiGameListMenuCtrl::GuiGameListMenuCtrl()
  : mSelected(NO_ROW),
-   mHighlighted(NO_ROW),
-   mDebugRender(false)
+   mDebugRender(false),
+   mHighlighted(NO_ROW)
 {
    VECTOR_SET_ASSOCIATION(mRows);
 
    // initialize the control callbacks
-   mCallbackOnA = StringTable->insert("");
+   mCallbackOnA = StringTable->EmptyString();
    mCallbackOnB = mCallbackOnA;
    mCallbackOnX = mCallbackOnA;
    mCallbackOnY = mCallbackOnA;
@@ -55,6 +55,8 @@ GuiGameListMenuCtrl::~GuiGameListMenuCtrl()
 void GuiGameListMenuCtrl::onRender(Point2I offset, const RectI &updateRect)
 {
    GuiGameListMenuProfile * profile = (GuiGameListMenuProfile *) mProfile;
+
+   GFXDrawUtil* drawUtil = GFX->getDrawUtil();
 
    F32 xScale = (float) getWidth() / profile->getRowWidth();
 
@@ -121,19 +123,19 @@ void GuiGameListMenuCtrl::onRender(Point2I offset, const RectI &updateRect)
       }
 
       // render the row bitmap
-      GFX->getDrawUtil()->clearBitmapModulation();
-      GFX->getDrawUtil()->drawBitmapStretchSR(profile->mTextureObject, RectI(currentOffset, rowExtent), profile->getBitmapArrayRect(buttonTextureIndex));
+      drawUtil->clearBitmapModulation();
+      drawUtil->drawBitmapStretchSR(profile->mTextureObject, RectI(currentOffset, rowExtent), profile->getBitmapArrayRect(buttonTextureIndex));
 
       // render the row icon if it has one
       if ((iconIndex != NO_ICON) && profileHasIcons && (! profile->getBitmapArrayRect((U32)iconIndex).extent.isZero()))
       {
          iconIndex += Profile::TEX_FIRST_ICON;
-         GFX->getDrawUtil()->clearBitmapModulation();
-         GFX->getDrawUtil()->drawBitmapStretchSR(profile->mTextureObject, RectI(currentOffset + iconOffset, iconExtent), profile->getBitmapArrayRect(iconIndex));
+         drawUtil->clearBitmapModulation();
+         drawUtil->drawBitmapStretchSR(profile->mTextureObject, RectI(currentOffset + iconOffset, iconExtent), profile->getBitmapArrayRect(iconIndex));
       }
 
       // render the row text
-      GFX->getDrawUtil()->setBitmapModulation(fontColor);
+      drawUtil->setBitmapModulation(fontColor);
       renderJustifiedText(currentOffset + textOffset, textExtent, (*row)->mLabel);
    }
 
@@ -570,7 +572,7 @@ StringTableEntry GuiGameListMenuCtrl::getRowLabel(S32 rowIndex) const
    if (! isValidRowIndex(rowIndex))
    {
       // not a valid row index, don't do anything
-      return StringTable->insert("");
+      return StringTable->EmptyString();
    }
    return mRows[rowIndex]->mLabel;
 }

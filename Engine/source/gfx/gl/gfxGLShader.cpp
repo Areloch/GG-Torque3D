@@ -23,6 +23,7 @@
 #include "platform/platform.h"
 #include "gfx/gl/gfxGLShader.h"
 #include "gfx/gl/gfxGLVertexAttribLocation.h"
+#include "gfx/gl/gfxGLDevice.h"
 
 #include "core/frameAllocator.h"
 #include "core/stream/fileStream.h"
@@ -30,6 +31,8 @@
 #include "math/mPoint2.h"
 #include "gfx/gfxStructs.h"
 #include "console/console.h"
+
+#define CHECK_AARG(pos, name) static StringTableEntry attr_##name = StringTable->insert(#name); if (argName == attr_##name) { glBindAttribLocation(mProgram, pos, attr_##name); continue; }
 
 
 class GFXGLShaderConstHandle : public GFXShaderConstHandle
@@ -64,7 +67,7 @@ public:
 };
 
 GFXGLShaderConstHandle::GFXGLShaderConstHandle( GFXGLShader *shader )
- : mShader( shader ), mSamplerNum(-1), mInstancingConstant(false)
+ : mShader( shader ), mLocation(0), mOffset(0), mSize(0), mSamplerNum(-1), mInstancingConstant(false)
 {
    mValid = false;
 }
@@ -91,6 +94,8 @@ static U32 shaderConstTypeSize(GFXShaderConstType type)
       return 16;
    case GFXSCT_Float3x3:
       return 36;
+   case GFXSCT_Float4x3:
+      return 48;
    case GFXSCT_Float4x4:
       return 64;
    default:
@@ -192,7 +197,7 @@ void GFXGLShaderConstBuffer::set(GFXShaderConstHandle* handle, const PlaneF& fv)
    internalSet(handle, fv);
 }
 
-void GFXGLShaderConstBuffer::set(GFXShaderConstHandle* handle, const ColorF& fv)
+void GFXGLShaderConstBuffer::set(GFXShaderConstHandle* handle, const LinearColorF& fv)
 {
    internalSet(handle, fv);
 }
@@ -304,6 +309,9 @@ void GFXGLShaderConstBuffer::set(GFXShaderConstHandle* handle, const MatrixF& ma
       reinterpret_cast<F32*>(mBuffer + _glHandle->mOffset)[7] = mat[9];
       reinterpret_cast<F32*>(mBuffer + _glHandle->mOffset)[8] = mat[10];
       break;
+   case GFXSCT_Float4x3:
+      dMemcpy(mBuffer + _glHandle->mOffset, (const F32*)mat, (sizeof(F32) * 12));// matrix with end row chopped off
+      break;
    case GFXSCT_Float4x4:
    {      
       if(_glHandle->mInstancingConstant)
@@ -333,6 +341,13 @@ void GFXGLShaderConstBuffer::set(GFXShaderConstHandle* handle, const MatrixF* ma
    AssertFatal(!_glHandle->mInstancingConstant, "GFXGLShaderConstBuffer::set - Instancing not supported for matrix arrays");
 
    switch (matrixType) {
+      case GFXSCT_Float4x3:
+         // Copy each item with the last row chopped off
+         for (int i = 0; i<arraySize; i++)
+         {
+            dMemcpy(mBuffer + _glHandle->mOffset + (i*(sizeof(F32) * 12)), (F32*)(mat + i), sizeof(F32) * 12);
+         }
+      break;
       case GFXSCT_Float4x4:
          dMemcpy(mBuffer + _glHandle->mOffset, (F32*)mat, _glHandle->getSize());
          break;
@@ -344,6 +359,7 @@ void GFXGLShaderConstBuffer::set(GFXShaderConstHandle* handle, const MatrixF* ma
 
 void GFXGLShaderConstBuffer::activate()
 {
+   PROFILE_SCOPE(GFXGLShaderConstBuffer_activate);
    mShader->setConstantsFromBuffer(this);
    mWasLost = false;
 }
@@ -394,6 +410,7 @@ void GFXGLShader::clearShaders()
 
 bool GFXGLShader::_init()
 {
+   PROFILE_SCOPE(GFXGLShader_Init);
    // Don't initialize empty shaders.
    if ( mVertexFile.isEmpty() && mPixelFile.isEmpty() )
       return false;
@@ -406,17 +423,14 @@ bool GFXGLShader::_init()
    Vector<GFXShaderMacro> macros;
    macros.merge( mMacros );
    macros.merge( smGlobalMacros );
-
-   // Add the shader version to the macros.
-   const U32 mjVer = (U32)mFloor( mPixVersion );
-   const U32 mnVer = (U32)( ( mPixVersion - F32( mjVer ) ) * 10.01f );
+   
    macros.increment();
    macros.last().name = "TORQUE_SM";
-   macros.last().value = String::ToString( mjVer * 10 + mnVer );
+   macros.last().value = 40;
    macros.increment();
    macros.last().name = "TORQUE_VERTEX_SHADER";
-   macros.last().value = "";   
-
+   macros.last().value = "";
+   
    // Default to true so we're "successful" if a vertex/pixel shader wasn't specified.
    bool compiledVertexShader = true;
    bool compiledPixelShader = true;
@@ -432,34 +446,62 @@ bool GFXGLShader::_init()
    // If either shader was present and failed to compile, bail.
    if(!compiledVertexShader || !compiledPixelShader)
       return false;
-
-   //bind vertex attributes
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_Position,    "vPosition");
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_Normal,      "vNormal");
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_Color,       "vColor");
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_Tangent,     "vTangent");
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_TangentW,    "vTangentW");
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_Binormal,    "vBinormal");
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_TexCoord0,   "vTexCoord0");
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_TexCoord1,   "vTexCoord1");
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_TexCoord2,   "vTexCoord2");
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_TexCoord3,   "vTexCoord3");
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_TexCoord4,   "vTexCoord4");
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_TexCoord5,   "vTexCoord5");
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_TexCoord6,   "vTexCoord6");
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_TexCoord7,   "vTexCoord7");
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_TexCoord8,   "vTexCoord8");
-   glBindAttribLocation(mProgram, Torque::GL_VertexAttrib_TexCoord9,   "vTexCoord9");
-
-   //bind fragment out color
-   glBindFragDataLocation(mProgram, 0, "OUT_col");
-   glBindFragDataLocation(mProgram, 1, "OUT_col1");
-   glBindFragDataLocation(mProgram, 2, "OUT_col2");
-   glBindFragDataLocation(mProgram, 3, "OUT_col3");
-
+  
    // Link it!
    glLinkProgram( mProgram );
+   
+   GLint activeAttribs  = 0;
+   glGetProgramiv(mProgram, GL_ACTIVE_ATTRIBUTES, &activeAttribs );
+   
+   GLint maxLength;
+   glGetProgramiv(mProgram, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxLength);
+   
+   FrameTemp<GLchar> tempData(maxLength+1);
+   *tempData.address() = '\0';
+   // Check atributes
+   for (U32 i=0; i<activeAttribs; i++)
+   {
+      GLint size;
+      GLenum type;
+      
+      glGetActiveAttrib(mProgram, i, maxLength + 1, NULL, &size, &type, tempData.address());
+      
+      StringTableEntry argName = StringTable->insert(tempData.address());
+      
+      CHECK_AARG(Torque::GL_VertexAttrib_Position,    vPosition);
+      CHECK_AARG(Torque::GL_VertexAttrib_Normal,      vNormal);
+      CHECK_AARG(Torque::GL_VertexAttrib_Color,       vColor);
+      CHECK_AARG(Torque::GL_VertexAttrib_Tangent,     vTangent);
+      CHECK_AARG(Torque::GL_VertexAttrib_TangentW,    vTangentW);
+      CHECK_AARG(Torque::GL_VertexAttrib_Binormal,    vBinormal);
+      CHECK_AARG(Torque::GL_VertexAttrib_TexCoord0,   vTexCoord0);
+      CHECK_AARG(Torque::GL_VertexAttrib_TexCoord1,   vTexCoord1);
+      CHECK_AARG(Torque::GL_VertexAttrib_TexCoord2,   vTexCoord2);
+      CHECK_AARG(Torque::GL_VertexAttrib_TexCoord3,   vTexCoord3);
+      CHECK_AARG(Torque::GL_VertexAttrib_TexCoord4,   vTexCoord4);
+      CHECK_AARG(Torque::GL_VertexAttrib_TexCoord5,   vTexCoord5);
+      CHECK_AARG(Torque::GL_VertexAttrib_TexCoord6,   vTexCoord6);
+      CHECK_AARG(Torque::GL_VertexAttrib_TexCoord7,   vTexCoord7);
+      CHECK_AARG(Torque::GL_VertexAttrib_TexCoord8,   vTexCoord8);
+      CHECK_AARG(Torque::GL_VertexAttrib_TexCoord9,   vTexCoord9);
+   }
 
+   //always have OUT_col
+   glBindFragDataLocation(mProgram, 0, "OUT_col");
+   // Check OUT_colN
+   for(U32 i=1;i<4;i++)
+   {
+      char buffer[10];
+      dSprintf(buffer, sizeof(buffer), "OUT_col%u",i);
+      GLint location = glGetFragDataLocation(mProgram, buffer);
+      if(location>0)
+         glBindFragDataLocation(mProgram, i, buffer);
+
+   }
+   
+   // Link it again!
+   glLinkProgram( mProgram );
+   
    GLint linkStatus;
    glGetProgramiv( mProgram, GL_LINK_STATUS, &linkStatus );
    
@@ -471,22 +513,23 @@ bool GFXGLShader::_init()
       FrameAllocatorMarker fam;
       char* log = (char*)fam.alloc( logLength );
       glGetProgramInfoLog( mProgram, logLength, NULL, log );
-
+      
       if ( linkStatus == GL_FALSE )
       {
          if ( smLogErrors )
          {
             Con::errorf( "GFXGLShader::init - Error linking shader!" );
-            Con::errorf( "Program %s / %s: %s", 
-                mVertexFile.getFullPath().c_str(), mPixelFile.getFullPath().c_str(), log);
+            Con::errorf( "Program %s / %s: %s",
+               mVertexFile.getFullPath().c_str(), mPixelFile.getFullPath().c_str(), log);
          }
       }
       else if ( smLogWarnings )
       {
-         Con::warnf( "Program %s / %s: %s", 
-             mVertexFile.getFullPath().c_str(), mPixelFile.getFullPath().c_str(), log);
+         Con::warnf( "Program %s / %s: %s",
+            mVertexFile.getFullPath().c_str(), mPixelFile.getFullPath().c_str(), log);
       }
    }
+
 
    // If we failed to link, bail.
    if ( linkStatus == GL_FALSE )
@@ -568,6 +611,9 @@ void GFXGLShader::initConstantDescs()
             break;
          case GL_FLOAT_MAT4:
             desc.constType = GFXSCT_Float4x4;
+            break;
+         case GL_FLOAT_MAT4x3: // jamesu - columns, rows
+            desc.constType = GFXSCT_Float4x3;
             break;
          case GL_SAMPLER_1D:
          case GL_SAMPLER_2D:
@@ -664,10 +710,14 @@ void GFXGLShader::initHandles()
    glUseProgram(0);
 
    //instancing
+   if (!mInstancingFormat)
+      return;
+
    U32 offset = 0;
-   for ( U32 i=0; i < mInstancingFormat.getElementCount(); i++ )
+
+   for ( U32 i=0; i < mInstancingFormat->getElementCount(); i++ )
    {
-      const GFXVertexElement &element = mInstancingFormat.getElement( i );
+      const GFXVertexElement &element = mInstancingFormat->getElement( i );
       
       String constName = String::ToString( "$%s", element.getSemantic().c_str() );
 
@@ -702,9 +752,9 @@ void GFXGLShader::initHandles()
 
          // If this is a matrix we will have 2 or 3 more of these
          // semantics with the same name after it.
-         for ( ; i < mInstancingFormat.getElementCount(); i++ )
+         for ( ; i < mInstancingFormat->getElementCount(); i++ )
          {
-            const GFXVertexElement &nextElement = mInstancingFormat.getElement( i );
+            const GFXVertexElement &nextElement = mInstancingFormat->getElement( i );
             if ( nextElement.getSemantic() != element.getSemantic() )
             {
                i--;
@@ -797,6 +847,11 @@ void GFXGLShader::setConstantsFromBuffer(GFXGLShaderConstBuffer* buffer)
             break;
          case GFXSCT_Float3x3:
             glUniformMatrix3fv(handle->mLocation, handle->mDesc.arraySize, true, (GLfloat*)(mConstBuffer + handle->mOffset));
+            break;
+         case GFXSCT_Float4x3:
+            // NOTE: To save a transpose here we could store the matrix transposed (i.e. column major) in the constant buffer.
+            // See _mesa_uniform_matrix in the mesa source for the correct transpose algorithm for a 4x3 matrix. 
+            glUniformMatrix4x3fv(handle->mLocation, handle->mDesc.arraySize, true, (GLfloat*)(mConstBuffer + handle->mOffset));
             break;
          case GFXSCT_Float4x4:
             glUniformMatrix4fv(handle->mLocation, handle->mDesc.arraySize, true, (GLfloat*)(mConstBuffer + handle->mOffset));
@@ -929,7 +984,7 @@ char* GFXGLShader::_handleIncludes( const Torque::Path& path, FileStream *s )
          dFree(includedText);
          manip.insert(q-buffer, sItx);
          char* manipBuf = dStrdup(manip.c_str());
-         p = manipBuf + (p - buffer);
+         p = manipBuf + (q - buffer);
          dFree(buffer);
          buffer = manipBuf;
       }
@@ -952,14 +1007,7 @@ bool GFXGLShader::_loadShaderFromStream(  GLuint shader,
    buffers.push_back( dStrdup( versionDecl ) );
    lengths.push_back( dStrlen( versionDecl ) );
 
-   if(gglHasExtension(EXT_gpu_shader4))
-   {
-      const char *extension = "#extension GL_EXT_gpu_shader4 : enable\r\n";
-      buffers.push_back( dStrdup( extension ) );
-      lengths.push_back( dStrlen( extension ) );
-   }
-
-   if(gglHasExtension(ARB_gpu_shader5))
+   if(GFXGL->mCapabilities.shaderModel5)
    {
       const char *extension = "#extension GL_ARB_gpu_shader5 : enable\r\n";
       buffers.push_back( dStrdup( extension ) );
@@ -1016,6 +1064,7 @@ bool GFXGLShader::initShader( const Torque::Path &file,
                               bool isVertex, 
                               const Vector<GFXShaderMacro> &macros )
 {
+   PROFILE_SCOPE(GFXGLShader_CompileShader);
    GLuint activeShader = glCreateShader(isVertex ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER);
    if(isVertex)
       mVertexShader = activeShader;
@@ -1075,6 +1124,7 @@ bool GFXGLShader::initShader( const Torque::Path &file,
 /// Returns our list of shader constants, the material can get this and just set the constants it knows about
 const Vector<GFXShaderConstDesc>& GFXGLShader::getShaderConstDesc() const
 {
+   PROFILE_SCOPE(GFXGLShader_GetShaderConstants);
    return mConstants;
 }
 

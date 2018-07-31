@@ -658,7 +658,7 @@ void SelectionBrush::rebuild()
    //... move the selection
 }
 
-void SelectionBrush::render(Vector<GFXVertexPC> & vertexBuffer, S32 & verts, S32 & elems, S32 & prims, const ColorF & inColorFull, const ColorF & inColorNone, const ColorF & outColorFull, const ColorF & outColorNone) const
+void SelectionBrush::render(Vector<GFXVertexPCT> & vertexBuffer, S32 & verts, S32 & elems, S32 & prims, const LinearColorF & inColorFull, const LinearColorF & inColorNone, const LinearColorF & outColorFull, const LinearColorF & outColorNone) const
 {
    //... render the selection
 }
@@ -668,11 +668,11 @@ TerrainEditor::TerrainEditor() :
    mMousePos(0,0,0),
    mMouseBrush(0),
    mInAction(false),
-   mUndoSel(0),
    mGridUpdateMin( S32_MAX, S32_MAX ),
+   mUndoSel(0),
    mGridUpdateMax( 0, 0 ),
-   mMaxBrushSize(256,256),
    mNeedsGridUpdate( false ),
+   mMaxBrushSize(256,256),
    mNeedsMaterialUpdate( false ),
    mMouseDown( false )
 {
@@ -1296,10 +1296,10 @@ void TerrainEditor::renderScene(const RectI &)
       return;
 
    if(!mSelectionHidden)
-      renderSelection(mDefaultSel, ColorF::RED, ColorF::GREEN, ColorF::BLUE, ColorF::BLUE, true, false);
+      renderSelection(mDefaultSel, LinearColorF::RED, LinearColorF::GREEN, LinearColorF::BLUE, LinearColorF::BLUE, true, false);
 
    if(mRenderBrush && mMouseBrush->size())
-      renderBrush(*mMouseBrush, ColorF::GREEN, ColorF::RED, ColorF::BLUE, ColorF::BLUE, false, true);
+      renderBrush(*mMouseBrush, LinearColorF::GREEN, LinearColorF::RED, LinearColorF::BLUE, LinearColorF::BLUE, false, true);
 
    if(mRenderBorder)
       renderBorder();
@@ -1342,8 +1342,8 @@ void TerrainEditor::renderPoints( const Vector<GFXVertexPCT> &pointList )
       U32 vertsThisDrawCall = getMin( (U32)vertsLeft, (U32)MAX_DYNAMIC_VERTS );
       vertsLeft -= vertsThisDrawCall;
 
-      GFXVertexBufferHandle<GFXVertexPC> vbuff( GFX, vertsThisDrawCall, GFXBufferTypeVolatile );
-      GFXVertexPC *vert = vbuff.lock();
+      GFXVertexBufferHandle<GFXVertexPCT> vbuff( GFX, vertsThisDrawCall, GFXBufferTypeVolatile );
+      GFXVertexPCT *vert = vbuff.lock();
 
       const U32 loops = vertsThisDrawCall / 6;
 
@@ -1386,7 +1386,7 @@ void TerrainEditor::renderPoints( const Vector<GFXVertexPCT> &pointList )
 
 //------------------------------------------------------------------------------
 
-void TerrainEditor::renderSelection( const Selection & sel, const ColorF & inColorFull, const ColorF & inColorNone, const ColorF & outColorFull, const ColorF & outColorNone, bool renderFill, bool renderFrame )
+void TerrainEditor::renderSelection( const Selection & sel, const LinearColorF & inColorFull, const LinearColorF & inColorNone, const LinearColorF & outColorFull, const LinearColorF & outColorNone, bool renderFill, bool renderFrame )
 {
    PROFILE_SCOPE( TerrainEditor_RenderSelection );
 
@@ -1394,8 +1394,8 @@ void TerrainEditor::renderSelection( const Selection & sel, const ColorF & inCol
    if(sel.size() == 0)
       return;
 
-   Vector<GFXVertexPC> vertexBuffer;
-   ColorF color;
+   Vector<GFXVertexPCT> vertexBuffer;
+   LinearColorF color;
    ColorI iColor;
 
    vertexBuffer.setSize(sel.size() * 5);
@@ -1428,17 +1428,17 @@ void TerrainEditor::renderSelection( const Selection & sel, const ColorF & inCol
                color.interpolate( outColorFull, outColorNone, weight );
          }
          //
-         iColor = color;
+         iColor = color.toColorI();
 
-         GFXVertexPC *verts = &(vertexBuffer[i * 5]);
+         GFXVertexPCT *verts = &(vertexBuffer[i * 5]);
 
-         verts[0].point = wPos + Point3F(-squareSize, -squareSize, 0);
+         verts[0].point = wPos + Point3F(-squareSize, squareSize, 0);
          verts[0].color = iColor;
-         verts[1].point = wPos + Point3F( squareSize, -squareSize, 0);
+         verts[1].point = wPos + Point3F( squareSize, squareSize, 0);
          verts[1].color = iColor;
-         verts[2].point = wPos + Point3F( squareSize,  squareSize, 0);
+         verts[2].point = wPos + Point3F( -squareSize, -squareSize, 0);
          verts[2].color = iColor;
-         verts[3].point = wPos + Point3F(-squareSize,  squareSize, 0);
+         verts[3].point = wPos + Point3F( squareSize,  -squareSize, 0);
          verts[3].color = iColor;
          verts[4].point = verts[0].point;
          verts[4].color = iColor;
@@ -1449,14 +1449,15 @@ void TerrainEditor::renderSelection( const Selection & sel, const ColorF & inCol
       // walk the points in the selection
       for(U32 i = 0; i < sel.size(); i++)
       {
-         Point2I gPos = sel[i].mGridPoint.gridPos;
+         GridPoint selectedGridPoint = sel[i].mGridPoint;
+         Point2I gPos = selectedGridPoint.gridPos;
 
-         GFXVertexPC *verts = &(vertexBuffer[i * 5]);
+         GFXVertexPCT *verts = &(vertexBuffer[i * 5]);
 
-         bool center = gridToWorld(sel[i].mGridPoint, verts[0].point);
-         gridToWorld(Point2I(gPos.x + 1, gPos.y), verts[1].point, sel[i].mGridPoint.terrainBlock);
-         gridToWorld(Point2I(gPos.x + 1, gPos.y + 1), verts[2].point, sel[i].mGridPoint.terrainBlock);
-         gridToWorld(Point2I(gPos.x, gPos.y + 1), verts[3].point, sel[i].mGridPoint.terrainBlock);
+         bool center = gridToWorld(selectedGridPoint, verts[0].point);
+         gridToWorld(Point2I(gPos.x + 1, gPos.y), verts[1].point, selectedGridPoint.terrainBlock);
+         gridToWorld(Point2I(gPos.x + 1, gPos.y + 1), verts[2].point, selectedGridPoint.terrainBlock);
+         gridToWorld(Point2I(gPos.x, gPos.y + 1), verts[3].point, selectedGridPoint.terrainBlock);
          verts[4].point = verts[0].point;
 
          F32 weight = sel[i].mWeight;
@@ -1478,17 +1479,17 @@ void TerrainEditor::renderSelection( const Selection & sel, const ColorF & inCol
                   color.interpolate(outColorFull, outColorNone, weight );
             }
 
-            iColor = color;
+            iColor = color.toColorI();
          }
          else
          {
             if ( center )
             {
-               iColor = inColorNone;
+               iColor = LinearColorF(inColorNone).toColorI();
             }
             else
             {
-               iColor = outColorFull;
+               iColor = LinearColorF(outColorFull).toColorI();
             }
          }
 
@@ -1502,12 +1503,12 @@ void TerrainEditor::renderSelection( const Selection & sel, const ColorF & inCol
 
    // Render this bad boy, by stuffing everything into a volatile buffer
    // and rendering...
-   GFXVertexBufferHandle<GFXVertexPC> selectionVB(GFX, vertexBuffer.size(), GFXBufferTypeStatic);
+   GFXVertexBufferHandle<GFXVertexPCT> selectionVB(GFX, vertexBuffer.size(), GFXBufferTypeStatic);
 
    selectionVB.lock(0, vertexBuffer.size());
 
    // Copy stuff
-   dMemcpy((void*)&selectionVB[0], (void*)&vertexBuffer[0], sizeof(GFXVertexPC) * vertexBuffer.size());
+   dMemcpy((void*)&selectionVB[0], (void*)&vertexBuffer[0], sizeof(GFXVertexPCT) * vertexBuffer.size());
 
    selectionVB.unlock();
 
@@ -1517,14 +1518,14 @@ void TerrainEditor::renderSelection( const Selection & sel, const ColorF & inCol
 
    if(renderFill)
       for(U32 i=0; i < sel.size(); i++)
-         GFX->drawPrimitive( GFXTriangleFan, i*5, 4);
+         GFX->drawPrimitive( GFXTriangleStrip, i*5, 4);
 
    if(renderFrame)
       for(U32 i=0; i < sel.size(); i++)
          GFX->drawPrimitive( GFXLineStrip , i*5, 4);
 }
 
-void TerrainEditor::renderBrush( const Brush & brush, const ColorF & inColorFull, const ColorF & inColorNone, const ColorF & outColorFull, const ColorF & outColorNone, bool renderFill, bool renderFrame )
+void TerrainEditor::renderBrush( const Brush & brush, const LinearColorF & inColorFull, const LinearColorF & inColorNone, const LinearColorF & outColorFull, const LinearColorF & outColorNone, bool renderFill, bool renderFrame )
 {  
 }
 
@@ -2494,8 +2495,8 @@ DefineConsoleMethod(TerrainEditor, getTerrainBlocksMaterialList, const char *, (
    ret[0] = 0;
    for(U32 i = 0; i < list.size(); ++i)
    {
-      dStrcat( ret, list[i] );
-      dStrcat( ret, "\n" );
+      dStrcat( ret, list[i], size );
+      dStrcat( ret, "\n", size );
    }
 
    return ret;
@@ -2708,8 +2709,8 @@ DefineConsoleMethod(TerrainEditor, getMaterials, const char *, (), , "() gets th
    ret[0] = 0;
    for(U32 i = 0; i < terr->getMaterialCount(); i++)
    {
-      dStrcat( ret, terr->getMaterialName(i) );
-      dStrcat( ret, "\n" );
+      dStrcat( ret, terr->getMaterialName(i), 4096 );
+      dStrcat( ret, "\n", 4096 );
    }
 
    return ret;
@@ -2762,9 +2763,9 @@ DefineConsoleMethod(TerrainEditor, getTerrainUnderWorldPoint, S32, (const char *
    if(tEditor == NULL)
       return 0;
    Point3F pos;
-   if(!dStrIsEmpty(ptOrX) && dStrIsEmpty(Y) && dStrIsEmpty(Z))
+   if(!String::isEmpty(ptOrX) && String::isEmpty(Y) && String::isEmpty(Z))
       dSscanf(ptOrX, "%f %f %f", &pos.x, &pos.y, &pos.z);
-   else if(!dStrIsEmpty(ptOrX) && !dStrIsEmpty(Y) && !dStrIsEmpty(Z))
+   else if(!String::isEmpty(ptOrX) && !String::isEmpty(Y) && !String::isEmpty(Z))
    {
       pos.x = dAtof(ptOrX);
       pos.y = dAtof(Y);
@@ -2856,14 +2857,21 @@ DefineConsoleMethod( TerrainEditor, setSlopeLimitMaxAngle, F32, (F32 angle), , "
 //------------------------------------------------------------------------------  
 void TerrainEditor::autoMaterialLayer( F32 mMinHeight, F32 mMaxHeight, F32 mMinSlope, F32 mMaxSlope, F32 mCoverage )  
 {  
-   if (!mActiveTerrain)  
+
+#define AUTOPAINT_UNDO 
+	
+	if (!mActiveTerrain)  
       return;  
   
    S32 mat = getPaintMaterialIndex();  
    if (mat == -1)  
       return;  
-  
-   mUndoSel = new Selection;  
+
+
+	  #ifndef AUTOPAINT_UNDO
+	  mUndoSel = new Selection;  
+	  #endif
+
           
    U32 terrBlocks = mActiveTerrain->getBlockSize();  
    for (U32 y = 0; y < terrBlocks; y++) 
@@ -2905,24 +2913,34 @@ void TerrainEditor::autoMaterialLayer( F32 mMinHeight, F32 mMaxHeight, F32 mMinS
             if (norm.z < mSin(mDegToRad(90.0f - mMaxSlope)))  
                continue;  
   
-         gi.mMaterialChanged = true;  
-         mUndoSel->add(gi);  
+         gi.mMaterialChanged = true; 
+         #ifndef AUTOPAINT_UNDO
+         mUndoSel->add(gi);
+         #endif
          gi.mMaterial = mat;  
          setGridInfo(gi);  
       }  
    }  
   
+   #ifndef AUTOPAINT_UNDO
    if(mUndoSel->size())  
       submitUndo( mUndoSel );  
    else  
       delete mUndoSel;  
-  
    mUndoSel = 0;  
+   #endif
+
   
    scheduleMaterialUpdate();     
-}  
-  
-DefineConsoleMethod( TerrainEditor, autoMaterialLayer, void, (F32 minHeight, F32 maxHeight, F32 minSlope, F32 maxSlope, F32 coverage), , "(F32 minHeight, F32 maxHeight, F32 minSlope, F32 maxSlope , F32 coverage)")  
-{  
+}
+
+DefineEngineMethod( TerrainEditor, autoMaterialLayer, void, (F32 minHeight, F32 maxHeight, F32 minSlope, F32 maxSlope, F32 coverage),,
+   "Rule based terrain painting.\n"
+   "@param minHeight Minimum terrain height."
+   "@param maxHeight Maximum terrain height."
+   "@param minSlope Minimum terrain slope."
+   "@param maxSlope Maximum terrain slope."
+   "@param coverage Terrain coverage amount.")
+{
    object->autoMaterialLayer( minHeight,maxHeight, minSlope, maxSlope, coverage );  
 }

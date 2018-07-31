@@ -116,7 +116,7 @@ bool GuiMissionAreaCtrl::onAdd()
 
    if (*mHandleBitmap)
    {
-      mHandleTexture = GFXTexHandle( mHandleBitmap, &GFXDefaultPersistentProfile, avar("%s() - mHandleTexture (line %d)", __FUNCTION__, __LINE__) );
+      mHandleTexture = GFXTexHandle( mHandleBitmap, &GFXTexturePersistentSRGBProfile, avar("%s() - mHandleTexture (line %d)", __FUNCTION__, __LINE__) );
       mHandleTextureSize = Point2I( mHandleTexture->getWidth(), mHandleTexture->getHeight() );
       mHandleTextureHalfSize = Point2F(mHandleTextureSize.x, mHandleTextureSize.y) * 0.5f;
    }
@@ -356,9 +356,6 @@ GBitmap * GuiMissionAreaCtrl::createTerrainBitmap()
       return NULL;
 
    GBitmap * bitmap = new GBitmap(mTerrainBlock->getBlockSize(), mTerrainBlock->getBlockSize(), false, GFXFormatR8G8B8 );
-
-   if(!bitmap)
-      return NULL;
 
    // get the min/max
    F32 min, max;

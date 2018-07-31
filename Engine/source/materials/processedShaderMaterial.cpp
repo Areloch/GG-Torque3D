@@ -44,6 +44,9 @@
 // We need to include customMaterialDefinition for ShaderConstHandles::init
 #include "materials/customMaterialDefinition.h"
 
+
+#include "ts/tsShape.h"
+
 ///
 /// ShaderConstHandles
 ///
@@ -73,6 +76,7 @@ void ShaderConstHandles::init( GFXShader *shader, CustomMaterial* mat /*=NULL*/ 
    mWorldToObjSC = shader->getShaderConstHandle(ShaderGenVars::worldToObj);
    mViewToObjSC = shader->getShaderConstHandle(ShaderGenVars::viewToObj);
    mCubeTransSC = shader->getShaderConstHandle(ShaderGenVars::cubeTrans);
+   mCubeMipsSC = shader->getShaderConstHandle(ShaderGenVars::cubeMips);
    mObjTransSC = shader->getShaderConstHandle(ShaderGenVars::objTrans);
    mCubeEyePosSC = shader->getShaderConstHandle(ShaderGenVars::cubeEyePos);
    mEyePosSC = shader->getShaderConstHandle(ShaderGenVars::eyePos);
@@ -98,6 +102,9 @@ void ShaderConstHandles::init( GFXShader *shader, CustomMaterial* mat /*=NULL*/ 
 
    for (S32 i = 0; i < TEXTURE_STAGE_COUNT; ++i)
       mRTParamsSC[i] = shader->getShaderConstHandle( String::ToString( "$rtParams%d", i ) );
+
+   // MFT_HardwareSkinning
+   mNodeTransforms = shader->getShaderConstHandle( "$nodeTransforms" );
 
    // Clear any existing texture handles.
    dMemset( mTexHandlesSC, 0, sizeof( mTexHandlesSC ) );
@@ -209,7 +216,20 @@ bool ProcessedShaderMaterial::init( const FeatureSet &features,
    if ( mFeatures.hasFeature( MFT_UseInstancing ) )
    {
       mInstancingState = new InstancingState();
-      mInstancingState->setFormat( &_getRPD( 0 )->shader->mInstancingFormat, mVertexFormat );
+      mInstancingState->setFormat( _getRPD( 0 )->shader->getInstancingFormat(), mVertexFormat );
+   }
+   if (mMaterial && mMaterial->mDiffuseMapFilename[0].isNotEmpty() && mMaterial->mDiffuseMapFilename[0].substr(0, 1).equal("#"))
+   {
+      String texTargetBufferName = mMaterial->mDiffuseMapFilename[0].substr(1, mMaterial->mDiffuseMapFilename[0].length() - 1);
+      NamedTexTarget *texTarget = NamedTexTarget::find(texTargetBufferName);
+      RenderPassData* rpd = getPass(0);
+
+      if (rpd)
+      {
+         rpd->mTexSlot[0].texTarget = texTarget;
+         rpd->mTexType[0] = Material::TexTarget;
+         rpd->mSamplerNames[0] = "diffuseMap";
+      }
    }
    return true;
 }
@@ -251,7 +271,7 @@ U32 ProcessedShaderMaterial::getNumStages()
 
       // If this stage has diffuse color, it's active
       if (  mMaterial->mDiffuse[i].alpha > 0 &&
-            mMaterial->mDiffuse[i] != ColorF::WHITE )
+            mMaterial->mDiffuse[i] != LinearColorF::WHITE )
          stageActive = true;
 
       // If we have a Material that is vertex lit
@@ -282,7 +302,7 @@ void ProcessedShaderMaterial::_determineFeatures(  U32 stageNum,
 
    if ( mMaterial->isTranslucent() )
    {
-      // Note: This is for decal blending into the prepass
+      // Note: This is for decal blending into the deferred
       // for AL... it probably needs to be made clearer.
       if (  mMaterial->mTranslucentBlendOp == Material::LerpAlpha &&
             mMaterial->mTranslucentZWrite )
@@ -299,11 +319,11 @@ void ProcessedShaderMaterial::_determineFeatures(  U32 stageNum,
    if ( dStrcmp( LIGHTMGR->getId(), "BLM" ) == 0 )
       fd.features.addFeature( MFT_ForwardShading );
 
-   // Disabling the InterlacedPrePass feature for now. It is not ready for prime-time
+   // Disabling the InterlacedDeferred feature for now. It is not ready for prime-time
    // and it should not be triggered off of the DoubleSided parameter. [2/5/2010 Pat]
    /*if ( mMaterial->isDoubleSided() )
    {
-      fd.features.addFeature( MFT_InterlacedPrePass );
+      fd.features.addFeature( MFT_InterlacedDeferred );
    }*/
 
    // Allow instancing if it was requested and the card supports
@@ -341,7 +361,7 @@ void ProcessedShaderMaterial::_determineFeatures(  U32 stageNum,
        fd.features.addFeature( MFT_CubeMap );
    }
 
-   if (mMaterial->mIsSky)
+   if (features.hasFeature(MFT_SkyBox))
    {
       fd.features.addFeature(MFT_CubeMap);
       fd.features.addFeature(MFT_SkyBox);
@@ -375,17 +395,19 @@ void ProcessedShaderMaterial::_determineFeatures(  U32 stageNum,
    
    if ( fd.features[ MFT_NormalMap ] )   
    {   
-      if (  mStages[stageNum].getTex( MFT_NormalMap )->mFormat == GFXFormatDXT5 &&   
+      if (  mStages[stageNum].getTex( MFT_NormalMap )->mFormat == GFXFormatBC3 &&   
            !mStages[stageNum].getTex( MFT_NormalMap )->mHasTransparency )   
-         fd.features.addFeature( MFT_IsDXTnm );   
+         fd.features.addFeature( MFT_IsBC3nm );
+      else if ( mStages[stageNum].getTex(MFT_NormalMap)->mFormat == GFXFormatBC5 &&
+            !mStages[stageNum].getTex(MFT_NormalMap)->mHasTransparency )
+         fd.features.addFeature( MFT_IsBC5nm );
    }
 
    // Now for some more advanced features that we 
    // cannot do on SM 2.0 and below.
    if ( shaderVersion > 2.0f )
    {
-      // Only allow parallax if we have a normal map and
-      // we're not using DXTnm compression.
+
       if (  mMaterial->mParallaxScale[stageNum] > 0.0f &&
          fd.features[ MFT_NormalMap ] )
          fd.features.addFeature( MFT_Parallax );
@@ -443,7 +465,7 @@ void ProcessedShaderMaterial::_determineFeatures(  U32 stageNum,
    // If we have a diffuse map and the alpha on the diffuse isn't
    // zero and the color isn't pure white then multiply the color.
    else if (   mMaterial->mDiffuse[stageNum].alpha > 0.0f && 
-               mMaterial->mDiffuse[stageNum] != ColorF::WHITE )
+               mMaterial->mDiffuse[stageNum] != LinearColorF::WHITE )
       fd.features.addFeature( MFT_DiffuseColor );
 
    // If lightmaps or tonemaps are enabled or we 
@@ -492,6 +514,12 @@ void ProcessedShaderMaterial::_determineFeatures(  U32 stageNum,
                                        &fd );
    }
 
+   // Need to add the Hardware Skinning feature if its used
+   if ( features.hasFeature( MFT_HardwareSkinning ) )
+   {
+      fd.features.addFeature( MFT_HardwareSkinning );
+   }
+
    // Now disable any features that were 
    // not part of the input feature handle.
    fd.features.filter( features );
@@ -503,9 +531,9 @@ bool ProcessedShaderMaterial::_createPasses( MaterialFeatureData &stageFeatures,
    ShaderRenderPassData passData;
    U32 texIndex = 0;
 
-   for( U32 i=0; i < FEATUREMGR->getFeatureCount(); i++ )
+   for( U32 featureIDx=0; featureIDx < FEATUREMGR->getFeatureCount(); featureIDx++ )
    {
-      const FeatureInfo &info = FEATUREMGR->getAt( i );
+      const FeatureInfo &info = FEATUREMGR->getAt(featureIDx);
       if ( !stageFeatures.features.hasFeature( *info.type ) ) 
          continue;
 
@@ -534,7 +562,7 @@ bool ProcessedShaderMaterial::_createPasses( MaterialFeatureData &stageFeatures,
 #if defined(TORQUE_DEBUG) && defined( TORQUE_OPENGL)
       if(oldTexNumber != texIndex)
       {
-         for(int i = oldTexNumber; i < texIndex; i++)
+         for(int texNum = oldTexNumber; texNum < texIndex; texNum++)
          {
             AssertFatal(passData.mSamplerNames[ oldTexNumber ].isNotEmpty(), avar( "ERROR: ShaderGen feature %s don't set used sampler name", info.feature->getName().c_str()) );
          }
@@ -551,9 +579,9 @@ bool ProcessedShaderMaterial::_createPasses( MaterialFeatureData &stageFeatures,
    }
 
 #if defined(TORQUE_DEBUG) && defined( TORQUE_OPENGL)
-   for(int i = 0; i < texIndex; i++)
+   for(int samplerIDx = 0; samplerIDx < texIndex; samplerIDx++)
    {
-      AssertFatal(passData.mSamplerNames[ i ].isNotEmpty(),"");
+      AssertFatal(passData.mSamplerNames[samplerIDx].isNotEmpty(),"");
    }
 #endif
 
@@ -1072,7 +1100,7 @@ void ProcessedShaderMaterial::_setShaderConstants(SceneRenderState * state, cons
    if ( handles->mSubSurfaceParamsSC->isValid() )
    {
       Point4F subSurfParams;
-      dMemcpy( &subSurfParams, &mMaterial->mSubSurfaceColor[stageNum], sizeof(ColorF) );
+      dMemcpy( &subSurfParams, &mMaterial->mSubSurfaceColor[stageNum], sizeof(LinearColorF) );
       subSurfParams.w = mMaterial->mSubSurfaceRolloff[stageNum];
       shaderConsts->set(handles->mSubSurfaceParamsSC, subSurfParams);
    }
@@ -1154,11 +1182,8 @@ void ProcessedShaderMaterial::_setShaderConstants(SceneRenderState * state, cons
 
    // Deferred Shading: Determine Material Info Flags
    S32 matInfoFlags = 
-            (mMaterial->mEmissive[stageNum] ? 1 : 0) |                              // Emissive
-            (mMaterial->mGlow[stageNum] ? 2 : 0) |                                  // Glow
-            (mMaterial->mTranslucencyMapFilename[stageNum].isNotEmpty() ? 4 : 0) |  // Translucency
-            (mMaterial->mUseMetalness[stageNum] ? 8: 0)                             // Metalness
-            ;
+            (mMaterial->mEmissive[stageNum] ? 1 : 0) | //emissive
+            (mMaterial->mSubSurface[stageNum] ? 2 : 0); //subsurface
    mMaterial->mMatInfoFlags[stageNum] = matInfoFlags / 255.0f;
    shaderConsts->setSafe(handles->mMatInfoFlagsSC, mMaterial->mMatInfoFlags[stageNum]);   
    if( handles->mAccuScaleSC->isValid() )
@@ -1219,6 +1244,20 @@ void ProcessedShaderMaterial::setTransforms(const MatrixSet &matrixSet, SceneRen
 
    if ( handles->m_vEyeSC->isValid() )
       shaderConsts->set( handles->m_vEyeSC, state->getVectorEye() );
+}
+
+void ProcessedShaderMaterial::setNodeTransforms(const MatrixF *transforms, const U32 transformCount, const U32 pass)
+{
+   PROFILE_SCOPE( ProcessedShaderMaterial_setNodeTransforms );
+
+   GFXShaderConstBuffer* shaderConsts = _getShaderConstBuffer(pass);
+   ShaderConstHandles* handles = _getShaderConstHandles(pass);
+
+   if ( handles->mNodeTransforms->isValid() )
+   {
+      S32 realTransformCount = getMin( transformCount, TSShape::smMaxSkinBones );
+      shaderConsts->set( handles->mNodeTransforms, transforms, realTransformCount, GFXSCT_Float4x3 );
+   }
 }
 
 void ProcessedShaderMaterial::setSceneInfo(SceneRenderState * state, const SceneData& sgData, U32 pass)
