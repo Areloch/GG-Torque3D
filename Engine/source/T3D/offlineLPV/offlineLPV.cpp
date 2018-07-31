@@ -171,7 +171,7 @@ void OfflineLPV::initPersistFields()
       addField("voxelSize", TypeF32, Offset(mVoxelSize, OfflineLPV), "");
 
       addProtectedField( "regenVolume", TypeBool, Offset( mRegenVolume, OfflineLPV ),
-         &_setRegenVolume, &defaultProtectedGetFn, "Regenerate Voxel Grid", AbstractClassRep::FieldFlags::FIELD_ButtonInInspectors);
+         &_setRegenVolume, &defaultProtectedGetFn, "Regenerate Voxel Grid", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
 
       addField("showVoxels", TypeBool, Offset(mShowVoxels, OfflineLPV), "");
 
@@ -183,7 +183,7 @@ void OfflineLPV::initPersistFields()
       addField("emissiveIntensity", TypeF32, Offset(mEmissiveIntensity, OfflineLPV), "");
 
       addProtectedField( "injectLights", TypeBool, Offset( mInjectLights, OfflineLPV ),
-            &_setInjectLights, &defaultProtectedGetFn, "Inject scene lights into grid.", AbstractClassRep::FieldFlags::FIELD_ButtonInInspectors );
+            &_setInjectLights, &defaultProtectedGetFn, "Inject scene lights into grid.", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
 
       addField("showDirectLight", TypeBool, Offset(mShowDirectLight, OfflineLPV), "");
 
@@ -194,14 +194,14 @@ void OfflineLPV::initPersistFields()
       addField("propagationMultiplier", TypeF32, Offset(mPropagationMultiplier, OfflineLPV), "Strength/Weaken propagation.");
 
       addProtectedField( "propagateLights", TypeBool, Offset( mPropagateLights, OfflineLPV ),
-            &_setPropagateLights, &defaultProtectedGetFn, "Perform light propagation.", AbstractClassRep::FieldFlags::FIELD_ButtonInInspectors );
+            &_setPropagateLights, &defaultProtectedGetFn, "Perform light propagation.", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
 
       addField("showPropagated", TypeBool, Offset(mShowPropagated, OfflineLPV), "Render propagated light.");
 
       addField("GIMultiplier", TypeF32, Offset(mGIMultiplier, OfflineLPV), "");
 
       addProtectedField( "exportPropagated", TypeBool, Offset( mExportPropagated, OfflineLPV ),
-            &_setExportPropagated, &defaultProtectedGetFn, "Export propagated light grid to display.", AbstractClassRep::FieldFlags::FIELD_ButtonInInspectors );
+            &_setExportPropagated, &defaultProtectedGetFn, "Export propagated light grid to display.", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
 
    endGroup("OfflineLPV - Propagation");
 
@@ -209,7 +209,7 @@ void OfflineLPV::initPersistFields()
    addGroup("OfflineLPV - Reflection");
 
       addProtectedField( "exportDirectLight", TypeBool, Offset( mExportDirectLight, OfflineLPV ),
-            &_setExportDirectLight, &defaultProtectedGetFn, "Export direct light grid for reflections.", AbstractClassRep::FieldFlags::FIELD_ButtonInInspectors );
+            &_setExportDirectLight, &defaultProtectedGetFn, "Export direct light grid for reflections.", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
 
       addField("renderReflection", TypeBool, Offset(mRenderReflection, OfflineLPV), "Render reflections.");
 
@@ -221,10 +221,10 @@ void OfflineLPV::initPersistFields()
       addField( "fileName", TypeStringFilename, Offset( mFileName, OfflineLPV ), "Path of file to save and load results." );
 
       addProtectedField( "saveResults", TypeBool, Offset( mSaveResults, OfflineLPV ),
-            &_setSaveResults, &defaultProtectedGetFn, "Save the results of the light propagation.", AbstractClassRep::FieldFlags::FIELD_ButtonInInspectors );
+            &_setSaveResults, &defaultProtectedGetFn, "Save the results of the light propagation.", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
 
       addProtectedField( "loadResults", TypeBool, Offset( mLoadResults, OfflineLPV ),
-            &_setLoadResults, &defaultProtectedGetFn, "Load the results of the light propagation.", AbstractClassRep::FieldFlags::FIELD_ButtonInInspectors );
+            &_setLoadResults, &defaultProtectedGetFn, "Load the results of the light propagation.", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
 
    endGroup("OfflineLPV - Save/Load");
 
@@ -345,7 +345,7 @@ void OfflineLPV::_rebuildDebugVoxels()
             // Propagated Light Grid Visualization.
             if ( mShowPropagated && mPropagatedLightGrid )
             {
-               ColorF decoded_color = decodeSH(Point3F(0, 0, 0), mPropagatedLightGrid[pos]);
+               LinearColorF decoded_color = decodeSH(Point3F(0, 0, 0), mPropagatedLightGrid[pos]);
                if ( decoded_color.red > 0.0f || decoded_color.green > 0.0f || decoded_color.blue > 0.0f )
                {
                   d.color = decoded_color;
@@ -359,7 +359,7 @@ void OfflineLPV::_rebuildDebugVoxels()
             // Direct Light Grid Visualization.
             if ( mShowDirectLight && mLightGrid )
             {
-               ColorF decoded_color = decodeSH(Point3F(0, 0, 0), mLightGrid[pos]);
+               LinearColorF decoded_color = decodeSH(Point3F(0, 0, 0), mLightGrid[pos]);
                if ( decoded_color.red > 0.0f || decoded_color.green > 0.0f || decoded_color.blue > 0.0f )
                {
                   d.color = decoded_color;
@@ -413,32 +413,32 @@ void OfflineLPV::_rebuildDebugVoxelsVB()
       {
          idx = cubeFaces[i][0];
          mDebugVoxelVB[vertexIndex].point = cubePoints[idx] * halfSize;      
-         mDebugVoxelVB[vertexIndex].color = mDebugVoxels[n].color;
+         mDebugVoxelVB[vertexIndex].color = mDebugVoxels[n].color.toColorI();
          vertexIndex++;
 
          idx = cubeFaces[i][1];
          mDebugVoxelVB[vertexIndex].point = cubePoints[idx] * halfSize;
-         mDebugVoxelVB[vertexIndex].color = mDebugVoxels[n].color;
+         mDebugVoxelVB[vertexIndex].color = mDebugVoxels[n].color.toColorI();
          vertexIndex++;
 
          idx = cubeFaces[i][3];
          mDebugVoxelVB[vertexIndex].point = cubePoints[idx] * halfSize;
-         mDebugVoxelVB[vertexIndex].color = mDebugVoxels[n].color;
+         mDebugVoxelVB[vertexIndex].color = mDebugVoxels[n].color.toColorI();
          vertexIndex++;
 
          idx = cubeFaces[i][1];
          mDebugVoxelVB[vertexIndex].point = cubePoints[idx] * halfSize;
-         mDebugVoxelVB[vertexIndex].color = mDebugVoxels[n].color;
+         mDebugVoxelVB[vertexIndex].color = mDebugVoxels[n].color.toColorI();
          vertexIndex++;
 
          idx = cubeFaces[i][2];
          mDebugVoxelVB[vertexIndex].point = cubePoints[idx] * halfSize;
-         mDebugVoxelVB[vertexIndex].color = mDebugVoxels[n].color;
+         mDebugVoxelVB[vertexIndex].color = mDebugVoxels[n].color.toColorI();
          vertexIndex++;
 
          idx = cubeFaces[i][3];
          mDebugVoxelVB[vertexIndex].point = cubePoints[idx] * halfSize;
-         mDebugVoxelVB[vertexIndex].color = mDebugVoxels[n].color;
+         mDebugVoxelVB[vertexIndex].color = mDebugVoxels[n].color.toColorI();
          vertexIndex++;
       }
 
@@ -940,7 +940,7 @@ void OfflineLPV::regenVolume()
                            if (voxIndex == -1)
                               continue;
 
-                           ColorF voxel_color = ColorF(0, 0, 0, 0);
+                           LinearColorF voxel_color = LinearColorF(0, 0, 0, 0);
                            bool emissive = false;
 
                            Box3F voxBox = Box3F(bottom_corner + Point3F(mVoxelSize * x, mVoxelSize * y, mVoxelSize * z),
@@ -954,7 +954,7 @@ void OfflineLPV::regenVolume()
                               bool containsVertC = voxBox.isContained(vertC);
                               if (containsVertA || containsVertB || containsVertC)
                               {
-                                 voxel_color = ColorF(255, 255, 255, 255);
+                                 voxel_color = LinearColorF(255, 255, 255, 255);
                                  if ( poly.material > -1 )
                                  {
                                     Point2F uv;
@@ -997,7 +997,7 @@ void OfflineLPV::regenVolume()
 
                                  if (collideA || collideB || collideC)
                                  {
-                                    voxel_color = ColorF(255, 255, 255, 255);
+                                    voxel_color = LinearColorF(255, 255, 255, 255);
                                     if ( poly.material > -1 )
                                     {
                                        Point2F uv;
@@ -1045,7 +1045,7 @@ void OfflineLPV::regenVolume()
                                           if (intersect == edgeA || intersect == edgeB)
                                              continue;
 
-                                          voxel_color = ColorF(255, 255, 255, 255);
+                                          voxel_color = LinearColorF(255, 255, 255, 255);
                                           if ( poly.material > -1 )
                                           {
                                              VectorF f1 = vertA - intersect;
@@ -1220,7 +1220,7 @@ void OfflineLPV::injectLights()
    _rebuildDebugVoxels();
 }
 
-OfflineLPV::SHVoxel OfflineLPV::calcSHLights(Point3F position, ColorF geometryColor, Point3I voxelPosition, bool emissive)
+OfflineLPV::SHVoxel OfflineLPV::calcSHLights(Point3F position, LinearColorF geometryColor, Point3I voxelPosition, bool emissive)
 {
    PROFILE_SCOPE( OfflineLPV_calcLightColor );
 
@@ -1233,9 +1233,9 @@ OfflineLPV::SHVoxel OfflineLPV::calcSHLights(Point3F position, ColorF geometryCo
       result.green = encoded.green;
       result.blue = encoded.blue;
    } else {
-      result.red = ColorF::ZERO;
-      result.green = ColorF::ZERO;
-      result.blue = ColorF::ZERO;
+      result.red = LinearColorF::ZERO;
+      result.green = LinearColorF::ZERO;
+      result.blue = LinearColorF::ZERO;
    }
 
    if ( !LIGHTMGR )
@@ -1376,7 +1376,7 @@ Vector4F OfflineLPV::getClampedCosineSHCoeffs(Point3F dir)
    return coeffs;
 }
 
-OfflineLPV::SHVoxel OfflineLPV::encodeSH(Point3F dir, ColorF color)
+OfflineLPV::SHVoxel OfflineLPV::encodeSH(Point3F dir, LinearColorF color)
 {
    SHVoxel result;
    Vector4F coeffs = getClampedCosineSHCoeffs(dir);
@@ -1388,10 +1388,10 @@ OfflineLPV::SHVoxel OfflineLPV::encodeSH(Point3F dir, ColorF color)
    return result;
 }
 
-ColorF OfflineLPV::decodeSH(Point3F dir, SHVoxel sh)
+LinearColorF OfflineLPV::decodeSH(Point3F dir, SHVoxel sh)
 {
    Vector4F coeffs = getClampedCosineSHCoeffs(dir); 
-   ColorF color( 0, 0, 0 );
+   LinearColorF color( 0, 0, 0 );
     
    color.red = mDot(sh.red, coeffs);
    color.green = mDot(sh.green, coeffs);
@@ -1423,9 +1423,9 @@ void OfflineLPV::propagateLights(SHVoxel* source, SHVoxel* dest, bool sampleFrom
             /* Spherical Harmonic Propagation */
 
             // Clear the cell, since this could be a reused grid.
-            dest[pos].red = ColorF::ZERO;
-            dest[pos].green = ColorF::ZERO;
-            dest[pos].blue = ColorF::ZERO;
+            dest[pos].red = LinearColorF::ZERO;
+            dest[pos].green = LinearColorF::ZERO;
+            dest[pos].blue = LinearColorF::ZERO;
 
             U32 blends = 0;
             // Sample from 6 faces of the cube and sum the attenuated results
@@ -1444,7 +1444,7 @@ void OfflineLPV::propagateLights(SHVoxel* source, SHVoxel* dest, bool sampleFrom
                U32 sampleOffset = (voxelCount.x * voxelCount.y * zSample) + (voxelCount.x * ySample) + xSample;
 
                // Decode the color from that voxel facing the opposite direction we sampled from.
-               ColorF decoded_color = decodeSH(sample_directions[i] * -1, source[sampleOffset]);
+               LinearColorF decoded_color = decodeSH(sample_directions[i] * -1, source[sampleOffset]);
 
                // Encode that color to be added into our grid.
                SHVoxel encoded_color = encodeSH(sample_directions[i] * -1, decoded_color * mPropagationMultiplier);
@@ -1478,7 +1478,7 @@ bool OfflineLPV::_setExportPropagated( void *object, const char *index, const ch
 
 // Exports mPropagatedLightGrid to the actual volume texture on the graphics card.
 // Note: for some reason the volume texture insists on being BGRA.
-void OfflineLPV::exportPropagatedLight(ColorF* pSource, Point3I* pSize)
+void OfflineLPV::exportPropagatedLight(LinearColorF* pSource, Point3I* pSize)
 {
    if ( !mPropagatedLightGrid && !pSource ) return;
    Point3I size = pSize ? *pSize : getVoxelCount();
@@ -1495,7 +1495,7 @@ void OfflineLPV::exportPropagatedLight(ColorF* pSource, Point3I* pSize)
          {
             for(U32 x = 0; x < size.x; x++)
             {
-               ColorI cell_color = pSource[pos] * mGIMultiplier;
+               ColorI cell_color = LinearColorF(pSource[pos] * mGIMultiplier).toColorI();
                pos++;
 
                buffer[bufPos]     = cell_color.blue;    // Blue
@@ -1529,7 +1529,7 @@ void OfflineLPV::exportPropagatedLight(SHVoxel* pSource, Point3I* pSize)
          {
             for(U32 x = 0; x < size.x; x++)
             {
-               ColorI cell_color = decodeSH(Point3F(0, 0, 0), pSource[pos]) * mGIMultiplier;
+               ColorI cell_color = LinearColorF(decodeSH(Point3F(0, 0, 0), pSource[pos]) * mGIMultiplier).toColorI();
                pos++;
 
                buffer[bufPos]     = cell_color.blue;    // Blue
@@ -1555,7 +1555,7 @@ bool OfflineLPV::_setExportDirectLight( void *object, const char *index, const c
 
 // Exports mLightGrid to the actual volume texture on the graphics card.
 // Note: for some reason the volume texture insists on being BGRA.
-void OfflineLPV::exportDirectLight(ColorF* pSource, Point3I* pSize)
+void OfflineLPV::exportDirectLight(LinearColorF* pSource, Point3I* pSize)
 {
    if ( !mLightGrid && !pSource ) return;
    Point3I size = pSize ? *pSize : getVoxelCount();
@@ -1572,7 +1572,7 @@ void OfflineLPV::exportDirectLight(ColorF* pSource, Point3I* pSize)
          {
             for(U32 x = 0; x < size.x; x++)
             {
-               ColorI cell_color = pSource[pos];
+               ColorI cell_color = pSource[pos].toColorI();
                pos++;
 
                buffer[bufPos]     = cell_color.blue;    // Blue
@@ -1606,7 +1606,7 @@ void OfflineLPV::exportDirectLight(SHVoxel* pSource, Point3I* pSize)
          {
             for(U32 x = 0; x < size.x; x++)
             {
-               ColorI cell_color = decodeSH(Point3F(0, 0, 0), pSource[pos]);
+               ColorI cell_color = LinearColorF(decodeSH(Point3F(0, 0, 0), pSource[pos])).toColorI();
                pos++;
 
                buffer[bufPos]     = cell_color.blue;    // Blue
@@ -1673,7 +1673,7 @@ void OfflineLPV::_initShaders()
    Vector<GFXShaderMacro> macros;
 
    if ( !mPrepassTarget )
-      mPrepassTarget = NamedTexTarget::find( "prepass" );
+      mPrepassTarget = NamedTexTarget::find( "deferred" );
 
    if ( mPrepassTarget )
       mPrepassTarget->getShaderMacros( &macros );
@@ -1761,7 +1761,7 @@ void OfflineLPV::_renderPropagated(const SceneRenderState* state)
 
    // We also need to sample from the depth buffer.
    if ( !mPrepassTarget )
-      mPrepassTarget = NamedTexTarget::find( "prepass" );
+      mPrepassTarget = NamedTexTarget::find( "deferred" );
 
    GFXTextureObject *prepassTexObject = mPrepassTarget->getTexture();
    if ( !prepassTexObject ) return;
@@ -1826,7 +1826,7 @@ void OfflineLPV::_renderPropagated(const SceneRenderState* state)
    }
 
    // Draw the screenspace quad.
-   GFX->drawPrimitive( GFXTriangleFan, 0, 2 );
+   GFX->drawPrimitive( GFXTriangleStrip, 0, 2 );
 
    // Clean Up
    mRenderTarget->resolve();
@@ -1918,7 +1918,7 @@ void OfflineLPV::_renderReflect(const SceneRenderState* state)
    GFX->setTexture(2, matInfoTexObject);
 
    // Draw the screenspace quad.
-   GFX->drawPrimitive( GFXTriangleFan, 0, 2 );
+   GFX->drawPrimitive( GFXTriangleStrip, 0, 2 );
 
    // Clean Up
    mRenderTarget->resolve();
@@ -2029,14 +2029,14 @@ bool OfflineLPV::save()
             for(U32 x = 0; x < voxelCount.x; x++)
             {
                // Direct Light
-               ColorF decoded_direct = decodeSH(Point3F(0, 0, 0), mLightGrid[pos]);
+               LinearColorF decoded_direct = decodeSH(Point3F(0, 0, 0), mLightGrid[pos]);
                dtsStream.write(decoded_direct.red);
                dtsStream.write(decoded_direct.green);
                dtsStream.write(decoded_direct.blue);
                dtsStream.write(decoded_direct.alpha);
 
                // Propagated Light
-               ColorF decoded_prop = decodeSH(Point3F(0, 0, 0), mPropagatedLightGrid[pos]);
+               LinearColorF decoded_prop = decodeSH(Point3F(0, 0, 0), mPropagatedLightGrid[pos]);
                dtsStream.write(decoded_prop.red);
                dtsStream.write(decoded_prop.green);
                dtsStream.write(decoded_prop.blue);
@@ -2073,8 +2073,8 @@ bool OfflineLPV::load()
       dtsStream.read(&size.y);
       dtsStream.read(&size.z);
 
-      ColorF* directLightGrid = new ColorF[size.x * size.y * size.z];
-      ColorF* propagatedLightGrid = new ColorF[size.x * size.y * size.z];
+      LinearColorF* directLightGrid = new LinearColorF[size.x * size.y * size.z];
+      LinearColorF* propagatedLightGrid = new LinearColorF[size.x * size.y * size.z];
 
       U32 pos = 0;
       for(U32 z = 0; z < size.z; z++)

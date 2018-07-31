@@ -101,7 +101,7 @@ void RenderMeshMgr::render(SceneRenderState * state)
       return;
 
    // Check if bin is disabled in advanced lighting.
-   if ( MATMGR->getPrePassEnabled() && mBasicOnly )
+   if ( MATMGR->getDeferredEnabled() && mBasicOnly )
       return;
 
    GFXDEBUGEVENT_SCOPE( RenderMeshMgr_Render, ColorI::GREEN );

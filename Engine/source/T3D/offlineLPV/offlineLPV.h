@@ -127,12 +127,12 @@ class OfflineLPV : public ScenePolyhedralSpace
       // Geometry voxel with emissive flag
       struct GeometryVoxel
       {
-         ColorF color;
+         LinearColorF color;
          bool emissive;
 
          GeometryVoxel()
          {
-            color = ColorF::ZERO;
+            color = LinearColorF::ZERO;
             emissive = false;
          }
       };
@@ -143,27 +143,27 @@ class OfflineLPV : public ScenePolyhedralSpace
       // 2nd Order Spherical Harmonics require storage in (3) float4s.
       struct SHVoxel
       {
-         ColorF red;
-         ColorF green;
-         ColorF blue;
+         LinearColorF red;
+         LinearColorF green;
+         LinearColorF blue;
 
          // For debugging only.
          Point3F normal;
 
          SHVoxel()
          {
-            red = ColorF::ZERO;
-            green = ColorF::ZERO;
-            blue = ColorF::ZERO;
+            red = LinearColorF::ZERO;
+            green = LinearColorF::ZERO;
+            blue = LinearColorF::ZERO;
             normal = Point3F::Zero;
          }
       };
 
       // Spherical Harmonics functions
       Vector4F getClampedCosineSHCoeffs(Point3F dir);
-      SHVoxel  encodeSH(Point3F dir, ColorF color);
-      ColorF   decodeSH(Point3F dir, SHVoxel sh);
-      SHVoxel  calcSHLights(Point3F position, ColorF geometryColor, Point3I voxelPosition, bool emissive = false);
+      SHVoxel  encodeSH(Point3F dir, LinearColorF color);
+      LinearColorF   decodeSH(Point3F dir, SHVoxel sh);
+      SHVoxel  calcSHLights(Point3F position, LinearColorF geometryColor, Point3I voxelPosition, bool emissive = false);
 
       // Helper functions
       Point3F  getNearestFaceNormals(Point3F dir, bool nonOccludedOnly = false, U32 x = 0, U32 y = 0, U32 z = 0);
@@ -194,7 +194,7 @@ class OfflineLPV : public ScenePolyhedralSpace
       // Debug voxel rendering.
       struct DebugVoxel
       {
-         ColorF color;
+         LinearColorF color;
          Point3F position;
          Point3F size;
       };
@@ -258,9 +258,9 @@ class OfflineLPV : public ScenePolyhedralSpace
       // Editor Triggered Functions
       void regenVolume();
       void injectLights();
-      void exportPropagatedLight(ColorF* pSource, Point3I* pSize = NULL);
+      void exportPropagatedLight(LinearColorF* pSource, Point3I* pSize = NULL);
       void exportPropagatedLight(SHVoxel* pSource, Point3I* pSize = NULL);
-      void exportDirectLight(ColorF* pSource, Point3I* pSize = NULL);
+      void exportDirectLight(LinearColorF* pSource, Point3I* pSize = NULL);
       void exportDirectLight(SHVoxel* pSource, Point3I* pSize = NULL);
       F32  getAttenuation(LightInfo* lightInfo, Point3F position);
       void propagateLights(SHVoxel* source, SHVoxel* dest, bool sampleFromGeometry = false);
