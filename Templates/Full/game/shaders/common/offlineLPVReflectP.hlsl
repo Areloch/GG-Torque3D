@@ -20,27 +20,28 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#include "shadergen:/autogenConditioners.h"
+#include "shaderModelAutoGen.hlsl"
 #include "torque.hlsl"
+#include "lighting.hlsl"
 
 struct Conn
 {
-   float4 position : POSITION;
+   float4 position : TORQUE_POSITION;
    float2 uv0      : TEXCOORD0;
    float3 wsEyeRay : TEXCOORD1;
 };
 
-uniform sampler3D lpvData : register(S0);
-uniform sampler2D prePassBuffer : register(S1);
-uniform sampler2D matInfoBuffer : register(S2);
+TORQUE_UNIFORM_SAMPLER3D(lpvData, 0);
+TORQUE_UNIFORM_SAMPLER2D(prePassBuffer, 1);
+TORQUE_UNIFORM_SAMPLER2D(matInfoBuffer, 2);
 uniform float4x4 invViewMat;
 uniform float3 eyePosWorld;
 uniform float3 volumeStart;
 uniform float3 volumeSize;
 
-float4 main( Conn IN ) : COLOR0
+float4 main( Conn IN ) : TORQUE_TARGET0
 { 
-   float4 prepassSample = prepassUncondition( prePassBuffer, IN.uv0 );
+   float4 prepassSample = TORQUE_DEFERRED_UNCONDITION( prePassBuffer, IN.uv0 );
    float3 normal = prepassSample.rgb;
    float depth = prepassSample.a;
 
@@ -48,7 +49,7 @@ float4 main( Conn IN ) : COLOR0
    float4 worldPos = float4(eyePosWorld + IN.wsEyeRay * depth, 1.0f);
 
    // Need world-space normal.
-   float3 wsNormal = mul(normal, invViewMat);
+   float3 wsNormal = mul(float4(normal,1), invViewMat).xyz;
 
    // Calculate angle to potential light
    float3 normalEyeRay = normalize(eyePosWorld + IN.wsEyeRay);
@@ -56,6 +57,7 @@ float4 main( Conn IN ) : COLOR0
 
    // Make 16 steps into the grid in search of color!
    float3 final_color = float3(0, 0, 0);
+   [unroll]
    for(int i = 1; i < 16; i++)
    {
        float3 curPos = worldPos.rgb + (reflected * i * 0.1);
@@ -67,7 +69,7 @@ float4 main( Conn IN ) : COLOR0
             break; 
        }
 
-       float3 color = tex3D(lpvData, volume_position).rgb;
+       float3 color = TORQUE_TEX3D(lpvData, volume_position).rgb;
        if ( length(color) > 0.0 )
        {
             final_color += color;
@@ -76,7 +78,7 @@ float4 main( Conn IN ) : COLOR0
    }
    final_color = final_color / 16;
 
-   float4 matInfoSample = tex2D( matInfoBuffer, IN.uv0 );
+   float4 matInfoSample = TORQUE_TEX2D( matInfoBuffer, IN.uv0 );
    final_color = final_color * matInfoSample.a;
 
    return float4(final_color, 0.0);

@@ -44,6 +44,7 @@ exec( "./lightViz.cs" );
 exec( "./shadowViz.cs" );
 exec( "./shadowViz.gui" );
 exec( "./deferredShading.cs" );
+exec( "./offlineLPV.cs" );
 
 function onActivateAdvancedLM()
 {     

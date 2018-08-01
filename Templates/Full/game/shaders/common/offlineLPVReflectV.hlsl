@@ -20,13 +20,13 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#include "shadergen:/autogenConditioners.h"
+#include "shaderModelAutoGen.hlsl"
 #include "torque.hlsl"
 
 // This is the shader input vertex structure.
 struct Vert
 {
-   float4 position : POSITION;
+   float3 position : POSITION;
    float2 uv0      : TEXCOORD0;
    float3 wsEyeRay : TEXCOORD1;
 };
@@ -34,7 +34,7 @@ struct Vert
 // This is the shader output data.
 struct Conn
 {
-   float4 position : POSITION;
+   float4 position : TORQUE_POSITION;
    float2 uv0      : TEXCOORD0;
    float3 wsEyeRay : TEXCOORD1;
 };
@@ -47,7 +47,9 @@ Conn main(  Vert IN,
             )	         
 {
    Conn OUT;   
-   OUT.position = IN.position;
+   //OUT.position = IN.position;
+   //OUT.position = mul(modelView, float4(IN.position,1.0));
+   OUT.position = float4(IN.position,1.0);
    OUT.uv0 = viewportCoordToRenderTarget( IN.uv0, rtParams0 );
    OUT.wsEyeRay = IN.wsEyeRay;
    return OUT;

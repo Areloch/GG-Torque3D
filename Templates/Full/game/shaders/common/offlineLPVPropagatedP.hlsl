@@ -20,30 +20,31 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#include "shadergen:/autogenConditioners.h"
+#include "shaderModelAutoGen.hlsl"
 #include "torque.hlsl"
+#include "lighting.hlsl"
 
 struct Conn
 {
-   float4 position : POSITION;
+   float4 position : TORQUE_POSITION;
    float2 uv0      : TEXCOORD0;
    float3 wsEyeRay : TEXCOORD1;
 };
 
-uniform sampler3D lpvData : register(S0);
-uniform sampler2D prePassBuffer : register(S1);
+TORQUE_UNIFORM_SAMPLER3D(lpvData, 0);
+TORQUE_UNIFORM_SAMPLER2D(prePassBuffer, 1);
 
 #ifdef USE_SSAO_MASK
-uniform sampler2D ssaoMask : register(S2);
+TORQUE_UNIFORM_SAMPLER2D(ssaoMask, 2);
 #endif
 
 uniform float3 eyePosWorld;
 uniform float3 volumeStart;
 uniform float3 volumeSize;
 
-float4 main( Conn IN ) : COLOR0
+float4 main( Conn IN ) : TORQUE_TARGET0
 { 
-   float4 prepassSample = prepassUncondition( prePassBuffer, IN.uv0 );
+   float4 prepassSample = TORQUE_DEFERRED_UNCONDITION( prePassBuffer, IN.uv0 );
    float3 normal = prepassSample.rgb;
    float depth = prepassSample.a;
 
@@ -58,10 +59,10 @@ float4 main( Conn IN ) : COLOR0
         return float4(0.0, 0.0, 0.0, 0.0); 
    }
 
-   float4 color = tex3D(lpvData, volume_position);
+   float4 color = TORQUE_TEX3D(lpvData, volume_position);
 
 #ifdef USE_SSAO_MASK
-   float ao = 1.0 - tex2D( ssaoMask, IN.uv0 ).r;
+   float ao = 1.0 - TORQUE_TEX2D( ssaoMask, IN.uv0 ).r;
    color = color * ao;
 #endif
 
