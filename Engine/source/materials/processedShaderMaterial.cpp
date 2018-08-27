@@ -1317,6 +1317,8 @@ void ProcessedShaderMaterial::setCustomShaderData(Vector<CustomShaderBindingData
 			bool tmp = true;
 		}
 		//roll through and try setting our data!
+      bool didSet = false;
+
 		for (U32 h = 0; h < handles->mCustomHandles.size(); ++h)
 		{
 			StringTableEntry handleName = shaderData[i].getHandleName();
@@ -1335,10 +1337,35 @@ void ProcessedShaderMaterial::setCustomShaderData(Vector<CustomShaderBindingData
 						shaderConsts->setSafe(handles->mCustomHandles[h].handle, shaderData[i].getFloat3());
 					else if (type == CustomShaderBindingData::Float4)
 						shaderConsts->setSafe(handles->mCustomHandles[h].handle, shaderData[i].getFloat4());
+
+               didSet = true;
 					break;
 				}
 			}
 		}
+
+      //if we didn't find it in a custom handle, we may be trying to override a regular handle. Check those next
+      if (!didSet)
+      {
+         if (shaderData[i].getHandleName() == StringTable->insert("diffuseMaterialColor"))
+         {
+            if (handles->mDiffuseColorSC->isValid())
+            {
+               shaderConsts->setSafe(handles->mDiffuseColorSC, shaderData[i].getFloat4());
+            }
+         }
+         else if (shaderData[i].getHandleName() == StringTable->insert("toneMap"))
+         {
+            if (handles->mToneMapTexSC->isValid())
+            {
+               //shaderConsts->setSafe(handles->mToneMapTexSC, shaderData[i].getTexture2D());
+               String featureDesc = this->getFeatures().getDescription();
+               S32 textureIndex = 1;
+               shaderConsts->setSafe(handles->mToneMapTexSC, textureIndex);
+               GFX->setTexture(textureIndex, shaderData[i].getTexture2D());
+            }
+         }
+      }
 	}
 }
 

@@ -50,6 +50,8 @@
 #include "console/engineAPI.h"
 #include "T3D/accumulationVolume.h"
 
+#include "math/mathUtils.h"
+
 using namespace Torque;
 
 extern bool gEditingMission;
@@ -126,6 +128,8 @@ TSStatic::TSStatic()
    mDecalType = CollisionMesh;
 
    mOverrideColor = LinearColorF::BLACK;
+
+   mLightmapTexName = "";
 }
 
 TSStatic::~TSStatic()
@@ -176,6 +180,8 @@ void TSStatic::initPersistFields()
       "Material targets are only renamed if an existing Material maps to that "
       "name, or if there is a diffuse texture in the model folder with the same "
       "name as the new target.\n\n" );
+
+      addField("lightmap", TypeImageFilename, Offset(mLightmapTexName, TSStatic), "Normal map used to simulate small surface ripples");
 
    endGroup("Media");
 
@@ -349,15 +355,26 @@ bool TSStatic::_createShape()
       return false;
    }
 
-   if (  isClientObject() && 
+   /*if (  isClientObject() && 
          !mShape->preloadMaterialList(mShape.getPath()) && 
          NetConnection::filesWereDownloaded() )
-      return false;
+      return false;*/
 
    mObjBox = mShape->bounds;
    resetWorldBox();
 
    mShapeInstance = new TSShapeInstance( mShape, isClientObject() );
+
+   if (isClientObject())
+   {
+      FeatureSet features = MATMGR->getDefaultFeatures();
+
+      // We create our own cloned material list to
+      // enable the wind effects.
+      features.addFeature(MFT_DiffuseColor);
+      features.addFeature(MFT_ToneMap);
+      mShapeInstance->cloneMaterialList(&features);
+   }
 
    if( isGhost() )
    {
@@ -633,10 +650,14 @@ void TSStatic::prepRenderImage( SceneRenderState* state )
    rdata.setAccuTex(mAccuTex);
 
    //Various arbitrary shader render bits to add
-   CustomShaderBindingData strudelCSB;
-   strudelCSB.setFloat4(StringTable->insert("overrideColor"), mOverrideColor);
+   if (mLightmap.isValid())
+   {
+      CustomShaderBindingData strudelCSB;
+      strudelCSB.setTexture2D(StringTable->insert("toneMap"), mLightmap);
+      //strudelCSB.setFloat4(StringTable->insert("overrideColor"), mOverrideColor);
 
-   rdata.addCustomShaderBinding(strudelCSB);
+      rdata.addCustomShaderBinding(strudelCSB);
+   }
 
    // If we have submesh culling enabled then prepare
    // the object space frustum to pass to the shape.
@@ -771,8 +792,12 @@ U32 TSStatic::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
    if ( stream->writeFlag( mask & UpdateCollisionMask ) )
       stream->write( (U32)mCollisionType );
 
-   if ( stream->writeFlag( mask & SkinMask ) )
-      con->packNetStringHandleU( stream, mSkinNameHandle );
+   if (stream->writeFlag(mask & SkinMask))
+   {
+      con->packNetStringHandleU(stream, mSkinNameHandle);
+
+      stream->write(mLightmapTexName);
+   }
 
    if (stream->writeFlag(mask & AdvancedStaticOptionsMask))
    {
@@ -857,6 +882,12 @@ void TSStatic::unpackUpdate(NetConnection *con, BitStream *stream)
          mSkinNameHandle = skinDesiredNameHandle;
          reSkin();
       }
+
+      stream->read(&mLightmapTexName);
+
+      //Set up te lightmaps if we have them
+      if (mLightmapTexName.isNotEmpty())
+         mLightmap.set(mLightmapTexName, &GFXStaticTextureSRGBProfile, "TSStatic::mLightmap");
    }
 
    if (stream->readFlag()) // AdvancedStaticOptionsMask
@@ -958,6 +989,7 @@ bool TSStatic::castRayRendered(const Point3F &start, const Point3F &end, RayInfo
 
    // Cast the ray against the currently visible detail
    RayInfo localInfo;
+   localInfo.generateTexCoord = true;
    bool res = mShapeInstance->castRayOpcode( mShapeInstance->getCurrentDetail(), start, end, &localInfo );
 
    if ( res )
@@ -1226,6 +1258,60 @@ void TSStatic::onUnmount( SceneObject *obj, S32 node )
    _updateShouldTick();
 }
 
+void TSStatic::bakeLightmap(U32 raycount)
+{
+   if (!mShapeInstance || !mShape)
+      return;
+
+   U32 dim = 1024;
+
+   GBitmap * bitmap = new GBitmap(dim, dim, false, GFXFormatR8G8B8A8);
+   /*U8 * bits = bitmap->getWritableBits();
+   dMemset(bits, 0, dim*dim * 4);
+   S32 center = dim >> 1;
+   F32 invRadiusSq = 1.0f / (F32)(center*center);
+   F32 tmpF;
+   for (S32 i = 0; i<dim; i++)
+   {
+      for (S32 j = 0; j<dim; j++)
+      {
+         tmpF = (F32)((i - center)*(i - center) + (j - center)*(j - center)) * invRadiusSq;
+         U8 val = tmpF>0.99f ? 0 : (U8)(180.0f*(1.0f - tmpF)); // 180 out of 255 max
+         bits[(i*dim * 4) + (j * 4) + 3] = 8;
+      }
+   }*/
+
+   bitmap->fill(ColorI::BLACK);
+
+   for (U32 i = 0; i < raycount; i++)
+   {
+      RayInfo ri;
+      ri.generateTexCoord = true;
+
+      Point3F dir = MathUtils::randomDir(Point3F::One, 1, 359);
+      castRayRendered(Point3F::Zero, dir * 1000, &ri);
+
+      if (ri.material)
+      {
+         //Material* mat = dynamic_cast<Material*>(ri.material->getMaterial());
+         //GFXTexHandle tex(mat->mDiffuseMapFilename[0], &GFXRenderTargetSRGBProfile, "GroundCover texture aspect ratio check");
+         //GBitmap* texBit = tex.getBitmap();
+         //LinearColorF sampl = texBit->sampleTexel(ri.texCoord.x, ri.texCoord.y);
+
+         LinearColorF sampl = LinearColorF::RED;
+
+         U32 uvWidth = (ri.texCoord.x * bitmap->getWidth());
+         U32 uvHeight = (ri.texCoord.y * bitmap->getHeight());
+         
+         bitmap->setColor(uvWidth, uvHeight, sampl.toColorI());
+      }
+   }
+
+   //bitmap->fill(ColorI::BLUE);
+
+   mLightmap.set(bitmap, &GFXStaticTextureSRGBProfile, true, "BlobShadow");
+}
+
 //------------------------------------------------------------------------
 //These functions are duplicated in tsStatic and shapeBase.
 //They each function a little differently; but achieve the same purpose of gathering
@@ -1339,3 +1425,20 @@ DefineEngineMethod( TSStatic, getModelFile, const char *, (),,
 {
    return object->getShapeFileName();
 }
+
+DefineEngineMethod(TSStatic, doLightmap, void, (U32 raycount), ,
+   "@brief Get the model filename used by this shape.\n\n"
+
+   "@return the shape filename\n\n"
+   "@tsexample\n"
+   "// Acquire the model filename used on this shape.\n"
+   "%modelFilename = %obj.getModelFile();\n"
+   "@endtsexample\n"
+)
+{
+   TSStatic* client = dynamic_cast<TSStatic*>(object->getClientObject());
+
+   if(client)
+      client->bakeLightmap(raycount);
+}
+

@@ -255,7 +255,7 @@ void TSMesh::innerRender( TSMaterialList *materials, const TSRenderState &rdata,
 #ifndef TORQUE_OS_MAC
 
       // Get the instancing material if this mesh qualifies.
-      if ( meshType != SkinMeshType && pb->mPrimitiveArray[i].numVertices < smMaxInstancingVerts )
+      if ( meshType != SkinMeshType && coreRI->mCustomShaderData.empty() && pb->mPrimitiveArray[i].numVertices < smMaxInstancingVerts )
          if (matInst && !matInst->getFeatures().hasFeature(MFT_HardwareSkinning))
             matInst = InstancingMaterialHook::getInstancingMat( matInst );
 

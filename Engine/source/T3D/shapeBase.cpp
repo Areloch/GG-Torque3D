@@ -941,6 +941,8 @@ ShapeBase::ShapeBase()
 
    for (i = 0; i < MaxTriggerKeys; i++)
       mTrigger[i] = false;
+
+   mOverrideColor = LinearColorF::BLACK;
 }
 
 
@@ -997,6 +999,9 @@ void ShapeBase::initPersistFields()
    addField( "isAiControlled", TypeBool, Offset(mIsAiControlled, ShapeBase),
       "@brief Is this object AI controlled.\n\n"
       "If True then this object is considered AI controlled and not player controlled.\n" );
+
+   addField("overrideColor", TypeColorF, Offset(mOverrideColor, ShapeBase),
+	   "@brief The skin applied to the shape.\n\n");
 
    Parent::initPersistFields();
 }
@@ -2554,6 +2559,12 @@ void ShapeBase::prepBatchRender(SceneRenderState* state, S32 mountedImageIndex )
    query.init( getWorldSphere() );
    rdata.setLightQuery( &query );
 
+   //Various arbitrary shader render bits to add
+   CustomShaderBindingData strudelCSB;
+   strudelCSB.setFloat4(StringTable->insert("overrideColor"), mOverrideColor);
+
+   rdata.addCustomShaderBinding(strudelCSB);
+
    if( mountedImageIndex != -1 )
    {
       MountedImage& image = mMountedImageList[mountedImageIndex];
@@ -2919,6 +2930,8 @@ U32 ShapeBase::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
 {
    U32 retMask = Parent::packUpdate(con, mask, stream);
 
+   stream->write(mOverrideColor);
+
    if (mask & InitialUpdateMask) {
       // mask off sounds that aren't playing
       S32 i;
@@ -3044,6 +3057,8 @@ void ShapeBase::unpackUpdate(NetConnection *con, BitStream *stream)
 {
    Parent::unpackUpdate(con, stream);
    mLastRenderFrame = sLastRenderFrame; // make sure we get a process after the event...
+
+   stream->read(&mOverrideColor);
 
    if(!stream->readFlag())
       return;

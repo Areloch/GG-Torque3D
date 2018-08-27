@@ -747,6 +747,8 @@ protected:
    bool mMoveMotion;    ///< Indicates that a Move has come in requesting x, y or z motion
    /// @}
 
+   LinearColorF mOverrideColor;
+
 protected:
 
    // ShapeBase pointer to our mount object if it is ShapeBase, else it is NULL.

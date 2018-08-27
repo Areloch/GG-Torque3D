@@ -40,17 +40,18 @@
 	translucentBlendOp = "None";
 };*/
 
-singleton CustomShaderFeatureData(FlatColorFeature)
+/*singleton CustomShaderFeatureData(FlatColorFeature)
 {
    
-};
+};*/
 
 singleton Material(cube_GridMaterial)
 {
    mapTo = "GridMaterial";
    
-   CustomShaderFeature[0] = FlatColorFeature;
-   CustomShaderFeatureUniforms[FlatColorFeature,0] = "TestFloat";
+   CustomShaderFeature[0] = "Vi+ö";
+   diffuseMap[0] = "core/art/grids/512_grey.png";
+   //CustomShaderFeatureUniforms[FlatColorFeature,0] = "TestFloat";
 };
 
 //--- cube.dae MATERIALS END ---
@@ -58,24 +59,45 @@ singleton Material(cube_GridMaterial)
 //Voodoo!
 function FlatColorFeature::processVertHLSL(%this)
 {
+   //%this.addVertTexCoord("texCoord2");
+   %this.addConnector("outTexCoord2", "float4", "RT_TEXCOORD");
    
+   // setup language elements to output incoming tex coords to output
+   %this.writeLine("   //Connector test");
+   %this.writeLine("   @ = float4(@,1);", "outTexCoord2", "position");
 }
 
 function FlatColorFeature::processPixelHLSL(%this)
 {
-   %this.addUniform("strudel", "float2");
-   %this.addSampler("strudelMap");
+   %this.addConnector("texCoord2", "float4", "RT_TEXCOORD");
+   
+   %this.addUniform("overrideColor", "float4");
+   /*%this.addSampler("strudelMap");
    %this.addTexture("strudelTex", "Texture2D", "strudelMap");
    
    %this.addVariable("bobsyeruncle", "float", 15.915);
    %this.addVariable("chimmychanga", "float");
    
    %this.writeLine("   @ = @ * 2;", "chimmychanga", "bobsyeruncle");
-   %this.writeLine("   @ *= @.x;", "bobsyeruncle", "strudel");
-   %this.writeLine("   @ *= @.y;", "chimmychanga", "strudel");
+   %this.writeLine("   @ *= @;", "bobsyeruncle", "strudel");
+   %this.writeLine("   @ *= @;", "chimmychanga", "strudel");
+   
+   %this.writeLine("");
    
    %this.addVariable("sprangle", "float4");
-   %this.writeLine("   @ = @.Sample(@,@);", "sprangle", "strudelTex", "strudelMap", "strudel");
+   %this.writeLine("   @ = @.Sample(@,@);", "sprangle", "strudelTex", "strudelMap", "strudel");*/
+   
+   if(%this.hasFeature("MFT_isDeferred"))
+      %col = "col1";
+   else
+      %col = "col";
+      
+   //%this.addVariable("testadoo", "float2");
+   //%this.writeLine("   @ = @;", "testadoo", "texCoord2");
+   
+   //%this.writeLine("   @ = @;", %col, "texCoord2");
+   
+   //%this.writeLine("   @ = @;", %col, "overrideColor");
 }
 
 function FlatColorFeature::setTextureResources(%this)

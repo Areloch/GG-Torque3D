@@ -125,6 +125,9 @@ protected:
    F32  mAlphaFade;
    bool mInvertAlphaFade;
 
+   String mLightmapTexName;
+   GFXTexHandle mLightmap;
+
    bool onAdd();
    void onRemove();
 
@@ -237,6 +240,8 @@ public:
    const Vector<S32>& getCollisionDetails() const { return mCollisionDetails; }
 
    const Vector<S32>& getLOSDetails() const { return mLOSDetails; }
+
+   void bakeLightmap(U32 raycount);
 
 };
 

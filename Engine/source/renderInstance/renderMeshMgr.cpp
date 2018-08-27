@@ -186,6 +186,11 @@ void RenderMeshMgr::render(SceneRenderState * state)
 			//push along any overriden fields that are instance-specific as well
 			if (passRI->mCustomShaderData.size() > 0)
 			{
+            if (state->isDiffusePass())
+            {
+               bool herp = true;
+            }
+
 				mat->setCustomShaderData(passRI->mCustomShaderData);
 			}
 

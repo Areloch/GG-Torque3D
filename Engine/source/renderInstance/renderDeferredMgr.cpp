@@ -314,12 +314,12 @@ void RenderDeferredMgr::clear()
    mObjectElementList.clear();
 }
 
-void RenderDeferredMgr::render( SceneRenderState *state )
+void RenderDeferredMgr::render(SceneRenderState *state)
 {
    PROFILE_SCOPE(RenderDeferredMgr_render);
 
    // Take a look at the SceneRenderState and see if we should skip drawing the pre-pass
-   if ( state->disableAdvancedLightingBins() )
+   if (state->disableAdvancedLightingBins())
       return;
 
    // NOTE: We don't early out here when the element list is
@@ -328,7 +328,7 @@ void RenderDeferredMgr::render( SceneRenderState *state )
    // Automagically save & restore our viewport and transforms.
    GFXTransformSaver saver;
 
-   GFXDEBUGEVENT_SCOPE( RenderDeferredMgr_Render, ColorI::RED );
+   GFXDEBUGEVENT_SCOPE(RenderDeferredMgr_Render, ColorI::RED);
 
    // Tell the superclass we're about to render
    const bool isRenderingToTarget = _onPreRender(state);
@@ -342,17 +342,17 @@ void RenderDeferredMgr::render( SceneRenderState *state )
    const MatrixF worldViewXfm = GFX->getWorldMatrix();
 
    // Setup the default deferred material for object instances.
-   if ( !mDeferredMatInstance )
+   if (!mDeferredMatInstance)
       _createDeferredMaterial();
-   if ( mDeferredMatInstance )
+   if (mDeferredMatInstance)
    {
       matrixSet.setWorld(MatrixF::Identity);
       mDeferredMatInstance->setTransforms(matrixSet, state);
    }
 
    // Signal start of pre-pass
-   getRenderSignal().trigger( state, this, true );
-   
+   getRenderSignal().trigger(state, this, true);
+
    // First do a loop and render all the terrain... these are 
    // usually the big blockers in a scene and will save us fillrate
    // on the smaller meshes and objects.
@@ -360,25 +360,25 @@ void RenderDeferredMgr::render( SceneRenderState *state )
    // The terrain doesn't need any scene graph data
    // in the the deferred... so just clear it.
    SceneData sgData;
-   sgData.init( state, SceneData::DeferredBin );
+   sgData.init(state, SceneData::DeferredBin);
 
    Vector< MainSortElem >::const_iterator itr = mTerrainElementList.begin();
-   for ( ; itr != mTerrainElementList.end(); itr++ )
+   for (; itr != mTerrainElementList.end(); itr++)
    {
-      TerrainRenderInst *ri = static_cast<TerrainRenderInst*>( itr->inst );
+      TerrainRenderInst *ri = static_cast<TerrainRenderInst*>(itr->inst);
 
       TerrainCellMaterial *mat = ri->cellMat->getDeferredMat();
 
-      GFX->setPrimitiveBuffer( ri->primBuff );
-      GFX->setVertexBuffer( ri->vertBuff );
+      GFX->setPrimitiveBuffer(ri->primBuff);
+      GFX->setVertexBuffer(ri->vertBuff);
 
-      mat->setTransformAndEye(   *ri->objectToWorldXfm,
-                                 worldViewXfm,
-                                 GFX->getProjectionMatrix(),
-                                 state->getFarPlane() );
+      mat->setTransformAndEye(*ri->objectToWorldXfm,
+         worldViewXfm,
+         GFX->getProjectionMatrix(),
+         state->getFarPlane());
 
-      while ( mat->setupPass( state, sgData ) )
-         GFX->drawPrimitive( ri->prim );
+      while (mat->setupPass(state, sgData))
+         GFX->drawPrimitive(ri->prim);
    }
 
    // init loop data
@@ -386,28 +386,28 @@ void RenderDeferredMgr::render( SceneRenderState *state )
    GFXCubemap *lastCubemap = NULL;
    GFXTextureObject *lastReflectTex = NULL;
    GFXTextureObject *lastAccuTex = NULL;
-   
+
    // Next render all the meshes.
    itr = mElementList.begin();
-   for ( ; itr != mElementList.end(); )
+   for (; itr != mElementList.end(); )
    {
-      MeshRenderInst *ri = static_cast<MeshRenderInst*>( itr->inst );
+      MeshRenderInst *ri = static_cast<MeshRenderInst*>(itr->inst);
 
       // Get the deferred material.
-      BaseMatInstance *mat = getDeferredMaterial( ri->matInst );
+      BaseMatInstance *mat = getDeferredMaterial(ri->matInst);
 
       // Set up SG data proper like and flag it 
       // as a pre-pass render
-      setupSGData( ri, sgData );
+      setupSGData(ri, sgData);
 
       Vector< MainSortElem >::const_iterator meshItr, endOfBatchItr = itr;
 
-      while ( mat->setupPass( state, sgData ) )
+      while (mat->setupPass(state, sgData))
       {
          meshItr = itr;
-         for ( ; meshItr != mElementList.end(); meshItr++ )
+         for (; meshItr != mElementList.end(); meshItr++)
          {
-            MeshRenderInst *passRI = static_cast<MeshRenderInst*>( meshItr->inst );
+            MeshRenderInst *passRI = static_cast<MeshRenderInst*>(meshItr->inst);
 
             // Check to see if we need to break this batch.
             //
@@ -415,11 +415,11 @@ void RenderDeferredMgr::render( SceneRenderState *state )
             // here so we don't incur the cost of looking up the 
             // deferred hook on each inst.
             //
-            if ( newPassNeeded( ri, passRI ) )
+            if (newPassNeeded(ri, passRI))
                break;
 
             // Set up SG data for this instance.
-            setupSGData( passRI, sgData );
+            setupSGData(passRI, sgData);
             mat->setSceneInfo(state, sgData);
 
             matrixSet.setWorld(*passRI->objectToWorld);
@@ -433,19 +433,24 @@ void RenderDeferredMgr::render( SceneRenderState *state )
                mat->setNodeTransforms(passRI->mNodeTransforms, passRI->mNodeTransformCount);
             }
 
-			//-JR
-			//push along any overriden fields that are instance-specific as well
-			if (passRI->mCustomShaderData.size() > 0)
-			{
-				mat->setCustomShaderData(passRI->mCustomShaderData);
-			}
+            //-JR
+            //push along any overriden fields that are instance-specific as well
+            if (passRI->mCustomShaderData.size() > 0)
+            {
+               if (state->isDiffusePass())
+               {
+                  bool herp = true;
+               }
+
+               mat->setCustomShaderData(passRI->mCustomShaderData);
+            }
 
             // If we're instanced then don't render yet.
-            if ( mat->isInstanced() )
+            if (mat->isInstanced())
             {
                // Let the material increment the instance buffer, but
                // break the batch if it runs out of room for more.
-               if ( !mat->stepInstance() )
+               if (!mat->stepInstance())
                {
                   meshItr++;
                   break;
@@ -457,7 +462,7 @@ void RenderDeferredMgr::render( SceneRenderState *state )
             bool dirty = false;
 
             // set the lightmaps if different
-            if( passRI->lightmap && passRI->lightmap != lastLM )
+            if (passRI->lightmap && passRI->lightmap != lastLM)
             {
                sgData.lightmap = passRI->lightmap;
                lastLM = passRI->lightmap;
@@ -465,20 +470,20 @@ void RenderDeferredMgr::render( SceneRenderState *state )
             }
 
             // set the cubemap if different.
-            if ( passRI->cubemap != lastCubemap )
+            if (passRI->cubemap != lastCubemap)
             {
                sgData.cubemap = passRI->cubemap;
                lastCubemap = passRI->cubemap;
                dirty = true;
             }
 
-            if ( passRI->reflectTex != lastReflectTex )
+            if (passRI->reflectTex != lastReflectTex)
             {
                sgData.reflectTex = passRI->reflectTex;
                lastReflectTex = passRI->reflectTex;
                dirty = true;
             }
-            
+
             // Update accumulation texture if it changed.
             // Note: accumulation texture can be NULL, and must be updated.
             if (passRI->accuTex != lastAccuTex)
@@ -488,29 +493,29 @@ void RenderDeferredMgr::render( SceneRenderState *state )
                dirty = true;
             }
 
-            if ( dirty )
-               mat->setTextureStages( state, sgData );
+            if (dirty)
+               mat->setTextureStages(state, sgData);
 
             // Setup the vertex and index buffers.
-            mat->setBuffers( passRI->vertBuff, passRI->primBuff );
+            mat->setBuffers(passRI->vertBuff, passRI->primBuff);
 
             // Render this sucker.
-            if ( passRI->prim )
-               GFX->drawPrimitive( *passRI->prim );
+            if (passRI->prim)
+               GFX->drawPrimitive(*passRI->prim);
             else
-               GFX->drawPrimitive( passRI->primBuffIndex );
+               GFX->drawPrimitive(passRI->primBuffIndex);
          }
 
          // Draw the instanced batch.
-         if ( mat->isInstanced() )
+         if (mat->isInstanced())
          {
             // Sets the buffers including the instancing stream.
-            mat->setBuffers( ri->vertBuff, ri->primBuff );
+            mat->setBuffers(ri->vertBuff, ri->primBuff);
 
-            if ( ri->prim )
-               GFX->drawPrimitive( *ri->prim );
+            if (ri->prim)
+               GFX->drawPrimitive(*ri->prim);
             else
-               GFX->drawPrimitive( ri->primBuffIndex );
+               GFX->drawPrimitive(ri->primBuffIndex);
          }
 
          endOfBatchItr = meshItr;
@@ -518,22 +523,22 @@ void RenderDeferredMgr::render( SceneRenderState *state )
       } // while( mat->setupPass(state, sgData) )
 
       // Force the increment if none happened, otherwise go to end of batch.
-      itr = ( itr == endOfBatchItr ) ? itr + 1 : endOfBatchItr;
+      itr = (itr == endOfBatchItr) ? itr + 1 : endOfBatchItr;
    }
 
    // The final loop is for object render instances.
    itr = mObjectElementList.begin();
-   for ( ; itr != mObjectElementList.end(); itr++ )
+   for (; itr != mObjectElementList.end(); itr++)
    {
-      ObjectRenderInst *ri = static_cast<ObjectRenderInst*>( itr->inst );
-      if ( ri->renderDelegate )
-         ri->renderDelegate( ri, state, mDeferredMatInstance );
+      ObjectRenderInst *ri = static_cast<ObjectRenderInst*>(itr->inst);
+      if (ri->renderDelegate)
+         ri->renderDelegate(ri, state, mDeferredMatInstance);
    }
 
    // Signal end of pre-pass
-   getRenderSignal().trigger( state, this, false );
+   getRenderSignal().trigger(state, this, false);
 
-   if(isRenderingToTarget)
+   if (isRenderingToTarget)
       _onPostRender();
 }
 

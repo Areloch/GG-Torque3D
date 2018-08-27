@@ -37,6 +37,9 @@ singleton Material(Mat_Soldier_Main)
    showFootprints = "0";
    castDynamicShadows = true;
    materialTag0 = "Player";
+   
+   CustomShaderFeature[0] = FlatColorFeature;
+   CustomShaderFeatureUniforms[FlatColorFeature,0] = "TestFloat";
 };
 
 singleton Material(Mat_Soldier_Dazzle)
@@ -87,46 +90,70 @@ singleton Material(Mat_DarkBlue_Soldier_Main : Mat_Soldier_Main)
 {
    mapTo = "DarkBlue_Soldier_Main";
    diffuseMap[0] = "Soldier_DarkBlue_Dif.dds";
+   
+   CustomShaderFeature[0] = FlatColorFeature;
+   CustomShaderFeatureUniforms[FlatColorFeature,0] = "TestFloat";
 };
 
 singleton Material(Mat_DarkGreen_Soldier_Main : Mat_Soldier_Main)
 {
    mapTo = "DarkGreen_Soldier_Main";
    diffuseMap[0] = "Soldier_DarkGreen_Dif.dds";
+   
+   CustomShaderFeature[0] = FlatColorFeature;
+   CustomShaderFeatureUniforms[FlatColorFeature,0] = "TestFloat";
 };
 
 singleton Material(Mat_LightGreen_Soldier_Main : Mat_Soldier_Main)
 {
    mapTo = "LightGreen_Soldier_Main";
    diffuseMap[0] = "Soldier_LightGreen_Dif.dds";
+   
+   CustomShaderFeature[0] = FlatColorFeature;
+   CustomShaderFeatureUniforms[FlatColorFeature,0] = "TestFloat";
 };
 
 singleton Material(Mat_Orange_Soldier_Main : Mat_Soldier_Main)
 {
    mapTo = "Orange_Soldier_Main";
    diffuseMap[0] = "Soldier_Orange_Dif.dds";
+   
+   CustomShaderFeature[0] = FlatColorFeature;
+   CustomShaderFeatureUniforms[FlatColorFeature,0] = "TestFloat";
 };
 
 singleton Material(Mat_Red_Soldier_Main : Mat_Soldier_Main)
 {
    mapTo = "Red_Soldier_Main";
    diffuseMap[0] = "Soldier_Red_Dif.dds";
+   
+   CustomShaderFeature[0] = FlatColorFeature;
+   CustomShaderFeatureUniforms[FlatColorFeature,0] = "TestFloat";
 };
 
 singleton Material(Mat_Teal_Soldier_Main : Mat_Soldier_Main)
 {
    mapTo = "Teal_Soldier_Main";
    diffuseMap[0] = "Soldier_Teal_Dif.dds";
+   
+   CustomShaderFeature[0] = FlatColorFeature;
+   CustomShaderFeatureUniforms[FlatColorFeature,0] = "TestFloat";
 };
 
 singleton Material(Mat_Violet_Soldier_Main : Mat_Soldier_Main)
 {
    mapTo = "Violet_Soldier_Main";
    diffuseMap[0] = "Soldier_Violet_Dif.dds";
+   
+   CustomShaderFeature[0] = FlatColorFeature;
+   CustomShaderFeatureUniforms[FlatColorFeature,0] = "TestFloat";
 };
 
 singleton Material(Mat_Yellow_Soldier_Main : Mat_Soldier_Main)
 {
    mapTo = "Yellow_Soldier_Main";
    diffuseMap[0] = "Soldier_Yellow_Dif.dds";
+   
+   CustomShaderFeature[0] = FlatColorFeature;
+   CustomShaderFeatureUniforms[FlatColorFeature,0] = "TestFloat";
 };
