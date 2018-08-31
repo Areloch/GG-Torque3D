@@ -7,7 +7,6 @@ singleton Material(LMA_chapel_int_chapel_Module_Common_LMA_chapel_int_Material0)
    specular[0] = "1 1 1 1";
    specularPower[0] = 8.0;
    mapTo = "chapel_Module_Common_LMA_chapel_int-Material0";
-   toneMap[0] = "art/shapes/yorks/chapel/Module_Common/LMA_chapel_int.dds";
    materialTag0 = "urban";
    showFootprints = "0";
    specularPower[1] = "64";
@@ -15,6 +14,7 @@ singleton Material(LMA_chapel_int_chapel_Module_Common_LMA_chapel_int_Material0)
    lightMap[1] = "art/shapes/yorks/chapel/Module_Common/LMA_chapel_int.dds";
    emissive[1] = "1";
    translucentBlendOp = "None";
+   diffuseColor[3] = "1 1 1 1";
 };
 
 singleton Material(LMA_chapel_int_chapel_Module_Common_LMA_chapel_int_Material1)
@@ -36,7 +36,6 @@ singleton Material(LMA_chapel_int_chapel_Module_Common_LMA_chapel_int_Material1)
    emissive[1] = "1";
    lightMap[1] = "art/shapes/yorks/chapel/Module_Common/LMA_chapel_int.dds";
    diffuseMap[1] = "art/shapes/yorks/chapel/brick_small_blue_alpha.dds";
-   toneMap[0] = "art/shapes/yorks/chapel/Module_Common/LMA_chapel_int.dds";
    specularMap[0] = "art/shapes/yorks/chapel/brick_small_blue_dds.dds";
    normalMap[0] = "art/shapes/yorks/chapel/brick_block_nm.png";
    castShadows = "0";
@@ -168,4 +167,6 @@ singleton Material(SB_chapel_ext_chapel_Module_Common_SB_chapel_ext_Material0)
    mapTo = "chapel_Module_Common_SB_chapel_ext-Material0";
    diffuseColor[1] = "1 1 1 1";
    translucentBlendOp = "None";
+   diffuseMap[0] = "art/shapes/yorks/chapel/brick_block.png";
+   toneMap[0] = "art/shapes/yorks/chapel/buildings_low_nm.dds";
 };

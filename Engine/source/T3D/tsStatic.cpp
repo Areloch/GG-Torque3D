@@ -130,6 +130,8 @@ TSStatic::TSStatic()
    mOverrideColor = LinearColorF::BLACK;
 
    mLightmapTexName = "";
+   mLightMap = NULL;
+   mLightmapResolution = 256;
 }
 
 TSStatic::~TSStatic()
@@ -182,6 +184,7 @@ void TSStatic::initPersistFields()
       "name as the new target.\n\n" );
 
       addField("lightmap", TypeImageFilename, Offset(mLightmapTexName, TSStatic), "Normal map used to simulate small surface ripples");
+      addField("lightmapResolution", TypeS32, Offset(mLightmapResolution, TSStatic), "Normal map used to simulate small surface ripples");
 
    endGroup("Media");
 
@@ -373,7 +376,9 @@ bool TSStatic::_createShape()
       // enable the wind effects.
       features.addFeature(MFT_DiffuseColor);
       features.addFeature(MFT_ToneMap);
-      mShapeInstance->cloneMaterialList(&features);
+
+      if (!mShapeInstance->cloneMaterialList(&features))
+         mShapeInstance->initMaterialList(&features);
    }
 
    if( isGhost() )
@@ -650,10 +655,10 @@ void TSStatic::prepRenderImage( SceneRenderState* state )
    rdata.setAccuTex(mAccuTex);
 
    //Various arbitrary shader render bits to add
-   if (mLightmap.isValid())
+   if (mLightmapTex.isValid())
    {
       CustomShaderBindingData strudelCSB;
-      strudelCSB.setTexture2D(StringTable->insert("toneMap"), mLightmap);
+      strudelCSB.setTexture2D(StringTable->insert("toneMap"), mLightmapTex);
       //strudelCSB.setFloat4(StringTable->insert("overrideColor"), mOverrideColor);
 
       rdata.addCustomShaderBinding(strudelCSB);
@@ -887,7 +892,7 @@ void TSStatic::unpackUpdate(NetConnection *con, BitStream *stream)
 
       //Set up te lightmaps if we have them
       if (mLightmapTexName.isNotEmpty())
-         mLightmap.set(mLightmapTexName, &GFXStaticTextureSRGBProfile, "TSStatic::mLightmap");
+         mLightmapTex.set(mLightmapTexName, &GFXStaticTextureSRGBProfile, "TSStatic::mLightmap");
    }
 
    if (stream->readFlag()) // AdvancedStaticOptionsMask
@@ -1265,7 +1270,7 @@ void TSStatic::bakeLightmap(U32 raycount)
 
    U32 dim = 1024;
 
-   GBitmap * bitmap = new GBitmap(dim, dim, false, GFXFormatR8G8B8A8);
+   mLightMap = new GBitmap(dim, dim, false, GFXFormatR8G8B8A8);
    /*U8 * bits = bitmap->getWritableBits();
    dMemset(bits, 0, dim*dim * 4);
    S32 center = dim >> 1;
@@ -1281,9 +1286,9 @@ void TSStatic::bakeLightmap(U32 raycount)
       }
    }*/
 
-   bitmap->fill(ColorI::BLACK);
+   //mLightMap->fill(ColorI(128,128,128,1));
 
-   for (U32 i = 0; i < raycount; i++)
+   /*for (U32 i = 0; i < raycount; i++)
    {
       RayInfo ri;
       ri.generateTexCoord = true;
@@ -1298,18 +1303,18 @@ void TSStatic::bakeLightmap(U32 raycount)
          //GBitmap* texBit = tex.getBitmap();
          //LinearColorF sampl = texBit->sampleTexel(ri.texCoord.x, ri.texCoord.y);
 
-         LinearColorF sampl = LinearColorF::RED;
+         LinearColorF sampl = LinearColorF::WHITE;
 
-         U32 uvWidth = (ri.texCoord.x * bitmap->getWidth());
-         U32 uvHeight = (ri.texCoord.y * bitmap->getHeight());
+         U32 uvWidth = (ri.texCoord.x * mLightMap->getWidth());
+         U32 uvHeight = (ri.texCoord.y * mLightMap->getHeight());
          
-         bitmap->setColor(uvWidth, uvHeight, sampl.toColorI());
+         mLightMap->setColor(uvWidth, uvHeight, sampl.toColorI());
       }
-   }
+   }*/
 
-   //bitmap->fill(ColorI::BLUE);
+   mLightMap->fill(ColorI::BLUE);
 
-   mLightmap.set(bitmap, &GFXStaticTextureSRGBProfile, true, "BlobShadow");
+   mLightmapTex.set(mLightMap, &GFXStaticTextureSRGBProfile, false, "Lightmap");
 }
 
 //------------------------------------------------------------------------

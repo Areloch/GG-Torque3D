@@ -483,6 +483,17 @@ void ProcessedShaderMaterial::_determineFeatures(  U32 stageNum,
                mMaterial->mDiffuse[stageNum] != LinearColorF::WHITE )
       fd.features.addFeature( MFT_DiffuseColor );
 
+   if (mMaterial->getName() == StringTable->insert("LMA_chapel_int_chapel_Module_Common_LMA_chapel_int_Material1"))
+   {
+      //fd.features.addFeature(MFT_ToneMap);
+
+      Con::printf("Determined features for LMA_chapel_int_chapel_Module_Common_LMA_chapel_int_Material1");
+      for (U32 i = 0; i < fd.features.getCount(); i++)
+      {
+         Con::printf("  " + fd.features.getAt(i).getName());
+      }
+   }
+
    // If lightmaps or tonemaps are enabled or we 
    // don't have a second UV set then we cannot 
    // use the overlay texture.
@@ -496,8 +507,10 @@ void ProcessedShaderMaterial::_determineFeatures(  U32 stageNum,
       fd.features.removeFeature( MFT_LightMap );
 
    // Don't allow tonemaps if we don't have a second UV set
-   if ( mVertexFormat->getTexCoordCount() < 2 )
-      fd.features.removeFeature( MFT_ToneMap );
+   if (mVertexFormat->getTexCoordCount() < 2)
+   {
+      fd.features.removeFeature(MFT_ToneMap);
+   }
 
    // Always add the HDR output feature.  
    //

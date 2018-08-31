@@ -433,18 +433,6 @@ void RenderDeferredMgr::render(SceneRenderState *state)
                mat->setNodeTransforms(passRI->mNodeTransforms, passRI->mNodeTransformCount);
             }
 
-            //-JR
-            //push along any overriden fields that are instance-specific as well
-            if (passRI->mCustomShaderData.size() > 0)
-            {
-               if (state->isDiffusePass())
-               {
-                  bool herp = true;
-               }
-
-               mat->setCustomShaderData(passRI->mCustomShaderData);
-            }
-
             // If we're instanced then don't render yet.
             if (mat->isInstanced())
             {
@@ -460,6 +448,14 @@ void RenderDeferredMgr::render(SceneRenderState *state)
             }
 
             bool dirty = false;
+
+            //-JR
+            //push along any overriden fields that are instance-specific as well
+            if (passRI->mCustomShaderData.size() > 0)
+            {
+               mat->setCustomShaderData(passRI->mCustomShaderData);
+               dirty = true;
+            }
 
             // set the lightmaps if different
             if (passRI->lightmap && passRI->lightmap != lastLM)

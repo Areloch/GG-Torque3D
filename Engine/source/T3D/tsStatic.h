@@ -126,7 +126,10 @@ protected:
    bool mInvertAlphaFade;
 
    String mLightmapTexName;
-   GFXTexHandle mLightmap;
+   GFXTexHandle mLightmapTex;
+   GBitmap* mLightMap;
+
+   U32 mLightmapResolution;
 
    bool onAdd();
    void onRemove();
@@ -243,6 +246,14 @@ public:
 
    void bakeLightmap(U32 raycount);
 
+   GFXTexHandle getLightmapTex() {
+      return mLightmapTex;
+   }
+
+   void setLightMap(GBitmap* lm) { mLightMap = lm; }
+   GBitmap* getLightMap() { return mLightMap; }
+
+   U32 getLightmapRes() { return mLightmapResolution; }
 };
 
 typedef TSStatic::MeshType TSMeshType;

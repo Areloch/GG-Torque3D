@@ -336,7 +336,7 @@ protected:
    /// Call this to own the material list -- i.e., we'll make a copy of the 
    /// currently set material list and be responsible for deleting it.  You
    /// can pass an optional feature set for initializing the cloned materials.
-   void cloneMaterialList( const FeatureSet *features = NULL ); 
+   bool cloneMaterialList( const FeatureSet *features = NULL ); 
 
    /// Initializes or re-initializes the material list with 
    /// an optional feature set.
