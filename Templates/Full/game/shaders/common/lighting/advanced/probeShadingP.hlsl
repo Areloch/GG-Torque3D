@@ -25,9 +25,9 @@
 #include "shaders/common/torque.hlsl"
 
 TORQUE_UNIFORM_SAMPLER2D(colorBufferTex,0);
-TORQUE_UNIFORM_SAMPLER2D(diffuseLightingBuffer,1);
+TORQUE_UNIFORM_SAMPLER2D(directLightingBuffer,1);
 TORQUE_UNIFORM_SAMPLER2D(matInfoTex,2);
-TORQUE_UNIFORM_SAMPLER2D(specularLightingBuffer,3);
+TORQUE_UNIFORM_SAMPLER2D(indirectLightingBuffer,3);
 TORQUE_UNIFORM_SAMPLER2D(deferredTex,4);
 
 uniform float radius;
@@ -47,7 +47,7 @@ float4 main( PFXVertToPix IN) : TORQUE_TARGET0
       return float4(colorBuffer, 1.0);
    }
 	  
-   float4 diffuseLighting = TORQUE_TEX2D( diffuseLightingBuffer, IN.uv0 ); //shadowmap*specular
+   float4 diffuseLighting = TORQUE_TEX2D( directLightingBuffer, IN.uv0 ); //shadowmap*specular
    colorBuffer *= diffuseLighting.rgb;
    float2 relUV = IN.uv0*targetSize/captureRez;
    

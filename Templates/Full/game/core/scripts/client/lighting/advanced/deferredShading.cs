@@ -47,9 +47,9 @@ new ShaderData( AL_DeferredShader )
    OGLPixelShaderFile  = "shaders/common/lighting/advanced/gl/deferredShadingP.glsl";
 
    samplerNames[0] = "colorBufferTex";
-   samplerNames[1] = "diffuseLightingBuffer";
+   samplerNames[1] = "directLightingBuffer";
    samplerNames[2] = "matInfoTex";
-   samplerNames[3] = "specularLightingBuffer";
+   samplerNames[3] = "indirectLightingBuffer";
    samplerNames[4] = "deferredTex";
    pixVersion = 2.0;
 };
@@ -81,9 +81,9 @@ new ShaderData( AL_ProbeShader )
    OGLPixelShaderFile  = "shaders/common/lighting/advanced/gl/probeShadingP.glsl";
 
    samplerNames[0] = "colorBufferTex";
-   samplerNames[1] = "diffuseLightingBuffer";
+   samplerNames[1] = "directLightingBuffer";
    samplerNames[2] = "matInfoTex";
-   samplerNames[3] = "specularLightingBuffer";
+   samplerNames[3] = "indirectLightingBuffer";
    samplerNames[4] = "deferredTex";
    pixVersion = 2.0;
 };
@@ -96,9 +96,9 @@ singleton PostEffect( AL_PreCapture )
    shader = AL_ProbeShader;
    stateBlock = AL_DeferredCaptureState;
    texture[0] = "#color";
-   texture[1] = "#diffuseLighting";
+   texture[1] = "#directLighting";
    texture[2] = "#matinfo";
-   texture[3] = "#specularLighting";
+   texture[3] = "#indirectLighting";
    texture[4] = "#deferred";
    target = "$backBuffer";
    renderPriority = 10000;
@@ -112,9 +112,9 @@ singleton PostEffect( AL_DeferredShading )
    shader = AL_DeferredShader;
    stateBlock = AL_DeferredShadingState;
    texture[0] = "#color";
-   texture[1] = "#diffuseLighting";
+   texture[1] = "#directLighting";
    texture[2] = "#matinfo";
-   texture[3] = "#specularLighting";
+   texture[3] = "#indirectLighting";
    texture[4] = "#deferred";
    
    target = "$backBuffer";
@@ -243,7 +243,7 @@ new ShaderData( AL_LightMapShader )
    OGLVertexShaderFile = "shaders/common/postFx/gl/postFxV.glsl";
    OGLPixelShaderFile  = "shaders/common/lighting/advanced/gl/dbgLightMapVisualizeP.glsl";
 
-   samplerNames[0] = "specularLightingBuffer";
+   samplerNames[0] = "indirectLightingBuffer";
    pixVersion = 2.0;
 };
 
@@ -251,7 +251,7 @@ singleton PostEffect( AL_LightMapVisualize )
 {   
    shader = AL_LightMapShader;
    stateBlock = AL_DefaultVisualizeState;
-   texture[0] = "#specularLighting";
+   texture[0] = "#indirectLighting";
    target = "$backBuffer";
    renderPriority = 9999;
 };

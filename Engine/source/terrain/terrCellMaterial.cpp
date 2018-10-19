@@ -882,7 +882,7 @@ bool TerrainCellMaterial::setupPass(   const SceneRenderState *state,
          pass.lightParamsConst->isValid() )
    {
       if ( !mLightInfoTarget )
-         mLightInfoTarget = NamedTexTarget::find( "diffuseLighting" );
+         mLightInfoTarget = NamedTexTarget::find( "directLighting" );
 
       GFXTextureObject *texObject = mLightInfoTarget->getTexture();
       

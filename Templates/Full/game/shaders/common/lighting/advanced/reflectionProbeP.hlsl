@@ -96,12 +96,6 @@ float3 iblBoxSpecular(float3 normal,
     return radiance;
 }
 
-struct PS_OUTPUT
-{
-    float4 diffuse: TORQUE_TARGET0;
-    float4 spec: TORQUE_TARGET1;
-};
-
 float defineSphereSpaceInfluence(float3 centroidPosVS, float rad, float2 atten, float3 surfPosVS, float3 norm)
 {
     // Build light vec, get length, clip pixel if needed
@@ -141,6 +135,26 @@ float defineBoxSpaceInfluence(float3 surfPosWS, float3 probePos, float3 boxMin, 
     return max(localDir.x, max(localDir.y, localDir.z));
 }
 
+/*float defineBoxSpaceInfluence(float3 surfPosWS, float3 probePos, float rad, float2 atten) //atten currently unused
+{
+    float3 boxMin = probePos-(float3(0.5,0.5,0.5)*rad);
+	float3 boxMax = probePos+(float3(0.5,0.5,0.5)*rad);
+   
+    //rotated boxes
+	float3 surfPosLS = surfPosWS;//mul( worldToObj, float4(surfPosWS,1.0)).xyz;
+   
+	//Try to clip anything that falls outside our box as well
+	//was surfPosWS
+	if(surfPosLS.x > boxMax.x || surfPosLS.y > boxMax.y || surfPosLS.z > boxMax.z ||
+		surfPosLS.x < boxMin.x || surfPosLS.y < boxMin.y || surfPosLS.z < boxMin.z)
+		return -1;
+		
+	float blendVal = 1;
+	//float3 atten = min(boxMax-surfPosWS,surfPosWS-boxMin);
+	//blendVal = min(min(atten.x,atten.y),atten.z);
+	return blendVal;
+}*/
+
 float defineDepthInfluence(float3 probePosWS, float3 surfPosWS, TORQUE_SAMPLERCUBE(radianceCube))
 {
 	//TODO properly: filter out pixels projected uppon by probes behind walls by looking up the depth stored in the probes cubemap alpha
@@ -153,10 +167,8 @@ float defineDepthInfluence(float3 probePosWS, float3 surfPosWS, TORQUE_SAMPLERCU
 	return depthRef-dist;
 }
 
-PS_OUTPUT main( ConvexConnectP IN )
+float4 main( ConvexConnectP IN ) : TORQUE_TARGET0
 { 
-    PS_OUTPUT Output = (PS_OUTPUT)0;
-
     // Compute scene UV
     float3 ssPos = IN.ssPos.xyz / IN.ssPos.w; 
 
@@ -207,11 +219,11 @@ PS_OUTPUT main( ConvexConnectP IN )
 	//flip me on to have probes filter by depth
 	//clip(defineDepthInfluence(probeWSPos, worldPos, TORQUE_SAMPLERCUBE_MAKEARG(cubeMap)));
 		
-	
 	//render into the bound space defined above
 	float3 surfToEye = normalize(worldPos.xyz-eyePosWorld.xyz);
-	Output.diffuse = float4(iblBoxDiffuse(wsNormal, worldPos, TORQUE_SAMPLERCUBE_MAKEARG(irradianceCubemap), probeWSPos, bbMin, bbMax), blendVal);
-	Output.spec = float4(iblBoxSpecular(wsNormal, worldPos, 1.0 - matInfo.b, surfToEye, TORQUE_SAMPLER2D_MAKEARG(BRDFTexture), TORQUE_SAMPLERCUBE_MAKEARG(cubeMap), probeWSPos, bbMin, bbMax), blendVal);
+	float4 diffuse = float4(iblBoxDiffuse(wsNormal, worldPos, TORQUE_SAMPLERCUBE_MAKEARG(irradianceCubemap), probeWSPos, bbMin, bbMax), blendVal);
+	float4 spec = float4(iblBoxSpecular(wsNormal, worldPos, 1.0 - matInfo.b, surfToEye, TORQUE_SAMPLER2D_MAKEARG(BRDFTexture), TORQUE_SAMPLERCUBE_MAKEARG(cubeMap), probeWSPos, bbMin, bbMax), blendVal);
 
-	return Output;
+    float4 final = diffuse * spec;
+	return final;
 }

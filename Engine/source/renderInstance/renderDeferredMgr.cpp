@@ -56,7 +56,7 @@ const String RenderDeferredMgr::BufferName("deferred");
 const RenderInstType RenderDeferredMgr::RIT_Deferred("Deferred");
 const String RenderDeferredMgr::ColorBufferName("color");
 const String RenderDeferredMgr::MatInfoBufferName("matinfo");
-const String RenderDeferredMgr::LightMapBufferName("diffuseLighting");
+const String RenderDeferredMgr::LightMapBufferName("indirectLighting");
 
 IMPLEMENT_CONOBJECT(RenderDeferredMgr);
 
@@ -187,10 +187,10 @@ bool RenderDeferredMgr::_updateTargets()
          mTargetChain[i]->attachTexture(GFXTextureTarget::Color2, mMatInfoTarget.getTexture());
    }
 
-   if (mLightMapTex.getFormat() != GFXFormatR16G16B16A16F || mLightMapTex.getWidthHeight() != mTargetSize || GFX->recentlyReset())
+   if (mLightMapTex.getFormat() != mTargetFormat || mLightMapTex.getWidthHeight() != mTargetSize || GFX->recentlyReset())
    {
       mLightMapTarget.release();
-      mLightMapTex.set(mTargetSize.x, mTargetSize.y, GFXFormatR16G16B16A16F,
+      mLightMapTex.set(mTargetSize.x, mTargetSize.y, mTargetFormat,
          &GFXRenderTargetProfile, avar("%s() - (line %d)", __FUNCTION__, __LINE__),
          1, GFXTextureManager::AA_MATCH_BACKBUFFER);
       mLightMapTarget.setTexture(mLightMapTex);
