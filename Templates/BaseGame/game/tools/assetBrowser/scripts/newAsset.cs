@@ -71,7 +71,7 @@ function NewAssetModuleBtn::onClick(%this)
    AssetBrowser_addModuleWindow.selectWindow();
 }
 
-function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
+function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName, %callback)
 {
    Canvas.pushDialog(AssetBrowser_newAsset);
    
@@ -80,6 +80,8 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
    NewAssetPropertiesInspector.clear();
    
    NewAssetModuleList.setText(%moduleName);
+   
+   AssetBrowser_newAsset.callbackFunc = %callback;
    
    //get rid of the old one if we had one.
    if(isObject(%this.newAssetSettings))
@@ -96,7 +98,7 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
    NewAssetPropertiesInspector.addField("assetName", "New Asset Name", "String",  "Name of the new asset", "New" @ %shortAssetTypeName, "", %this.newAssetSettings);
    //NewAssetPropertiesInspector.addField("AssetType", "New Asset Type", "List",  "Type of the new asset", %assetType, "Component,Image,Material,Shape,Sound,State Machine", %newAssetSettings);
    
-   NewAssetPropertiesInspector.addField("friendlyName", "Friendly Name", "String",  "Human-readable name of new asset", "", "", %this.newAssetSettings);
+   //NewAssetPropertiesInspector.addField("friendlyName", "Friendly Name", "String",  "Human-readable name of new asset", "", "", %this.newAssetSettings);
       
    NewAssetPropertiesInspector.addField("description", "Description", "Command",  "Description of the new asset", "", "", %this.newAssetSettings);   
    NewAssetPropertiesInspector.endGroup();
@@ -112,7 +114,8 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
    else if(%assetType $= "LevelAsset")
    {
       NewAssetPropertiesInspector.startGroup("Level");
-      NewAssetPropertiesInspector.addField("levelPreviewImage", "LevePreviewImage", "Image",  "Preview Image for the level", "", "", %this.newAssetSettings);
+      NewAssetPropertiesInspector.addField("levelName", "Level Name", "String",  "Human-readable name of new level", "", "", %this.newAssetSettings);
+      NewAssetPropertiesInspector.addField("levelPreviewImage", "Level Preview Image", "Image",  "Preview Image for the level", "", "", %this.newAssetSettings);
       NewAssetPropertiesInspector.endGroup();
    }
    else if(%assetType $= "ScriptAsset")
@@ -227,6 +230,12 @@ function CreateNewAsset()
 	AssetDatabase.addDeclaredAsset(%moduleDef, %assetFilePath);
 	
 	AssetBrowser.loadFilters();
+	
+	if(AssetBrowser_newAsset.callbackFunc !$= "")
+	{
+      %callbackCommand = "" @ AssetBrowser_newAsset.callbackFunc @ "(\"" @ %moduleName @ ":" @ %assetName @ "\");";
+      eval(%callbackCommand);
+	}
 }
 
 function createNewComponentAsset()
@@ -492,7 +501,8 @@ function createNewLevelAsset()
       AssetName = %assetName;
       versionId = 1;
       LevelFile = %levelPath;
-      LevelDescription = AssetBrowser.newAssetSettings.levelDescription;
+      LevelName = AssetBrowser.newAssetSettings.levelName;
+      AssetDescription = AssetBrowser.newAssetSettings.description;
       PreviewImage = AssetBrowser.newAssetSettings.levelPreviewImage;
    };
    

@@ -243,8 +243,8 @@ function ChooseLevelDlg::addLevelAsset( %this, %levelAsset )
       %LevelInfoObject.delete();
    }*/
    
-   %levelName = %levelAsset.friendlyName;
-   %levelDesc = %levelAsset.description;
+   %levelName = %levelAsset.levelName;
+   %levelDesc = %levelAsset.assetDescription;
    %levelPreview = %levelAsset.levelPreviewImage;
    
    CL_levelList.addRow( CL_levelList.rowCount(), %levelName TAB %file TAB %levelDesc TAB %levelPreview );

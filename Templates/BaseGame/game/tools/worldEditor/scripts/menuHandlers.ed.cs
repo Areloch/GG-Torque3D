@@ -237,7 +237,7 @@ function EditorNewLevel( %file )
 function EditorSaveMissionMenu()
 {
    if(EditorGui.saveAs)
-      EditorSaveMissionAs();
+      AssetBrowser.setupCreateNewAsset("LevelAsset", AssetBrowser.selectedModule, "EditorSaveMissionAs");
    else
       EditorSaveMission();
 }
@@ -299,34 +299,25 @@ function EditorSaveMission()
    return true;
 }
 
-function EditorSaveMissionAs( %missionName )
+function EditorSaveMissionAs( %levelAsset )
 {
    // If we didn't get passed a new mission name then
    // prompt the user for one.
-   if ( %missionName $= "" )
+   if ( %levelAsset $= "" )
    {
-      %dlg = new SaveFileDialog()
-      {
-         Filters        = $Pref::WorldEditor::FileSpec;
-         DefaultPath    = EditorSettings.value("LevelInformation/levelsDirectory");
-         ChangePath     = false;
-         OverwritePrompt   = true;
-      };
-
-      %ret = %dlg.Execute();
-      if(%ret)
-      {
-         // Immediately override/set the levelsDirectory
-         EditorSettings.setValue( "LevelInformation/levelsDirectory", collapseFilename(filePath( %dlg.FileName )) );
-         
-         %missionName = %dlg.FileName;
-      }
-      
-      %dlg.delete();
-      
-      if(! %ret)
-         return;
+      return;
    }
+   
+   %levelAssetDef = AssetDatabase.acquireAsset(%levelAsset);
+   %assetType = AssetDatabase.getAssetType(%levelAsset);
+   
+   if(%assetType !$= "LevelAsset")
+   {
+      error("Somehow tried to save a non-level asset as a level? " @ %levelAsset);
+      return;
+   }
+   
+   %missionName = %levelAssetDef.LevelFile;
                
    if( fileExt( %missionName ) !$= ".mis" )
       %missionName = %missionName @ ".mis";

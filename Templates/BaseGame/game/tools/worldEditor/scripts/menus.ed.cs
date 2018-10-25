@@ -132,7 +132,7 @@ function EditorGui::buildMenus(%this)
    %fileMenu.appendItem("New Level" TAB "" TAB "schedule( 1, 0, \"EditorNewLevel\" );");
    %fileMenu.appendItem("Open Level..." TAB %cmdCtrl SPC "O" TAB "schedule( 1, 0, \"EditorOpenMission\" );");
    %fileMenu.appendItem("Save Level" TAB %cmdCtrl SPC "S" TAB "EditorSaveMissionMenu();");
-   %fileMenu.appendItem("Save Level As..." TAB "" TAB "EditorSaveMissionAs();");
+   %fileMenu.appendItem("Save Level As..." TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"LevelAsset\", AssetBrowser.selectedModule, \"EditorSaveMissionAs\");");
    %fileMenu.appendItem("-");
 
    if( $platform $= "windows" )
