@@ -118,7 +118,7 @@ void LevelAsset::initPersistFields()
 
    addField("LevelFile", TypeString, Offset(mLevelFile, LevelAsset), "Path to the actual level file.");
    addField("LevelName", TypeString, Offset(mLevelName, LevelAsset), "Human-friendly name for the level.");
-   addField("PreviewImage", TypeString, Offset(mPreviewImage, LevelAsset), "Path to the image used for selection preview.");
+   addField("PreviewImage", TypeImageFilename, Offset(mPreviewImage, LevelAsset), "Path to the image used for selection preview.");
 }
 
 //------------------------------------------------------------------------------

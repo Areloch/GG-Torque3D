@@ -114,13 +114,7 @@ function ChooseLevelDlg::onWake( %this )
 
       // Test against all of the different image formats
       // This should probably be moved into an engine function
-      if (isFile(%levelPreview @ ".png") ||
-          isFile(%levelPreview @ ".jpg") ||
-          isFile(%levelPreview @ ".bmp") ||
-          isFile(%levelPreview @ ".gif") ||
-          isFile(%levelPreview @ ".jng") ||
-          isFile(%levelPreview @ ".mng") ||
-          isFile(%levelPreview @ ".tga"))
+      if (isFile(%levelPreview))
       {
          %preview.bitmap = %levelPreview;
       }
@@ -245,7 +239,7 @@ function ChooseLevelDlg::addLevelAsset( %this, %levelAsset )
    
    %levelName = %levelAsset.levelName;
    %levelDesc = %levelAsset.assetDescription;
-   %levelPreview = %levelAsset.levelPreviewImage;
+   %levelPreview = %levelAsset.PreviewImage;
    
    CL_levelList.addRow( CL_levelList.rowCount(), %levelName TAB %file TAB %levelDesc TAB %levelPreview );
 }

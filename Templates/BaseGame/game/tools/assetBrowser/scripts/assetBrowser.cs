@@ -267,7 +267,12 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
       }
       else if(%assetType $= "LevelAsset")
       {
-         %previewImage = "tools/assetBrowser/art/levelIcon";
+         %levelPreviewImage = %assetDesc.PreviewImage;
+         
+         if(isFile(%levelPreviewImage))
+            %previewImage = %levelPreviewImage;
+         else
+            %previewImage = "tools/assetBrowser/art/levelIcon";
       }
       else if(%assetType $= "PostEffectAsset")
       {

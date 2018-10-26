@@ -406,7 +406,7 @@ function EditorSaveMissionAs( %levelAsset )
    %savedTerrNames.delete();
 }
 
-function EditorOpenMission(%filename)
+function EditorOpenMission(%levelAsset)
 {
    if( EditorIsDirty())
    {
@@ -419,9 +419,12 @@ function EditorOpenMission(%filename)
       }
    }
 
-   if(%filename $= "")
+   if(%levelAsset $= "")
    {
-      %dlg = new OpenFileDialog()
+      AssetBrowser.showDialog("LevelAsset", "EditorOpenMission", "", "", "");
+      return;
+      
+      /*%dlg = new OpenFileDialog()
       {
          Filters        = $Pref::WorldEditor::FileSpec;
          DefaultPath    = EditorSettings.value("LevelInformation/levelsDirectory");
@@ -440,7 +443,19 @@ function EditorOpenMission(%filename)
       %dlg.delete();
       
       if(! %ret)
+         return;*/
+   }
+   else
+   {
+      //parse it out if its
+      %assetDef = AssetDatabase.acquireAsset(%levelAsset);
+      %filename = %assetDef.levelFile;
+      
+      if(%filename $= "")
+      {
+         error("Selected Level Asset doesn't have a valid levelFile path!");
          return;
+      }
    }
       
    // close the current editor, it will get cleaned up by MissionCleanup
