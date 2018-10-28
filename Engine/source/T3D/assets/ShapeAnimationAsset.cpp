@@ -92,7 +92,7 @@ ConsoleSetType(TypeShapeAnimationAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-ShapeAnimationAsset::ShapeAnimationAsset() : 
+ShapeAnimationAsset::ShapeAnimationAsset() : AssetBase(),
    mIsEmbedded(false), mIsCyclical(true), mIsBlend(false), mBlendFrame(0), mStartFrame(0), mEndFrame(-1), mPadRotation(true), mPadTransforms(false)
 {
    mFileName = StringTable->EmptyString();
@@ -105,10 +105,6 @@ ShapeAnimationAsset::ShapeAnimationAsset() :
 
 ShapeAnimationAsset::~ShapeAnimationAsset()
 {
-   // If the asset manager does not own the asset then we own the
-   // asset definition so delete it.
-   if (!getOwned())
-      delete mpAssetDefinition;
 }
 
 //-----------------------------------------------------------------------------

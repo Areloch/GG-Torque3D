@@ -38,6 +38,7 @@ function initializeAssetBrowser()
    exec("./guis/assetImport.gui");
    exec("./guis/selectModule.gui");
    exec("./guis/editModule.gui");
+   exec("./guis/importTemplateModules.gui");
 
    exec("./scripts/assetBrowser.cs");
    exec("./scripts/popupMenus.cs");

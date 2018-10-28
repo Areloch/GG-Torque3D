@@ -265,8 +265,17 @@ function fastLoadWorldEdit(%val)
       if( !$missionRunning )
       {
          // Flag saying, when level is chosen, launch it with the editor open.
-         ChooseLevelDlg.launchInEditor = true;
-         Canvas.pushDialog( ChooseLevelDlg );         
+         //ChooseLevelDlg.launchInEditor = true;
+         //Canvas.pushDialog( ChooseLevelDlg );   
+         
+         canvas.pushDialog( EditorLoadingGui );
+         canvas.repaint();
+         
+         activatePackage( "BootEditor" );
+         //ChooseLevelDlg.launchInEditor = false; 
+         StartGame("tools/levels/BlankRoom.mis", "SinglePlayer"); 
+         
+         canvas.popDialog(EditorLoadingGui);     
       }
       else
       {

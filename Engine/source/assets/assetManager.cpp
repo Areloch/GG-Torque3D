@@ -228,7 +228,7 @@ bool AssetManager::loadModuleAutoLoadAssets(ModuleDefinition* pModuleDefinition)
    AssertFatal(pModuleDefinition != NULL, "Cannot auto load assets using a NULL module definition");
 
    // Does the module have any assets associated with it?
-   if (pModuleDefinition->getModuleAssets().empty())
+   if (pModuleDefinition->getModuleAssets().empty() && mEchoInfo)
    {
       // Yes, so warn.
       Con::warnf("Asset Manager: Cannot auto load assets to module '%s' as it has no existing assets.", pModuleDefinition->getSignature());

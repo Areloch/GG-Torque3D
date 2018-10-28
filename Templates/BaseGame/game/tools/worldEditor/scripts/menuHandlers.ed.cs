@@ -303,7 +303,7 @@ function EditorSaveMissionAs( %missionName )
 {
    // If we didn't get passed a new mission name then
    // prompt the user for one.
-   if ( %missionName $= "" )
+   /*if ( %missionName $= "" )
    {
       %dlg = new SaveFileDialog()
       {
@@ -329,7 +329,11 @@ function EditorSaveMissionAs( %missionName )
    }
                
    if( fileExt( %missionName ) !$= ".mis" )
-      %missionName = %missionName @ ".mis";
+      %missionName = %missionName @ ".mis";*/
+      
+   //Make sure we have a selected module so we can create our module
+   Canvas.pushDialog(AssetBrowser_selectModule);
+   return;
 
    EWorldEditor.isDirty = true;
    %saveMissionFile = $Server::MissionFile;

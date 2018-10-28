@@ -20,6 +20,8 @@
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
 
+#pragma once
+
 #ifndef COMPONENT_H
 #define COMPONENT_H
 

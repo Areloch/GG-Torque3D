@@ -292,6 +292,7 @@ protected:
    bool          mUseOverrideTexture;
 
    U32 debrisRefCount;
+public:
 
    // the threads...
    Vector<TSThread*> mThreadList;

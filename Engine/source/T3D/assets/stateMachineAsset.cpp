@@ -90,7 +90,7 @@ ConsoleSetType(TypeStateMachineAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-StateMachineAsset::StateMachineAsset()
+StateMachineAsset::StateMachineAsset() : AssetBase()
 {
    mStateMachineFileName = StringTable->EmptyString();
 }

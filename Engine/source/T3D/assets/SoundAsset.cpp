@@ -90,7 +90,7 @@ ConsoleSetType(TypeSoundAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-SoundAsset::SoundAsset()
+SoundAsset::SoundAsset() : AssetBase()
 {
    mSoundFilePath = StringTable->EmptyString();
 

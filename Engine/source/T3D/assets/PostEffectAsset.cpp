@@ -90,7 +90,7 @@ ConsoleSetType(TypePostEffectAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-PostEffectAsset::PostEffectAsset()
+PostEffectAsset::PostEffectAsset() : AssetBase()
 {
    mScriptFile = StringTable->EmptyString();
 }

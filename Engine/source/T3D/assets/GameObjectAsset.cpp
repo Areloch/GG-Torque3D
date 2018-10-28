@@ -90,7 +90,7 @@ ConsoleSetType(TypeGameObjectAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-GameObjectAsset::GameObjectAsset()
+GameObjectAsset::GameObjectAsset() : AssetBase()
 {
    mGameObjectName = StringTable->lookup("");
    mScriptFilePath = StringTable->lookup("");

@@ -34,7 +34,6 @@ function AssetBrowser::addToolbarButton(%this)
 //
 function AssetBrowser::onAdd(%this)
 {
-   %this.isReImportingAsset = false;
 }
 
 function AssetBrowser::onWake(%this)
@@ -42,6 +41,52 @@ function AssetBrowser::onWake(%this)
    %this.importAssetNewListArray = new ArrayObject();
    %this.importAssetUnprocessedListArray = new ArrayObject();
    %this.importAssetFinalListArray = new ArrayObject();
+   
+   %this.isReImportingAsset = false;
+   %this.coreModulesFilter = false;
+   %this.treeFilterMode = "list";
+   
+   //First, build our our list of active modules
+   %modulesList = ModuleDatabase.findModules(true);
+   
+   %nonDefaultModuleCount = 0;
+   
+   for(%i=0; %i < getWordCount(%modulesList); %i++)
+   {
+      %moduleName = getWord(%modulesList, %i).ModuleId;
+      
+      %moduleGroup = getWord(%modulesList, %i).Group;
+      if(%moduleGroup $= "Core" && !%this.coreModulesFilter)
+         continue;
+         
+      %nonDefaultModuleCount++;
+   }
+   
+   if(%nonDefaultModuleCount == 0)
+   {
+      MessageBoxYesNo( "Import Template Content?",
+         "You have no modules or content. Do you want to import a module from the template content?",
+         "AssetBrowser.ImportTemplateModules();", "" );
+   }
+}
+
+//Filters
+function AssetBrowser::viewCoreModulesFilter(%this)
+{
+   %this.coreModulesFilter = !%this.coreModulesFilter;
+   AssetBrowser.loadFilters();
+}
+
+function AssetBrowser::viewListFilter(%this)
+{
+   %this.treeFilterMode = "list";
+   AssetBrowser.loadFilters();
+}
+
+function AssetBrowser::viewTagsFilter(%this)
+{
+   %this.treeFilterMode = "tags";
+   AssetBrowser.loadFilters();
 }
 
 //Drag-Drop functionality
@@ -417,61 +462,74 @@ function AssetBrowser::loadFilters( %this )
 
    AssetBrowser-->filterTree.insertItem(0, "Assets");
    
-   //First, build our our list of active modules
-   %modulesList = ModuleDatabase.findModules(true);
+   AssetPreviewArray.empty();
    
-   for(%i=0; %i < getWordCount(%modulesList); %i++)
+   if(%this.treeFilterMode $= "list")
    {
-      %moduleName = getWord(%modulesList, %i).ModuleId;
+      //First, build our our list of active modules
+      %modulesList = ModuleDatabase.findModules(true);
       
-      %moduleItemId = AssetBrowser-->filterTree.findItemByName(%moduleName);
-		
-		if(%moduleItemId == 0)
-		   %moduleItemId = AssetBrowser-->filterTree.insertItem(1, %moduleName, "", "", 1, 1); 
-   }
+      for(%i=0; %i < getWordCount(%modulesList); %i++)
+      {
+         %moduleName = getWord(%modulesList, %i).ModuleId;
+         
+         %moduleGroup = getWord(%modulesList, %i).Group;
+         if(%moduleGroup $= "Core" && !%this.coreModulesFilter)
+            continue;
+         
+         %moduleItemId = AssetBrowser-->filterTree.findItemByName(%moduleName);
+         
+         if(%moduleItemId == 0)
+            %moduleItemId = AssetBrowser-->filterTree.insertItem(1, %moduleName, "", "", 1, 1); 
+      }
 
-   //Next, go through and list the asset categories
-   %assetQuery = new AssetQuery();
-   %numAssetsFound = AssetDatabase.findAllAssets(%assetQuery);
-   
-   for( %i=0; %i < %numAssetsFound; %i++)
+      //Next, go through and list the asset categories
+      %assetQuery = new AssetQuery();
+      %numAssetsFound = AssetDatabase.findAllAssets(%assetQuery);
+      
+      for( %i=0; %i < %numAssetsFound; %i++)
+      {
+          %assetId = %assetQuery.getAsset(%i);
+          
+         //first, get the asset's module, as our major categories
+         %module = AssetDatabase.getAssetModule(%assetId);
+         
+         %moduleName = %module.moduleId;
+         
+         %moduleGroup = %module.Group;
+         if(%moduleGroup $= "Core" && !%this.coreModulesFilter)
+            continue;
+         
+         //first, see if this module Module is listed already
+         %moduleItemId = AssetBrowser-->filterTree.findItemByName(%moduleName);
+         
+         if(%moduleItemId == 0)
+            %moduleItemId = AssetBrowser-->filterTree.insertItem(1, %moduleName, "", "", 1, 1);
+            
+         %assetType = AssetDatabase.getAssetCategory(%assetId);
+         
+         if(%assetType $= "")
+         {
+            %assetType = AssetDatabase.getAssetType(%assetId);
+            if(%assetType $= "")
+               %assetType = "Misc";
+         }
+         
+         if(AssetBrowser.assetTypeFilter !$= "" && AssetBrowser.assetTypeFilter !$= %assetType)
+            continue;
+         
+         %assetTypeId = AssetBrowser-->filterTree.findChildItemByName(%moduleItemId, %assetType);
+         
+         if(%assetTypeId == 0)
+            %assetTypeId = AssetBrowser-->filterTree.insertItem(%moduleItemId, %assetType);
+      }
+
+      AssetBrowser-->filterTree.buildVisibleTree(true);
+   }
+   else if(%this.treeFilterMode $= "tags")
    {
-	    %assetId = %assetQuery.getAsset(%i);
-	    
-		//first, get the asset's module, as our major categories
-		%module = AssetDatabase.getAssetModule(%assetId);
-		
-		%moduleName = %module.moduleId;
-		
-		//These are core, native-level components, so we're not going to be messing with this module at all, skip it
-		if(%moduleName $= "CoreComponentsModule")
-		   continue;
-		
-		//first, see if this module Module is listed already
-		%moduleItemId = AssetBrowser-->filterTree.findItemByName(%moduleName);
-		
-		if(%moduleItemId == 0)
-		   %moduleItemId = AssetBrowser-->filterTree.insertItem(1, %moduleName, "", "", 1, 1);
-		   
-      %assetType = AssetDatabase.getAssetCategory(%assetId);
-		
-		if(%assetType $= "")
-		{
-		   %assetType = AssetDatabase.getAssetType(%assetId);
-		   if(%assetType $= "")
-			   %assetType = "Misc";
-		}
-		
-		if(AssetBrowser.assetTypeFilter !$= "" && AssetBrowser.assetTypeFilter !$= %assetType)
-		   continue;
-		
-		%assetTypeId = AssetBrowser-->filterTree.findChildItemByName(%moduleItemId, %assetType);
-		
-		if(%assetTypeId == 0)
-		   %assetTypeId = AssetBrowser-->filterTree.insertItem(%moduleItemId, %assetType);
+      
    }
-
-   AssetBrowser-->filterTree.buildVisibleTree(true);
    
    //special handling for selections
    if(AssetBrowser.newModuleId !$= "")
@@ -722,8 +780,34 @@ function AssetBrowser::reImportAsset(%this)
       AssetBrowser.isAssetReImport = true;
       AssetBrowser.reImportingAssetId = EditAssetPopup.assetId;
       
+      %reimportingPath = %assetDef.originalFilePath;
+      
+      //first, double-check we have an originating file. if we don't then we need to basically go out looking for it
+      if(!isFile(%assetDef.originalFilePath))
+      {
+         //if(%assetType $= "ImageAsset")
+         //   %filters = "";
+            
+         %dlg = new OpenFileDialog()
+         {
+            Filters = "(All Files (*.*)|*.*|";
+            DefaultFile = %currentFile;
+            ChangePath = false;
+            MustExist = true;
+            MultipleFiles = false;
+            forceRelativePath = false;
+         };
+            
+         if ( %dlg.Execute() )
+         {
+            %reimportingPath = %dlg.FileName;
+         }
+         
+         %dlg.delete();
+      }
+      
       AssetBrowser.onBeginDropFiles();
-      AssetBrowser.onDropFile(%assetDef.originalFilePath);
+      AssetBrowser.onDropFile(%reimportingPath);
       AssetBrowser.onEndDropFiles();
       
       %module = AssetDatabase.getAssetModule(EditAssetPopup.assetId);
@@ -909,9 +993,9 @@ function AssetBrowserFilterTree::onRightMouseDown(%this, %itemId)
             //Canvas.popDialog(AssetBrowser_newComponentAsset); 
 	         //AssetBrowser_newComponentAsset-->AssetBrowserModuleList.setText(AssetBrowser.selectedModule);
          }
-         else
+         else if(%this.getItemText(%itemId) $= "ScriptAsset")
          {
-            
+            EditAssetCategoryPopup.showPopup(Canvas);
          }
       }
    }

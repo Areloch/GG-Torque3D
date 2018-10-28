@@ -90,7 +90,7 @@ ConsoleSetType(TypeGUIAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-GUIAsset::GUIAsset()
+GUIAsset::GUIAsset() : AssetBase()
 {
    mScriptFilePath = StringTable->EmptyString();
    mGUIFilePath = StringTable->EmptyString();

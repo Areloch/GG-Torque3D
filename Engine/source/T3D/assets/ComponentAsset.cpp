@@ -90,7 +90,7 @@ ConsoleSetType(TypeComponentAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-ComponentAsset::ComponentAsset()
+ComponentAsset::ComponentAsset() : AssetBase()
 {
    mComponentName = StringTable->EmptyString();
    mComponentClass = StringTable->EmptyString();

@@ -481,7 +481,7 @@ void MeshComponent::updateMaterials()
 
 MatrixF MeshComponent::getNodeTransform(S32 nodeIdx)
 {
-   if (mInterfaceData != nullptr && mMeshAsset->getShape())
+   if (mInterfaceData != nullptr && !mMeshAsset.isNull() && mMeshAsset->isAssetValid() && mMeshAsset->getShape())
    {
       S32 nodeCount = getShape()->nodes.size();
 

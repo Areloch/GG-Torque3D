@@ -135,6 +135,18 @@ function AssetBrowser::buildPopupMenus(%this)
    AddNewArtAssetPopup.enableItem(12, false); //particle effect
    
    AddNewScriptAssetPopup.enableItem(2, false); //state machine
+   
+   if( !isObject( EditAssetCategoryPopup ) )
+   {
+      new PopupMenu( EditAssetCategoryPopup )
+      {
+         superClass = "MenuBuilder";
+         class = "EditorWorldMenu";
+         //isPopup = true;
+         
+         item[ 0 ] = "Toggle Autoloading of Script Assets" TAB "" TAB "AssetBrowser.toggleAutoloadAsset(\"Script\");";
+      };
+   }
 }
 
 function AddNewScriptAssetPopupMenu::onSelectItem(%this, %id, %text)

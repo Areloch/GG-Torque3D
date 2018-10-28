@@ -36,7 +36,7 @@
 
 #include "T3D/components/coreInterfaces.h"
 #include "T3D/components/render/renderComponentInterface.h"
-#include "T3D/components/collision/collisionInterfaces.h"
+#include "T3D/components/collision/collisionComponent.h"
 
 #include "gui/controls/guiTreeViewCtrl.h"
 #include "assets/assetManager.h"
@@ -1111,20 +1111,20 @@ bool Entity::castRayRendered(const Point3F &start, const Point3F &end, RayInfo *
 
 bool Entity::buildPolyList(PolyListContext context, AbstractPolyList* polyList, const Box3F &box, const SphereF &sphere)
 {
-   Con::errorf("Build Poly List not yet implemented as a passthrough for Entity");
-   /*Vector<BuildPolyListInterface*> updaters = getComponents<BuildPolyListInterface>();
-   for (Vector<BuildPolyListInterface*>::iterator it = updaters.begin(); it != updaters.end(); it++)
-   {
-      return (*it)->buildPolyList(context, polyList, box, sphere);
-   }*/
+   // Collision with the player is always against the player's object
+   // space bounding box axis aligned in world space.
+   MatrixF trans = getTransform();
 
-   return false;
+   polyList->setTransform(&trans, getScale());
+   polyList->setObject(this);
+   polyList->addBox(mObjBox);
+   return true;
 }
 
 void Entity::buildConvex(const Box3F& box, Convex* convex)
 {
-   Vector<BuildConvexInterface*> updaters = getComponents<BuildConvexInterface>();
-   for (Vector<BuildConvexInterface*>::iterator it = updaters.begin(); it != updaters.end(); it++)
+   Vector<CollisionComponent*> colliders = getComponents<CollisionComponent>();
+   for (Vector<CollisionComponent*>::iterator it = colliders.begin(); it != colliders.end(); it++)
    {
       (*it)->buildConvex(box, convex);
    }
@@ -1401,10 +1401,7 @@ void Entity::clearComponents(bool deleteComponents)
 
             bool removed = mComponents.remove(comp);
 
-            //we only need to delete them on the server side. they'll be cleaned up on the client side
-            //via the ghosting system for us
-            if (isServerObject())
-               comp->deleteObject();
+            comp->deleteObject();
          }
       }
    }

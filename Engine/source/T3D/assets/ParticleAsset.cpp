@@ -90,7 +90,7 @@ ConsoleSetType(TypeParticleAssetPtr)
 
 //-----------------------------------------------------------------------------
 
-ParticleAsset::ParticleAsset()
+ParticleAsset::ParticleAsset() : AssetBase()
 {
    mScriptFilePath = StringTable->EmptyString();
    mDatablockFilePath = StringTable->EmptyString();

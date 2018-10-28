@@ -313,7 +313,15 @@ void GuiCanvas::setMenuBar(SimObject *obj)
        if (!profile)
        {
           Con::errorf("GuiCanvas::setMenuBar: Unable to find the GuiModelessDialogProfile profile!");
-          return;
+
+          //This is mandatory for the editors, so we'll just create it ad-hoc
+          profile = new GuiControlProfile();
+          profile->mModal = false;
+          profile->mCategory = "Tools";
+
+          profile->registerObject("GuiModelessDialogProfile");
+
+          //return;
        }
 
        if (mMenuBackground == nullptr)
