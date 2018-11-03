@@ -243,7 +243,7 @@ function EditorCreateFakeGameSession(%fileName)
 
    $instantGroup = ServerGroup;
    
-   $Game::MissionGroup = "MissionGroup";
+   //$Game::MissionGroup = "MissionGroup";
 
    exec(%file);
 }

@@ -198,7 +198,7 @@ function WorldEditor::export(%this)
 
 function WorldEditor::doExport(%this, %file)
 {
-   missionGroup.save("~/editor/" @ %file, true);
+   getScene(0).save("~/editor/" @ %file, true);
 }
 
 function WorldEditor::import(%this)

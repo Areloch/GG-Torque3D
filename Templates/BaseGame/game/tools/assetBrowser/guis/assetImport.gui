@@ -167,7 +167,7 @@
          minExtent = "8 2";
          horizSizing = "right";
          vertSizing = "bottom";
-         profile = "GuiTextProfile";
+         profile = "GuiDefaultProfile";
          visible = "1";
          active = "1";
          tooltipProfile = "GuiToolTipProfile";
@@ -364,7 +364,7 @@
          minExtent = "8 2";
          horizSizing = "right";
          vertSizing = "bottom";
-         profile = "GuiTextProfile";
+         profile = "GuiDefaultProfile";
          visible = "1";
          active = "1";
          tooltipProfile = "GuiToolTipProfile";
@@ -440,7 +440,7 @@
          minExtent = "8 2";
          horizSizing = "right";
          vertSizing = "bottom";
-         profile = "GuiTextProfile";
+         profile = "GuiDefaultProfile";
          visible = "1";
          active = "1";
          tooltipProfile = "GuiToolTipProfile";
@@ -455,6 +455,7 @@
          reverseTextList = "0";
          bitmapBounds = "16 16";
          hotTrackCallback = "0";
+         text = "TestConfig";
          maxLength = "1024";
          margin = "0 0 0 0";
          padding = "0 0 0 0";

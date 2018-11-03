@@ -31,6 +31,8 @@
 #include "util/noise2d.h"
 #include "core/volume.h"
 
+#include "T3D/Scene.h"
+
 using namespace Torque;
 
 ConsoleStaticMethod( TerrainBlock, createNew, S32, 5, 5, 
@@ -114,9 +116,9 @@ ConsoleStaticMethod( TerrainBlock, createNew, S32, 5, 5,
    terrain->registerObject( terrainName );
 
    // Add to mission group!
-   SimGroup *missionGroup;
-   if( Sim::findObject( "MissionGroup", missionGroup ) )
-      missionGroup->addObject( terrain );
+   Scene* scene = Scene::getRootScene();
+   if(scene)
+      scene->addObject( terrain );
 
    return terrain->getId();
 }
@@ -261,10 +263,10 @@ ConsoleStaticMethod( TerrainBlock, import, S32, 7, 8,
       terrain->import( (*heightmap), heightScale, metersPerPixel, layerMap, materials, flipYAxis );
       terrain->registerObject();
 
-      // Add to mission group!
-      SimGroup *missionGroup;
-      if (  Sim::findObject( "MissionGroup", missionGroup ) )
-         missionGroup->addObject( terrain );
+      // Add to scene!
+      Scene* scene = Scene::getRootScene();
+      if (scene)
+         scene->addObject( terrain );
    }
 
    return terrain->getId();

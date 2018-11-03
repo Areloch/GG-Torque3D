@@ -1,11 +1,7 @@
 //--- OBJECT WRITE BEGIN ---
-new SimGroup(MissionGroup) {
+new Scene(EditorTemplateLevel) {
    canSave = "1";
    canSaveDynamicFields = "1";
-      cdTrack = "2";
-      CTF_scoreLimit = "5";
-      enabled = "1";
-      musicTrack = "lush";
 
    new LevelInfo(TheLevelInfo) {
       nearClip = "0.1";

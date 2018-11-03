@@ -981,10 +981,10 @@ function findGameObject(%name)
 	return 0;
 }
 
-function spawnGameObject(%name, %addToMissionGroup)
+function spawnGameObject(%name, %addToScene)
 {
-   if(%addToMissionGroup $= "")
-		%addToMissionGroup = true;
+   if(%addToScene $= "")
+		%addToScene = true;
 		
    //First, check if this already exists in our GameObjectPool
    if(isObject(GameObjectPool))
@@ -1001,7 +1001,7 @@ function spawnGameObject(%name, %addToMissionGroup)
          %go.setScopeAlways();
          
          if(%addToMissionGroup == true) //save instance when saving level
-            MissionGroup.add(%go);
+            getScene(0).add(%go);
          else // clear instance on level exit
             MissionCleanup.add(%go);
             
@@ -1020,8 +1020,8 @@ function spawnGameObject(%name, %addToMissionGroup)
    {
       %newSGOObject = TamlRead(%gameObjectAsset.TAMLFilePath);
             
-      if(%addToMissionGroup == true) //save instance when saving level
-         MissionGroup.add(%newSGOObject);
+      if(%addToScene == true) //save instance when saving level
+         getScene(0).add(%newSGOObject);
       else // clear instance on level exit
          MissionCleanup.add(%newSGOObject);
          

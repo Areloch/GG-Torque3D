@@ -47,6 +47,8 @@
 #include "gui/worldEditor/worldEditor.h"
 #include "T3D/prefab.h"
 
+#include "T3D/Scene.h"
+
 IMPLEMENT_CONOBJECT( GuiConvexEditorCtrl );
 
 ConsoleDocClass( GuiConvexEditorCtrl,
@@ -117,12 +119,12 @@ bool GuiConvexEditorCtrl::onWake()
    if ( !Parent::onWake() )
       return false;
 
-   SimGroup *missionGroup;
-   if ( !Sim::findObject( "MissionGroup", missionGroup ) )
+   Scene* scene = Scene::getRootScene();
+   if ( !scene )
       return true;
 
-   SimGroup::iterator itr = missionGroup->begin();
-   for ( ; itr != missionGroup->end(); itr++ )
+   SimGroup::iterator itr = scene->begin();
+   for ( ; itr != scene->end(); itr++ )
    {
       if ( dStrcmp( (*itr)->getClassName(), "ConvexShape" ) == 0 )
       {
@@ -1261,9 +1263,9 @@ void GuiConvexEditorCtrl::setupShape( ConvexShape *shape )
    shape->registerObject();
    updateShape( shape );
 
-   SimGroup *group;
-   if ( Sim::findObject( "missionGroup", group ) )
-      group->addObject( shape );
+   Scene* scene = Scene::getRootScene();
+   if ( scene )
+      scene->addObject( shape );
 }
 
 void GuiConvexEditorCtrl::updateShape( ConvexShape *shape, S32 offsetFace )
@@ -2038,9 +2040,9 @@ ConvexShape* ConvexEditorCreateTool::extrudeShapeFromFace( ConvexShape *inShape,
    newShape->registerObject();
    mEditor->updateShape( newShape );
 
-   SimGroup *group;
-   if ( Sim::findObject( "missionGroup", group ) )
-      group->addObject( newShape );
+   Scene* scene = Scene::getRootScene();
+   if ( scene )
+      scene->addObject( newShape );
 
    return newShape;
 }

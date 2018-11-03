@@ -13,14 +13,14 @@
    isContainer = "1";
    canSave = "1";
    canSaveDynamicFields = "1";
-      AddNewArtAssetPopup = "18801";
-      AddNewAssetPopup = "18802";
-      AddNewScriptAssetPopup = "18800";
+      AddNewArtAssetPopup = "18640";
+      AddNewAssetPopup = "18641";
+      AddNewScriptAssetPopup = "18639";
       currentPreviewPage = "0";
       enabled = "1";
-      importAssetFinalListArray = "20465";
-      importAssetNewListArray = "20463";
-      importAssetUnprocessedListArray = "20464";
+      importAssetFinalListArray = "21108";
+      importAssetNewListArray = "21106";
+      importAssetUnprocessedListArray = "21107";
       totalPages = "1";
 
    new GuiWindowCtrl(AssetBrowser_addFilterWindow) {

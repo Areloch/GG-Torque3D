@@ -1233,7 +1233,7 @@ function EWorldEditor::onControlDropped( %this, %payload, %position )
          //new CollisionComponent(){};
       };
       
-      MissionGroup.add(%newEntity);
+      getScene(0).add(%newEntity);
       
       EWorldEditor.clearSelection();
       EWorldEditor.selectObject(%newEntity);
@@ -1246,7 +1246,7 @@ function EWorldEditor::onControlDropped( %this, %payload, %position )
    {
       echo("DROPPED A GAME OBJECT ON THE EDITOR WINDOW!");  
       
-      %GO = spawnGameObject(%asset, true);
+      %GO = spawnGameObject(%module @ ":" @%asset, true);
       
       %pos = EWCreatorWindow.getCreateObjectPosition(); //LocalClientConnection.camera.position; 
       
@@ -1269,7 +1269,7 @@ function EWorldEditor::onControlDropped( %this, %payload, %position )
       else
          eval("$tmpVar = new " @ %assetDef.componentClass @ "() {}; %newEntity.add($tmpVar);");
          
-      MissionGroup.add(%newEntity);
+      getScene(0).add(%newEntity);
       
       EWorldEditor.clearSelection();
       EWorldEditor.selectObject(%newEntity);
@@ -1282,7 +1282,7 @@ function EWorldEditor::onControlDropped( %this, %payload, %position )
          class = %asset;
       };
 
-      MissionGroup.add(%newEntity);
+      getScene(0).add(%newEntity);
       
       EWorldEditor.clearSelection();
       EWorldEditor.selectObject(%newEntity);

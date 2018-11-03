@@ -272,7 +272,7 @@ function EditorSaveMission()
    // now write the terrain and mission files out:
 
    if(EWorldEditor.isDirty || ETerrainEditor.isMissionDirty)
-      MissionGroup.save($Server::MissionFile);
+      getScene(0).save($Server::MissionFile);
    if(ETerrainEditor.isDirty)
    {
       // Find all of the terrain files

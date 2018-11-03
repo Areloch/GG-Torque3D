@@ -474,6 +474,9 @@ PhysicsCollision* ShapeCollisionComponent::buildColShapes()
 
    TSShape* shape = mOwnerRenderInterface->getShape();
 
+   if (shape == nullptr)
+      return nullptr;
+
    if (mCollisionType == VisibleMesh)
    {
       // Here we build triangle collision meshes from the

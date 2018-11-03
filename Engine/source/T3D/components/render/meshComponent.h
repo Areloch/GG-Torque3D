@@ -102,18 +102,6 @@ protected:
    Vector<matMap>  mMaterials;
 
 public:
-   enum RenderMode
-   {
-      Individual = 0,
-      DynamicBatch,
-      StaticBatch,
-      Instanced
-   };
-
-protected:
-   RenderMode           mRenderMode;
-
-public:
    StringTableEntry       mMeshAssetId;
    AssetPtr<ShapeAsset>   mMeshAsset;
 
@@ -185,8 +173,5 @@ public:
       return;
    }
 };
-
-typedef MeshComponent::RenderMode BatchingMode;
-DefineEnumType(BatchingMode);
 
 #endif

@@ -862,6 +862,7 @@ void Entity::setTransform(const Point3F& position, const RotationF& rotation)
       RotationF addRot = mRot + RotationF(mMount.object->getTransform());
       MatrixF transf = addRot.asMatrixF();
       transf.setPosition(mPos + mMount.object->getPosition());
+      transf.scale(mObjScale);
 
       Parent::setTransform(transf);
 

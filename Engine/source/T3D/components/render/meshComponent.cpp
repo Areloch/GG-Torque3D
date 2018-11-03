@@ -45,21 +45,10 @@
 #include "core/strings/findMatch.h"
 #include "T3D/components/render/meshComponent_ScriptBinding.h"
 
-ImplementEnumType(BatchingMode,
-   "Type of mesh data available in a shape.\n"
-   "@ingroup gameObjects")
-{
-   MeshComponent::Individual, "Individual", "This mesh is rendered indivudally, wthout batching or instancing."
-},
-   { MeshComponent::StaticBatch, "Static Batching", "Statically batches this mesh together with others to reduce drawcalls." },
-   //{ MeshComponent::DynamicBatch, "Dynamic Batching", "Dynamical batches this mesh together with others to reduce drawcalls each frame." },
-  // { MeshComponent::Instanced, "Instanced", "This mesh is rendered as an instance, reducing draw overhead with others that share the same mesh and material." },
-      EndImplementEnumType;
-
 //////////////////////////////////////////////////////////////////////////
 // Constructor/Destructor
 //////////////////////////////////////////////////////////////////////////
-MeshComponent::MeshComponent() : Component(), mShape(nullptr), mRenderMode(Individual)
+MeshComponent::MeshComponent() : Component(), mShape(nullptr)
 {
    mFriendlyName = "Mesh Component";
    mComponentType = "Render";
@@ -75,8 +64,6 @@ MeshComponent::MeshComponent() : Component(), mShape(nullptr), mRenderMode(Indiv
    mMeshAssetId = StringTable->EmptyString();
 
    mInterfaceData = new MeshRenderSystemInterface();
-
-   mRenderMode = Individual;
 }
 
 MeshComponent::~MeshComponent()
@@ -133,11 +120,6 @@ void MeshComponent::onComponentRemove()
 void MeshComponent::initPersistFields()
 {
    Parent::initPersistFields();
-
-   addGroup("Rendering");
-   addField("BatchingMode", TypeBatchingMode, Offset(mRenderMode, MeshComponent),
-      "The mode of batching this shape should be rendered with.");
-   endGroup("Rendering");
 
    //create a hook to our internal variables
    addGroup("Model");
@@ -272,27 +254,6 @@ void MeshComponent::updateShape()
             mOwner->getSceneManager()->notifyObjectDirty(mOwner);
       }
 
-      if (isClientObject() && mInterfaceData)
-      {
-         if (mRenderMode == StaticBatch)
-         {
-            mInterfaceData->mStatic = true;
-
-            OptimizedPolyList geom;
-            MatrixF transform = mInterfaceData->mTransform;
-            mInterfaceData->mGeometry.setTransform(&transform, mInterfaceData->mScale);
-            mInterfaceData->mGeometry.setObject(mOwner);
-
-            mInterfaceData->mShapeInstance->buildPolyList(&mInterfaceData->mGeometry, 0);
-         }
-         else
-         {
-            mInterfaceData->mStatic = false;
-         }
-
-         MeshRenderSystem::rebuildBuffers();
-      }
-
       //finally, notify that our shape was changed
       onShapeInstanceChanged.trigger(this);
    }
@@ -343,8 +304,6 @@ U32 MeshComponent::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
    if (stream->writeFlag(mask & ShapeMask))
    {
       stream->writeString(mShapeName);
-
-      stream->writeInt(mRenderMode, 8);
    }
 
    if (stream->writeFlag( mask & MaterialMask ))
@@ -373,7 +332,6 @@ void MeshComponent::unpackUpdate(NetConnection *con, BitStream *stream)
    {
       mShapeName = stream->readSTString();
 
-      mRenderMode = (RenderMode)stream->readInt(8);
       setMeshAsset(mShapeName);
       updateShape();
    }

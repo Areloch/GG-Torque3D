@@ -637,7 +637,7 @@ function EditorGui::addCameraBookmark( %this, %name )
    if( !isObject(CameraBookmarks) )
    {
       %grp = new SimGroup(CameraBookmarks);
-      MissionGroup.add(%grp);
+      getScene(0).add(%grp);
    }
    CameraBookmarks.add( %obj );
 
@@ -839,8 +839,8 @@ function WorldEditorPlugin::onActivated( %this )
    EWorldEditor.setVisible(true);
    EditorGui.menuBar.insert( EditorGui.worldMenu, EditorGui.menuBar.dynamicItemInsertPos );
    EWorldEditor.makeFirstResponder(true);
-   EditorTree.open(MissionGroup,true);
-   EWCreatorWindow.setNewObjectGroup(MissionGroup);
+   EditorTree.open(getScene(0),true);
+   EWCreatorWindow.setNewObjectGroup(getScene(0));
 
    EWorldEditor.syncGui();
 
@@ -1464,7 +1464,7 @@ function EditorTree::onDeleteObject( %this, %object )
       return true;
    
    if( %object == EWCreatorWindow.objectGroup )
-      EWCreatorWindow.setNewObjectGroup( MissionGroup );
+      EWCreatorWindow.setNewObjectGroup( getScene(0) );
 
    // Append it to our list.
    %this.undoDeleteList = %this.undoDeleteList TAB %object;
@@ -1673,8 +1673,8 @@ function EditorTree::onRightMouseUp( %this, %itemId, %mouse, %obj )
 
    if( %haveObjectEntries )
    {         
-      %popup.enableItem( 0, %obj.isNameChangeAllowed() && %obj.getName() !$= "MissionGroup" );
-      %popup.enableItem( 1, %obj.getName() !$= "MissionGroup" );
+      %popup.enableItem( 0, %obj.isNameChangeAllowed() && %obj !$= getScene(0) );
+      %popup.enableItem( 1, %obj !$= getScene(0) );
       
       if( %haveLockAndHideEntries )
       {
@@ -1865,6 +1865,8 @@ function Editor::open(%this)
    %this.editorEnabled();
    Canvas.setContent(EditorGui);   
    EditorGui.syncCameraGui();
+   
+   //EditorGui.attachMenus();
 }
 
 function Editor::close(%this, %gui)
@@ -2025,21 +2027,21 @@ function EWorldEditor::syncToolPalette( %this )
 function EWorldEditor::addSimGroup( %this, %groupCurrentSelection )
 {
    %activeSelection = %this.getActiveSelection();
-   if ( %activeSelection.getObjectIndex( MissionGroup ) != -1 )
+   if ( %activeSelection.getObjectIndex( getScene(0) ) != -1 )
    {
-      MessageBoxOK( "Error", "Cannot add MissionGroup to a new SimGroup" );
+      MessageBoxOK( "Error", "Cannot add Scene to a new SimGroup" );
       return;
    }
 
    // Find our parent.
 
-   %parent = MissionGroup;
+   %parent = getScene(0);
    if( !%groupCurrentSelection && isObject( %activeSelection ) && %activeSelection.getCount() > 0 )
    {
       %firstSelectedObject = %activeSelection.getObject( 0 );
       if( %firstSelectedObject.isMemberOfClass( "SimGroup" ) )
          %parent = %firstSelectedObject;
-      else if( %firstSelectedObject.getId() != MissionGroup.getId() )
+      else if( %firstSelectedObject.getId() != getScene(0).getId() )
          %parent = %firstSelectedObject.parentGroup;
    }
    

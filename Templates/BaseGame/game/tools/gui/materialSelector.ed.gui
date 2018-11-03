@@ -1690,7 +1690,7 @@ function MaterialSelector::createNewMaterial( %this )
    }
    
    // select me
-   MaterialSelector.updateSelection( %material, "core/images/warnmat.png" );
+   MaterialSelector.updateSelection( %material, "core/rendering/images/warnmat.png" );
 }
 
 //needs to be deleted with the persistence manager and needs to be blanked out of the matmanager

@@ -753,7 +753,7 @@ function ImportAssetWindow::processNewImportAssets(%this)
          //Iterate over to find appropriate images for
          
          //Fetch just the fileBase name
-         /*%fileDir = filePath(%assetItem.filePath);
+         %fileDir = filePath(%assetItem.filePath);
          %filename = fileBase(%assetItem.filePath);
          %fileExt = fileExt(%assetItem.filePath);
          
@@ -762,14 +762,23 @@ function ImportAssetWindow::processNewImportAssets(%this)
             if(%assetItem.diffuseImageAsset $= "")
             {
                //First, load our diffuse map, as set to the material in the shape
-               %diffuseAsset = AssetBrowser.addImportingAsset("Image", %fileDir @ "/" @ %filename @ %fileExt, %assetItem);
-               %assetItem.diffuseImageAsset = %diffuseAsset;
+               //We're going to presume(for now) that the specifically-mentioned file for a given material is the diffuse/albedo
+               %diffuseImagePath = %fileDir @ "/" @ %filename @ %fileExt;
                
-               if(%assetItem.importConfig.UseDiffuseSuffixOnOriginImg == 1)
+               %diffuseImageSuffix = %this.parseImagePathSuffixes(%diffuseImagePath);
+               
+               if(%assetItem.importConfig.UseDiffuseSuffixOnOriginImg == 1 && %diffuseImageSuffix $= "")
                {
                   %diffuseToken = getToken(%assetItem.importConfig.DiffuseTypeSuffixes, ",", 0);
-                  %diffuseAsset.AssetName = %diffuseAsset.AssetName @ %diffuseToken;
+                  
+                  %diffuseAsset = AssetBrowser.addImportingAsset("Image", %diffuseImagePath, %assetItem, %filename @ %diffuseToken);
                }
+               else
+               {
+                  %diffuseAsset = AssetBrowser.addImportingAsset("Image", %diffuseImagePath, %assetItem);
+               }
+               
+               %assetItem.diffuseImageAsset = %diffuseAsset;
             }
             
             if(%assetItem.normalImageAsset $= "")
@@ -925,25 +934,25 @@ function ImportAssetWindow::processNewImportAssets(%this)
                   }
                }
             }
-         }*/
+         }
       } 
       else if(%assetItem.assetType $= "Image")
       {
-         //First, see if this already has a suffix of some sort based on our import config logic. Many content pipeline tools like substance automatically appends them
-         %foundSuffixType = %this.parseImageSuffixes(%assetItem);
-         
-         if(%foundSuffixType $= "")
-         {
-            %noSuffixName = %assetItem.AssetName;
-         }
-         else
-         {
-            %suffixPos = strpos(strlwr(%assetItem.AssetName), strlwr(%assetItem.imageSuffixType), 0);
-            %noSuffixName = getSubStr(%assetItem.AssetName, 0, %suffixPos);
-         }
-  
          if(%assetConfigObj.GenerateMaterialOnImport == 1 && %assetItem.parentAssetItem $= "")
          {
+            //First, see if this already has a suffix of some sort based on our import config logic. Many content pipeline tools like substance automatically appends them
+            %foundSuffixType = %this.parseImageSuffixes(%assetItem);
+            
+            if(%foundSuffixType $= "")
+            {
+               %noSuffixName = %assetItem.AssetName;
+            }
+            else
+            {
+               %suffixPos = strpos(strlwr(%assetItem.AssetName), strlwr(%assetItem.imageSuffixType), 0);
+               %noSuffixName = getSubStr(%assetItem.AssetName, 0, %suffixPos);
+            }
+         
             //Check if our material already exists
             //First, lets double-check that we don't already have an
             %materialAsset = %this.findImportingAssetByName(%noSuffixName);
@@ -1115,6 +1124,88 @@ function ImportAssetWindow::parseImageSuffixes(%this, %assetItem)
       if(strIsMatchExpr("*"@%suffixToken, %assetItem.AssetName))
       {
          %assetItem.imageSuffixType = %suffixToken;
+         return "specular";
+      }
+   }
+   
+   return "";
+}
+
+function ImportAssetWindow::parseImagePathSuffixes(%this, %filePath)
+{
+   //diffuse
+   %suffixCount = getTokenCount(%assetItem.importConfig.DiffuseTypeSuffixes, ",");
+   for(%sfx = 0; %sfx < %suffixCount; %sfx++)
+   {
+      %suffixToken = getToken(%assetItem.importConfig.DiffuseTypeSuffixes, ",", %sfx);
+      if(strIsMatchExpr("*"@%suffixToken, %filePath))
+      {
+         return "diffuse";
+      }
+   }
+   
+   //normal
+   %suffixCount = getTokenCount(%assetItem.importConfig.NormalTypeSuffixes, ",");
+   for(%sfx = 0; %sfx < %suffixCount; %sfx++)
+   {
+      %suffixToken = getToken(%assetItem.importConfig.NormalTypeSuffixes, ",", %sfx);
+      if(strIsMatchExpr("*"@%suffixToken, %filePath))
+      {
+         return "normal";
+      }
+   }
+   
+   //roughness
+   %suffixCount = getTokenCount(%assetItem.importConfig.RoughnessTypeSuffixes, ",");
+   for(%sfx = 0; %sfx < %suffixCount; %sfx++)
+   {
+      %suffixToken = getToken(%assetItem.importConfig.RoughnessTypeSuffixes, ",", %sfx);
+      if(strIsMatchExpr("*"@%suffixToken, %filePath))
+      {
+         return "roughness";
+      }
+   }
+   
+   //Ambient Occlusion
+   %suffixCount = getTokenCount(%assetItem.importConfig.AOTypeSuffixes, ",");
+   for(%sfx = 0; %sfx < %suffixCount; %sfx++)
+   {
+      %suffixToken = getToken(%assetItem.importConfig.AOTypeSuffixes, ",", %sfx);
+      if(strIsMatchExpr("*"@%suffixToken, %filePath))
+      {
+         return "AO";
+      }
+   }
+   
+   //metalness
+   %suffixCount = getTokenCount(%assetItem.importConfig.MetalnessTypeSuffixes, ",");
+   for(%sfx = 0; %sfx < %suffixCount; %sfx++)
+   {
+      %suffixToken = getToken(%assetItem.importConfig.MetalnessTypeSuffixes, ",", %sfx);
+      if(strIsMatchExpr("*"@%suffixToken, %filePath))
+      {
+         return "metalness";
+      }
+   }
+   
+   //composite
+   %suffixCount = getTokenCount(%assetItem.importConfig.CompositeTypeSuffixes, ",");
+   for(%sfx = 0; %sfx < %suffixCount; %sfx++)
+   {
+      %suffixToken = getToken(%assetItem.importConfig.CompositeTypeSuffixes, ",", %sfx);
+      if(strIsMatchExpr("*"@%suffixToken, %filePath))
+      {
+         return "composite";
+      }
+   }
+   
+   //specular
+   %suffixCount = getTokenCount(%assetItem.importConfig.SpecularTypeSuffixes, ",");
+   for(%sfx = 0; %sfx < %suffixCount; %sfx++)
+   {
+      %suffixToken = getToken(%assetItem.importConfig.SpecularTypeSuffixes, ",", %sfx);
+      if(strIsMatchExpr("*"@%suffixToken, %filePath))
+      {
          return "specular";
       }
    }
