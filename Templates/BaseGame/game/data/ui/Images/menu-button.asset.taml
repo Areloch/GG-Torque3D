@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="menu-button"
+    imageFile="data/UI/Images/menu-button.png"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/art/menu-button.png"
+    VersionId="1" />

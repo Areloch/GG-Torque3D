@@ -1,9 +1,15 @@
 <ModuleDefinition
-	ModuleId="UI"
-	VersionId="1"
-	Description="Module that implements the menus for the game."
-	ScriptFile="UI.cs"
-	CreateFunction="create"
-	DestroyFunction="destroy"
-	Group="Game">
+    canSave="true"
+    canSaveDynamicFields="true"
+    ModuleId="UI"
+    VersionId="1"
+    Group="Game"
+    scriptFile="UI.cs"
+    CreateFunction="onCreate"
+    DestroyFunction="onDestroy">
+    <DeclaredAssets
+        canSave="true"
+        canSaveDynamicFields="true"
+        Extension="asset.taml"
+        Recurse="true" />
 </ModuleDefinition>

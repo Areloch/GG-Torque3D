@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="textEditSliderBox"
+    imageFile="data/UI/Images/textEditSliderBox.png"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/art/textEditSliderBox.png"
+    VersionId="1" />

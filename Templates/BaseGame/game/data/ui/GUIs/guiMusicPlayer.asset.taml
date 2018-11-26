@@ -1,0 +1,7 @@
+<GUIAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="guiMusicPlayer"
+    GUIFilePath="data/UI/GUIs/guiMusicPlayer.gui"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/guis/guiMusicPlayer.gui"
+    VersionId="1" />

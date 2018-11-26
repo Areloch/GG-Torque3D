@@ -390,7 +390,7 @@ void GuiTreeViewCtrl::Item::setObject(SimObject *obj)
 {
    if(!mState.test(InspectorData))
    {
-      Con::errorf("Tried to set the object for item %d, which is not InspectorData!", mId);
+      //Con::errorf("Tried to set the object for item %d, which is not InspectorData!", mId);
       return;
    }
    
@@ -409,7 +409,7 @@ SimObject *GuiTreeViewCtrl::Item::getObject()
 {
    if(!mState.test(InspectorData))
    {
-      Con::errorf("Tried to get the object for item %d, which is not InspectorData!", mId);
+      //Con::errorf("Tried to get the object for item %d, which is not InspectorData!", mId);
       return NULL;
    }
 

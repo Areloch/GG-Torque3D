@@ -1,0 +1,8 @@
+<ScriptAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="messageBoxes"
+    scriptFilePath="data/UI/Scripts/messageBoxes.cs"
+    isServerSide="true"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/messageBoxes.cs"
+    VersionId="1" />

@@ -192,7 +192,7 @@ void MeshComponent::updateShape()
       setupShape();
 
       //Do this on both the server and client
-      S32 materialCount = mMeshAsset->getShape()->materialList->getMaterialNameList().size();
+      S32 materialCount = mMeshAsset->getMaterialCount();// mMeshAsset->getShape()->materialList->getMaterialNameList().size();
 
       if (isServerObject())
       {
@@ -216,13 +216,12 @@ void MeshComponent::updateShape()
 
          for (U32 i = 0; i < materialCount; i++)
          {
-            String materialname = mMeshAsset->getShape()->materialList->getMaterialName(i);
-            if (materialname == String("ShapeBounds"))
-               continue;
+            AssetPtr<MaterialAsset> matAsset = mMeshAsset->getMaterialAsset(i);
+            //String materialname = mMeshAsset->getShape()->materialList->getMaterialName(i);
 
             dSprintf(matFieldName, 128, "MaterialSlot%d", i);
 
-            addComponentField(matFieldName, "A material used in the shape file", "Material", materialname, "");
+            addComponentField(matFieldName, "A material used in the shape file", "Material", matAsset->getAssetId(), "");
          }
 
          if (materialCount > 0)

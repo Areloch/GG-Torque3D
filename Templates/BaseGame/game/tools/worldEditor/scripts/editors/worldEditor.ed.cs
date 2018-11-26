@@ -124,6 +124,12 @@ function WorldEditor::onSelectionCentroidChanged( %this )
    Inspector.refresh();
 }
 
+function WorldEditor::setSceneAsDirty(%this)
+{
+   EWorldEditor.isDirty = true;
+   
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 function WorldEditor::init(%this)

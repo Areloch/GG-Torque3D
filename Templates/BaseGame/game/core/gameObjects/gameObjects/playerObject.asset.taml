@@ -1,7 +1,8 @@
 <GameObjectAsset
     canSave="true"
     canSaveDynamicFields="true"
-    AssetName="PlayerObjectAsset"
+    AssetName="PlayerObject"
     gameObjectName="PlayerObject"
-    TAMLFilePath="core/gameObjects/gameObjects/playerObject.taml"
+    scriptFilePath="core/gameObjects//gameObjects/PlayerObject.cs"
+    TAMLFilePath="core/gameObjects//gameObjects/PlayerObject.taml"
     description="A basic Player Object example." />

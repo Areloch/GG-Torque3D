@@ -1,0 +1,8 @@
+<ScriptAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="guiMusicPlayer"
+    scriptFilePath="data/UI/Scripts/guiMusicPlayer.cs"
+    isServerSide="true"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/guiMusicPlayer.cs"
+    VersionId="1" />

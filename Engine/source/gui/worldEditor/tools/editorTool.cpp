@@ -10,9 +10,9 @@ EditorTool::EditorTool()
    mUseMouseUp = true;
    mUseMouseMove = true;
 
-   mUseRightMouseDown = false;
-   mUseRightMouseUp = false;
-   mUseRightMouseMove = false;
+   mUseRightMouseDown = true;
+   mUseRightMouseUp = true;
+   mUseRightMouseMove = true;
 
    mUseMiddleMouseDown = true;
    mUseMiddleMouseUp = true;

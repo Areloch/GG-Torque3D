@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="Background"
+    imageFile="data/UI/Images/background.png"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/art/background.png"
+    VersionId="1" />

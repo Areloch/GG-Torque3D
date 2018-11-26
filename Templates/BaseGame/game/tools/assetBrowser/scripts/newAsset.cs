@@ -71,7 +71,7 @@ function NewAssetModuleBtn::onClick(%this)
    AssetBrowser_addModuleWindow.selectWindow();
 }
 
-function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
+function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName, %callback)
 {
    Canvas.pushDialog(AssetBrowser_newAsset);
    
@@ -80,6 +80,8 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
    NewAssetPropertiesInspector.clear();
    
    NewAssetModuleList.setText(%moduleName);
+   
+   AssetBrowser_newAsset.callbackFunc = %callback;
    
    //get rid of the old one if we had one.
    if(isObject(%this.newAssetSettings))
@@ -96,7 +98,7 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
    NewAssetPropertiesInspector.addField("assetName", "New Asset Name", "String",  "Name of the new asset", "New" @ %shortAssetTypeName, "", %this.newAssetSettings);
    //NewAssetPropertiesInspector.addField("AssetType", "New Asset Type", "List",  "Type of the new asset", %assetType, "Component,Image,Material,Shape,Sound,State Machine", %newAssetSettings);
    
-   NewAssetPropertiesInspector.addField("friendlyName", "Friendly Name", "String",  "Human-readable name of new asset", "", "", %this.newAssetSettings);
+   //NewAssetPropertiesInspector.addField("friendlyName", "Friendly Name", "String",  "Human-readable name of new asset", "", "", %this.newAssetSettings);
       
    NewAssetPropertiesInspector.addField("description", "Description", "Command",  "Description of the new asset", "", "", %this.newAssetSettings);   
    NewAssetPropertiesInspector.endGroup();
@@ -112,7 +114,8 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
    else if(%assetType $= "LevelAsset")
    {
       NewAssetPropertiesInspector.startGroup("Level");
-      NewAssetPropertiesInspector.addField("levelPreviewImage", "LevePreviewImage", "Image",  "Preview Image for the level", "", "", %this.newAssetSettings);
+      NewAssetPropertiesInspector.addField("levelName", "Level Name", "String",  "Human-readable name of new level", "", "", %this.newAssetSettings);
+      NewAssetPropertiesInspector.addField("levelPreviewImage", "Level Preview Image", "Image",  "Preview Image for the level", "", "", %this.newAssetSettings);
       NewAssetPropertiesInspector.endGroup();
    }
    else if(%assetType $= "ScriptAsset")
@@ -137,7 +140,7 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
    
    return;
    
-   if(%moduleName $= "")
+   /*if(%moduleName $= "")
    {
       Canvas.pushDialog(AssetBrowser_selectModule);
    }
@@ -147,17 +150,17 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName)
       
       if(%assetType $= "MaterialAsset")
       {
-         createNewMaterialAsset("NewMaterial", %moduleName);
+         AssetBrowser.createMaterialAsset();
       }
       else if(%assetType $= "StateMachineAsset")
       {
-         createNewStateMachineAsset("NewStateMachine", %moduleName);
+         AssetBrowser.createStateMachineAsset();
       }
       else if(%assetType $= "ScriptAsset")
       {
          createNewScriptAsset("NewScriptAsset", %moduleName);
       }
-   }
+   }*/
 }
 
 //We do a quick validation that mandatory fields are filled in before passing along to the asset-type specific function
@@ -197,11 +200,11 @@ function CreateNewAsset()
 	}
 	else if(%assetType $= "MaterialAsset")
 	{
-	   %assetFilePath = createNewMaterialAsset();
+	   %assetFilePath = AssetBrowser.createMaterialAsset();
 	}
 	else if(%assetType $= "StateMachineAsset")
 	{
-	   %assetFilePath = createNewStateMachineAsset();
+	   %assetFilePath = AssetBrowser.createStateMachineAsset();
 	}
 	else if(%assetType $= "GUIAsset")
 	{
@@ -227,6 +230,12 @@ function CreateNewAsset()
 	AssetDatabase.addDeclaredAsset(%moduleDef, %assetFilePath);
 	
 	AssetBrowser.loadFilters();
+	
+	if(AssetBrowser_newAsset.callbackFunc !$= "")
+	{
+      %callbackCommand = "" @ AssetBrowser_newAsset.callbackFunc @ "(\"" @ %moduleName @ ":" @ %assetName @ "\");";
+      eval(%callbackCommand);
+	}
 }
 
 function createNewComponentAsset()
@@ -360,63 +369,6 @@ function createNewScriptAsset()
 	return %tamlpath;
 }
 
-function createNewStateMachineAsset()
-{
-   %assetName = AssetBrowser.newAssetSettings.assetName;
-      
-   %assetQuery = new AssetQuery();
-   
-   %matchingAssetCount = AssetDatabase.findAssetName(%assetQuery, %assetName);
-   
-   %i=1;
-   while(%matchingAssetCount > 0)
-   {
-      %newAssetName = %assetName @ %i;
-      %i++;
-      
-      %matchingAssetCount = AssetDatabase.findAssetName(%assetQuery, %newAssetName);
-   }
-   
-   %assetName = %newAssetName;
-   
-   %assetQuery.delete();
-   
-   %tamlpath = "data/" @ %moduleName @ "/stateMachines/" @ %assetName @ ".asset.taml";
-   %smFilePath = "data/" @ %moduleName @ "/stateMachines/" @ %assetName @ ".xml";
-   
-   %asset = new StateMachineAsset()
-   {
-      AssetName = %assetName;
-      versionId = 1;
-      stateMachineFile = %smFilePath;
-   };
-   
-   %xmlDoc = new SimXMLDocument();
-   %xmlDoc.saveFile(%smFilePath);
-   %xmlDoc.delete();
-   
-   TamlWrite(%asset, %tamlpath);
-   
-   //Now write our XML file
-   %xmlFile = new FileObject();
-	%xmlFile.openForWrite(%smFilePath);
-	%xmlFile.writeLine("<StateMachine>");
-	%xmlFile.writeLine("</StateMachine>");
-	%xmlFile.close();
-   
-   %moduleDef = ModuleDatabase.findModule(%moduleName, 1);
-	AssetDatabase.addDeclaredAsset(%moduleDef, %tamlpath);
-
-	AssetBrowser.loadFilters();
-	
-	%treeItemId = AssetBrowserFilterTree.findItemByName(%moduleName);
-	%smItem = AssetBrowserFilterTree.findChildItemByName(%treeItemId, "StateMachines");
-	
-	AssetBrowserFilterTree.onSelect(%smItem);
-   
-	return %tamlpath;
-}
-
 function createNewGUIAsset()
 {
    %moduleName = AssetBrowser.newAssetSettings.moduleName;
@@ -492,7 +444,8 @@ function createNewLevelAsset()
       AssetName = %assetName;
       versionId = 1;
       LevelFile = %levelPath;
-      LevelDescription = AssetBrowser.newAssetSettings.levelDescription;
+      LevelName = AssetBrowser.newAssetSettings.levelName;
+      AssetDescription = AssetBrowser.newAssetSettings.description;
       PreviewImage = AssetBrowser.newAssetSettings.levelPreviewImage;
    };
    
@@ -651,13 +604,5 @@ function ParentComponentList::refresh(%this)
 //----------------------------------------------------------
 function EWorldEditor::createGameObject( %this )
 {
-   GameObjectCreatorObjectName.text = "";
-   
-   %activeSelection = %this.getActiveSelection();
-   if( %activeSelection.getCount() == 0 )
-      return;
-      
-   GameObjectCreator.selectedEntity = %activeSelection.getObject( 0 );
-
-   Canvas.pushDialog(GameObjectCreator);
+   AssetBrowser.createGameObjectAsset();
 }

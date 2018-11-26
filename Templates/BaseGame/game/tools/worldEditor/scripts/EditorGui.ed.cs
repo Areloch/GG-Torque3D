@@ -542,7 +542,9 @@ function EditorGui::onWake( %this )
    // before activating an editor plugin, so that if the plugin
    // installs an ActionMap, it will be highest on the stack.
    
-   MoveMap.push();
+   if(isObject(moveMap))
+      MoveMap.push();
+      
    EditorMap.push();
    
    // Active the current editor plugin.
@@ -571,7 +573,9 @@ function EditorGui::onSleep( %this )
    // Remove the editor's ActionMaps.
       
    EditorMap.pop();
-   MoveMap.pop();
+   
+   if(isObject(moveMap))
+      MoveMap.pop();
 
    // Notify the editor plugins that the editor will be closing.
    
@@ -835,11 +839,16 @@ function EditorGui::syncCameraGui( %this )
 
 function WorldEditorPlugin::onActivated( %this )
 {
+   if(!isObject(Scenes))
+      $scenesRootGroup = new SimGroup(Scenes);
+   
+   $scenesRootGroup.add(getScene(0));
+   
    EditorGui.bringToFront( EWorldEditor );
    EWorldEditor.setVisible(true);
    EditorGui.menuBar.insert( EditorGui.worldMenu, EditorGui.menuBar.dynamicItemInsertPos );
    EWorldEditor.makeFirstResponder(true);
-   EditorTree.open(getScene(0),true);
+   EditorTree.open($scenesRootGroup,true);
    EWCreatorWindow.setNewObjectGroup(getScene(0));
 
    EWorldEditor.syncGui();
@@ -1595,6 +1604,13 @@ function EditorTree::onRightMouseUp( %this, %itemId, %mouse, %obj )
       else if( %obj.name $= "CameraBookmarks" )
       {
          %popup.item[ 0 ] = "Add Camera Bookmark" TAB "" TAB "EditorGui.addCameraBookmarkByGui();";
+      }
+      else if( %obj.isMemberOfClass( "Scene" ))
+      {
+         %popup.item[ 0 ] = "Set as Active Scene" TAB "" TAB "EditorTree.showItemRenameCtrl( EditorTree.findItemByObjectId(" @ %popup.object @ ") );";
+         %popup.item[ 1 ] = "Delete" TAB "" TAB "EWorldEditor.deleteMissionObject(" @ %popup.object @ ");";
+         %popup.item[ 2 ] = "Inspect" TAB "" TAB "inspectObject(" @ %popup.object @ ");";
+         %popup.item[ 3 ] = "-";
       }
       else 
       {

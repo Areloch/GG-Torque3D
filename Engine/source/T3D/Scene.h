@@ -21,6 +21,8 @@ class Scene : public NetObject, public virtual ITickable
 
    bool mIsSubScene;
 
+   Scene* mParentScene;
+
    Vector<Scene*> mSubScenes;
 
    Vector<SceneObject*> mPermanentObjects;
@@ -28,6 +30,10 @@ class Scene : public NetObject, public virtual ITickable
    Vector<SceneObject*> mDynamicObjects;
 
    S32 mSceneId;
+
+   bool mIsEditing;
+
+   bool mIsDirty;
 
 protected:
    static Scene * smRootScene;

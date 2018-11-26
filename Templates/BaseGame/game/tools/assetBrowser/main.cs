@@ -49,6 +49,15 @@ function initializeAssetBrowser()
    exec("./scripts/newAsset.cs");
    exec("./scripts/editAsset.cs");
    exec("./scripts/editModule.cs");   
+   exec("./scripts/selectModule.cs");   
+   
+   //Processing for the different asset types
+   exec("./scripts/assetTypes/gameObject.cs");   
+   exec("./scripts/assetTypes/component.cs");   
+   exec("./scripts/assetTypes/image.cs");   
+   exec("./scripts/assetTypes/material.cs");   
+   exec("./scripts/assetTypes/stateMachine.cs");   
+   exec("./scripts/assetTypes/shapeAnimation.cs");   
    
    exec("./scripts/fieldTypes.cs");
    

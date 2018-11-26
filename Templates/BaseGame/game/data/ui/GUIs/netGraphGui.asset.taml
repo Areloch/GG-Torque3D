@@ -1,0 +1,7 @@
+<GUIAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="netGraphGui"
+    GUIFilePath="data/UI/GUIs/netGraphGui.gui"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/guis/netGraphGui.gui"
+    VersionId="1" />

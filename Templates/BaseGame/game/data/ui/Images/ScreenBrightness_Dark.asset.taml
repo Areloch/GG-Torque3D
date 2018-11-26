@@ -1,0 +1,9 @@
+<ImageAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="ScreenBrightness_Dark"
+    imageFile="data/UI/Images/ScreenBrightness_Dark.png"
+    useMips="true"
+    isHDRImage="false"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/art/ScreenBrightness_Dark.png"
+    VersionId="1" />

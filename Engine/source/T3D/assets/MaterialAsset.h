@@ -83,18 +83,21 @@ DefineConsoleType(TypeMaterialAssetPtr, MaterialAsset)
 //-----------------------------------------------------------------------------
 // TypeAssetId GuiInspectorField Class
 //-----------------------------------------------------------------------------
-class GuiInspectorTypeMaterialAssetPtr : public GuiInspectorTypeFileName
+class GuiInspectorTypeMaterialAssetPtr : public GuiInspectorField
 {
-   typedef GuiInspectorTypeFileName Parent;
+   typedef GuiInspectorField Parent;
 public:
 
-   GuiBitmapButtonCtrl  *mSMEdButton;
+   GuiControl*       mMatEdContainer;
+   GuiBitmapButtonCtrl  *mMatPreviewButton;
+   GuiTextEditCtrl *mMatAssetIdTxt;
 
    DECLARE_CONOBJECT(GuiInspectorTypeMaterialAssetPtr);
    static void consoleInit();
 
    virtual GuiControl* constructEditControl();
    virtual bool updateRects();
+   void setMaterialAsset(String assetId);
 };
 
 #endif // _ASSET_BASE_H_

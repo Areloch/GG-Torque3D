@@ -1,0 +1,8 @@
+<ScriptAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="startupGui"
+    scriptFilePath="data/UI/Scripts/startupGui.cs"
+    isServerSide="true"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/startupGui.cs"
+    VersionId="1" />

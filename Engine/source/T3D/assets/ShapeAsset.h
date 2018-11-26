@@ -99,6 +99,16 @@ public:
    
    U32 getShapeFilenameHash() { return _StringTable::hashString(mFileName); }
 
+   Vector<AssetPtr<MaterialAsset>> getMaterialAssets() { return mMaterialAssets; }
+
+   inline AssetPtr<MaterialAsset> getMaterialAsset(U32 matId) 
+   { 
+      if(matId >= mMaterialAssets.size()) 
+          return nullptr; 
+      else 
+         return mMaterialAssets[matId]; 
+   }
+
    S32 getMaterialCount() { return mMaterialAssets.size(); }
    S32 getAnimationCount() { return mAnimationAssets.size(); }
    ShapeAnimationAsset* getAnimation(S32 index);

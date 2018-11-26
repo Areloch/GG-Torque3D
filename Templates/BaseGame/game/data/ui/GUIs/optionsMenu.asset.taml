@@ -1,0 +1,7 @@
+<GUIAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="optionsMenu"
+    GUIFilePath="data/UI/GUIs/optionsMenu.gui"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/guis/optionsMenu.gui"
+    VersionId="1" />

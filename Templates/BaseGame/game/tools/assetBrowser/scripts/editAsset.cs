@@ -8,10 +8,13 @@ function AssetBrowser_editAsset::saveAsset(%this)
    Canvas.popDialog(AssetBrowser_editAsset);
 }
 
-function AssetBrowser::editAsset(%this)
+function AssetBrowser::editAsset(%this, %assetDef)
 {
    //Find out what type it is
-   %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
+   //If the passed-in definition param is blank, then we're likely called via a popup
+   if(%assetDef $= "")
+      %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
+      
    %assetType = %assetDef.getClassName();
    
    if(%assetType $= "MaterialAsset")
@@ -93,7 +96,7 @@ function AssetBrowser::editAsset(%this)
    }
    else if(%assetType $= "LevelAsset")
    {
-      schedule( 1, 0, "EditorOpenMission", %assetDef.LevelFile);
+      schedule( 1, 0, "EditorOpenMission", %assetDef);
    }
    else if(%assetType $= "GUIAsset")
    {
@@ -105,6 +108,14 @@ function AssetBrowser::editAsset(%this)
       
       GuiEditContent(%assetDef.assetName);
    }
+}
+
+function AssetBrowser::appendSubLevel(%this)
+{
+   %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
+   %assetType = %assetDef.getClassName();
+      
+   schedule( 1, 0, "EditorOpenSceneAppend", %assetDef);
 }
 
 function AssetBrowser::editAssetInfo(%this)
@@ -164,20 +175,24 @@ function AssetBrowser::renameAsset(%this)
    AssetBrowser.selectedAssetPreview-->AssetNameLabel.setFirstResponder();
 }
 
-function AssetNameField::onReturn(%this)
+function AssetBrowser::performRenameAsset(%this, %originalAssetName, %newName)
 {
    //if the name is different to the asset's original name, rename it!
-   %newName = %this.getText();
-   if(%this.originalAssetName !$= %this.getText())
+   if(%originalAssetName !$= %newName)
    {
       %moduleName = AssetBrowser.selectedModule;
       
       //do a rename!
-      %success = AssetDatabase.renameDeclaredAsset(%moduleName @ ":" @ %this.originalAssetName, %moduleName @ ":" @ %this.getText());
+      %success = AssetDatabase.renameDeclaredAsset(%moduleName @ ":" @ %originalAssetName, %moduleName @ ":" @ %newName);
+      
+      if(%success)
+         echo("AssetBrowser - renaming of asset " @ %moduleName @ ":" @ %originalAssetName @ " to " @ %moduleName @ ":" @ %newName @ " was a success.");
+      else 
+         echo("AssetBrowser - renaming of asset " @ %moduleName @ ":" @ %originalAssetName @ " to " @ %moduleName @ ":" @ %newName @ " was a failure.");
       
       if(%success)
       {
-         %newAssetId = %moduleName @ ":" @ %this.getText();
+         %newAssetId = %moduleName @ ":" @ %newName;
          %assetPath = AssetDatabase.getAssetFilePath(%newAssetId);
          
          //Rename any associated files as well
@@ -194,7 +209,7 @@ function AssetNameField::onReturn(%this)
             %scriptExt = fileExt(%assetDef.scriptFile);
             
             %newScriptFileName = %scriptFilePath @ "/" @ %newName @ %scriptExt;
-            %newAssetFile = %path @ "/" @ %this.getText() @ ".asset.taml";
+            %newAssetFile = %path @ "/" @ %newName @ ".asset.taml";
             
             %assetDef.componentName = %newName;
             %assetDef.scriptFile = %newScriptFileName;
@@ -216,7 +231,7 @@ function AssetNameField::onReturn(%this)
                   %line = %file.readLine();
                   %line = trim( %line );
                   
-                  %editedFileContents = %editedFileContents @ strreplace(%line, %this.originalAssetName, %newName) @ "\n";
+                  %editedFileContents = %editedFileContents @ strreplace(%line, %originalAssetName, %newName) @ "\n";
 		         }
 		         
 		         %file.close();
@@ -240,7 +255,7 @@ function AssetNameField::onReturn(%this)
             %scriptExt = fileExt(%assetDef.stateMachineFile);
             
             %newScriptFileName = %scriptFilePath @ "/" @ %newName @ %scriptExt;
-            %newAssetFile = %path @ "/" @ %this.getText() @ ".asset.taml";
+            %newAssetFile = %path @ "/" @ %newName @ ".asset.taml";
             
             %assetDef.stateMachineFile = %newScriptFileName;
             
@@ -252,95 +267,43 @@ function AssetNameField::onReturn(%this)
          }
          else if(%assetType $= "GameObjectAsset")
          {
-            %oldScriptFilePath = %assetDef.scriptFilePath;
-            %scriptFilePath = filePath(%assetDef.scriptFilePath);
-            %scriptExt = fileExt(%assetDef.scriptFilePath);
-            
-            %oldGOFilePath = %assetDef.TAMLFilePath;
-            
-            %newScriptFileName = %scriptFilePath @ "/" @ %newName @ %scriptExt;
-            %newAssetFile = %path @ "/" @ %this.getText() @ ".asset.taml";
-            %newGOFile = %path @ "/" @ %this.getText() @ ".taml";
-            
-            %assetDef.gameObjectName = %newName;
-            %assetDef.scriptFilePath = %newScriptFileName;
-            %assetDef.TAMLFilePath = %newGOFile;
-            
-            TamlWrite(%assetDef, %newAssetFile);
-            fileDelete(%assetPath);
-            
-            pathCopy(%oldScriptFilePath, %newScriptFileName);
-            fileDelete(%oldScriptFilePath);
-            
-            pathCopy(%oldGOFilePath, %newGOFile);
-            fileDelete(%oldGOFilePath);
-            
-            //Go through our scriptfile and replace the old namespace with the new
-            %editedFileContents = "";
-            
-            %file = new FileObject();
-            if ( %file.openForRead( %newScriptFileName ) ) 
-            {
-		         while ( !%file.isEOF() ) 
-		         {
-                  %line = %file.readLine();
-                  %line = trim( %line );
-                  
-                  %editedFileContents = %editedFileContents @ strreplace(%line, %this.originalAssetName, %newName) @ "\n";
-		         }
-		         
-		         %file.close();
-            }
-            
-            if(%editedFileContents !$= "")
-            {
-               %file.openForWrite(%newScriptFileName);
-               
-               %file.writeline(%editedFileContents);
-               
-               %file.close();
-            }
-            
-            exec(%newScriptFileName);
-            
-            //Rename in the TAML file as well
-            %file = new FileObject();
-            if ( %file.openForRead( %newGOFile ) ) 
-            {
-		         while ( !%file.isEOF() ) 
-		         {
-                  %line = %file.readLine();
-                  %line = trim( %line );
-                  
-                  %editedFileContents = %editedFileContents @ strreplace(%line, %this.originalAssetName, %newName) @ "\n";
-		         }
-		         
-		         %file.close();
-            }
-            
-            if(%editedFileContents !$= "")
-            {
-               %file.openForWrite(%newGOFile);
-               
-               %file.writeline(%editedFileContents);
-               
-               %file.close();
-            }
+            AssetBrowser.renameGameObjectAsset(%assetDef, %originalAssetName, %newName);
          }
       }
    }
    
+   //Make sure everything is refreshed
+   AssetBrowser.loadFilters();
+}
+
+function AssetNameField::onReturn(%this)
+{
    %this.clearFirstResponder();
    %this.setActive(false);
+   
+   AssetBrowser.performRenameAsset(%this.originalAssetName, %this.getText());
 }
 
 //------------------------------------------------------------
 
-function AssetBrowser::duplicateAsset(%this)
+function AssetBrowser::duplicateAsset(%this, %targetModule)
 {
-   %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
+   if(%targetModule $= "")
+   {
+      //we need a module to duplicate to first
+      Canvas.pushDialog(AssetBrowser_selectModule);
+      AssetBrowser_selectModule.callback = "AssetBrowser.duplicateAsset";
+      return;
+   }
    
-   %this.setupCreateNewAsset(%assetDef.getClassName(), AssetBrowser.selectedModule);
+   %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
+   %assetType = AssetDatabase.getAssetType(EditAssetPopup.assetId);
+   
+   //this acts as a redirect based on asset type and will enact the appropriate function
+   //so for a GameObjectAsset, it'll become %this.duplicateGameObjectAsset(%assetDef, %targetModule);
+   //and call to the tools/assetBrowser/scripts/assetTypes/gameObject.cs file for implementation
+   if(%this.isMethod("duplicate"@%assetType))
+      eval(%this @ ".duplicate"@%assetType@"("@%assetDef@","@%targetModule@");");
 }
 
 function AssetBrowser::deleteAsset(%this)

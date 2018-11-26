@@ -1,0 +1,7 @@
+<GUIAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="pauseMenu"
+    GUIFilePath="data/UI/GUIs/pauseMenu.gui"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/guis/pauseMenu.gui"
+    VersionId="1" />

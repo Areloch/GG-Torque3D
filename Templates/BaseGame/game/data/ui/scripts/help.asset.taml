@@ -1,0 +1,8 @@
+<ScriptAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="help"
+    scriptFilePath="data/UI/Scripts/help.cs"
+    isServerSide="true"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/help.cs"
+    VersionId="1" />

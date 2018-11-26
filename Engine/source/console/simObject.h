@@ -956,8 +956,10 @@ class SimObject: public ConsoleObject, public TamlCallbacks
       virtual void copyTo(SimObject* object);
 
       // Component Console Overrides
-      virtual bool handlesConsoleMethod(const char * fname, S32 * routingId) { return false; }
-      virtual void getConsoleMethodData(const char * fname, S32 routingId, S32 * type, S32 * minArgs, S32 * maxArgs, void ** callback, const char ** usage) {}
+      //handlesConsoleMethod fname, routingId
+      virtual bool handlesConsoleMethod(const char *, S32 *) { return false; }
+      //getConsoleMethodData fname, routingId, type, minArgs, maxArgs, callback, usage
+      virtual void getConsoleMethodData(const char *, S32, S32 *, S32 *, S32 *, void **, const char **) {}
       
       DECLARE_CONOBJECT( SimObject );
       

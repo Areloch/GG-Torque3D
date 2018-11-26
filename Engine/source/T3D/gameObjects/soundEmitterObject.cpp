@@ -17,7 +17,7 @@ bool SoundEmitterObject::onAdd()
    if (!Parent::onAdd())
       return false;
 
-   //Mesh
+   //Sound
    mSoundComponent = new SoundComponent();
    if (!mSoundComponent->registerObject())
    {

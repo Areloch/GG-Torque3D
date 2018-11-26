@@ -1842,10 +1842,8 @@ ConvexEditorTool::EventResult ConvexEditorCreateTool::on3DMouseUp( const Gui3DMo
    }
    else if ( mStage == 0 )
    {
-      SimGroup *mg;
-      Sim::findObject( "MissionGroup", mg );
-
-      mg->addObject( mNewConvex );
+      SimGroup *scene = Scene::getRootScene();
+      scene->addObject( mNewConvex );
 
       mStage = -1;
 

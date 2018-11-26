@@ -128,7 +128,7 @@ package Tools
       
       //Any common tool modules
       ModuleDatabase.scanModules( "tools", false );
-      ModuleDatabase.LoadGroup( "Tool" );
+      ModuleDatabase.LoadGroup( "Tools" );
       
       //Do any tools that come in with a gameplay package. These are usually specialized tools
       //ModuleDatabase.scanModules( "data", false );

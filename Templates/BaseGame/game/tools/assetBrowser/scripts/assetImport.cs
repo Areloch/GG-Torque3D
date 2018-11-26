@@ -405,8 +405,12 @@ function AssetBrowser::addImportingAsset( %this, %assetType, %filePath, %parentA
    return %assetItem;
 }
 
-//
-function ImportAssetButton::onClick(%this)
+function AssetBrowser::importLegacyGame(%this)
+{
+   
+}
+
+function AssetBrowser::importNewAssetFile(%this)
 {
    %dlg = new OpenFileDialog()
    {
@@ -436,23 +440,12 @@ function ImportAssetButton::onClick(%this)
    AssetBrowser.onBeginDropFiles();
    AssetBrowser.onDropFile(%fullPath);
    AssetBrowser.onEndDropFiles();
-      
-   /*AssetBrowser.importAssetListArray.empty();
-   
-   %fileExt = fileExt( %fullPath );
-   //add it to our array!
-   if( (%fileExt $= ".png") || (%fileExt $= ".jpg") || (%fileExt $= ".bmp") || (%fileExt $= ".dds") )
-      AssetBrowser.importAssetListArray.add("Image", %fullPath);
-   else if( (%fileExt $= ".dae") || (%fileExt $= ".dts"))
-      AssetBrowser.importAssetListArray.add("Model", %fullPath);
-   else if( (%fileExt $= ".ogg") || (%fileExt $= ".wav") || (%fileExt $= ".mp3"))
-      AssetBrowser.importAssetListArray.add("Sound", %fullPath);
-   else if (%fileExt $= ".zip")
-      AssetBrowser.onDropZipFile(%fullPath);
-      
-   ImportAssetConfigWindow.visible = true;
-   ImportAssetConfigWindow.refresh();
-   ImportAssetConfigWindow.selectWindow();*/
+}
+
+//
+function ImportAssetButton::onClick(%this)
+{
+   ImportAssetsPopup.showPopup(Canvas);
 }
 //
 

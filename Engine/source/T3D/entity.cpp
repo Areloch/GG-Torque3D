@@ -156,7 +156,7 @@ void Entity::initPersistFields()
    endGroup("Misc");
 
    addGroup("GameObject");
-   addProtectedField("gameObjectName", TypeGameObjectAssetPtr, Offset(mGameObjectAsset, Entity), &_setGameObject, &defaultProtectedGetFn,
+   addProtectedField("GameObject", TypeGameObjectAssetPtr, Offset(mGameObjectAsset, Entity), &_setGameObject, &defaultProtectedGetFn,
       "The asset Id used for the game object this entity is based on.");
    endGroup("GameObject");
 }

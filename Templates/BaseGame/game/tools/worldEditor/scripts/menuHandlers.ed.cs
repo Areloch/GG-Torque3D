@@ -237,7 +237,7 @@ function EditorNewLevel( %file )
 function EditorSaveMissionMenu()
 {
    if(EditorGui.saveAs)
-      EditorSaveMissionAs();
+      AssetBrowser.setupCreateNewAsset("LevelAsset", AssetBrowser.selectedModule, "EditorSaveMissionAs");
    else
       EditorSaveMission();
 }
@@ -299,37 +299,26 @@ function EditorSaveMission()
    return true;
 }
 
-function EditorSaveMissionAs( %missionName )
+function EditorSaveMissionAs( %levelAsset )
 {
    // If we didn't get passed a new mission name then
    // prompt the user for one.
-   /*if ( %missionName $= "" )
+   if ( %levelAsset $= "" )
+      return;
+      
+   %levelAssetDef = AssetDatabase.acquireAsset(%levelAsset);
+   %assetType = AssetDatabase.getAssetType(%levelAsset);
+      
+   if(%assetType !$= "LevelAsset")
    {
-      %dlg = new SaveFileDialog()
-      {
-         Filters        = $Pref::WorldEditor::FileSpec;
-         DefaultPath    = EditorSettings.value("LevelInformation/levelsDirectory");
-         ChangePath     = false;
-         OverwritePrompt   = true;
-      };
-
-      %ret = %dlg.Execute();
-      if(%ret)
-      {
-         // Immediately override/set the levelsDirectory
-         EditorSettings.setValue( "LevelInformation/levelsDirectory", collapseFilename(filePath( %dlg.FileName )) );
-         
-         %missionName = %dlg.FileName;
-      }
-      
-      %dlg.delete();
-      
-      if(! %ret)
-         return;
+      error("Somehow tried to save a non-level asset as a level? " @ %levelAsset);
+      return;
    }
                
+   %missionName = %levelAssetDef.LevelFile;
+               
    if( fileExt( %missionName ) !$= ".mis" )
-      %missionName = %missionName @ ".mis";*/
+      %missionName = %missionName @ ".mis";
       
    //Make sure we have a selected module so we can create our module
    Canvas.pushDialog(AssetBrowser_selectModule);
@@ -419,7 +408,7 @@ function EditorSaveMissionAs( %missionName )
    %savedTerrNames.delete();
 }
 
-function EditorOpenMission(%filename)
+function EditorOpenMission(%levelAsset)
 {
    if( EditorIsDirty())
    {
@@ -432,9 +421,12 @@ function EditorOpenMission(%filename)
       }
    }
 
-   if(%filename $= "")
+   if(%levelAsset $= "")
    {
-      %dlg = new OpenFileDialog()
+      AssetBrowser.showDialog("LevelAsset", "EditorOpenMission", "", "", "");
+      return;
+      
+      /*%dlg = new OpenFileDialog()
       {
          Filters        = $Pref::WorldEditor::FileSpec;
          DefaultPath    = EditorSettings.value("LevelInformation/levelsDirectory");
@@ -453,7 +445,28 @@ function EditorOpenMission(%filename)
       %dlg.delete();
       
       if(! %ret)
+         return;*/
+   }
+   else
+   {
+      //If we got the actual assetdef, just roll with it
+      if(isObject(%levelAsset))
+      {
+         %assetDef = %levelAsset;
+      }
+      else
+      {
+         //parse it out if its
+         %assetDef = AssetDatabase.acquireAsset(%levelAsset);
+      }
+      
+      %filename = %assetDef.levelFile;
+      
+      if(%filename $= "")
+      {
+         error("Selected Level Asset doesn't have a valid levelFile path!");
          return;
+      }
    }
       
    // close the current editor, it will get cleaned up by MissionCleanup
@@ -484,6 +497,21 @@ function EditorOpenMission(%filename)
       Editor.open();
    
       popInstantGroup();
+   }
+}
+
+function EditorOpenSceneAppend(%levelAsset)
+{
+   //Load the asset's level file
+   exec(%levelAsset.levelFile);
+   
+   //We'll assume the scene name and assetname are the same for now
+   %sceneName = %levelAsset.AssetName;
+   %scene = nameToID(%sceneName);
+   if(isObject(%scene))
+   {
+      //Append it to our scene heirarchy
+      $scenesRootGroup.add(%scene);
    }
 }
 

@@ -45,10 +45,10 @@ bool PlayerObject::onAdd()
    addComponent(mCollisionComponent);
 
    //Animation
-   mAnimationComponent = new AnimationComponent();
+   mAnimationComponent = new PlayerAnimationComponent();
    if (!mAnimationComponent->registerObject())
    {
-      Con::errorf("PlayerObject::onAdd - unable to add AnimationComponent!");
+      Con::errorf("PlayerObject::onAdd - unable to add PlayerAnimationComponent!");
       return false;
    }
 
@@ -67,6 +67,78 @@ bool PlayerObject::onAdd()
    mPhysicsComponent->setInternalName("physicsComponent");
 
    addComponent(mPhysicsComponent);
+
+   //State Machine
+   mStateMachineComponent = new StateMachineComponent();
+   if (!mStateMachineComponent->registerObject())
+   {
+      Con::errorf("PlayerObject::onAdd - unable to add StateMachineComponent!");
+      return false;
+   }
+
+   mStateMachineComponent->setInternalName("stateMachineComponent");
+
+   addComponent(mStateMachineComponent);
+
+   //Camera
+   mCameraComponent = new CameraComponent();
+   if (!mCameraComponent->registerObject())
+   {
+      Con::errorf("PlayerObject::onAdd - unable to add CameraComponent!");
+      return false;
+   }
+
+   mCameraComponent->setInternalName("cameraComponent");
+
+   addComponent(mCameraComponent);
+
+   //Camera Orbiter
+   mCameraOrbiterComponent = new CameraOrbiterComponent();
+   if (!mCameraOrbiterComponent->registerObject())
+   {
+      Con::errorf("PlayerObject::onAdd - unable to add CameraOrbiterComponent!");
+      return false;
+   }
+
+   mCameraOrbiterComponent->setInternalName("cameraOrbiterComponent");
+
+   addComponent(mCameraOrbiterComponent);
+
+   //Control Object
+   mControlObjectComponent = new ControlObjectComponent();
+   if (!mControlObjectComponent->registerObject())
+   {
+      Con::errorf("PlayerObject::onAdd - unable to add ControlObjectComponent!");
+      return false;
+   }
+
+   mControlObjectComponent->setInternalName("controlObjectComponent");
+
+   addComponent(mControlObjectComponent);
+
+   //Sound
+   mSoundComponent = new SoundComponent();
+   if (!mSoundComponent->registerObject())
+   {
+      Con::errorf("PlayerObject::onAdd - unable to add SoundComponent!");
+      return false;
+   }
+
+   mSoundComponent->setInternalName("soundComponent");
+
+   addComponent(mSoundComponent);
+
+   //Interaction
+   mInteractComponent = new InteractComponent();
+   if (!mInteractComponent->registerObject())
+   {
+      Con::errorf("PlayerObject::onAdd - unable to add InteractComponent!");
+      return false;
+   }
+
+   mInteractComponent->setInternalName("interactComponent");
+
+   addComponent(mInteractComponent);
 
    return true;
 }

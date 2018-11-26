@@ -1,0 +1,7 @@
+<GUIAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="RecordingsDlg"
+    GUIFilePath="data/UI/GUIs/RecordingsDlg.gui"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/guis/RecordingsDlg.gui"
+    VersionId="1" />

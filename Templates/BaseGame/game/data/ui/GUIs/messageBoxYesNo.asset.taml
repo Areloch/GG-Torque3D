@@ -1,0 +1,7 @@
+<GUIAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="MessageBoxYesNo"
+    GUIFilePath="data/UI/GUIs/messageBoxYesNo.gui"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/guis/messageBoxYesNo.gui"
+    VersionId="1" />

@@ -1,0 +1,7 @@
+<GUIAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="joinServerMenu"
+    GUIFilePath="data/UI/GUIs/joinServerMenu.gui"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/guis/joinServerMenu.gui"
+    VersionId="1" />

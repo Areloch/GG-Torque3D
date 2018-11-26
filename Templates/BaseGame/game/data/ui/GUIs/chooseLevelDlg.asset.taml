@@ -1,0 +1,7 @@
+<GUIAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="ChooseLevelDlg"
+    GUIFilePath="data/UI/GUIs/chooseLevelDlg.gui"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/guis/chooseLevelDlg.gui"
+    VersionId="1" />

@@ -1,0 +1,7 @@
+<GUIAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="remapDlg"
+    GUIFilePath="data/UI/GUIs/remapDlg.gui"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/guis/remapDlg.gui"
+    VersionId="1" />

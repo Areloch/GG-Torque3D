@@ -1,0 +1,7 @@
+<GUIAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="mainMenu"
+    GUIFilePath="data/UI/GUIs/mainMenu.gui"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/guis/mainMenu.gui"
+    VersionId="1" />

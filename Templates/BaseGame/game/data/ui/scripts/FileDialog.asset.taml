@@ -1,0 +1,8 @@
+<ScriptAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="FileDialog"
+    scriptFilePath="data/UI/Scripts/FileDialog.cs"
+    isServerSide="false"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/FileDialog.cs"
+    VersionId="1" />

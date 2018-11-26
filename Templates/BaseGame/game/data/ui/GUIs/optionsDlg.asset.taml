@@ -1,0 +1,7 @@
+<GUIAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="optionsDlg"
+    GUIFilePath="data/UI/GUIs/optionsDlg.gui"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/guis/optionsDlg.gui"
+    VersionId="1" />

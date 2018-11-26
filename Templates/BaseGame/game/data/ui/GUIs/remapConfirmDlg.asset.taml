@@ -1,0 +1,7 @@
+<GUIAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="remapConfirmDlg"
+    GUIFilePath="data/UI/GUIs/remapConfirmDlg.gui"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/guis/remapConfirmDlg.gui"
+    VersionId="1" />

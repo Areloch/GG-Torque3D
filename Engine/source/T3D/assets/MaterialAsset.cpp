@@ -180,34 +180,72 @@ void GuiInspectorTypeMaterialAssetPtr::consoleInit()
 GuiControl* GuiInspectorTypeMaterialAssetPtr::constructEditControl()
 {
    // Create base filename edit controls
-   GuiControl *retCtrl = Parent::constructEditControl();
+  /*GuiControl *retCtrl = Parent::constructEditControl();
    if (retCtrl == NULL)
-      return retCtrl;
+      return retCtrl;*/
+
+   mUseHeightOverride = true;
+   mHeightOverride = 100;
+
+   mMatEdContainer = new GuiControl();
+   mMatEdContainer->registerObject();
+
+   addObject(mMatEdContainer);
+
+   // Create "Open in ShapeEditor" button
+   mMatPreviewButton = new GuiBitmapButtonCtrl();
+
+   const char* matAssetId = getData();
+
+   MaterialAsset* matAsset = AssetDatabase.acquireAsset< MaterialAsset>(matAssetId);
+
+   Material* materialDef = nullptr;
+
+   char bitmapName[512] = "tools/worldEditor/images/toolbar/shape-editor";
+
+   if (!Sim::findObject(matAsset->getMaterialDefinitionName(), materialDef))
+   {
+      Con::errorf("GuiInspectorTypeMaterialAssetPtr::constructEditControl() - unable to find material in asset");
+   }
+   else
+   {
+      mMatPreviewButton->setBitmap(materialDef->mDiffuseMapFilename[0]);
+   }
+
+   mMatPreviewButton->setPosition(0, 0);
+   mMatPreviewButton->setExtent(100,100);
 
    // Change filespec
    char szBuffer[512];
    dSprintf(szBuffer, sizeof(szBuffer), "AssetBrowser.showDialog(\"MaterialAsset\", \"AssetBrowser.changeAsset\", %d, %s);",
       mInspector->getComponentGroupTargetId(), mCaption);
-   mBrowseButton->setField("Command", szBuffer);
+   mMatPreviewButton->setField("Command", szBuffer);
 
-   // Create "Open in ShapeEditor" button
-   mSMEdButton = new GuiBitmapButtonCtrl();
+   mMatPreviewButton->setDataField(StringTable->insert("Profile"), NULL, "GuiButtonProfile");
+   mMatPreviewButton->setDataField(StringTable->insert("tooltipprofile"), NULL, "GuiToolTipProfile");
+   mMatPreviewButton->setDataField(StringTable->insert("hovertime"), NULL, "1000");
 
-   dSprintf(szBuffer, sizeof(szBuffer), "echo(\"Game Object Editor not implemented yet!\");", retCtrl->getId());
-   mSMEdButton->setField("Command", szBuffer);
+   StringBuilder strbld;
+   strbld.append(matAsset->getMaterialDefinitionName());
+   strbld.append("\n");
+   strbld.append("Open this file in the Material Editor");
 
-   char bitmapName[512] = "tools/worldEditor/images/toolbar/shape-editor";
-   mSMEdButton->setBitmap(bitmapName);
+   mMatPreviewButton->setDataField(StringTable->insert("tooltip"), NULL, strbld.data());
 
-   mSMEdButton->setDataField(StringTable->insert("Profile"), NULL, "GuiButtonProfile");
-   mSMEdButton->setDataField(StringTable->insert("tooltipprofile"), NULL, "GuiToolTipProfile");
-   mSMEdButton->setDataField(StringTable->insert("hovertime"), NULL, "1000");
-   mSMEdButton->setDataField(StringTable->insert("tooltip"), NULL, "Open this file in the Material Editor");
+   _registerEditControl(mMatPreviewButton);
+   //mMatPreviewButton->registerObject();
+   mMatEdContainer->addObject(mMatPreviewButton);
 
-   mSMEdButton->registerObject();
-   addObject(mSMEdButton);
+   mMatAssetIdTxt = new GuiTextEditCtrl();
+   mMatAssetIdTxt->registerObject();
+   mMatAssetIdTxt->setActive(false);
 
-   return retCtrl;
+   mMatAssetIdTxt->setText(matAssetId);
+
+   mMatAssetIdTxt->setBounds(100, 0, 150, 18);
+   mMatEdContainer->addObject(mMatAssetIdTxt);
+
+   return mMatEdContainer;
 }
 
 bool GuiInspectorTypeMaterialAssetPtr::updateRects()
@@ -221,17 +259,46 @@ bool GuiInspectorTypeMaterialAssetPtr::updateRects()
    mEditCtrlRect.set(fieldExtent.x - dividerPos + dividerMargin, 1, dividerPos - dividerMargin - 34, fieldExtent.y);
 
    bool resized = mEdit->resize(mEditCtrlRect.point, mEditCtrlRect.extent);
-   if (mBrowseButton != NULL)
+
+   if (mMatEdContainer != nullptr)
    {
-      mBrowseRect.set(fieldExtent.x - 32, 2, 14, fieldExtent.y - 4);
-      resized |= mBrowseButton->resize(mBrowseRect.point, mBrowseRect.extent);
+      mMatPreviewButton->resize(mEditCtrlRect.point, mEditCtrlRect.extent);
    }
 
-   if (mSMEdButton != NULL)
+   if (mMatPreviewButton != nullptr)
    {
-      RectI shapeEdRect(fieldExtent.x - 16, 2, 14, fieldExtent.y - 4);
-      resized |= mSMEdButton->resize(shapeEdRect.point, shapeEdRect.extent);
+      mMatPreviewButton->resize(Point2I::Zero, Point2I(100, 100));
    }
+
+   if (mMatAssetIdTxt != nullptr)
+   {
+      mMatAssetIdTxt->resize(Point2I(100, 0), Point2I(mEditCtrlRect.extent.x - 100, 18));
+   }
+   /*if (mMatPreviewButton != NULL)
+   {
+      RectI shapeEdRect(fieldExtent.x - 16, 2, 100, fieldExtent.y - 4);
+      resized |= mMatPreviewButton->resize(shapeEdRect.point, shapeEdRect.extent);
+   }*/
 
    return resized;
+}
+
+void GuiInspectorTypeMaterialAssetPtr::setMaterialAsset(String assetId)
+{
+   mTargetObject->setDataField(mCaption, "", assetId);
+
+   //force a refresh
+   SimObject* obj = mInspector->getInspectObject();
+   mInspector->inspectObject(obj);
+}
+
+DefineEngineMethod(GuiInspectorTypeMaterialAssetPtr, setMaterialAsset, void, (String assetId), (""),
+   "Gets a particular shape animation asset for this shape.\n"
+   "@param animation asset index.\n"
+   "@return Shape Animation Asset.\n")
+{
+   if (assetId == String::EmptyString)
+      return;
+
+   return object->setMaterialAsset(assetId);
 }

@@ -152,12 +152,12 @@ bool ShapeAsset::loadShape()
 
          if (assetType == StringTable->insert("MaterialAsset"))
          {
-            mMaterialAssetIds.push_back(assetDependenciesItr->value);
+            mMaterialAssetIds.push_front(assetDependenciesItr->value);
 
             //Force the asset to become initialized if it hasn't been already
             AssetPtr<MaterialAsset> matAsset = assetDependenciesItr->value;
 
-            mMaterialAssets.push_back(matAsset);
+            mMaterialAssets.push_front(matAsset);
          }
          else if (assetType == StringTable->insert("ShapeAnimationAsset"))
          {

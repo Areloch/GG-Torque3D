@@ -1,0 +1,8 @@
+<ScriptAsset
+    canSave="true"
+    canSaveDynamicFields="true"
+    AssetName="controlsMenu"
+    scriptFilePath="data/UI/Scripts/controlsMenu.cs"
+    isServerSide="false"
+    originalFilePath="E:/Gamedev/T3DMIT/PRs/ExpandedAssetStuffs/Templates/Modules/ui/scripts/controlsMenu.cs"
+    VersionId="1" />

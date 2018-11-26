@@ -5,9 +5,12 @@ Vector<Scene*> Scene::smSceneList;
 
 IMPLEMENT_CO_NETOBJECT_V1(Scene);
 
-Scene::Scene()
-   : mIsSubScene(false),
-   mSceneId(-1)
+Scene::Scene() : 
+   mIsSubScene(false),
+   mParentScene(nullptr),
+   mSceneId(-1),
+   mIsEditing(false),
+   mIsDirty(false)
 {
 
 }
@@ -20,6 +23,12 @@ Scene::~Scene()
 void Scene::initPersistFields()
 {
    Parent::initPersistFields();
+
+   addGroup("Internal");
+   addField("isSubscene", TypeBool, Offset(mIsSubScene, Scene), "", AbstractClassRep::FIELD_HideInInspectors);
+   addField("isEditing", TypeBool, Offset(mIsEditing, Scene), "", AbstractClassRep::FIELD_HideInInspectors);
+   addField("isDirty", TypeBool, Offset(mIsDirty, Scene), "", AbstractClassRep::FIELD_HideInInspectors);
+   endGroup("Internal");
 }
 
 bool Scene::onAdd()
