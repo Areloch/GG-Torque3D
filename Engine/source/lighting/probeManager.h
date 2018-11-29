@@ -159,6 +159,9 @@ public:
    void getWorldToLightProj(MatrixF *outMatrix) const;
 
    void clear();
+
+   static void sortByScore();
+   static S32 _ScoreCmp(ProbeRenderInst* const* a, ProbeRenderInst* const* b);
 };
 
 struct ProbeShaderConstants

@@ -499,7 +499,14 @@ void ReflectionProbe::updateProbeParams()
    mProbeInfo->mProbePosOffset = mProbePosOffset;
 
    mProbeInfo->mDirty = true;
-   mProbeInfo->mScore = mMaxDrawDistance;
+
+   if (mProbeInfo->mScore != mRadius)
+   {
+      //Difference in score, so make sure we resort ourselves
+      mProbeInfo->mScore = mRadius;
+      ProbeRenderInst::sortByScore();
+   }
+   
 }
 
 void ReflectionProbe::updateMaterial()
@@ -646,11 +653,11 @@ void ReflectionProbe::prepRenderImage(SceneRenderState *state)
    F32 dist = distVec.len();
 
    //Culling distance. Can be adjusted for performance options considerations via the scalar
-   if (dist > mMaxDrawDistance * Con::getFloatVariable("$pref::GI::ProbeDrawDistScale", 1.0))
+   /*if (dist > mMaxDrawDistance * Con::getFloatVariable("$pref::GI::ProbeDrawDistScale", 1.0))
    {
       mProbeInfo->mScore = mMaxDrawDistance;
       return;
-   }
+   }*/
 
    if (mReflectionModeType == DynamicCubemap && mRefreshRateMS < (Platform::getRealMilliseconds() - mDynamicLastBakeMS))
    {
@@ -663,12 +670,12 @@ void ReflectionProbe::prepRenderImage(SceneRenderState *state)
    //RenderPassManager *renderPass = state->getRenderPass();
 
    //Update our score based on our radius, distance
-   mProbeInfo->mScore = mProbeInfo->mRadius/mMax(dist,1.0f);
+   //mProbeInfo->mScore = mProbeInfo->mRadius/mMax(dist,1.0f);
 
    Point3F vect = distVec;
    vect.normalizeSafe();
 
-   mProbeInfo->mScore *= mMax(mAbs(mDot(vect, state->getCameraTransform().getForwardVector())),0.001f);
+   //mProbeInfo->mScore *= mMax(mAbs(mDot(vect, state->getCameraTransform().getForwardVector())),0.001f);
 
    //Register
    PROBEMGR->registerProbe(mProbeInfoIdx);

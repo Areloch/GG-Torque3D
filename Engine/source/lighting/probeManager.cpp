@@ -113,6 +113,21 @@ void ProbeRenderInst::set(const ProbeRenderInst *probeInfo)
    }
 }
 
+S32 QSORT_CALLBACK ProbeRenderInst::_ScoreCmp(ProbeRenderInst* const* a, ProbeRenderInst* const* b)
+{
+   // Debug Profiling.
+   PROFILE_SCOPE(AdvancedLightBinManager_AscendingReflectProbeInfluence);
+
+   //sort by score
+   return (*a)->mScore - (*b)->mScore;
+}
+
+void ProbeRenderInst::sortByScore()
+{
+   ProbeRenderInst::all.sort(_ScoreCmp);
+}
+
+
 void ProbeRenderInst::getWorldToLightProj(MatrixF *outMatrix) const
 {
    *outMatrix = getTransform();

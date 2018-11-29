@@ -175,6 +175,7 @@ void Skylight::updateProbeParams()
 
    mProbeInfo->mIsSkylight = true; 
    mProbeInfo->mScore = -1.0f; //sky comes first
+   ProbeRenderInst::sortByScore();
 }
 
 void Skylight::prepRenderImage(SceneRenderState *state)
