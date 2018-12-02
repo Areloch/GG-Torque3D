@@ -510,6 +510,16 @@ void ReflectionProbe::updateMaterial()
    {
       if ((mReflectionModeType == BakedCubemap) && !mProbeUniqueID.isEmpty())
       {
+         if (mPrefilterMap != nullptr && mPrefilterMap->mCubemap.isValid()
+            && mIrridianceMap != nullptr && mIrridianceMap->mCubemap.isValid())
+         {
+            mProbeInfo->mCubemapArray = GFX->createCubemapArray();
+
+            GFXCubemapHandle handleArray[2] = { mPrefilterMap->mCubemap, mIrridianceMap->mCubemap };
+
+            mProbeInfo->mCubemapArray->initStatic(handleArray, 2);
+         }
+
          if (mPrefilterMap != nullptr && mPrefilterMap->mCubemap.isValid())
          {
             mProbeInfo->mCubemap = &mPrefilterMap->mCubemap;

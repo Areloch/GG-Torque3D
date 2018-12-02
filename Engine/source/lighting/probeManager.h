@@ -86,6 +86,8 @@ struct ProbeRenderInst : public SystemInterface<ProbeRenderInst>
    Box3F mBounds;
    Point3F mProbePosOffset;
 
+   GFXCubemapArray *mCubemapArray;
+
    GFXCubemapHandle *mCubemap;
 
    GFXCubemapHandle *mIrradianceCubemap;

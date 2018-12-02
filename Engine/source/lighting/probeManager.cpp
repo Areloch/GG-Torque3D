@@ -941,9 +941,10 @@ void ProbeManager::ReflectProbeMaterialInfo::setProbeParameters(const ProbeRende
    GFX->setTexture(0, deferredTexTarget->getTexture());
 	GFX->setTexture(1, matInfoTexTarget->getTexture());
    GFX->setTexture(2, colorTexTarget->getTexture());
-   GFX->setCubeTexture(3, probeInfo->mCubemap->getPointer());
-   GFX->setCubeTexture(4, probeInfo->mIrradianceCubemap->getPointer());
-   GFX->setTexture(5, probeInfo->mBRDFTexture->getPointer());
+
+   GFX->setCubeArrayTexture(3, probeInfo->mCubemapArray);
+   //GFX->setCubeTexture(4, probeInfo->mIrradianceCubemap->getPointer());
+   GFX->setTexture(4, probeInfo->mBRDFTexture->getPointer());
 
    //set material params
    matParams->setSafe(cubeMips, mPow(probeInfo->mCubemap->getPointer()->getMipMapLevels(), 2.0f));

@@ -15,9 +15,8 @@ struct ConvexConnectP
 TORQUE_UNIFORM_SAMPLER2D(deferredBuffer, 0);
 TORQUE_UNIFORM_SAMPLER2D(matInfoBuffer, 1);
 TORQUE_UNIFORM_SAMPLER2D(colorBuffer, 2);
-TORQUE_UNIFORM_SAMPLERCUBE(cubeMap, 3);
-TORQUE_UNIFORM_SAMPLERCUBE(irradianceCubemap, 4);
-TORQUE_UNIFORM_SAMPLER2D(BRDFTexture, 5);
+TORQUE_UNIFORM_SAMPLERCUBEARRAY(cubeMapArray, 3);
+TORQUE_UNIFORM_SAMPLER2D(BRDFTexture, 4);
 uniform float cubeMips;
 
 uniform float4 rtParams0;
@@ -57,7 +56,7 @@ float3 boxProject(float3 wsPosition, float3 reflectDir, float3 boxWSPos, float3 
 
 float3 iblBoxSpecular(float3 normal, float3 wsPos, float roughness, float3 surfToEye,
                      TORQUE_SAMPLER2D(brdfTexture), 
-                    TORQUE_SAMPLERCUBE(radianceCube),
+                    TORQUE_SAMPLERCUBEARRAY(cubeMapArray),
                     float3 boxPos,
                     float3 boxMin,
                     float3 boxMax)
@@ -74,7 +73,7 @@ float3 iblBoxSpecular(float3 normal, float3 wsPos, float roughness, float3 surfT
    float3 cubeR = normalize(r);
    cubeR = boxProject(wsPos, cubeR, boxPos, boxMin, boxMax);
 	
-   float3 radiance = TORQUE_TEXCUBELOD(radianceCube, float4(cubeR, lod)).xyz * (brdf.x + brdf.y);
+   float3 radiance = TORQUE_TEXCUBEARRAYLOD(cubeMapArray, float4(cubeR, 0), lod).xyz * (brdf.x + brdf.y);
     
    return radiance;
 }
@@ -128,8 +127,8 @@ float4 main( ConvexConnectP IN ) : SV_TARGET
 	}
 	//render into the bound space defined above
 	float3 surfToEye = normalize(surface.P - eyePosWorld);
-	float3 irradiance = TORQUE_TEXCUBELOD(irradianceCubemap, float4(surface.N,0)).xyz;
-	float3 specular = iblBoxSpecular(surface.N, surface.P, surface.roughness, surfToEye, TORQUE_SAMPLER2D_MAKEARG(BRDFTexture), TORQUE_SAMPLERCUBE_MAKEARG(cubeMap), probeWSPos, bbMin, bbMax);
+	float3 irradiance = TORQUE_TEXCUBEARRAYLOD(cubeMapArray, float4(surface.N,1), 0).xyz;
+	float3 specular = iblBoxSpecular(surface.N, surface.P, surface.roughness, surfToEye, TORQUE_SAMPLER2D_MAKEARG(BRDFTexture), TORQUE_SAMPLERCUBE_MAKEARG(cubeMapArray), probeWSPos, bbMin, bbMax);
    float3 F = FresnelSchlickRoughness(surface.NdotV, surface.f0, surface.roughness);
    specular *= F;
    //energy conservation
