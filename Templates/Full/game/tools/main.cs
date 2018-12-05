@@ -121,6 +121,17 @@ package Tools
          if( isFunction( %initializeFunction ) )
             call( %initializeFunction );
       }
+      
+      //Now, go through and load any tool-group modules
+      ModuleDatabase.setModuleExtension("module");
+      
+      //Any common tool modules
+      ModuleDatabase.scanModules( "tools", false );
+      ModuleDatabase.LoadGroup( "Tools" );
+      
+      //Do any tools that come in with a gameplay package. These are usually specialized tools
+      //ModuleDatabase.scanModules( "data", false );
+      //ModuleDatabase.LoadGroup( "Tool" );
 
       // Popuplate the default SimObject icons that 
       // are used by the various editors.

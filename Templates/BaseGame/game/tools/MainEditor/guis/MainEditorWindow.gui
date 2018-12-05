@@ -58,7 +58,7 @@
          anchorRight = "0";
          position = "0 0";
          extent = "1659 1081";
-         minExtent = "16 16";
+         minExtent = "0 0";
          horizSizing = "right";
          vertSizing = "bottom";
          profile = "GuiDefaultProfile";
@@ -108,7 +108,7 @@
                anchorRight = "0";
                position = "0 0";
                extent = "228 1081";
-               minExtent = "16 16";
+               minExtent = "0 0";
                horizSizing = "right";
                vertSizing = "bottom";
                profile = "GuiDefaultProfile";
@@ -162,7 +162,7 @@
                anchorRight = "0";
                position = "232 0";
                extent = "1427 1081";
-               minExtent = "16 16";
+               minExtent = "0 0";
                horizSizing = "right";
                vertSizing = "bottom";
                profile = "GuiDefaultProfile";
@@ -212,7 +212,7 @@
                      anchorRight = "0";
                      position = "0 0";
                      extent = "1427 743";
-                     minExtent = "16 16";
+                     minExtent = "0 0";
                      horizSizing = "right";
                      vertSizing = "bottom";
                      profile = "GuiDefaultProfile";
@@ -326,6 +326,30 @@
                         canSave = "1";
                         canSaveDynamicFields = "0";
                      };
+                     new GuiBitmapButtonCtrl(Editor_VisibilityOptionsButton) {
+                        bitmap = "tools/gui/images/visible";
+                        bitmapMode = "Stretched";
+                        autoFitExtents = "0";
+                        useModifiers = "0";
+                        useStates = "1";
+                        masked = "0";
+                        groupNum = "-1";
+                        buttonType = "PushButton";
+                        useMouseEvents = "0";
+                        position = "16 30";
+                        extent = "18 18";
+                        minExtent = "8 2";
+                        horizSizing = "right";
+                        vertSizing = "bottom";
+                        profile = "GuiDefaultProfile";
+                        visible = "1";
+                        active = "1";
+                        tooltipProfile = "GuiToolTipProfile";
+                        hovertime = "1000";
+                        isContainer = "0";
+                        canSave = "1";
+                        canSaveDynamicFields = "0";
+                     };
                   };
                   new GuiPanel(Editor_AssetBrowserPanel) {
                      docking = "Client";
@@ -337,7 +361,7 @@
                      anchorRight = "0";
                      position = "0 747";
                      extent = "1427 334";
-                     minExtent = "16 16";
+                     minExtent = "16 2";
                      horizSizing = "right";
                      vertSizing = "bottom";
                      profile = "GuiDefaultProfile";
@@ -364,7 +388,7 @@
          anchorRight = "0";
          position = "1663 0";
          extent = "258 1081";
-         minExtent = "16 16";
+         minExtent = "0 0";
          horizSizing = "right";
          vertSizing = "bottom";
          profile = "GuiDefaultProfile";
@@ -414,7 +438,7 @@
                anchorRight = "0";
                position = "0 0";
                extent = "258 554";
-               minExtent = "16 16";
+               minExtent = "0 0";
                horizSizing = "right";
                vertSizing = "bottom";
                profile = "GuiDefaultProfile";
@@ -437,7 +461,7 @@
                anchorRight = "0";
                position = "0 558";
                extent = "258 523";
-               minExtent = "16 16";
+               minExtent = "0 0";
                horizSizing = "right";
                vertSizing = "bottom";
                profile = "GuiDefaultProfile";
