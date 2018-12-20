@@ -399,9 +399,13 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
          if(%previewImage $= "")
             %previewImage = "tools/assetBrowser/art/materialIcon";*/
       }
-      if(%assetType $= "ShapeAnimationAsset")
+      else if(%assetType $= "ShapeAnimationAsset")
       {
           %this.buildShapeAnimationAssetPreview(%assetDesc, %this.previewData);
+      }
+      else if(%assetType $= "CppAsset")
+      {
+         %this.buildCppAssetPreview(%assetDesc, %this.previewData);
       }
       
       %previewButton = new GuiBitmapButtonCtrl()

@@ -58,6 +58,7 @@ function initializeAssetBrowser()
    exec("./scripts/assetTypes/material.cs");   
    exec("./scripts/assetTypes/stateMachine.cs");   
    exec("./scripts/assetTypes/shapeAnimation.cs");   
+   exec("./scripts/assetTypes/cpp.cs"); 
    
    exec("./scripts/fieldTypes.cs");
    
