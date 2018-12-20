@@ -1,15 +1,16 @@
 #include "PlayerAnimationComponent.h"
 
+IMPLEMENT_CO_NETOBJECT_V1(PlayerAnimationComponent);
+
 PlayerAnimationComponent::PlayerAnimationComponent() :
    mNewAnimationTickTime(4),
    mAnimationTransitionTime(0.25f),
-   mUseAnimationTransitions(true),
-   mMinLookAngle(-90),
-   mMaxLookAngle(90)
+   mUseAnimationTransitions(true)
 {
+   mFriendlyName = "Player Animation(Component)";
+   mComponentType = "Animation";
 
-   //Set up our thread channels
-
+   mActionAnimation.action = -1;
 }
 
 PlayerAnimationComponent::~PlayerAnimationComponent()
@@ -22,8 +23,6 @@ void PlayerAnimationComponent::initPersistFields()
    addField("newAnimationTickTime", TypeF32, Offset(mNewAnimationTickTime, PlayerAnimationComponent), "");
    addField("animationTransitionTime", TypeF32, Offset(mAnimationTransitionTime, PlayerAnimationComponent), "");
    addField("useAnimationTransitions", TypeF32, Offset(mUseAnimationTransitions, PlayerAnimationComponent), "");
-   addField("minLookAngle", TypeF32, Offset(mMinLookAngle, PlayerAnimationComponent), "");
-   addField("maxLookAngle", TypeF32, Offset(mMaxLookAngle, PlayerAnimationComponent), "");
    endGroup("AnimationController");
 
    Parent::initPersistFields();
@@ -36,10 +35,6 @@ bool PlayerAnimationComponent::onAdd()
 
    //Configure our references here for ease of use
    mActionAnimation.thread = mAnimationThreads[0].thread;
-   mArmThread = mAnimationThreads[1].thread;
-   mHeadVThread = mAnimationThreads[2].thread;
-   mHeadHThread = mAnimationThreads[3].thread;
-   mRecoilThread = mAnimationThreads[4].thread;
 
    return true;
 }
@@ -64,28 +59,30 @@ void PlayerAnimationComponent::componentRemovedFromOwner(Component *comp)
    Parent::componentRemovedFromOwner(comp);
 }
 
+void PlayerAnimationComponent::targetShapeChanged(RenderComponentInterface* instanceInterface)
+{
+   Parent::targetShapeChanged(instanceInterface);
+
+   mActionAnimation.thread = mAnimationThreads[0].thread;
+}
+
 void PlayerAnimationComponent::processTick()
 {
    Parent::processTick();
 
-   //if (!isActive())
+   if (!isActive() || mOwnerShapeInstance == nullptr)
       return;
 
    Entity::StateDelta delta = mOwner->getNetworkDelta();
 
    if (delta.warpTicks > 0)
    {
-      //updateDeathOffsets();
-      updateLookAnimation();
    }
    else
    {
       if (isServerObject())
       {
          updateAnimation(TickSec);
-
-         updateLookAnimation();
-         //updateDeathOffsets();
 
          // Animations are advanced based on frame rate on the
          // client and must be ticked on the server.
@@ -98,15 +95,20 @@ void PlayerAnimationComponent::processTick()
 void PlayerAnimationComponent::interpolateTick(F32 dt)
 {
    Parent::interpolateTick(dt);
-   //updateLookAnimation(dt);
+
+   if (!isActive() || mOwnerShapeInstance == nullptr)
+      return;
 }
 
 void PlayerAnimationComponent::advanceTime(F32 dt)
 {
    Parent::advanceTime(dt);
 
-   //updateActionThread();
-   //updateAnimation(dt);
+   if (!isActive() || mOwnerShapeInstance == nullptr)
+      return;
+
+   updateActionThread();
+   updateAnimation(dt);
 }
 
 //
@@ -118,6 +120,9 @@ void PlayerAnimationComponent::addAction(String animName, VectorF direction, Str
 
    newActionDef.name = animName;
    newActionDef.dir = direction;
+   newActionDef.sequence = -1;
+   newActionDef.speed = 1;
+   newActionDef.death = 0;
    newActionDef.tags.push_back(StringTable->insert(tags));
 
    mActionAnimationList.push_back(newActionDef);
@@ -162,93 +167,6 @@ void PlayerAnimationComponent::getGroundInfo(TSShapeInstance* si, TSThread* thre
    //}
 }
 
-void PlayerAnimationComponent::updateLookAnimation(F32 dt)
-{
-   // If the preference setting overrideLookAnimation is true, the player's
-   // arm and head no longer animate according to the view direction. They
-   // are instead given fixed positions.
-   if (overrideLookAnimation)
-   {
-      if (mArmAnimation.thread)
-         mOwnerShapeInstance->setPos(mArmAnimation.thread, armLookOverridePos);
-      if (mHeadVThread)
-         mOwnerShapeInstance->setPos(mHeadVThread, headVLookOverridePos);
-      if (mHeadHThread)
-         mOwnerShapeInstance->setPos(mHeadHThread, headHLookOverridePos);
-      return;
-   }
-   // Calculate our interpolated head position.
-   Point3F renderHead = head + headVec * dt;
-
-   // Adjust look pos.  This assumes that the animations match
-   // the min and max look angles provided in the datablock.
-   if (mArmAnimation.thread)
-   {
-      /*if (mControlObject)
-      {
-         mOwnerShapeInstance->setPos(mArmAnimation.thread, 0.5f);
-      }
-      else
-      {*/
-         F32 d = mMaxLookAngle - mMinLookAngle;
-         F32 tp = (renderHead.x - mMinLookAngle) / d;
-         mOwnerShapeInstance->setPos(mArmAnimation.thread, mClampF(tp, 0, 1));
-      //}
-   }
-
-   if (mHeadVThread)
-   {
-      F32 d = mMaxLookAngle - mMinLookAngle;
-      F32 tp = (renderHead.x - mMinLookAngle) / d;
-      mOwnerShapeInstance->setPos(mHeadVThread, mClampF(tp, 0, 1));
-   }
-
-   if (mHeadHThread)
-   {
-      F32 d = 2 * mMaxFreelookAngle;
-      F32 tp = (renderHead.z + mMaxFreelookAngle) / d;
-      mOwnerShapeInstance->setPos(mHeadHThread, mClampF(tp, 0, 1));
-   }
-}
-
-
-//----------------------------------------------------------------------------
-// Methods to get delta (as amount to affect velocity by)
-
-/*bool PlayerAnimationComponent::inDeathAnim()
-{
-   if ((anim_clip_flags & ANIM_OVERRIDDEN) != 0 && (anim_clip_flags & IS_DEATH_ANIM) == 0)
-      return false;
-   if (mActionAnimation.thread && mActionAnimation.action >= 0)
-      if (mActionAnimation.action < mActionList.size())
-         return mActionAnimationList[mActionAnimation.action].death;
-
-   return false;
-}
-
-// Get change from mLastDeathPos - return current pos.  Assumes we're in death anim.
-F32 PlayerAnimationComponent::deathDelta(Point3F & delta)
-{
-   // Get ground delta from the last time we offset this.
-   MatrixF  mat;
-   F32 pos = mOwnerShapeInstance->getPos(mActionAnimation.thread);
-   mOwnerShapeInstance->deltaGround1(mActionAnimation.thread, mDeath.lastPos, pos, mat);
-   mat.getColumn(3, &delta);
-   return pos;
-}
-
-// Called before updatePos() to prepare it's needed change to velocity, which
-// must roll over.  Should be updated on tick, this is where we remember last
-// position of animation that was used to roll into velocity.
-void PlayerAnimationComponent::updateDeathOffsets()
-{
-   if (inDeathAnim())
-      // Get ground delta from the last time we offset this.
-      mDeath.lastPos = deathDelta(mDeath.posAdd);
-   else
-      mDeath.clear();
-}*/
-
 void PlayerAnimationComponent::updateAnimation(F32 dt)
 {
    // update any active blend clips
@@ -283,40 +201,6 @@ void PlayerAnimationComponent::updateAnimationTree(bool firstPerson)
       if (mDataBlock->spineNode[i] != -1)
          mOwnerShapeInstance->setNodeAnimationState(mDataBlock->spineNode[i], mode);*/
 }
-
-const String& PlayerAnimationComponent::getArmThread() const
-{
-   if (mArmAnimation.thread && mArmAnimation.thread->hasSequence())
-   {
-      return mArmAnimation.thread->getSequenceName();
-   }
-
-   return String::EmptyString;
-}
-
-bool PlayerAnimationComponent::setArmThread(const char* sequence)
-{
-   // The arm sequence must be in the action list.
-   for (U32 i = 1; i < mActionAnimationList.size(); i++)
-      if (!dStricmp(mActionAnimationList[i].name, sequence))
-         return setArmThread(i);
-   return false;
-}
-
-bool PlayerAnimationComponent::setArmThread(U32 action)
-{
-   ActionAnimationDef &anim = mActionAnimationList[action];
-   if (anim.sequence != -1 &&
-      anim.sequence != mOwnerShapeInstance->getSequence(mArmAnimation.thread))
-   {
-      mOwnerShapeInstance->setSequence(mArmAnimation.thread, anim.sequence, 0);
-      mArmAnimation.action = action;
-      setMaskBits(ThreadMaskN << 1);
-      return true;
-   }
-   return false;
-}
-
 
 //----------------------------------------------------------------------------
 
@@ -527,7 +411,7 @@ void PlayerAnimationComponent::updateActionThread()
    PROFILE_END();
 }
 
-void PlayerAnimationComponent::pickBestMoveAction(U32 startAnim, U32 endAnim, U32 * action, bool * forward) const
+/*void PlayerAnimationComponent::pickBestMoveAction(U32 * action, bool * forward) const
 {
    *action = startAnim;
    *forward = false;
@@ -543,11 +427,19 @@ void PlayerAnimationComponent::pickBestMoveAction(U32 startAnim, U32 endAnim, U3
 
       // Pick animation that is the best fit for our current (local) velocity.
       // Assumes that the root (stationary) animation is at startAnim.
+      U32 animCount = mActionAnimationList.size();
+
       F32 curMax = -0.1f;
-      for (U32 i = startAnim + 1; i <= endAnim; i++)
+      for (U32 i = 0; i < animCount; i++)
       {
          const ActionAnimationDef &anim = mActionAnimationList[i];
-         if (anim.sequence != -1 && anim.speed)
+
+         /*for (U32 a = 0; a < mActiveTags.size(); a++)
+         {
+            if(mActiveTags[a]
+         }*/
+
+         /*if (anim.sequence != -1 && anim.speed)
          {
             F32 d = mDot(vel, anim.dir);
             if (d > curMax)
@@ -572,7 +464,7 @@ void PlayerAnimationComponent::pickBestMoveAction(U32 startAnim, U32 endAnim, U3
          }
       }
    }
-}
+}*/
 
 void PlayerAnimationComponent::pickActionAnimation()
 {
@@ -640,8 +532,27 @@ void PlayerAnimationComponent::pickActionAnimation()
    setActionThread(action, forward, false, false, fsp);
 }
 
+void PlayerAnimationComponent::setActiveTags(String tags)
+{
+   mActiveTags.clear();
+
+   U32 count = StringUnit::getUnitCount(tags, ",");
+
+   for (U32 i = 0; i < count; i++)
+   {
+      StringTableEntry tag = StringTable->insert(StringUnit::getUnit(tags, i, ","));
+
+      mActiveTags.push_back(tag);
+   }
+}
+
 DefineEngineMethod(PlayerAnimationComponent, addAction, void, (String animName, VectorF direction, String tags), ("", VectorF::Zero, ""),
    "")
 {
    return object->addAction(animName, direction, tags);
+}
+
+DefineEngineMethod(PlayerAnimationComponent, setActiveTags, void, (String tags), (""), "")
+{
+   return object->setActiveTags(tags);
 }

@@ -991,6 +991,9 @@ void GuiWindowCtrl::onMouseDragged(const GuiEvent &event)
    }
    else // Normal window sizing functionality
       resize(newPosition, newExtent);
+
+   if(isMethod("onMouseDragged"))
+      Con::executef(this, "onMouseDragged");
 }
 
 //-----------------------------------------------------------------------------

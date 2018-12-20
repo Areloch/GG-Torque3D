@@ -124,6 +124,7 @@ Entity::Entity()
 
    mGameObjectAssetId = StringTable->insert("");
 
+   mDirtyGameObject = false;
 }
 
 Entity::~Entity()
@@ -158,6 +159,9 @@ void Entity::initPersistFields()
    addGroup("GameObject");
    addProtectedField("GameObject", TypeGameObjectAssetPtr, Offset(mGameObjectAsset, Entity), &_setGameObject, &defaultProtectedGetFn,
       "The asset Id used for the game object this entity is based on.");
+
+   addField("dirtyGameObject", TypeS32, Offset(mDirtyGameObject, Entity), "If this entity is a GameObject, it flags if this instance delinates from the template.", 
+      AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
    endGroup("GameObject");
 }
 

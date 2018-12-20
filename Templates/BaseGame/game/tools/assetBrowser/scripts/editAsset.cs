@@ -21,7 +21,7 @@ function AssetBrowser::editAsset(%this, %assetDef)
    {
       //if(EditorSettings.materialEditMode $= "MaterialEditor")
       //{
-         %assetDef.materialDefinitionName.reload();
+         /*%assetDef.materialDefinitionName.reload();
          
          EditorGui.setEditor(MaterialEditorPlugin);
          
@@ -29,13 +29,13 @@ function AssetBrowser::editAsset(%this, %assetDef)
          MaterialEditorGui.setActiveMaterial( %assetDef.materialDefinitionName );
          
          AssetBrowser.hideDialog();
-      /*}
+      }
       else
-      {
+      {*/
          Canvas.pushDialog(ShaderEditor); 
          ShaderEditorGraph.loadGraph(%assetDef.shaderGraph);
          $ShaderGen::targetShaderFile = filePath(%assetDef.shaderGraph) @"/"@fileBase(%assetDef.shaderGraph);
-      }*/
+      //}
    }
    else if(%assetType $= "StateMachineAsset")
    {

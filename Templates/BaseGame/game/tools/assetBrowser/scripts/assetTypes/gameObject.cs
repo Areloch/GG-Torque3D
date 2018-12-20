@@ -22,6 +22,16 @@ function AssetBrowser::editGameObjectAssetScript(%this, %assetDef)
    EditorOpenFileInTorsion(makeFullPath(%scriptFile), 0);  
 }
 
+function AssetBrowser::applyInstanceToGameObject(%this, %assetDef)
+{
+   %obj = EditGameObjectAssetPopup.object;
+   
+   //TODO add proper validation against the original GO asset
+   %obj.dirtyGameObject = true;
+   
+   TamlWrite(%obj, %assetDef.TAMLFilePath);
+}
+
 function AssetBrowser::duplicateGameObjectAsset(%this, %assetDef, %targetModule)
 {
    //Check if we have a target module, if not we need to select one
@@ -211,11 +221,14 @@ function GuiInspectorTypeGameObjectAssetPtr::onClick( %this, %fieldName )
    //Get our data
    %obj = %this.getInspector().getInspectObject(0);
    
+   EditGameObjectAssetPopup.object = %obj;
+   
    %assetId = %obj.getFieldValue(%fieldName);
    
    if(%assetId !$= "")
    {
       EditGameObjectAssetPopup.assetId = %assetId;
+      
       
       EditGameObjectAssetPopup.showPopup(Canvas);
    }

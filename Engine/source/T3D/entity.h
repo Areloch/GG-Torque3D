@@ -52,7 +52,7 @@ class Entity : public GameBase
    typedef GameBase Parent;
    friend class Component;
 
-private:
+protected:
    Point3F             mPos;
    RotationF           mRot;
 
@@ -84,6 +84,9 @@ private:
 
    StringTableEntry		      mGameObjectAssetId;
    AssetPtr<GameObjectAsset>  mGameObjectAsset;
+
+   //Marked if this entity is a GameObject and deliniates from the parent GO asset
+   bool mDirtyGameObject;
 
    ContainerQueryInfo containerInfo;
 

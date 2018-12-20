@@ -218,7 +218,7 @@ void PlayerControllerComponent::initPersistFields()
    Parent::initPersistFields();
 
    addField("inputVelocity", TypePoint3F, Offset(mInputVelocity, PlayerControllerComponent), "");
-   addField("useDirectMoveInput", TypePoint3F, Offset(mUseDirectMoveInput, PlayerControllerComponent), "");
+   addField("useDirectMoveInput", TypeBool, Offset(mUseDirectMoveInput, PlayerControllerComponent), "");
 }
 
 U32 PlayerControllerComponent::packUpdate(NetConnection *con, U32 mask, BitStream *stream)

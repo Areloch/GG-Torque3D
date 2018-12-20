@@ -52,6 +52,12 @@ if( !$isDedicated )
    // we can hide any splash screen we have, and show the canvas.
    // This keeps things looking nice, instead of having a blank window
    Canvas.showWindow();
+   
+   //If we never bound ANY UI elements, just load into the editor
+   if(Canvas.getContent() == -1)
+   {
+      fastLoadWorldEdit(1);
+   }
 }
 else
 {

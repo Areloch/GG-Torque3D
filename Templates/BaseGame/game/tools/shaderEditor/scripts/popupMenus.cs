@@ -1,4 +1,4 @@
-function AssetBrowser::buildPopupMenus(%this)
+function ShaderEditor::buildPopupMenus(%this)
 {
    if( !isObject( AddNewModulePopup ) )
    {
@@ -221,7 +221,7 @@ function AssetBrowser::buildPopupMenus(%this)
    }
 }
 
-function AddNewScriptAssetPopupMenu::onSelectItem(%this, %id, %text)
+/*function AddNewScriptAssetPopupMenu::onSelectItem(%this, %id, %text)
 {   
    return true;
 }
@@ -235,4 +235,4 @@ function AddNewScriptAssetPopupMenu::setupDefaultState(%this)
 
 function AddNewScriptAssetPopupMenu::setupGuiControls(%this)
 {
-}
+}*/

@@ -190,3 +190,18 @@ function Editor_ToolsSidebarButton::onClick(%this)
       Editor_ToolsMainSplit.setSplitPoint($ToolsPanelSplit SPC Editor_ToolsMainSplit.splitPoint.y);
    }
 }
+
+function Editor_VisibilityOptionsButton::onClick(%this)
+{
+   if ( EVisibility.visible  )
+   {
+      EVisibility.setVisible(false);
+      //visibilityToggleBtn.setStateOn(0);
+   }
+   else
+   {
+      EVisibility.setVisible(true);
+      //visibilityToggleBtn.setStateOn(1);
+      EVisibility.setExtent("200 540");
+   }  
+}

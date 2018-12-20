@@ -107,7 +107,7 @@ void MaterialAsset::initPersistFields()
    // Call parent.
    Parent::initPersistFields();
 
-   //addField("shaderGraph", TypeRealString, Offset(mShaderGraphFile, MaterialAsset), "");
+   addField("shaderGraph", TypeRealString, Offset(mShaderGraphFile, MaterialAsset), "");
    addField("scriptFile", TypeRealString, Offset(mScriptFile, MaterialAsset), "Path to the file containing the material definition.");
    addField("materialDefinitionName", TypeRealString, Offset(mMatDefinitionName, MaterialAsset), "Name of the material definition this asset is for.");
 }
