@@ -11,8 +11,10 @@ function AssetBrowser::createGameObjectAsset(%this)
    Canvas.pushDialog(GameObjectCreator);
 }
 
-function AssetBrowser::editGameObjectAsset(%this, %assetId)
+function AssetBrowser::editGameObjectAsset(%this, %assetDef)
 {
+   //We have no dedicated GO editor for now, so just defer to the script editing aspect
+   %this.editGameObjectAssetScript(%assetDef);
 }
 
 function AssetBrowser::editGameObjectAssetScript(%this, %assetDef)
@@ -120,7 +122,7 @@ function AssetBrowser::dragAndDropGameObjectAsset(%this, %assetDef, %dropTarget)
    }
 }
 
-function AssetBrowser::renameGameObjectAsset(%this, %assetDef, %originalName, %newName)
+function AssetBrowser::renameGameObjectAsset(%this, %assetDef, %newAssetId, %originalName, %newName)
 {
    %oldScriptFilePath = %assetDef.scriptFilePath;
    %scriptFilePath = filePath(%assetDef.scriptFilePath);

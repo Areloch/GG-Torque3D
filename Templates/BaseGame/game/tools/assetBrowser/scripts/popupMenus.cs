@@ -126,11 +126,13 @@ function AssetBrowser::buildPopupMenus(%this)
          class = "EditorWorldMenu";
          //isPopup = true;
 
-         item[ 0 ] = "Create Static Class" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"CppStaticClassAsset\", AssetBrowser.selectedModule);";
+         /*item[ 0 ] = "Create Static Class" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"CppStaticClassAsset\", AssetBrowser.selectedModule);";
          item[ 1 ] = "Create Regular Class" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"CppRegularClassAsset\", AssetBrowser.selectedModule);";
          item[ 2 ] = "Create GameObject Class" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"CppGameObjectAsset\", AssetBrowser.selectedModule);";
          item[ 3 ] = "Create Component Class" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"CppComponentAsset\", AssetBrowser.selectedModule);";
-         item[ 4 ] = "Create Script Class" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"CppScriptClass\", AssetBrowser.selectedModule);";
+         item[ 4 ] = "Create Script Class" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"CppScriptClass\", AssetBrowser.selectedModule);";*/
+         
+         item[ 0 ] = "Create C++ Class" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"CppAsset\", AssetBrowser.selectedModule);";
       };
       //%this.AddNewScriptAssetPopup.insertSubMenu(0, "Create Component", AddNewComponentAssetPopup);
    }
@@ -175,7 +177,6 @@ function AssetBrowser::buildPopupMenus(%this)
    //Some assets are not yet ready/implemented, so disable their creation here
    AddNewArtAssetPopup.enableItem(3, false); //shape
    AddNewArtAssetPopup.enableItem(4, false); //shape animation
-   AddNewArtAssetPopup.enableItem(8, false); //post effect
    AddNewArtAssetPopup.enableItem(10, false); //sound asset
    AddNewArtAssetPopup.enableItem(12, false); //particle effect
    

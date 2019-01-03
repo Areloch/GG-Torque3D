@@ -117,6 +117,8 @@ protected:
 
    bool mBlockColliding;
 
+   bool mCollisionInited;
+
    void handleCollisionNotifyList();
 
    void queueCollision( SceneObject *obj, const VectorF &vec);

@@ -417,20 +417,26 @@ void MeshComponent::updateMaterials()
    TSMaterialList* pMatList = mInterfaceData->mShapeInstance->getMaterialList();
    pMatList->setTextureLookupPath(getShapeResource().getPath().getPath());
 
+   bool found = false;
    const Vector<String> &materialNames = pMatList->getMaterialNameList();
    for ( S32 i = 0; i < materialNames.size(); i++ )
    {
+      if (found)
+         break;
+
       for(U32 m=0; m < mChangingMaterials.size(); m++)
       {
          if(mChangingMaterials[m].slot == i)
          {
             //Fetch the actual material asset
             pMatList->renameMaterial( i, mChangingMaterials[m].matAsset->getMaterialDefinitionName());
+            found = true;
+            break;
          }
       }
-
-      mChangingMaterials.clear();
    }
+
+   mChangingMaterials.clear();
 
    // Initialize the material instances
    mInterfaceData->mShapeInstance->initMaterialList();

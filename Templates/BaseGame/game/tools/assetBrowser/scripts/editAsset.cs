@@ -17,97 +17,9 @@ function AssetBrowser::editAsset(%this, %assetDef)
       
    %assetType = %assetDef.getClassName();
    
-   if(%assetType $= "MaterialAsset")
-   {
-      //if(EditorSettings.materialEditMode $= "MaterialEditor")
-      //{
-         /*%assetDef.materialDefinitionName.reload();
-         
-         EditorGui.setEditor(MaterialEditorPlugin);
-         
-         MaterialEditorGui.currentMaterial = %assetDef.materialDefinitionName;
-         MaterialEditorGui.setActiveMaterial( %assetDef.materialDefinitionName );
-         
-         AssetBrowser.hideDialog();
-      }
-      else
-      {*/
-         Canvas.pushDialog(ShaderEditor); 
-         ShaderEditorGraph.loadGraph(%assetDef.shaderGraph);
-         $ShaderGen::targetShaderFile = filePath(%assetDef.shaderGraph) @"/"@fileBase(%assetDef.shaderGraph);
-      //}
-   }
-   else if(%assetType $= "StateMachineAsset")
-   {
-      eval("AssetBrowser.tempAsset = new " @ %assetDef.getClassName() @ "();");
-      AssetBrowser.tempAsset.assignFieldsFrom(%assetDef);
-      
-      SMAssetEditInspector.inspect(AssetBrowser.tempAsset);  
-      AssetBrowser_editAsset.editedAssetId = EditAssetPopup.assetId;
-      AssetBrowser_editAsset.editedAsset = AssetBrowser.tempAsset;
-      
-      //remove some of the groups we don't need:
-      for(%i=0; %i < SMAssetEditInspector.getCount(); %i++)
-      {
-         %caption = SMAssetEditInspector.getObject(%i).caption;
-         
-         if(%caption $= "Ungrouped" || %caption $= "Object" || %caption $= "Editing" 
-            || %caption $= "Persistence" || %caption $= "Dynamic Fields")
-         {
-            SMAssetEditInspector.remove(SMAssetEditInspector.getObject(%i));
-            %i--;
-         }
-      }
-   
-      Canvas.pushDialog(StateMachineEditor);
-      StateMachineEditor.loadStateMachineAsset(EditAssetPopup.assetId);
-      StateMachineEditor-->Window.text = "State Machine Editor ("@EditAssetPopup.assetId@")";
-   }
-   else if(%assetType $= "ComponentAsset")
-   {
-      %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
-      %scriptFile = %assetDef.scriptFile;
-      
-      EditorOpenFileInTorsion(makeFullPath(%scriptFile), 0);
-   }
-   else if(%assetType $= "GameObjectAsset")
-   {
-      %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
-      %scriptFile = %assetDef.scriptFilePath;
-      
-      EditorOpenFileInTorsion(makeFullPath(%scriptFile), 0);
-   }
-   else if(%assetType $= "ScriptAsset")
-   {
-      %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
-      %scriptFile = %assetDef.scriptFilePath;
-      
-      EditorOpenFileInTorsion(makeFullPath(%scriptFile), 0);
-   }
-   else if(%assetType $= "ShapeAsset")
-   {
-      %this.hideDialog();
-      ShapeEditorPlugin.openShapeAsset(EditAssetPopup.assetId);  
-   }
-   else if(%assetType $= "ShapeAnimationAsset")
-   {
-      %this.hideDialog();
-      ShapeEditorPlugin.openShapeAsset(EditAssetPopup.assetId);  
-   }
-   else if(%assetType $= "LevelAsset")
-   {
-      schedule( 1, 0, "EditorOpenMission", %assetDef);
-   }
-   else if(%assetType $= "GUIAsset")
-   {
-      if(!isObject(%assetDef.assetName))
-      {
-         exec(%assetDef.GUIFilePath);
-         exec(%assetDef.mScriptFilePath);
-      }
-      
-      GuiEditContent(%assetDef.assetName);
-   }
+   //Build out the edit command
+   %buildCommand = %this @ ".edit" @ %assetType @ "(" @ %assetDef @ ");";
+   eval(%buildCommand);
 }
 
 function AssetBrowser::appendSubLevel(%this)
@@ -202,73 +114,9 @@ function AssetBrowser::performRenameAsset(%this, %originalAssetName, %newName)
          //rename the file to match
          %path = filePath(%assetPath);
          
-         if(%assetType $= "ComponentAsset")
-         {
-            %oldScriptFilePath = %assetDef.scriptFile;
-            %scriptFilePath = filePath(%assetDef.scriptFile);
-            %scriptExt = fileExt(%assetDef.scriptFile);
-            
-            %newScriptFileName = %scriptFilePath @ "/" @ %newName @ %scriptExt;
-            %newAssetFile = %path @ "/" @ %newName @ ".asset.taml";
-            
-            %assetDef.componentName = %newName;
-            %assetDef.scriptFile = %newScriptFileName;
-            
-            TamlWrite(%assetDef, %newAssetFile);
-            fileDelete(%assetPath);
-            
-            pathCopy(%oldScriptFilePath, %newScriptFileName);
-            fileDelete(%oldScriptFilePath);
-            
-            //Go through our scriptfile and replace the old namespace with the new
-            %editedFileContents = "";
-            
-            %file = new FileObject();
-            if ( %file.openForRead( %newScriptFileName ) ) 
-            {
-		         while ( !%file.isEOF() ) 
-		         {
-                  %line = %file.readLine();
-                  %line = trim( %line );
-                  
-                  %editedFileContents = %editedFileContents @ strreplace(%line, %originalAssetName, %newName) @ "\n";
-		         }
-		         
-		         %file.close();
-            }
-            
-            if(%editedFileContents !$= "")
-            {
-               %file.openForWrite(%newScriptFileName);
-               
-               %file.writeline(%editedFileContents);
-               
-               %file.close();
-            }
-            
-            exec(%newScriptFileName);
-         }
-         else if(%assetType $= "StateMachineAsset")
-         {
-            %oldScriptFilePath = %assetDef.stateMachineFile;
-            %scriptFilePath = filePath(%assetDef.stateMachineFile);
-            %scriptExt = fileExt(%assetDef.stateMachineFile);
-            
-            %newScriptFileName = %scriptFilePath @ "/" @ %newName @ %scriptExt;
-            %newAssetFile = %path @ "/" @ %newName @ ".asset.taml";
-            
-            %assetDef.stateMachineFile = %newScriptFileName;
-            
-            TamlWrite(%assetDef, %newAssetFile);
-            fileDelete(%assetPath);
-            
-            pathCopy(%oldScriptFilePath, %newScriptFileName);
-            fileDelete(%oldScriptFilePath);
-         }
-         else if(%assetType $= "GameObjectAsset")
-         {
-            AssetBrowser.renameGameObjectAsset(%assetDef, %originalAssetName, %newName);
-         }
+         //Do the rename command
+         %buildCommand = %this @ ".rename" @ %assetType @ "(" @ %assetDef @ "," @ %newAssetId @ ");";
+         eval(%buildCommand);
       }
    }
    
@@ -321,8 +169,15 @@ function AssetBrowser::confirmDeleteAsset(%this)
    %currentSelectedItem = AssetBrowserFilterTree.getSelectedItem();
    %currentItemParent = AssetBrowserFilterTree.getParentItem(%currentSelectedItem);
    
-   AssetDatabase.deleteAsset(EditAssetPopup.assetId, false);
+   %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
+   %assetType = AssetDatabase.getAssetType(EditAssetPopup.assetId);
    
+   //Do any cleanup required given the type
+   if(%this.isMethod("delete"@%assetType))
+      eval(%this @ ".delete"@%assetType@"("@%assetDef@");");
+   
+   AssetDatabase.deleteAsset(EditAssetPopup.assetId, false);
+
    %this.loadFilters();
    
    if(!AssetBrowserFilterTree.selectItem(%currentSelectedItem))

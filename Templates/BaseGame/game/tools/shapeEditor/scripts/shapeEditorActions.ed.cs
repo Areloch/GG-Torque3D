@@ -319,7 +319,7 @@ function ShapeEditor::doAddSequence( %this, %seqName, %from, %start, %end )
 
 function ActionAddSequence::doit( %this )
 {
-   if(ShapeEditorPlugin.selectedAssetId $= "")
+   if(ShapeEditorPlugin.selectedAssetDef $= "")
    {
       // If adding this sequence from an existing sequence, make a backup copy of
       // the existing sequence first, so we can edit the start/end frames later

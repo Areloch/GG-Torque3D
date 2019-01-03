@@ -335,6 +335,7 @@ addPath("${srcDir}/T3D/gameBase")
 addPath("${srcDir}/T3D/turret")
 addPathRec("${srcDir}/T3D/components/")
 addPathRec("${srcDir}/T3D/systems")
+addPathRec("${srcDir}/T3D/gameObjects")
 
 addPath("${srcDir}/main/")
 addPath("${srcDir}/assets")

@@ -1,3 +1,36 @@
+function AssetBrowser::createShapeAnimationAsset(%this)
+{
+   %dlg = new OpenFileDialog()
+   {
+      Filters        = "Animation Files(*.dae, *.cached.dts)|*.dae;*.cached.dts";
+      DefaultPath    = $Pref::WorldEditor::LastPath;
+      DefaultFile    = "";
+      ChangePath     = false;
+      OverwritePrompt = true;
+      forceRelativePath = false;
+      //MultipleFiles = true;
+   };
+
+   %ret = %dlg.Execute();
+   
+   if ( %ret )
+   {
+      $Pref::WorldEditor::LastPath = filePath( %dlg.FileName );
+      %fullPath = %dlg.FileName;
+   }   
+   
+   %dlg.delete();
+   
+   if ( !%ret )
+      return;  
+}
+
+function AssetBrowser::editShapeAnimationAsset(%this, %assetDef)
+{
+   %this.hideDialog();
+   ShapeEditorPlugin.openShapeAsset(%assetDef);   
+}
+
 function AssetBrowser::buildShapeAnimationAssetPreview(%this, %assetDef, %previewData)
 {
    %previewData.assetName = %assetDef.animationName;

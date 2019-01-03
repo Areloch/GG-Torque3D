@@ -148,6 +148,8 @@ ShapeCollisionComponent::ShapeCollisionComponent() : CollisionComponent()
       VehicleBlockerObjectType | DynamicShapeObjectType | StaticObjectType | EntityObjectType | TriggerObjectType);
 
    mAnimated = false;
+
+   mCollisionInited = false;
 }
 
 ShapeCollisionComponent::~ShapeCollisionComponent()
@@ -182,8 +184,10 @@ void ShapeCollisionComponent::onComponentAdd()
    }
    else
    {
-      if(PHYSICSMGR)
+      if (PHYSICSMGR)
+      {
          mPhysicsRep = PHYSICSMGR->createBody();
+      }
    }
 
    prepCollision();
@@ -194,6 +198,8 @@ void ShapeCollisionComponent::onComponentRemove()
    SAFE_DELETE(mPhysicsRep);
 
    mOwnerPhysicsComp = nullptr;
+
+   mCollisionInited = false;
 
    Parent::onComponentRemove();
 }
@@ -243,6 +249,8 @@ void ShapeCollisionComponent::componentRemovedFromOwner(Component *comp)
    if (physicsComp)
    {
       mPhysicsRep = PHYSICSMGR->createBody();
+
+      mCollisionInited = false;
 
       mOwnerPhysicsComp = nullptr;
 
@@ -329,7 +337,7 @@ void ShapeCollisionComponent::unpackUpdate(NetConnection *con, BitStream *stream
 
 void ShapeCollisionComponent::ownerTransformSet(MatrixF *mat)
 {
-   if (mPhysicsRep)
+   if (mPhysicsRep && mCollisionInited)
       mPhysicsRep->setTransform(mOwner->getTransform());
 }
 
@@ -352,7 +360,6 @@ void ShapeCollisionComponent::prepCollision()
    if (mCollisionType == None)
       return;
 
-   
    //Physics API
    PhysicsCollision *colShape = NULL;
 
@@ -383,6 +390,8 @@ void ShapeCollisionComponent::prepCollision()
             mPhysicsRep->init(colShape, 0, PhysicsBody::BF_TRIGGER, mOwner, mPhysicsWorld);
 
          mPhysicsRep->setTransform(mOwner->getTransform());
+
+         mCollisionInited = true;
       }
    }
 

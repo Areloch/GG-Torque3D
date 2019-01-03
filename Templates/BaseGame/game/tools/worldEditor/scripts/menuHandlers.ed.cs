@@ -165,6 +165,13 @@ function EditorOpenFileInTorsion( %file, %line )
    // Make sure we have a valid path to the Torsion installation.
    
    %torsionPath = EditorSettings.value( "WorldEditor/torsionPath" );
+   
+   if(%torsionPath $= "")
+   {
+      //Last ditch effort, try and use a common file path
+      %torsionPath = "E:/Gamedev/tools/Torsion/torsion.exe";
+   }
+   
    if( !isFile( %torsionPath ) )
    {
       MessageBoxOK(

@@ -126,7 +126,7 @@ static void processNode(GuiTreeViewCtrl* tree, domNode* node, S32 parentID, Scen
    }
 }
 
-DefineConsoleFunction( enumColladaForImport, bool, (const char * shapePath, const char * ctrl), , 
+DefineConsoleFunction( enumColladaForImport, bool, (const char * shapePath, const char * ctrl, bool loadCachedDts), ("", "", true), 
    "(string shapePath, GuiTreeViewCtrl ctrl) Collect scene information from "
    "a COLLADA file and store it in a GuiTreeView control. This function is "
    "used by the COLLADA import gui to show a preview of the scene contents "
@@ -147,7 +147,7 @@ DefineConsoleFunction( enumColladaForImport, bool, (const char * shapePath, cons
    // Check if a cached DTS is available => no need to import the collada file
    // if we can load the DTS instead
    Torque::Path path(shapePath);
-   if (ColladaShapeLoader::canLoadCachedDTS(path))
+   if (loadCachedDts && ColladaShapeLoader::canLoadCachedDTS(path))
       return false;
 
    // Check if this is a Sketchup file (.kmz) and if so, mount the zip filesystem

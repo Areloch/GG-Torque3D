@@ -353,7 +353,7 @@ function AssetBrowser::addImportingAsset( %this, %assetType, %filePath, %parentA
       if(%fileExt $= ".dae")
       {
          %shapeInfo = new GuiTreeViewCtrl();
-         enumColladaForImport(%assetItem.filePath, %shapeInfo);  
+         enumColladaForImport(%assetItem.filePath, %shapeInfo, false);  
       }
       else
       {
@@ -560,7 +560,11 @@ function ImportAssetWindow::reloadImportOptionConfigs(%this)
       ImportAssetConfigList.add(%configObj.Name);
    }
    
-   ImportAssetConfigList.setSelected(0);
+   %importConfigIdx = ImportAssetWindow.activeImportConfigIndex;
+   if(%importConfigIdx $= "")
+      %importConfigIdx = 0;
+      
+   ImportAssetConfigList.setSelected(%importConfigIdx);
 }
 
 function ImportAssetWindow::setImportOptions(%this, %optionsObj)
@@ -645,7 +649,7 @@ function ImportAssetWindow::processNewImportAssets(%this)
          if(%fileExt $= ".dae")
          {
             %shapeInfo = new GuiTreeViewCtrl();
-            enumColladaForImport(%assetItem.filePath, %shapeInfo);  
+            enumColladaForImport(%assetItem.filePath, %shapeInfo, false);  
          }
          else
          {
@@ -1038,10 +1042,10 @@ function ImportAssetWindow::findImportingAssetByName(%this, %assetName)
 function ImportAssetWindow::parseImageSuffixes(%this, %assetItem)
 {
    //diffuse
-   %suffixCount = getTokenCount(%assetItem.importConfig.DiffuseTypeSuffixes, ",");
+   %suffixCount = getTokenCount(%assetItem.importConfig.DiffuseTypeSuffixes, ",;");
    for(%sfx = 0; %sfx < %suffixCount; %sfx++)
    {
-      %suffixToken = getToken(%assetItem.importConfig.DiffuseTypeSuffixes, ",", %sfx);
+      %suffixToken = getToken(%assetItem.importConfig.DiffuseTypeSuffixes, ",;", %sfx);
       if(strIsMatchExpr("*"@%suffixToken, %assetItem.AssetName))
       {
          %assetItem.imageSuffixType = %suffixToken;
@@ -1050,10 +1054,10 @@ function ImportAssetWindow::parseImageSuffixes(%this, %assetItem)
    }
    
    //normal
-   %suffixCount = getTokenCount(%assetItem.importConfig.NormalTypeSuffixes, ",");
+   %suffixCount = getTokenCount(%assetItem.importConfig.NormalTypeSuffixes, ",;");
    for(%sfx = 0; %sfx < %suffixCount; %sfx++)
    {
-      %suffixToken = getToken(%assetItem.importConfig.NormalTypeSuffixes, ",", %sfx);
+      %suffixToken = getToken(%assetItem.importConfig.NormalTypeSuffixes, ",;", %sfx);
       if(strIsMatchExpr("*"@%suffixToken, %assetItem.AssetName))
       {
          %assetItem.imageSuffixType = %suffixToken;
@@ -1062,10 +1066,10 @@ function ImportAssetWindow::parseImageSuffixes(%this, %assetItem)
    }
    
    //roughness
-   %suffixCount = getTokenCount(%assetItem.importConfig.RoughnessTypeSuffixes, ",");
+   %suffixCount = getTokenCount(%assetItem.importConfig.RoughnessTypeSuffixes, ",;");
    for(%sfx = 0; %sfx < %suffixCount; %sfx++)
    {
-      %suffixToken = getToken(%assetItem.importConfig.RoughnessTypeSuffixes, ",", %sfx);
+      %suffixToken = getToken(%assetItem.importConfig.RoughnessTypeSuffixes, ",;", %sfx);
       if(strIsMatchExpr("*"@%suffixToken, %assetItem.AssetName))
       {
          %assetItem.imageSuffixType = %suffixToken;
@@ -1074,10 +1078,10 @@ function ImportAssetWindow::parseImageSuffixes(%this, %assetItem)
    }
    
    //Ambient Occlusion
-   %suffixCount = getTokenCount(%assetItem.importConfig.AOTypeSuffixes, ",");
+   %suffixCount = getTokenCount(%assetItem.importConfig.AOTypeSuffixes, ",;");
    for(%sfx = 0; %sfx < %suffixCount; %sfx++)
    {
-      %suffixToken = getToken(%assetItem.importConfig.AOTypeSuffixes, ",", %sfx);
+      %suffixToken = getToken(%assetItem.importConfig.AOTypeSuffixes, ",;", %sfx);
       if(strIsMatchExpr("*"@%suffixToken, %assetItem.AssetName))
       {
          %assetItem.imageSuffixType = %suffixToken;
@@ -1086,10 +1090,10 @@ function ImportAssetWindow::parseImageSuffixes(%this, %assetItem)
    }
    
    //metalness
-   %suffixCount = getTokenCount(%assetItem.importConfig.MetalnessTypeSuffixes, ",");
+   %suffixCount = getTokenCount(%assetItem.importConfig.MetalnessTypeSuffixes, ",;");
    for(%sfx = 0; %sfx < %suffixCount; %sfx++)
    {
-      %suffixToken = getToken(%assetItem.importConfig.MetalnessTypeSuffixes, ",", %sfx);
+      %suffixToken = getToken(%assetItem.importConfig.MetalnessTypeSuffixes, ",;", %sfx);
       if(strIsMatchExpr("*"@%suffixToken, %assetItem.AssetName))
       {
          %assetItem.imageSuffixType = %suffixToken;
@@ -1098,10 +1102,10 @@ function ImportAssetWindow::parseImageSuffixes(%this, %assetItem)
    }
    
    //composite
-   %suffixCount = getTokenCount(%assetItem.importConfig.CompositeTypeSuffixes, ",");
+   %suffixCount = getTokenCount(%assetItem.importConfig.CompositeTypeSuffixes, ",;");
    for(%sfx = 0; %sfx < %suffixCount; %sfx++)
    {
-      %suffixToken = getToken(%assetItem.importConfig.CompositeTypeSuffixes, ",", %sfx);
+      %suffixToken = getToken(%assetItem.importConfig.CompositeTypeSuffixes, ",;", %sfx);
       if(strIsMatchExpr("*"@%suffixToken, %assetItem.AssetName))
       {
          %assetItem.imageSuffixType = %suffixToken;
@@ -1110,10 +1114,10 @@ function ImportAssetWindow::parseImageSuffixes(%this, %assetItem)
    }
    
    //specular
-   %suffixCount = getTokenCount(%assetItem.importConfig.SpecularTypeSuffixes, ",");
+   %suffixCount = getTokenCount(%assetItem.importConfig.SpecularTypeSuffixes, ",;");
    for(%sfx = 0; %sfx < %suffixCount; %sfx++)
    {
-      %suffixToken = getToken(%assetItem.importConfig.SpecularTypeSuffixes, ",", %sfx);
+      %suffixToken = getToken(%assetItem.importConfig.SpecularTypeSuffixes, ",;", %sfx);
       if(strIsMatchExpr("*"@%suffixToken, %assetItem.AssetName))
       {
          %assetItem.imageSuffixType = %suffixToken;

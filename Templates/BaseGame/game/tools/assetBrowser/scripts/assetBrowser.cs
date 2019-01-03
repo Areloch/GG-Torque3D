@@ -1,4 +1,3 @@
-
 new SimGroup(AssetBrowserPreviewCache);
 
 //AssetBrowser.addToolbarButton
@@ -38,6 +37,10 @@ function AssetBrowser::onAdd(%this)
 
 function AssetBrowser::onWake(%this)
 {
+   // manage preview array
+   if(!isObject(AssetPreviewArray))
+      new ArrayObject(AssetPreviewArray);
+      
    %this.importAssetNewListArray = new ArrayObject();
    %this.importAssetUnprocessedListArray = new ArrayObject();
    %this.importAssetFinalListArray = new ArrayObject();
@@ -214,6 +217,16 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
    
    if(%assetType $= "ShapeAsset")
    {
+      %this.previewData.assetName = %assetDesc.assetName;
+      %this.previewData.assetPath = %assetDesc.scriptFile;
+      %this.previewData.doubleClickCommand = %doubleClickCommand;
+      
+      %this.previewData.previewImage = "tools/assetBrowser/art/componentIcon";
+      
+      %this.previewData.assetFriendlyName = %assetDesc.friendlyName;
+      %this.previewData.assetDesc = %assetDesc.description;
+      %this.previewData.tooltip = %assetDesc.friendlyName @ "\n" @ %assetDesc;
+   
       %previewButton = new GuiObjectView()
       {
          className = "AssetPreviewControl";
@@ -288,125 +301,9 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
    }
    else
    {
-      if(%assetType $= "ComponentAsset")
-      {
-         %this.buildComponentAssetPreview(%assetDesc, %this.previewData);
-         
-         /*%assetPath = %this.previewData.assetPath;
-         %doubleClickCommand = %this.previewData.doubleClickCommand;
-         
-         %previewImage = %this.previewData.previewImage;
-         
-         %assetFriendlyName = %this.previewData.assetFriendlyName;
-         %assetDesc = %this.previewData.assetDesc;
-         %tooltip = %this.previewData.tooltip;
-         
-         %assetPath = "data/" @ %moduleName @ "/components/" @ %assetName @ ".cs";
-         %doubleClickCommand = "EditorOpenFileInTorsion( "@%assetPath@", 0 );";
-         
-         %previewImage = "tools/assetBrowser/art/componentIcon";
-         
-         %assetFriendlyName = %assetDesc.friendlyName;
-         %assetDesc = %assetDesc.description;
-         %tooltip = %assetFriendlyName @ "\n" @ %assetDesc;*/
-      }
-      else if(%assetType $= "GameObjectAsset")
-      {
-         %this.buildGameObjectAssetPreview(%assetDesc, %this.previewData);
-         
-         /*%assetPath = "data/" @ %moduleName @ "/gameObjects/" @ %assetName @ ".cs";
-         %doubleClickCommand = "EditorOpenFileInTorsion( "@%assetPath@", 0 );";
-         
-         %previewImage = "tools/assetBrowser/art/gameObjectIcon";
-         
-         %tooltip = %assetDesc.gameObjectName;*/
-      }
-      else if(%assetType $= "ImageAsset")
-      {
-         %this.buildImageAssetPreview(%assetDesc, %this.previewData);
-         
-         //nab the image and use it for the preview
-         /*%assetQuery = new AssetQuery();
-         %numAssetsFound = AssetDatabase.findAllAssets(%assetQuery);
-         
-         for( %i=0; %i < %numAssetsFound; %i++)
-         {
-             %assetId = %assetQuery.getAsset(%i);
-             %name = AssetDatabase.getAssetName(%assetId);
-             
-             if(%name $= %assetName)
-             {
-               %asset = AssetDatabase.acquireAsset(%assetId);
-               %previewImage = %asset.imageFile;
-               break;
-             }
-         }*/
-      }
-      else if(%assetType $= "StateMachineAsset")
-      {
-         %this.buildStateMachineAssetPreview(%assetDesc, %this.previewData);
-      }
-      else if(%assetType $= "SoundAsset")
-      {
-         %previewImage = "tools/assetBrowser/art/soundIcon";
-      }
-      else if(%assetType $= "LevelAsset")
-      {
-         %levelPreviewImage = %assetDesc.PreviewImage;
-         
-         if(isFile(%levelPreviewImage))
-            %previewImage = %levelPreviewImage;
-         else
-            %previewImage = "tools/assetBrowser/art/levelIcon";
-      }
-      else if(%assetType $= "PostEffectAsset")
-      {
-         %previewImage = "tools/assetBrowser/art/postEffectIcon";
-      }
-      else if(%assetType $= "GUIAsset")
-      {
-         %previewImage = "tools/assetBrowser/art/guiIcon";
-      }
-      else if(%assetType $= "ScriptAsset")
-      {
-         if(%assetDesc.isServerSide)
-            %previewImage = "tools/assetBrowser/art/serverScriptIcon";
-         else
-            %previewImage = "tools/assetBrowser/art/clientScriptIcon";
-      }
-      else if(%assetType $= "MaterialAsset")
-      {
-         %this.buildMaterialAssetPreview(%assetDesc, %this.previewData);
-         
-         /*%previewImage = "";
-         //nab the image and use it for the preview
-         %assetQuery = new AssetQuery();
-         %numAssetsFound = AssetDatabase.findAllAssets(%assetQuery);
-         
-         for( %i=0; %i < %numAssetsFound; %i++)
-         {
-             %assetId = %assetQuery.getAsset(%i);
-             %name = AssetDatabase.getAssetName(%assetId);
-             
-             if(%name $= %assetName)
-             {
-               %asset = AssetDatabase.acquireAsset(%assetId);
-               %previewImage = %asset.materialDefinitionName.diffuseMap[0];
-               break;
-             }
-         }
-         
-         if(%previewImage $= "")
-            %previewImage = "tools/assetBrowser/art/materialIcon";*/
-      }
-      else if(%assetType $= "ShapeAnimationAsset")
-      {
-          %this.buildShapeAnimationAssetPreview(%assetDesc, %this.previewData);
-      }
-      else if(%assetType $= "CppAsset")
-      {
-         %this.buildCppAssetPreview(%assetDesc, %this.previewData);
-      }
+      //Build out the preview
+      %buildCommand = %this @ ".build" @ %assetType @ "Preview(" @ %assetDesc @ "," @ %this.previewData @ ");";
+      eval(%buildCommand);
       
       %previewButton = new GuiBitmapButtonCtrl()
       {
@@ -478,31 +375,6 @@ function AssetBrowser::buildPreviewArray( %this, %asset, %moduleName )
    
    // add to the array object for reference later
    AssetPreviewArray.add( %previewButton, %this.previewData.previewImage );
-}
-
-function AssetBrowser::loadImages( %this, %materialNum )
-{
-   // this will save us from spinning our wheels in case we don't exist
-   /*if( !AssetBrowser.visible )
-      return;
-   
-   // this schedule is here to dynamically load images
-   %previewButton = AssetPreviewArray.getKey(%materialNum);
-   %previewImage = AssetPreviewArray.getValue(%materialNum);
-   
-   if(%previewButton.getClassName() !$= "GuiObjectView")
-   {
-      %previewButton.setBitmap(%previewImage);
-      %previewButton.setText("");
-   }
-   
-   %materialNum++;
-   
-   /*if( %materialNum < AssetPreviewArray.count() )
-   {
-      %tempSchedule = %this.schedule(64, "loadImages", %materialNum);
-      MatEdScheduleArray.add( %tempSchedule, %materialNum );
-   }*/
 }
 
 function AssetBrowser::loadFilters( %this )
@@ -918,7 +790,7 @@ function AssetPreviewButton::onRightClick(%this)
    EditAssetPopup.enableItem(7, true);
    
    //Is it an editable type?
-   if(%assetType $= "ImageAsset" || %assetType $= "GameObjectAsset" || %assetType $= "SoundAsset")
+   if(%assetType $= "ImageAsset" /*|| %assetType $= "GameObjectAsset"*/ || %assetType $= "CppAsset" || %assetType $= "SoundAsset")
    {
       EditAssetPopup.enableItem(0, false);
    }
@@ -978,10 +850,6 @@ function AssetBrowserFilterTree::onSelect(%this, %itemId)
 	
 	// we have to empty out the list; so when we create new schedules, these dont linger
    MatEdScheduleArray.empty();
-   
-   // manage preview array
-   if(!isObject(AssetPreviewArray))
-      new ArrayObject(AssetPreviewArray);
       
    // we have to empty out the list; so when we create new guicontrols, these dont linger
    AssetPreviewArray.empty();
@@ -1052,8 +920,6 @@ function AssetBrowserFilterTree::onSelect(%this, %itemId)
 	
 	for(%i=0; %i < %assetArray.count(); %i++)
 		AssetBrowser.buildPreviewArray( %assetArray.getValue(%i), %assetArray.getKey(%i) );
-   
-   AssetBrowser.loadImages( 0 );
 }
 
 function AssetBrowserFilterTree::onRightMouseDown(%this, %itemId)
@@ -1368,73 +1234,6 @@ function EWorldEditor::onControlDropped( %this, %payload, %position )
       
       EWorldEditor.clearSelection();
       EWorldEditor.selectObject(%newEntity);
-   }
-   
-   EWorldEditor.isDirty = true;
-}
-
-function GuiInspectorTypeShapeAssetPtr::onControlDropped( %this, %payload, %position )
-{
-   Canvas.popDialog(EditorDragAndDropLayer);
-   
-   // Make sure this is a color swatch drag operation.
-   if( !%payload.parentGroup.isInNamespaceHierarchy( "AssetPreviewControlType_AssetDrop" ) )
-      return;
-
-   %assetType = %payload.dragSourceControl.parentGroup.assetType;
-   
-   if(%assetType $= "ShapeAsset")
-   {
-      echo("DROPPED A SHAPE ON A SHAPE ASSET COMPONENT FIELD!");  
-      
-      %module = %payload.dragSourceControl.parentGroup.moduleName;
-      %asset = %payload.dragSourceControl.parentGroup.assetName;
-      
-      %targetComponent = %this.ComponentOwner;
-      %targetComponent.MeshAsset = %module @ ":" @ %asset;
-      
-      //Inspector.refresh();
-   }
-   
-   EWorldEditor.isDirty= true;
-}
-
-function GuiInspectorTypeImageAssetPtr::onControlDropped( %this, %payload, %position )
-{
-   Canvas.popDialog(EditorDragAndDropLayer);
-   
-   // Make sure this is a color swatch drag operation.
-   if( !%payload.parentGroup.isInNamespaceHierarchy( "AssetPreviewControlType_AssetDrop" ) )
-      return;
-
-   %assetType = %payload.dragSourceControl.parentGroup.assetType;
-   
-   if(%assetType $= "ImageAsset")
-   {
-      echo("DROPPED A IMAGE ON AN IMAGE ASSET COMPONENT FIELD!");  
-   }
-   
-   EWorldEditor.isDirty = true;
-}
-
-function GuiInspectorTypeMaterialAssetPtr::onControlDropped( %this, %payload, %position )
-{
-   Canvas.popDialog(EditorDragAndDropLayer);
-   
-   // Make sure this is a color swatch drag operation.
-   if( !%payload.parentGroup.isInNamespaceHierarchy( "AssetPreviewControlType_AssetDrop" ) )
-      return;
-
-   %assetType = %payload.dragSourceControl.parentGroup.assetType;
-   %module = %payload.dragSourceControl.parentGroup.moduleName;
-   %assetName = %payload.dragSourceControl.parentGroup.assetName;
-   
-   if(%assetType $= "MaterialAsset")
-   {
-      echo("DROPPED A MATERIAL ON A MATERIAL ASSET COMPONENT FIELD!");  
-      //%assetDef = AssetDatabase.acquireAsset(%module @ ":" @ %assetName);
-      
-      %this.setMaterialAsset(%module @ ":" @ %assetName);
    }
    
    EWorldEditor.isDirty = true;

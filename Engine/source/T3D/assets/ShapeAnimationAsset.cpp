@@ -169,3 +169,18 @@ void ShapeAnimationAsset::onAssetRefresh(void)
 {
 
 }
+
+S32 ShapeAnimationAsset::getAnimationCount()
+{ 
+   if (mSourceShape == nullptr)
+      return 0;
+
+   return mSourceShape->sequences.size(); 
+}
+
+DefineEngineMethod(ShapeAnimationAsset, getAnimationCount, S32, (), ,
+   "Gets the number of animations for this shape asset.\n"
+   "@return Animation count.\n")
+{
+   return object->getAnimationCount();
+}

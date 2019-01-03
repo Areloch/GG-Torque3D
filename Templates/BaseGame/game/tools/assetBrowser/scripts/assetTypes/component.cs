@@ -50,16 +50,15 @@ function AssetBrowser::createComponentAsset(%this)
 	AssetBrowser.loadFilters();
 	
 	%treeItemId = AssetBrowserFilterTree.findItemByName(%moduleName);
-	%smItem = AssetBrowserFilterTree.findChildItemByName(%treeItemId, "Components");
+	%smItem = AssetBrowserFilterTree.findChildItemByName(%treeItemId, "ComponentAsset");
 	
 	AssetBrowserFilterTree.onSelect(%smItem);
 	
 	return %tamlpath;
 }
 
-function AssetBrowser::editComponentAsset(%this, %assetId)
+function AssetBrowser::editComponentAsset(%this, %assetDef)
 {
-   %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
    %scriptFile = %assetDef.scriptFile;
    
    EditorOpenFileInTorsion(makeFullPath(%scriptFile), 0);
@@ -68,6 +67,58 @@ function AssetBrowser::editComponentAsset(%this, %assetId)
 function AssetBrowser::duplicateComponentAsset(%this, %assetId)
 {
    
+}
+
+function AssetBrowser::renameGameObjectAsset(%this, %assetDef, %newAssetId, %originalName, %newName)
+{
+   %assetPath = AssetDatabase.getAssetFilePath(%newAssetId);
+   
+   //rename the file to match
+   %path = filePath(%assetPath);
+         
+   %oldScriptFilePath = %assetDef.scriptFile;
+   %scriptFilePath = filePath(%assetDef.scriptFile);
+   %scriptExt = fileExt(%assetDef.scriptFile);
+   
+   %newScriptFileName = %scriptFilePath @ "/" @ %newName @ %scriptExt;
+   %newAssetFile = %path @ "/" @ %newName @ ".asset.taml";
+   
+   %assetDef.componentName = %newName;
+   %assetDef.scriptFile = %newScriptFileName;
+   
+   TamlWrite(%assetDef, %newAssetFile);
+   fileDelete(%assetPath);
+   
+   pathCopy(%oldScriptFilePath, %newScriptFileName);
+   fileDelete(%oldScriptFilePath);
+   
+   //Go through our scriptfile and replace the old namespace with the new
+   %editedFileContents = "";
+   
+   %file = new FileObject();
+   if ( %file.openForRead( %newScriptFileName ) ) 
+   {
+      while ( !%file.isEOF() ) 
+      {
+         %line = %file.readLine();
+         %line = trim( %line );
+         
+         %editedFileContents = %editedFileContents @ strreplace(%line, %originalAssetName, %newName) @ "\n";
+      }
+      
+      %file.close();
+   }
+   
+   if(%editedFileContents !$= "")
+   {
+      %file.openForWrite(%newScriptFileName);
+      
+      %file.writeline(%editedFileContents);
+      
+      %file.close();
+   }
+   
+   exec(%newScriptFileName);   
 }
 
 //not used

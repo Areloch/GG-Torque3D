@@ -136,6 +136,29 @@ function AssetBrowser::duplicateStateMachineAsset(%this, %assetDef)
 	AssetBrowserFilterTree.buildVisibleTree();
 }
 
+function AssetBrowser::renameGameObjectAsset(%this, %assetDef, %newAssetId, %originalName, %newName)
+{
+   %assetPath = AssetDatabase.getAssetFilePath(%newAssetId);
+   
+   //rename the file to match
+   %path = filePath(%assetPath);
+         
+   %oldScriptFilePath = %assetDef.stateMachineFile;
+   %scriptFilePath = filePath(%assetDef.stateMachineFile);
+   %scriptExt = fileExt(%assetDef.stateMachineFile);
+   
+   %newScriptFileName = %scriptFilePath @ "/" @ %newName @ %scriptExt;
+   %newAssetFile = %path @ "/" @ %newName @ ".asset.taml";
+   
+   %assetDef.stateMachineFile = %newScriptFileName;
+   
+   TamlWrite(%assetDef, %newAssetFile);
+   fileDelete(%assetPath);
+   
+   pathCopy(%oldScriptFilePath, %newScriptFileName);
+   fileDelete(%oldScriptFilePath); 
+}
+
 function AssetBrowser::buildStateMachineAssetPreview(%this, %assetDef, %previewData)
 {
    %previewData.assetName = %assetDef.assetName;

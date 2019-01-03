@@ -52,14 +52,20 @@ function initializeAssetBrowser()
    exec("./scripts/selectModule.cs");   
    
    //Processing for the different asset types
+   exec("./scripts/assetTypes/component.cs"); 
+   exec("./scripts/assetTypes/cpp.cs");
    exec("./scripts/assetTypes/gameObject.cs");   
-   exec("./scripts/assetTypes/component.cs");   
-   exec("./scripts/assetTypes/image.cs");   
+   exec("./scripts/assetTypes/gui.cs");
+   exec("./scripts/assetTypes/image.cs");  
+   exec("./scripts/assetTypes/level.cs"); 
    exec("./scripts/assetTypes/material.cs");   
+   exec("./scripts/assetTypes/postFX.cs");
+   exec("./scripts/assetTypes/script.cs");
+   exec("./scripts/assetTypes/shape.cs");
+   exec("./scripts/assetTypes/shapeAnimation.cs"); 
+   exec("./scripts/assetTypes/sound.cs"); 
    exec("./scripts/assetTypes/stateMachine.cs");   
-   exec("./scripts/assetTypes/shapeAnimation.cs");   
-   exec("./scripts/assetTypes/cpp.cs"); 
-   
+     
    exec("./scripts/fieldTypes.cs");
    
    new ScriptObject( AssetBrowserPlugin )
