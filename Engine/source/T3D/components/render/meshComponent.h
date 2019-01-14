@@ -132,6 +132,8 @@ public:
    void updateShape();
    void updateMaterials();
 
+   void _shapeAssetUpdated(ShapeAsset* asset);
+
    virtual void onComponentRemove();
    virtual void onComponentAdd();
 
@@ -140,6 +142,8 @@ public:
    static bool _setMesh(void *object, const char *index, const char *data);
    static bool _setShape(void *object, const char *index, const char *data);
    const char* _getShape(void *object, const char *data);
+
+   static bool writeShape(void* obj, StringTableEntry pFieldName) { return static_cast<MeshComponent*>(obj)->mMeshAsset.notNull(); }
 
    bool setMeshAsset(const char* assetName);
 

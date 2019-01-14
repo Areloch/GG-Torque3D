@@ -9,12 +9,39 @@
 
 #include <cfloat>
 
+IMPLEMENT_CO_NETOBJECT_V1(AIControllerComponent);
 
 static U32 sAIControllerComponentLoSMask = TerrainObjectType | StaticShapeObjectType | StaticObjectType | EntityObjectType;
 
 AIControllerComponent::AIControllerComponent()
 {
+   mFriendlyName = "AI Controller(Component)";
+   mComponentType = "AI";
 
+   mDescription = getDescriptionText("Allows an object to be controlled by AI Moves.");
+
+   mMoveDestination.set(0.0f, 0.0f, 0.0f);
+   mMoveSpeed = 1.0f;
+   mMoveTolerance = 0.25f;
+   mMoveStuckTolerance = 0.01f;
+   mMoveStuckTestDelay = 30;
+   mMoveStuckTestCountdown = 0;
+   mMoveSlowdown = true;
+   mMoveState = ModeStop;
+
+   mAimObject = 0;
+   mAimLocationSet = false;
+   mTargetInLOS = false;
+   mAimOffset = Point3F(0.0f, 0.0f, 0.0f);
+
+#ifdef TORQUE_NAVIGATION_ENABLED
+   mJump = None;
+   mNavSize = Regular;
+   mLinkTypes = LinkData(AllFlags);
+#endif
+
+   for (S32 i = 0; i < MaxTriggerKeys; i++)
+      mMoveTriggers[i] = false;
 }
 
 AIControllerComponent::~AIControllerComponent()
@@ -26,10 +53,12 @@ void AIControllerComponent::processTick()
 {
    Parent::processTick();
 
+   mEyeTransform = mMuzzleTransform = mOwner->getWorldTransform();
+
    Move *movePtr = &mOwner->lastMove;
 
    //If we haven't dealt with a move yet and we're on the server, go ahead and do our AI control now
-   if (!movePtr && isServerObject())
+   if (/*(!movePtr || movePtr == NullMove) &&*/ isServerObject())
       getAIMove(movePtr);
 }
 
@@ -132,25 +161,9 @@ void AIControllerComponent::clearAim()
 /**
  * Sets the correct aim for the bot to the target
  */
-void AIControllerComponent::getMuzzleVector(U32 imageSlot, VectorF* vec)
+void AIControllerComponent::getMuzzleVector(VectorF* vec)
 {
-   MatrixF mat;
-   getMuzzleTransform(imageSlot, &mat);
-
-   MountedImage& image = mMountedImageList[imageSlot];
-
-   if (image.dataBlock->correctMuzzleVector)
-   {
-      disableHeadZCalc();
-      if (getCorrectedAim(mat, vec))
-      {
-         enableHeadZCalc();
-         return;
-      }
-      enableHeadZCalc();
-
-   }
-   mat.getColumn(1, vec);
+   vec = &mMuzzleTransform.getForwardVector();
 }
 
 /**
@@ -168,7 +181,7 @@ void AIControllerComponent::setMoveTrigger(U32 slot, const bool isSet)
    else
    {
       mMoveTriggers[slot] = isSet;   // set the trigger
-      setMaskBits(NoWarpMask);         // force the client to updateMove
+      //setMaskBits(NoWarpMask);         // force the client to updateMove
    }
 }
 
@@ -211,7 +224,7 @@ bool AIControllerComponent::getAIMove(Move *movePtr)
 
    // Use the eye as the current position.
    MatrixF eye;
-   getEyeTransform(&eye);
+   eye = getEyeTransform();
    Point3F location = eye.getPosition();
    Point3F rotation = mOwner->getRotation().asEulerF();
 
@@ -426,8 +439,8 @@ bool AIControllerComponent::getAIMove(Move *movePtr)
 
    // Replicate the trigger state into the move so that
    // triggers can be controlled from scripts.
-   for (U32 i = 0; i < MaxTriggerKeys; i++)
-      movePtr->trigger[i] = getImageTriggerState(i);
+   //for (U32 i = 0; i < MaxTriggerKeys; i++)
+   //   movePtr->trigger[i] = getImageTriggerState(i);
 
 #ifdef TORQUE_NAVIGATION_ENABLED
    if (mJump == Now)
@@ -448,6 +461,50 @@ bool AIControllerComponent::getAIMove(Move *movePtr)
 #endif // TORQUE_NAVIGATION_ENABLED
 
    mLastLocation = location;
+
+   if (movePtr)
+   {
+      if (movePtr->y != 0 || movePtr->x != 0 || movePtr->z != 0)
+      {
+         if (isMethod("moveVectorEvent"))
+            Con::executef(this, "moveVectorEvent", movePtr->x, movePtr->y, movePtr->z);
+         else if (mOwner->isMethod("moveVectorEvent"))
+            Con::executef(mOwner, "moveVectorEvent", movePtr->x, movePtr->y, movePtr->z);
+      }
+
+      if (movePtr->yaw != 0)
+      {
+         if (isMethod("moveYawEvent"))
+            Con::executef(this, "moveYawEvent", movePtr->yaw);
+         else if(mOwner->isMethod("moveYawEvent"))
+            Con::executef(mOwner, "moveYawEvent", movePtr->yaw);
+      }
+
+      if (movePtr->pitch != 0)
+      {
+         if (isMethod("movePitchEvent"))
+            Con::executef(this, "movePitchEvent", movePtr->pitch);
+         else if (mOwner->isMethod("movePitchEvent"))
+            Con::executef(mOwner, "movePitchEvent", movePtr->pitch);
+      }
+
+      if (movePtr->roll != 0)
+      {
+         if (isMethod("moveRollEvent"))
+            Con::executef(this, "moveRollEvent", movePtr->roll);
+         else if (mOwner->isMethod("moveRollEvent"))
+            Con::executef(mOwner, "moveRollEvent", movePtr->roll);
+      }
+
+      /*for (U32 i = 0; i < MaxTriggerKeys; i++)
+      {
+         if (movePtr->trigger[i] != prevMove.trigger[i])
+         {
+            if (isMethod("moveTriggerEvent"))
+               Con::executef(this, "moveTriggerEvent", i, move->trigger[i]);
+         }
+      }*/
+   }
 
    return true;
 }
@@ -633,6 +690,17 @@ bool AIControllerComponent::setPathDestination(const Point3F &pos)
       path->deleteObject();
       return false;
    }
+}
+
+//Used for aiming/looking/LOS testing
+MatrixF AIControllerComponent::getEyeTransform()
+{
+   return mEyeTransform;
+}
+
+Point3F AIControllerComponent::getMuzzlePointAI()
+{
+   return mMuzzleTransform.getPosition();
 }
 
 DefineEngineMethod(AIControllerComponent, setPathDestination, bool, (Point3F goal), ,
@@ -1024,29 +1092,6 @@ DefineEngineMethod(AIControllerComponent, getAimLocation, Point3F, (), ,
    return object->getAimLocation();
 }
 
-ConsoleDocFragment _setAimObject(
-   "@brief Sets the AIControllerComponent's target object.  May optionally set an offset from target location\n\n"
-
-   "@param targetObject The object to target\n"
-   "@param offset Optional three-element offset vector which will be added to the position of the aim object.\n\n"
-
-   "@tsexample\n"
-   "// Without an offset\n"
-   "%ai.setAimObject(%target);\n\n"
-   "// With an offset\n"
-   "// Cause our AI object to aim at the target\n"
-   "// offset (0, 0, 1) so you don't aim at the target's feet\n"
-   "%ai.setAimObject(%target, \"0 0 1\");\n"
-   "@endtsexample\n\n"
-
-   "@see getAimLocation()\n"
-   "@see getAimObject()\n"
-   "@see clearAim()\n",
-
-   "AIControllerComponent",
-   "void setAimObject(GameBase targetObject, Point3F offset);"
-);
-
 DefineConsoleMethod(AIControllerComponent, setAimObject, void, (const char * objName, Point3F offset), (Point3F::Zero), "( GameBase obj, [Point3F offset] )"
    "Sets the bot's target object. Optionally set an offset from target location."
    "@hide")
@@ -1097,11 +1142,11 @@ bool AIControllerComponent::checkInLos(GameBase* target, bool _useMuzzle)
 
    Point3F checkPoint;
    if (_useMuzzle)
-      getMuzzlePointAI(0, &checkPoint);
+      checkPoint = getMuzzlePointAI();
    else
    {
       MatrixF eyeMat;
-      getEyeTransform(&eyeMat);
+      eyeMat = getEyeTransform();
       eyeMat.getColumn(3, &checkPoint);
    }
 

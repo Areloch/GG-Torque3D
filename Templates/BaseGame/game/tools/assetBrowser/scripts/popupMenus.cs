@@ -240,6 +240,26 @@ function AssetBrowser::buildPopupMenus(%this)
          item[ 6 ] = "Create Child GameObject" TAB "" TAB "echo(\"Not yet implemented.\");";
       };
    }
+   
+   //Asset Import Resolution menus
+   if( !isObject( ImportAssetResolutionsPopup ) )
+   {
+      %this.ImportAssetResolutionsPopup = new PopupMenu( ImportAssetResolutionsPopup )
+      {
+         superClass = "MenuBuilder";
+         class = "EditorWorldMenu";
+         
+         item[0] = "Use original Asset for duplicates" TAB "" TAB "";
+         item[1] = "Override duplicate with new Asset" TAB "" TAB "";
+         item[2] = "-";
+         item[3] = "Rename Asset" TAB "" TAB "";
+         item[4] = "-";
+         item[5] = "Find missing file" TAB "" TAB "ImportAssetWindow.findMissingFile(ImportAssetResolutionsPopup.assetItem);";
+         item[6] = "-";
+         item[7] = "Edit Asset properties" TAB "" TAB "";
+      
+      };
+   }
 }
 
 function AddNewScriptAssetPopupMenu::onSelectItem(%this, %id, %text)

@@ -41,7 +41,10 @@ function AssetBrowser::onWake(%this)
    if(!isObject(AssetPreviewArray))
       new ArrayObject(AssetPreviewArray);
       
-   %this.importAssetNewListArray = new ArrayObject();
+   if(!isObject(ImportAssetTree))
+      new GuiTreeViewCtrl(ImportAssetTree);
+      
+   %this.importingFilesArray = new ArrayObject();
    %this.importAssetUnprocessedListArray = new ArrayObject();
    %this.importAssetFinalListArray = new ArrayObject();
    
@@ -728,6 +731,9 @@ function AssetBrowser::changeAsset(%this)
    %cmd = %this.fieldTargetObject @ "." @ %this.fieldTargetName @ "=\"" @ %this.selectedAsset @ "\";";
    echo("Changing asset via the " @ %cmd @ " command");
    eval(%cmd);
+   
+   //Flag us as dirty for editing purposes
+   EWorldEditor.setSceneAsDirty();
 }
 
 function AssetBrowser::reImportAsset(%this)

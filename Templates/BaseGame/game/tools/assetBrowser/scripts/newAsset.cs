@@ -124,6 +124,13 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName, %call
       NewAssetPropertiesInspector.addField("isServerScript", "Is Server Script", "bool",  "Is this script used on the server?", "1", "", %this.newAssetSettings);
       NewAssetPropertiesInspector.endGroup();
    }
+   //Special case, we only do this via internal means like baking
+   /*else if(%assetType $= "ShapeAsset")
+   {
+      NewAssetPropertiesInspector.startGroup("Shape");
+      NewAssetPropertiesInspector.addField("isServerScript", "Is Server Script", "bool",  "Is this script used on the server?", "1", "", %this.newAssetSettings);
+      NewAssetPropertiesInspector.endGroup();
+   }*/
    /*else if(%assetType $= "ShapeAnimationAsset")
    {
       NewAssetPropertiesInspector.startGroup("Animation");

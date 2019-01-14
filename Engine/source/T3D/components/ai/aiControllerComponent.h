@@ -39,6 +39,9 @@ private:
 
    Point3F mAimOffset;
 
+   MatrixF mEyeTransform;
+   MatrixF mMuzzleTransform;
+
    // move triggers
    bool mMoveTriggers[MaxTriggerKeys];
 
@@ -122,6 +125,8 @@ public:
    AIControllerComponent();
    ~AIControllerComponent();
 
+   DECLARE_CONOBJECT(AIControllerComponent);
+
    virtual void processTick();
 
    virtual bool getAIMove(Move *move);
@@ -140,10 +145,12 @@ public:
    void setAimLocation(const Point3F &location);
    Point3F getAimLocation() const { return mAimLocation; }
    void clearAim();
-   void getMuzzleVector(U32 imageSlot, VectorF* vec);
+   void getMuzzleVector(VectorF* vec);
    bool checkInLos(GameBase* target = NULL, bool _useMuzzle = false);
    bool checkInFoV(GameBase* target = NULL, F32 camFov = 45.0f);
    F32 getTargetDistance(GameBase* target);
+   MatrixF getEyeTransform();
+   Point3F getMuzzlePointAI();
 
    // Movement sets/gets
    void setMoveSpeed(const F32 speed);

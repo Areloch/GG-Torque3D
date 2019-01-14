@@ -2,7 +2,7 @@
 
 #include "animationComponent.h"
 
-class PlayerAnimationComponent : public AnimationComponent
+class ActionAnimationComponent : public AnimationComponent
 {
    typedef AnimationComponent Parent;
 
@@ -51,9 +51,9 @@ public:
    void         setLookAnimationOverride(bool flag);
 
 public:
-   PlayerAnimationComponent();
-   ~PlayerAnimationComponent();
-   DECLARE_CONOBJECT(PlayerAnimationComponent);
+   ActionAnimationComponent();
+   ~ActionAnimationComponent();
+   DECLARE_CONOBJECT(ActionAnimationComponent);
 
    static void initPersistFields();
 

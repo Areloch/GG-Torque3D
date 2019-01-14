@@ -5101,12 +5101,13 @@ DefineEngineMethod( GuiTreeViewCtrl, editItem, bool, ( S32 itemId, const char* n
    return(object->editItem(itemId, newText, newValue));
 }
 
-DefineEngineMethod( GuiTreeViewCtrl, removeItem, bool, (S32 itemId), ,
+DefineEngineMethod( GuiTreeViewCtrl, removeItem, bool, (S32 itemId, bool deleteObjects), (0, true),
    "Remove an item from the tree with the given id.\n\n"
    "@param itemId TreeItemID of item to remove.\n"
+   "@param deleteObjects Whether the object on the item is deleted when the item is.\n"
    "@return True if successful, false if not.")
 {
-   return(object->removeItem(itemId));
+   return(object->removeItem(itemId, deleteObjects));
 }
 
 DefineEngineMethod( GuiTreeViewCtrl, removeAllChildren, void, (S32 itemId), ,
@@ -5333,6 +5334,31 @@ DefineEngineMethod( GuiTreeViewCtrl, findItemByObjectId, S32, (S32 objectId), ,
    "@return Tree Item Id for the given object ID.")
 {
    return(object->findItemByObjectId(objectId));
+}
+
+//------------------------------------------------------------------------------
+S32 GuiTreeViewCtrl::getItemObject(S32 itemId)
+{
+   GuiTreeViewCtrl::Item* item = getItem(itemId);
+   if (!item)
+   {
+      return 0;
+   }
+
+   SimObject* pObj = item->getObject();
+   if (pObj)
+      return pObj->getId();
+
+   return 0;
+}
+
+//------------------------------------------------------------------------------
+DefineEngineMethod(GuiTreeViewCtrl, getItemObject, S32, (S32 itemId), ,
+   "Gets the object for a particular item.\n\n"
+   "@param itemId  Item id you want the object id for."
+   "@return Tree Item Id for the given object ID.")
+{
+   return(object->getItemObject(itemId));
 }
 
 //------------------------------------------------------------------------------

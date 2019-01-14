@@ -166,18 +166,20 @@ function EditorOpenFileInTorsion( %file, %line )
    
    %torsionPath = EditorSettings.value( "WorldEditor/torsionPath" );
    
-   if(%torsionPath $= "")
-   {
-      //Last ditch effort, try and use a common file path
-      %torsionPath = "E:/Gamedev/tools/Torsion/torsion.exe";
-   }
-   
    if( !isFile( %torsionPath ) )
    {
-      MessageBoxOK(
-         "Torsion Not Found",
-         "Torsion not found at '" @ %torsionPath @ "'.  Please set the correct path in the preferences."
-      );
+      if($PromptTorsionError == 0 || $PromptTorsionError $= "")
+      {
+         MessageBoxOK(
+            "Torsion Not Found",
+            "Torsion not found at '" @ %torsionPath @ "'.  Please set the correct path in the preferences. Opening integrated script editor."
+         );
+         
+         $PromptTorsionError = 1;
+      }
+      
+      EWBrowserWindow.openScript(%file);
+      
       return;
    }
    
@@ -594,9 +596,9 @@ function EditorExplodePrefab()
    EditorTree.buildVisibleTree( true );
 }
 
-function makeSelectedAMesh()
+function makeSelectedAMesh(%shapeAsset)
 {
-
+/*
    %dlg = new SaveFileDialog()
    {
       Filters        = "Collada file (*.dae)|*.dae|";
@@ -619,9 +621,42 @@ function makeSelectedAMesh()
    %dlg.delete();
    
    if ( !%ret )
+      return;*/
+      
+   // If we didn't get passed a new mission name then
+   // prompt the user for one.
+   if ( %shapeAsset $= "" )
       return;
+      
+   %shapeAssetDef = AssetDatabase.acquireAsset(%shapeAsset);
+   %assetType = AssetDatabase.getAssetType(%shapeAsset);
+      
+   if(%assetType !$= "ShapeAsset")
+   {
+      error("Somehow tried to save a non-shape asset as a shape? " @ %shapeAssetDef);
+      return;
+   }
+               
+   %shapePath = %shapeAssetDef.fileName;
+               
+   EWorldEditor.makeSelectionAMesh( %shapePath );
    
-   EWorldEditor.makeSelectionAMesh( %saveFile );    
+   //Get the centroid
+   %centerPos = EWorldEditor.getGizmoPosition();
+   
+   %staticShapeObjDef = AssetDatabase.acquireAsset("Core_GameObjects:StaticShapeObject");
+      
+   %newEntity = %staticShapeObjDef.create();
+   
+   %newEntity.position = %centerPos;
+   %newEntity-->MeshComponent.MeshAsset = %shapeAsset;
+   
+   getScene(0).add(%newEntity);
+   
+   EWorldEditor.clearSelection();
+   EWorldEditor.selectObject(%newEntity);
+   
+   EWorldEditor.setSceneAsDirty();
    
    EditorTree.buildVisibleTree( true );  
 }

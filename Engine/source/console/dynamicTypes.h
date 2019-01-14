@@ -313,6 +313,19 @@ const EngineTypeInfo* _MAPTYPE() { return TYPE< T >(); }
 #define ConsoleTypeFieldPrefix( type, typePrefix ) \
    StringTableEntry ConsoleType##type::getTypePrefix( void ) const { return StringTable->insert( typePrefix ); }
 
+#define ConsoleSizedType( typeName, type, size, typePrefix ) \
+   class ConsoleType##type : public ConsoleBaseType \
+   { \
+   public: \
+      ConsoleType##type (const S32 aSize, S32 *idPtr, const char *aTypeName) : ConsoleBaseType(aSize, idPtr, aTypeName) { } \
+      virtual void setData(void *dptr, S32 argc, const char **argv, EnumTable *tbl, BitSet32 flag); \
+      virtual const char *getData(void *dptr, EnumTable *tbl, BitSet32 flag ); \
+      virtual const char *getTypeClassName() { return #typeName ; } \
+      virtual StringTableEntry getTypePrefix( void ) const { return StringTable->insert( typePrefix ); }\
+   }; \
+   S32 type = -1; \
+   ConsoleType##type gConsoleType##type##Instance(size,&type,#type); \
+
 #define ConsoleSetType( type ) \
    void ConsoleType##type::setData(void *dptr, S32 argc, const char **argv, const EnumTable *tbl, BitSet32 flag)
 

@@ -49,6 +49,8 @@
 #include "math/mEase.h"
 #include "T3D/tsStatic.h"
 
+#include "assets/assetManager.h"
+
 #include "tools/editorTool.h"
 
 #include "T3D/Scene.h"
@@ -3809,6 +3811,13 @@ void WorldEditor::explodeSelectedPrefab()
 
 void WorldEditor::makeSelectionAMesh(const char *filename)
 {
+   AssetManager* assetDatabase;
+   if (!Sim::findObject("AssetDatabase", assetDatabase))
+   {
+      Con::errorf("WorldEditor::makeSelectionAMesh - Couldn't find AssetDatabase.");
+      return;
+   }
+
    if (mSelected->size() == 0)
    {
       Con::errorf("WorldEditor::makeSelectionAMesh - Nothing selected.");
@@ -3965,7 +3974,7 @@ void WorldEditor::makeSelectionAMesh(const char *filename)
    //
 
    // Allocate TSStatic object and add to level.
-   TSStatic *ts = new TSStatic();
+   /*TSStatic *ts = new TSStatic();
    ts->setShapeFileName(StringTable->insert(filename));
    fabMat.inverse();
    ts->setTransform(fabMat);
@@ -3975,7 +3984,7 @@ void WorldEditor::makeSelectionAMesh(const char *filename)
    // Select it, mark level as dirty.
    clearSelection();
    selectObject(ts);
-   setDirty();
+   setDirty();*/
 
    // Delete original objects and temporary SimGroup.
    for (S32 i = 0; i < objectList.size(); i++)
@@ -4247,4 +4256,9 @@ DefineEngineMethod(WorldEditor, getActiveEditorTool, EditorTool*, (),,
    "Gets the active Editor Tool for the world editor.")
 {
    return object->getActiveEditorTool();
+}
+
+DefineEngineMethod(WorldEditor, getGizmoPosition, Point3F, (), , "")
+{
+   return object->getGizmo()->getPosition();
 }

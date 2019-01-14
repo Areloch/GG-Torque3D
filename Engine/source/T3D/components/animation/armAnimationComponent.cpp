@@ -227,12 +227,12 @@ void ArmAnimationComponent::updateAnimationTree(bool firstPerson)
    S32 mode = 0;
    if (firstPerson)
    {
-      if (mActionAnimation.firstPerson)
-         mode = 0;
+      //if (mActionAnimation.firstPerson)
+      //   mode = 0;
       //            TSShapeInstance::MaskNodeRotation;
       //            TSShapeInstance::MaskNodePosX |
       //            TSShapeInstance::MaskNodePosY;
-      else
+      //else
          mode = TSShapeInstance::MaskNodeAllButBlend;
    }
 
@@ -254,20 +254,22 @@ const String& ArmAnimationComponent::getArmThread() const
 bool ArmAnimationComponent::setArmThread(const char* sequence)
 {
    // The arm sequence must be in the action list.
-   for (U32 i = 1; i < mActionAnimationList.size(); i++)
-      if (!dStricmp(mActionAnimationList[i].name, sequence))
-         return setArmThread(i);
+   if (TSShape* shape = getShape())
+   {
+      S32 seq = shape->findSequence(sequence);
+      if(seq != -1)
+         return setArmThread(seq);
+   }
+
    return false;
 }
 
-bool ArmAnimationComponent::setArmThread(U32 action)
+bool ArmAnimationComponent::setArmThread(U32 sequence)
 {
-   ActionAnimationDef &anim = mActionAnimationList[action];
-   if (anim.sequence != -1 &&
-      anim.sequence != mOwnerShapeInstance->getSequence(mArmAnimation.thread))
+   if (sequence != mOwnerShapeInstance->getSequence(mArmAnimation.thread))
    {
-      mOwnerShapeInstance->setSequence(mArmAnimation.thread, anim.sequence, 0);
-      mArmAnimation.action = action;
+      mOwnerShapeInstance->setSequence(mArmAnimation.thread, sequence, 0);
+      mArmAnimation.action = sequence;
       setMaskBits(ThreadMaskN << 1);
       return true;
    }

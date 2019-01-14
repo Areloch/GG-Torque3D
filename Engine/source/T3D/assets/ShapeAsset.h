@@ -113,6 +113,10 @@ public:
    S32 getAnimationCount() { return mAnimationAssets.size(); }
    ShapeAnimationAsset* getAnimation(S32 index);
 
+   void _onResourceChanged(const Torque::Path &path);
+
+   Signal< void(ShapeAsset*) > onShapeChanged;
+
 protected:
    virtual void            onAssetRefresh(void);
 };

@@ -337,8 +337,9 @@ void ShapeCollisionComponent::unpackUpdate(NetConnection *con, BitStream *stream
 
 void ShapeCollisionComponent::ownerTransformSet(MatrixF *mat)
 {
+   /*bool isSrv = isServerObject();
    if (mPhysicsRep && mCollisionInited)
-      mPhysicsRep->setTransform(mOwner->getTransform());
+      mPhysicsRep->setTransform(mOwner->getTransform());*/
 }
 
 //Setup

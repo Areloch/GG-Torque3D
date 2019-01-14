@@ -20,5 +20,9 @@ public:
    virtual bool onAdd();
    virtual void onRemove();
 
+   MeshComponent* getMeshComponent() { return mMeshComponent; }
+   ShapeCollisionComponent* getCollisionComponent() { return mCollisionComponent; }
+   AnimationComponent* getAnimationComponent() { return mAnimationComponent; }
+
    DECLARE_CONOBJECT(StaticShapeObject);
 };

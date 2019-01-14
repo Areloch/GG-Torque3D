@@ -94,8 +94,8 @@ ShapeAsset::~ShapeAsset()
 {
    // If the asset manager does not own the asset then we own the
    // asset definition so delete it.
-   if (!getOwned())
-      delete mpAssetDefinition;
+   //if (!getOwned())
+   //   delete mpAssetDefinition;
 }
 
 //-----------------------------------------------------------------------------
@@ -128,6 +128,16 @@ void ShapeAsset::initializeAsset()
    Parent::initializeAsset();
 
    if (dStrcmp(mFileName, "") == 0)
+      return;
+
+   ResourceManager::get().getChangedSignal().notify(this, &ShapeAsset::_onResourceChanged);
+
+   loadShape();
+}
+
+void ShapeAsset::_onResourceChanged(const Torque::Path &path)
+{
+   if (path != Torque::Path(mFileName) )
       return;
 
    loadShape();
@@ -226,6 +236,8 @@ bool ShapeAsset::loadShape()
          }
       }
    }
+
+   onShapeChanged.trigger(this);
 
    return true;
 }

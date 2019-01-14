@@ -1,8 +1,8 @@
-#include "PlayerAnimationComponent.h"
+#include "actionAnimationComponent.h"
 
-IMPLEMENT_CO_NETOBJECT_V1(PlayerAnimationComponent);
+IMPLEMENT_CO_NETOBJECT_V1(ActionAnimationComponent);
 
-PlayerAnimationComponent::PlayerAnimationComponent() :
+ActionAnimationComponent::ActionAnimationComponent() :
    mNewAnimationTickTime(4),
    mAnimationTransitionTime(0.25f),
    mUseAnimationTransitions(true)
@@ -13,22 +13,22 @@ PlayerAnimationComponent::PlayerAnimationComponent() :
    mActionAnimation.action = -1;
 }
 
-PlayerAnimationComponent::~PlayerAnimationComponent()
+ActionAnimationComponent::~ActionAnimationComponent()
 {
 }
 
-void PlayerAnimationComponent::initPersistFields()
+void ActionAnimationComponent::initPersistFields()
 {
    addGroup("AnimationController");
-   addField("newAnimationTickTime", TypeF32, Offset(mNewAnimationTickTime, PlayerAnimationComponent), "");
-   addField("animationTransitionTime", TypeF32, Offset(mAnimationTransitionTime, PlayerAnimationComponent), "");
-   addField("useAnimationTransitions", TypeF32, Offset(mUseAnimationTransitions, PlayerAnimationComponent), "");
+   addField("newAnimationTickTime", TypeF32, Offset(mNewAnimationTickTime, ActionAnimationComponent), "");
+   addField("animationTransitionTime", TypeF32, Offset(mAnimationTransitionTime, ActionAnimationComponent), "");
+   addField("useAnimationTransitions", TypeF32, Offset(mUseAnimationTransitions, ActionAnimationComponent), "");
    endGroup("AnimationController");
 
    Parent::initPersistFields();
 }
 
-bool PlayerAnimationComponent::onAdd()
+bool ActionAnimationComponent::onAdd()
 {
    if (!Parent::onAdd())
       return false;
@@ -39,34 +39,34 @@ bool PlayerAnimationComponent::onAdd()
    return true;
 }
 
-void PlayerAnimationComponent::onRemove()
+void ActionAnimationComponent::onRemove()
 {
    Parent::onRemove();
 }
 
-void PlayerAnimationComponent::onComponentAdd()
+void ActionAnimationComponent::onComponentAdd()
 {
    Parent::onComponentAdd();
 }
 
-void PlayerAnimationComponent::componentAddedToOwner(Component *comp)
+void ActionAnimationComponent::componentAddedToOwner(Component *comp)
 {
    Parent::componentAddedToOwner(comp);
 }
 
-void PlayerAnimationComponent::componentRemovedFromOwner(Component *comp)
+void ActionAnimationComponent::componentRemovedFromOwner(Component *comp)
 {
    Parent::componentRemovedFromOwner(comp);
 }
 
-void PlayerAnimationComponent::targetShapeChanged(RenderComponentInterface* instanceInterface)
+void ActionAnimationComponent::targetShapeChanged(RenderComponentInterface* instanceInterface)
 {
    Parent::targetShapeChanged(instanceInterface);
 
    mActionAnimation.thread = mAnimationThreads[0].thread;
 }
 
-void PlayerAnimationComponent::processTick()
+void ActionAnimationComponent::processTick()
 {
    Parent::processTick();
 
@@ -92,7 +92,7 @@ void PlayerAnimationComponent::processTick()
    }
 }
 
-void PlayerAnimationComponent::interpolateTick(F32 dt)
+void ActionAnimationComponent::interpolateTick(F32 dt)
 {
    Parent::interpolateTick(dt);
 
@@ -100,7 +100,7 @@ void PlayerAnimationComponent::interpolateTick(F32 dt)
       return;
 }
 
-void PlayerAnimationComponent::advanceTime(F32 dt)
+void ActionAnimationComponent::advanceTime(F32 dt)
 {
    Parent::advanceTime(dt);
 
@@ -114,7 +114,7 @@ void PlayerAnimationComponent::advanceTime(F32 dt)
 //
 //
 //
-void PlayerAnimationComponent::addAction(String animName, VectorF direction, String tags)
+void ActionAnimationComponent::addAction(String animName, VectorF direction, String tags)
 {
    ActionAnimationDef newActionDef;
 
@@ -128,7 +128,7 @@ void PlayerAnimationComponent::addAction(String animName, VectorF direction, Str
    mActionAnimationList.push_back(newActionDef);
 }
 
-void PlayerAnimationComponent::getGroundInfo(TSShapeInstance* si, TSThread* thread, ActionAnimationDef *dp)
+void ActionAnimationComponent::getGroundInfo(TSShapeInstance* si, TSThread* thread, ActionAnimationDef *dp)
 {
   /* dp->death = !dStrnicmp(dp->name, "death", 5);
    if (dp->death)
@@ -167,7 +167,7 @@ void PlayerAnimationComponent::getGroundInfo(TSShapeInstance* si, TSThread* thre
    //}
 }
 
-void PlayerAnimationComponent::updateAnimation(F32 dt)
+void ActionAnimationComponent::updateAnimation(F32 dt)
 {
    // update any active blend clips
    //if (isClientObject())
@@ -183,7 +183,7 @@ void PlayerAnimationComponent::updateAnimation(F32 dt)
    }
 }
 
-void PlayerAnimationComponent::updateAnimationTree(bool firstPerson)
+void ActionAnimationComponent::updateAnimationTree(bool firstPerson)
 {
    S32 mode = 0;
    if (firstPerson)
@@ -204,7 +204,7 @@ void PlayerAnimationComponent::updateAnimationTree(bool firstPerson)
 
 //----------------------------------------------------------------------------
 
-bool PlayerAnimationComponent::setActionThread(const char* sequence, bool hold, bool wait, bool fsp)
+bool ActionAnimationComponent::setActionThread(const char* sequence, bool hold, bool wait, bool fsp)
 {
    //if (anim_clip_flags & ANIM_OVERRIDDEN)
     //  return false;
@@ -222,14 +222,14 @@ bool PlayerAnimationComponent::setActionThread(const char* sequence, bool hold, 
    return false;
 }
 
-void PlayerAnimationComponent::setActionThread(U32 action, bool forward, bool hold, bool wait, bool fsp, bool forceSet)
+void ActionAnimationComponent::setActionThread(U32 action, bool forward, bool hold, bool wait, bool fsp, bool forceSet)
 {
    if (!mActionAnimationList.size() || (mActionAnimation.action == action && mActionAnimation.forward == forward && !forceSet))
       return;
 
    if (action >= mActionAnimationList.size())
    {
-      Con::errorf("PlayerAnimationComponent::setActionThread(%d): Player action out of range", action);
+      Con::errorf("ActionAnimationComponent::setActionThread(%d): Player action out of range", action);
       return;
    }
 
@@ -289,9 +289,9 @@ void PlayerAnimationComponent::setActionThread(U32 action, bool forward, bool ho
    }
 }
 
-void PlayerAnimationComponent::updateActionThread()
+void ActionAnimationComponent::updateActionThread()
 {
-   PROFILE_START(PlayerAnimationComponent_UpdateActionThread);
+   PROFILE_START(ActionAnimationComponent_UpdateActionThread);
 
    // Select an action animation sequence, this assumes that
    // this function is called once per tick.
@@ -411,7 +411,7 @@ void PlayerAnimationComponent::updateActionThread()
    PROFILE_END();
 }
 
-/*void PlayerAnimationComponent::pickBestMoveAction(U32 * action, bool * forward) const
+/*void ActionAnimationComponent::pickBestMoveAction(U32 * action, bool * forward) const
 {
    *action = startAnim;
    *forward = false;
@@ -466,7 +466,7 @@ void PlayerAnimationComponent::updateActionThread()
    }
 }*/
 
-void PlayerAnimationComponent::pickActionAnimation()
+void ActionAnimationComponent::pickActionAnimation()
 {
    /*if (isMounted() || mMountPending)
    {
@@ -532,7 +532,7 @@ void PlayerAnimationComponent::pickActionAnimation()
    setActionThread(action, forward, false, false, fsp);
 }
 
-void PlayerAnimationComponent::setActiveTags(String tags)
+void ActionAnimationComponent::setActiveTags(String tags)
 {
    mActiveTags.clear();
 
@@ -546,13 +546,13 @@ void PlayerAnimationComponent::setActiveTags(String tags)
    }
 }
 
-DefineEngineMethod(PlayerAnimationComponent, addAction, void, (String animName, VectorF direction, String tags), ("", VectorF::Zero, ""),
+DefineEngineMethod(ActionAnimationComponent, addAction, void, (String animName, VectorF direction, String tags), ("", VectorF::Zero, ""),
    "")
 {
    return object->addAction(animName, direction, tags);
 }
 
-DefineEngineMethod(PlayerAnimationComponent, setActiveTags, void, (String tags), (""), "")
+DefineEngineMethod(ActionAnimationComponent, setActiveTags, void, (String tags), (""), "")
 {
    return object->setActiveTags(tags);
 }

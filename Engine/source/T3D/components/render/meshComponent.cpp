@@ -123,7 +123,7 @@ void MeshComponent::initPersistFields()
 
    //create a hook to our internal variables
    addGroup("Model");
-   addProtectedField("MeshAsset", TypeShapeAssetPtr, Offset(mShapeAsset, MeshComponent), &_setMesh, &defaultProtectedGetFn,
+   addProtectedField("MeshAsset", TypeShapeAssetPtr, Offset(mShapeAsset, MeshComponent), &_setMesh, &defaultProtectedGetFn, &writeShape,
       "The asset Id used for the mesh.", AbstractClassRep::FieldFlags::FIELD_ComponentInspectors);
    endGroup("Model");
 }
@@ -164,12 +164,19 @@ bool MeshComponent::setMeshAsset(const char* assetName)
       return false;
    }
 
+   mMeshAsset->onShapeChanged.notify(this, &MeshComponent::_shapeAssetUpdated);
+
    mShapeName = mMeshAssetId;
    mShapeAsset = mShapeName;
    updateShape(); //make sure we force the update to resize the owner bounds
    setMaskBits(ShapeMask);
 
    return true;
+}
+
+void MeshComponent::_shapeAssetUpdated(ShapeAsset* asset)
+{
+   updateShape();
 }
 
 void MeshComponent::updateShape()
@@ -179,7 +186,6 @@ void MeshComponent::updateShape()
 
    //if ((mShapeName && mShapeName[0] != '\0') || (mShapeAsset && mShapeAsset[0] != '\0'))
    if ((mShapeName && mShapeName[0] != '\0') || (mMeshAssetId && mMeshAssetId[0] != '\0'))
-
    {
       if (mMeshAsset == NULL)
          return;
@@ -192,7 +198,7 @@ void MeshComponent::updateShape()
       setupShape();
 
       //Do this on both the server and client
-      S32 materialCount = mMeshAsset->getMaterialCount();// mMeshAsset->getShape()->materialList->getMaterialNameList().size();
+      S32 materialCount = mMeshAsset->getShape()->materialList->getMaterialNameList().size(); //mMeshAsset->getMaterialCount();
 
       if (isServerObject())
       {
@@ -216,12 +222,21 @@ void MeshComponent::updateShape()
 
          for (U32 i = 0; i < materialCount; i++)
          {
-            AssetPtr<MaterialAsset> matAsset = mMeshAsset->getMaterialAsset(i);
-            //String materialname = mMeshAsset->getShape()->materialList->getMaterialName(i);
+            String materialname = mMeshAsset->getShape()->materialList->getMaterialName(i);
 
-            dSprintf(matFieldName, 128, "MaterialSlot%d", i);
+            //Iterate through our assetList to find the compliant entry in our matList
+            for (U32 m = 0; m < mMeshAsset->getMaterialCount(); m++)
+            {
+               AssetPtr<MaterialAsset> matAsset = mMeshAsset->getMaterialAsset(m);
 
-            addComponentField(matFieldName, "A material used in the shape file", "Material", matAsset->getAssetId(), "");
+               if (matAsset->getMaterialDefinitionName() == materialname)
+               {
+                  dSprintf(matFieldName, 128, "MaterialSlot%d", i);
+
+                  addComponentField(matFieldName, "A material used in the shape file", "Material", matAsset->getAssetId(), "");
+                  break;
+               }
+            }
          }
 
          if (materialCount > 0)
@@ -265,6 +280,8 @@ void MeshComponent::setupShape()
 
 void MeshComponent::_onResourceChanged( const Torque::Path &path )
 {
+   /*bool srv = isServerObject();
+
    if (mInterfaceData == nullptr)
       return;
 
@@ -276,7 +293,7 @@ void MeshComponent::_onResourceChanged( const Torque::Path &path )
       return;
 
    updateShape();
-   setMaskBits(ShapeMask);
+   setMaskBits(ShapeMask);*/
 }
 
 void MeshComponent::inspectPostApply()

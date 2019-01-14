@@ -19,9 +19,6 @@
       coreModulesFilter = "0";
       currentPreviewPage = "0";
       enabled = "1";
-      importAssetFinalListArray = "20689";
-      importAssetNewListArray = "20687";
-      importAssetUnprocessedListArray = "20688";
       isReImportingAsset = "0";
       totalPages = "1";
       treeFilterMode = "list";

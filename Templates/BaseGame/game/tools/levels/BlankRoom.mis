@@ -2,6 +2,9 @@
 new Scene(EditorTemplateLevel) {
    canSave = "1";
    canSaveDynamicFields = "1";
+   isSubscene = "0";
+   isEditing = "0";
+   isDirty = "0";
 
    new LevelInfo(TheLevelInfo) {
       nearClip = "0.1";
@@ -22,7 +25,7 @@ new Scene(EditorTemplateLevel) {
       canSaveDynamicFields = "1";
          desc0 = "A blank room template that acts as a starting point.";
          enabled = "1";
-         levelName = "Blank Room Template";
+         LevelName = "Blank Room Template";
    };
    new SkyBox(theSky) {
       Material = "BlankSkyMat";
@@ -88,6 +91,90 @@ new Scene(EditorTemplateLevel) {
          position = "0 0 0";
          rotation = "1 0 0 0";
          scale = "1 1 1";
+   };
+   new StaticShapeObject() {
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+      position = "0.0636387 -0.131076 0";
+      rotation = "0 -0 -0";
+      LocalPosition = "0 0 0";
+      LocalRotation = "1 0 0 0";
+      LifetimeMS = "0";
+      dirtyGameObject = "1";
+
+      new MeshComponent() {
+         componentType = "Render";
+         friendlyName = "Mesh Component";
+         description = "Causes the object to render a non-animating 3d shape using the file provided.";
+         networked = "1";
+         enabled = "1";
+         internalName = "MeshComponent";
+         MeshAsset = "Cogflicts_Test:halfstory_braces";
+      };
+      new ShapeCollisionComponent() {
+         componentType = "Collision";
+         friendlyName = "Shape Collision";
+         description = "A stub component class that physics components should inherit from.";
+         networked = "0";
+         enabled = "1";
+         internalName = "CollisionComponent";
+         CollisionType = "Collision Mesh";
+         LineOfSightType = "Collision Mesh";
+         DecalType = "Collision Mesh";
+         CollisionMeshPrefix = "Collision";
+         BlockCollisions = "1";
+      };
+      new AnimationComponent() {
+         componentType = "Animation";
+         friendlyName = "Animation(Component)";
+         description = "Allows a rendered mesh to be animated";
+         networked = "1";
+         enabled = "1";
+         internalName = "AnimationComponent";
+      };
+   };
+   new StaticShapeObject() {
+      scale = "1 1 1";
+      canSave = "1";
+      canSaveDynamicFields = "1";
+      position = "0.0696468 -0.0826386 2.50726";
+      rotation = "0 -0 -0";
+      LocalPosition = "0 0 0";
+      LocalRotation = "1 0 0 0";
+      LifetimeMS = "0";
+      dirtyGameObject = "1";
+
+      new MeshComponent() {
+         componentType = "Render";
+         friendlyName = "Mesh Component";
+         description = "Causes the object to render a non-animating 3d shape using the file provided.";
+         networked = "1";
+         enabled = "1";
+         internalName = "MeshComponent";
+         MeshAsset = "Cogflicts_Test:story_arches";
+      };
+      new ShapeCollisionComponent() {
+         componentType = "Collision";
+         friendlyName = "Shape Collision";
+         description = "A stub component class that physics components should inherit from.";
+         networked = "0";
+         enabled = "1";
+         internalName = "CollisionComponent";
+         CollisionType = "Collision Mesh";
+         LineOfSightType = "Collision Mesh";
+         DecalType = "Collision Mesh";
+         CollisionMeshPrefix = "Collision";
+         BlockCollisions = "1";
+      };
+      new AnimationComponent() {
+         componentType = "Animation";
+         friendlyName = "Animation(Component)";
+         description = "Allows a rendered mesh to be animated";
+         networked = "1";
+         enabled = "1";
+         internalName = "AnimationComponent";
+      };
    };
 };
 //--- OBJECT WRITE END ---

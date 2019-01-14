@@ -160,7 +160,7 @@ void Entity::initPersistFields()
    addProtectedField("GameObject", TypeGameObjectAssetPtr, Offset(mGameObjectAsset, Entity), &_setGameObject, &defaultProtectedGetFn,
       "The asset Id used for the game object this entity is based on.");
 
-   addField("dirtyGameObject", TypeS32, Offset(mDirtyGameObject, Entity), "If this entity is a GameObject, it flags if this instance delinates from the template.", 
+   addField("dirtyGameObject", TypeBool, Offset(mDirtyGameObject, Entity), "If this entity is a GameObject, it flags if this instance delinates from the template.", 
       AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
    endGroup("GameObject");
 }
@@ -1731,6 +1731,147 @@ void Entity::setComponentDirty(Component *comp, bool forceUpdate)
    
 }
 
+//Exporting
+bool Entity::buildExportPolyList(ColladaUtils::ExportData* exportData, const Box3F &box, const SphereF &)
+{
+   Vector< RenderComponentInterface*> interfaces = getComponents<RenderComponentInterface>();
+
+   if (interfaces.empty())
+      return false;
+
+/*   if (!mShapeInstance)
+      return false;
+
+   if (mCollisionType == Bounds)
+   {
+      ColladaUtils::ExportData::colMesh* colMesh;
+      exportData->colMeshes.increment();
+      colMesh = &exportData->colMeshes.last();
+
+      colMesh->mesh.setTransform(&mObjToWorld, mObjScale);
+      colMesh->mesh.setObject(this);
+
+      colMesh->mesh.addBox(mObjBox);
+
+      colMesh->colMeshName = String::ToString("ColBox%d-1", exportData->colMeshes.size());
+   }
+   else if (mCollisionType == VisibleMesh)
+   {
+      ColladaUtils::ExportData::colMesh* colMesh;
+      exportData->colMeshes.increment();
+      colMesh = &exportData->colMeshes.last();
+
+      colMesh->mesh.setTransform(&mObjToWorld, mObjScale);
+      colMesh->mesh.setObject(this);
+
+      mShapeInstance->buildPolyList(&colMesh->mesh, 0);
+
+      colMesh->colMeshName = String::ToString("ColMesh%d-1", exportData->colMeshes.size());
+   }
+   else if (mCollisionType == CollisionMesh)
+   {
+      // Everything else is done from the collision meshes
+      // which may be built from either the visual mesh or
+      // special collision geometry.
+      for (U32 i = 0; i < mCollisionDetails.size(); i++)
+      {
+         ColladaUtils::ExportData::colMesh* colMesh;
+         exportData->colMeshes.increment();
+         colMesh = &exportData->colMeshes.last();
+
+         colMesh->mesh.setTransform(&mObjToWorld, mObjScale);
+         colMesh->mesh.setObject(this);
+
+         mShapeInstance->buildPolyListOpcode(mCollisionDetails[i], &colMesh->mesh, box);
+
+         colMesh->colMeshName = String::ToString("ColMesh%d-1", exportData->colMeshes.size());
+      }
+   }*/
+
+   //Next, process the LOD levels and materials.
+   if (isServerObject() && getClientObject())
+   {
+      Entity* clientEntity = dynamic_cast<Entity*>(getClientObject());
+
+      Vector< RenderComponentInterface*> clientInterfaces = getComponents<RenderComponentInterface>();
+      for (U32 i = 0; i < clientInterfaces.size(); i++)
+      {
+         if (!clientInterfaces[i]->getShapeInstance())
+            continue;
+
+         U32 numDetails = clientInterfaces[i]->getShapeInstance()->getNumDetails() - 1;
+
+         exportData->meshData.increment();
+
+         //Prep a meshData for this shape in particular
+         ColladaUtils::ExportData::meshLODData* meshData = &exportData->meshData.last();
+
+         //Fill out the info we'll need later to actually append our mesh data for the detail levels during the processing phase
+         meshData->shapeInst = clientInterfaces[i]->getShapeInstance();
+         meshData->originatingObject = this;
+         meshData->meshTransform = mObjToWorld;
+         meshData->scale = mObjScale;
+
+         //Iterate over all our detail levels
+         for (U32 d = 0; d < numDetails; d++)
+         {
+            TSShape::Detail detail = clientInterfaces[i]->getShapeInstance()->getShape()->details[d];
+
+            String detailName = String::ToLower(clientInterfaces[i]->getShapeInstance()->getShape()->getName(detail.nameIndex));
+
+            //Skip it if it's a collision or line of sight element
+            if (detailName.startsWith("col") || detailName.startsWith("los"))
+               continue;
+
+            meshData->meshDetailLevels.increment();
+
+            ColladaUtils::ExportData::detailLevel* curDetail = &meshData->meshDetailLevels.last();
+
+            //Make sure we denote the size this detail level has
+            curDetail->size = detail.size;
+         }
+      }
+   }
+   /*if (isServerObject() && getClientObject())
+   {
+      TSStatic* clientShape = dynamic_cast<TSStatic*>(getClientObject());
+
+      U32 numDetails = clientShape->mShapeInstance->getNumDetails() - 1;
+
+      exportData->meshData.increment();
+
+      //Prep a meshData for this shape in particular
+      ColladaUtils::ExportData::meshLODData* meshData = &exportData->meshData.last();
+
+      //Fill out the info we'll need later to actually append our mesh data for the detail levels during the processing phase
+      meshData->shapeInst = clientShape->mShapeInstance;
+      meshData->originatingObject = this;
+      meshData->meshTransform = mObjToWorld;
+      meshData->scale = mObjScale;
+
+      //Iterate over all our detail levels
+      for (U32 i = 0; i < clientShape->mShapeInstance->getNumDetails(); i++)
+      {
+         TSShape::Detail detail = clientShape->mShapeInstance->getShape()->details[i];
+
+         String detailName = String::ToLower(clientShape->mShapeInstance->getShape()->getName(detail.nameIndex));
+
+         //Skip it if it's a collision or line of sight element
+         if (detailName.startsWith("col") || detailName.startsWith("los"))
+            continue;
+
+         meshData->meshDetailLevels.increment();
+
+         ColladaUtils::ExportData::detailLevel* curDetail = &meshData->meshDetailLevels.last();
+
+         //Make sure we denote the size this detail level has
+         curDetail->size = detail.size;
+      }
+   }*/
+
+   return true;
+}
+
 DefineEngineMethod(Entity, mountObject, bool,
    (SceneObject* objB, TransformF txfm), (MatrixF::Identity),
    "@brief Mount objB to this object at the desired slot with optional transform.\n\n"
@@ -1929,7 +2070,7 @@ DefineConsoleMethod(Entity, getMoveVector, VectorF, (),,
    "Get the number of static fields on the object.\n"
    "@return The number of static fields defined on the object.")
 {
-   if (object->getControllingClient() != NULL)
+   //if (object->getControllingClient() != NULL)
    {
       //fetch our last move
       if (object->lastMove.x != 0 || object->lastMove.y != 0 || object->lastMove.z != 0)
@@ -1943,7 +2084,7 @@ DefineConsoleMethod(Entity, getMoveRotation, VectorF, (), ,
    "Get the number of static fields on the object.\n"
    "@return The number of static fields defined on the object.")
 {
-   if(object->getControllingClient() != NULL)
+   //if(object->getControllingClient() != NULL)
    {
       //fetch our last move
       if (object->lastMove.pitch != 0 || object->lastMove.roll != 0 || object->lastMove.yaw != 0)

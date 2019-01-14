@@ -48,16 +48,28 @@ bool PlayerObject::onAdd()
       addComponent(mCollisionComponent);
 
       //Animation
-      mAnimationComponent = new PlayerAnimationComponent();
+      mAnimationComponent = new ActionAnimationComponent();
       if (!mAnimationComponent->registerObject())
       {
-         Con::errorf("PlayerObject::onAdd - unable to add PlayerAnimationComponent!");
+         Con::errorf("PlayerObject::onAdd - unable to add ActionAnimationComponent!");
          return false;
       }
 
       mAnimationComponent->setInternalName("animationComponent");
 
       addComponent(mAnimationComponent);
+
+      //Arm Animation
+      mArmAnimationComponent = new ArmAnimationComponent();
+      if (!mArmAnimationComponent->registerObject())
+      {
+         Con::errorf("PlayerObject::onAdd - unable to add ArmAnimationComponent!");
+         return false;
+      }
+
+      mArmAnimationComponent->setInternalName("armAnimationComponent");
+
+      addComponent(mArmAnimationComponent);
 
       //Physics control
       mPhysicsComponent = new PlayerControllerComponent();

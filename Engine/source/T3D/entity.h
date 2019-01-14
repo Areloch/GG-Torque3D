@@ -288,6 +288,8 @@ public:
 
    StateDelta getNetworkDelta() { return mDelta; }
 
+   bool buildExportPolyList(ColladaUtils::ExportData* exportData, const Box3F &box, const SphereF &);
+
    DECLARE_CONOBJECT(Entity);
 };
 

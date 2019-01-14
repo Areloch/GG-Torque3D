@@ -70,7 +70,7 @@ function AssetBrowser::buildScriptAssetPreview(%this, %assetDef, %previewData)
 {
    %previewData.assetName = %assetDef.assetName;
    %previewData.assetPath = %assetDef.scriptFilePath;
-   %previewData.doubleClickCommand = "EditorOpenFileInTorsion( "@%previewData.assetPath@", 0 );";
+   %previewData.doubleClickCommand = "EditorOpenFileInTorsion( \""@%previewData.assetPath@"\", 0 );";
    
    if(%assetDef.isServerSide)
       %previewData.previewImage = "tools/assetBrowser/art/serverScriptIcon";
