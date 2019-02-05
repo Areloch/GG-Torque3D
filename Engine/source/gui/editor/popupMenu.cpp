@@ -33,7 +33,7 @@ bool PopupMenu::smSelectionEventHandled = false;
 
 /// Event class used to remove popup menus from the event notification in a safe way
 class PopUpNotifyRemoveEvent : public SimEvent
-{   
+{
 public:
    void process(SimObject *object)
    {
@@ -46,20 +46,20 @@ public:
 //-----------------------------------------------------------------------------
 PopupMenu::PopupMenu()
 {
-	mMenuItems = NULL;
-	mMenuBarCtrl = nullptr;
+   mMenuItems = NULL;
+   mMenuBarCtrl = nullptr;
 
-	mBarTitle = StringTable->EmptyString();
-	mBounds = RectI(0, 0, 64, 64);
-	mVisible = true;
+   mBarTitle = StringTable->EmptyString();
+   mBounds = RectI(0, 0, 64, 64);
+   mVisible = true;
 
-	mBitmapIndex = -1;
-	mDrawBitmapOnly = false;
-	mDrawBorder = false;
+   mBitmapIndex = -1;
+   mDrawBitmapOnly = false;
+   mDrawBorder = false;
 
-	mTextList = nullptr;
+   mTextList = nullptr;
 
-	mIsSubmenu = false;
+   mIsSubmenu = false;
 }
 
 PopupMenu::~PopupMenu()
@@ -69,7 +69,7 @@ PopupMenu::~PopupMenu()
 
 IMPLEMENT_CONOBJECT(PopupMenu);
 
-ConsoleDocClass( PopupMenu,
+ConsoleDocClass(PopupMenu,
    "@brief PopupMenu represents a system menu.\n\n"
    "You can add menu items to the menu, but there is no torque object associated "
    "with these menu items, they exist only in a  platform specific manner.\n\n"
@@ -88,7 +88,7 @@ void PopupMenu::initPersistFields()
 //-----------------------------------------------------------------------------
 bool PopupMenu::onAdd()
 {
-   if(! Parent::onAdd())
+   if (!Parent::onAdd())
       return false;
 
    Con::executef(this, "onAdd");
@@ -110,7 +110,7 @@ void PopupMenu::onMenuSelect()
 
 //-----------------------------------------------------------------------------
 void PopupMenu::handleSelectEvent(U32 popID, U32 command)
-{  
+{
 }
 
 //-----------------------------------------------------------------------------
@@ -119,7 +119,7 @@ bool PopupMenu::onMessageReceived(StringTableEntry queue, const char* event, con
    return Con::executef(this, "onMessageReceived", queue, event, data);
 }
 
-bool PopupMenu::onMessageObjectReceived(StringTableEntry queue, Message *msg )
+bool PopupMenu::onMessageObjectReceived(StringTableEntry queue, Message *msg)
 {
    return Con::executef(this, "onMessageReceived", queue, Con::getIntArg(msg->getId()));
 }
@@ -191,7 +191,7 @@ bool PopupMenu::setItem(S32 pos, const char *title, const char* accelerator, con
       {
          mMenuItems[i].mID = pos;
          mMenuItems[i].mCMD = cmd;
-         
+
          if (accelerator && accelerator[0])
             mMenuItems[i].mAccelerator = dStrdup(accelerator);
          else
@@ -199,7 +199,7 @@ bool PopupMenu::setItem(S32 pos, const char *title, const char* accelerator, con
          return true;
       }
    }
-   
+
    return false;
 }
 
@@ -262,7 +262,7 @@ U32 PopupMenu::getItemCount()
 
 void PopupMenu::clearItems()
 {
-	mMenuItems.clear();
+   mMenuItems.clear();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -287,13 +287,18 @@ void PopupMenu::showPopup(GuiCanvas *owner, S32 x /* = -1 */, S32 y /* = -1 */)
 
    if (editorGui)
    {
-      GuiPopupMenuBackgroundCtrl* backgroundCtrl;
-      Sim::findObject("PopUpMenuControl", backgroundCtrl);
+      GuiPopupMenuBackgroundCtrl* backgroundCtrl = nullptr;
+      if (!Sim::findObject("PopUpMenuControl", backgroundCtrl));
+      {
+         backgroundCtrl = new GuiPopupMenuBackgroundCtrl();
+
+         backgroundCtrl->registerObject("PopUpMenuControl");
+      }
 
       GuiControlProfile* profile;
       Sim::findObject("GuiMenubarProfile", profile);
 
-      if (!profile)
+      if (!backgroundCtrl || !profile)
          return;
 
       if (mTextList == nullptr)
@@ -306,14 +311,7 @@ void PopupMenu::showPopup(GuiCanvas *owner, S32 x /* = -1 */, S32 y /* = -1 */)
          mTextList->mMenuBar = getMenuBarCtrl();
       }
 
-      if (!backgroundCtrl)
-      {
-         backgroundCtrl = new GuiPopupMenuBackgroundCtrl();
-
-         backgroundCtrl->registerObject("PopUpMenuControl");
-      }
-
-      if (!backgroundCtrl || !mTextList)
+      if (!mTextList)
          return;
 
       if (!mIsSubmenu)
@@ -337,7 +335,7 @@ void PopupMenu::showPopup(GuiCanvas *owner, S32 x /* = -1 */, S32 y /* = -1 */)
       owner->pushDialogControl(backgroundCtrl, 10);
 
       //Set the background control's menubar, if any, and if it's not already set
-      if(backgroundCtrl->mMenuBarCtrl == nullptr)
+      if (backgroundCtrl->mMenuBarCtrl == nullptr)
          backgroundCtrl->mMenuBarCtrl = getMenuBarCtrl();
 
       backgroundCtrl->setExtent(editorGui->getExtent());
@@ -469,7 +467,7 @@ DefineEngineMethod(PopupMenu, removeItem, void, (S32 pos), , "(pos)")
 DefineEngineMethod(PopupMenu, insertSubMenu, S32, (S32 pos, String title, String subMenu), , "(pos, title, subMenu)")
 {
    PopupMenu *mnu = dynamic_cast<PopupMenu *>(Sim::findObject(subMenu));
-   if(mnu == NULL)
+   if (mnu == NULL)
    {
       Con::errorf("PopupMenu::insertSubMenu - Invalid PopupMenu object specified for submenu");
       return -1;
@@ -511,11 +509,11 @@ DefineEngineMethod(PopupMenu, getItemCount, S32, (), , "()")
 
 DefineEngineMethod(PopupMenu, clearItems, void, (), , "()")
 {
-	return object->clearItems();
+   return object->clearItems();
 }
 
 //-----------------------------------------------------------------------------
-DefineEngineMethod(PopupMenu, showPopup, void, (const char * canvasName, S32 x, S32 y), ( -1, -1), "(Canvas,[x, y])")
+DefineEngineMethod(PopupMenu, showPopup, void, (const char * canvasName, S32 x, S32 y), (-1, -1), "(Canvas,[x, y])")
 {
    GuiCanvas *pCanvas = dynamic_cast<GuiCanvas*>(Sim::findObject(canvasName));
    object->showPopup(pCanvas, x, y);
