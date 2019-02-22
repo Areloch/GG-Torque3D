@@ -3225,7 +3225,7 @@ void WorldEditor::setEditorTool(EditorTool* newTool)
 
 //------------------------------------------------------------------------------
 
-ConsoleMethod( WorldEditor, ignoreObjClass, void, 3, 0, "(string class_name, ...)")
+DefineEngineStringlyVariadicMethod( WorldEditor, ignoreObjClass, void, 3, 0, "(string class_name, ...)")
 {
 	object->ignoreObjClass(argc, argv);
 }
@@ -3252,7 +3252,7 @@ DefineEngineMethod( WorldEditor, getActiveSelection, S32, (),,
    return object->getActiveSelectionSet()->getId();
 }
 
-DefineConsoleMethod( WorldEditor, setActiveSelection, void, ( WorldEditorSelection* selection), ,
+DefineEngineMethod( WorldEditor, setActiveSelection, void, ( WorldEditorSelection* selection), ,
    "Set the currently active WorldEditorSelection object.\n"
    "@param	selection A WorldEditorSelectionSet object to use for the selection container.")
 {
@@ -3877,8 +3877,6 @@ void WorldEditor::makeSelectionAMesh(const char *filename)
    fabMat.inverse();
 
    MatrixF objMat;
-   SimObject *obj = NULL;
-   SceneObject *sObj = NULL;
 
    Vector< SceneObject* > objectList;
 

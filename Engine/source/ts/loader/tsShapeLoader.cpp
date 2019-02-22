@@ -412,7 +412,7 @@ void TSShapeLoader::generateObjects()
          AppMesh* mesh = subshape->objMeshes[iMesh];
          mesh->detailSize = 2;
          String name = String::GetTrailingNumber( mesh->getName(), mesh->detailSize );
-         name = getUniqueName( name, cmpMeshNameAndSize, meshNames, &(subshape->objMeshes), (void*)mesh->detailSize );
+         name = getUniqueName( name, cmpMeshNameAndSize, meshNames, &(subshape->objMeshes), (void*)(uintptr_t)mesh->detailSize );
          meshNames.push_back( name );
 
          // Fix up any collision details that don't have a negative detail level.
@@ -1325,14 +1325,14 @@ String TSShapeLoader::getFormatFilters()
    return output.end();
 }
 
-DefineConsoleFunction( getFormatExtensions, const char*, ( ),, 
+DefineEngineFunction( getFormatExtensions, const char*, ( ),, 
   "Returns a list of supported shape format extensions separated by tabs."
   "Example output: *.dsq TAB *.dae TAB")
 {
    return Con::getReturnBuffer(TSShapeLoader::getFormatExtensions());
 }
 
-DefineConsoleFunction( getFormatFilters, const char*, ( ),, 
+DefineEngineFunction( getFormatFilters, const char*, ( ),, 
   "Returns a list of supported shape formats in filter form.\n"
   "Example output: DSQ Files|*.dsq|COLLADA Files|*.dae|")
 {

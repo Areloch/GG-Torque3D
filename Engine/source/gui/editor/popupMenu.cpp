@@ -205,7 +205,7 @@ bool PopupMenu::setItem(S32 pos, const char *title, const char* accelerator, con
 
 void PopupMenu::removeItem(S32 itemPos)
 {
-   if (mMenuItems.size() < itemPos || itemPos < 0)
+   if (mMenuItems.empty() || mMenuItems.size() < itemPos || itemPos < 0)
       return;
 
    mMenuItems.erase(itemPos);
@@ -214,7 +214,7 @@ void PopupMenu::removeItem(S32 itemPos)
 //////////////////////////////////////////////////////////////////////////
 void PopupMenu::enableItem(S32 pos, bool enable)
 {
-   if (mMenuItems.size() < pos || pos < 0)
+   if (mMenuItems.empty() || mMenuItems.size() < pos || pos < 0)
       return;
 
    mMenuItems[pos].mEnabled = enable;
@@ -222,7 +222,7 @@ void PopupMenu::enableItem(S32 pos, bool enable)
 
 void PopupMenu::checkItem(S32 pos, bool checked)
 {
-   if (mMenuItems.size() < pos || pos < 0)
+   if (mMenuItems.empty() || mMenuItems.size() < pos || pos < 0)
       return;
 
    if (checked && mMenuItems[pos].mCheckGroup != -1)
@@ -249,7 +249,7 @@ void PopupMenu::checkRadioItem(S32 firstPos, S32 lastPos, S32 checkPos)
 
 bool PopupMenu::isItemChecked(S32 pos)
 {
-   if (mMenuItems.size() < pos || pos < 0)
+   if (mMenuItems.empty() || mMenuItems.size() < pos || pos < 0)
       return false;
 
    return mMenuItems[pos].mIsChecked;
@@ -258,6 +258,11 @@ bool PopupMenu::isItemChecked(S32 pos)
 U32 PopupMenu::getItemCount()
 {
    return mMenuItems.size();
+}
+
+void PopupMenu::clearItems()
+{
+	mMenuItems.clear();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -451,17 +456,17 @@ void PopupMenu::hidePopupSubmenus()
 //-----------------------------------------------------------------------------
 // Console Methods
 //-----------------------------------------------------------------------------
-DefineConsoleMethod(PopupMenu, insertItem, S32, (S32 pos, const char * title, const char * accelerator, const char* cmd), ("", "", ""), "(pos[, title][, accelerator][, cmd])")
+DefineEngineMethod(PopupMenu, insertItem, S32, (S32 pos, const char * title, const char * accelerator, const char* cmd), ("", "", ""), "(pos[, title][, accelerator][, cmd])")
 {
    return object->insertItem(pos, title, accelerator, cmd);
 }
 
-DefineConsoleMethod(PopupMenu, removeItem, void, (S32 pos), , "(pos)")
+DefineEngineMethod(PopupMenu, removeItem, void, (S32 pos), , "(pos)")
 {
    object->removeItem(pos);
 }
 
-DefineConsoleMethod(PopupMenu, insertSubMenu, S32, (S32 pos, String title, String subMenu), , "(pos, title, subMenu)")
+DefineEngineMethod(PopupMenu, insertSubMenu, S32, (S32 pos, String title, String subMenu), , "(pos, title, subMenu)")
 {
    PopupMenu *mnu = dynamic_cast<PopupMenu *>(Sim::findObject(subMenu));
    if(mnu == NULL)
@@ -472,40 +477,45 @@ DefineConsoleMethod(PopupMenu, insertSubMenu, S32, (S32 pos, String title, Strin
    return object->insertSubMenu(pos, title, mnu);
 }
 
-DefineConsoleMethod(PopupMenu, setItem, bool, (S32 pos, const char * title, const char * accelerator, const char *cmd), (""), "(pos, title[, accelerator][, cmd])")
+DefineEngineMethod(PopupMenu, setItem, bool, (S32 pos, const char * title, const char * accelerator, const char *cmd), (""), "(pos, title[, accelerator][, cmd])")
 {
    return object->setItem(pos, title, accelerator, cmd);
 }
 
 //-----------------------------------------------------------------------------
 
-DefineConsoleMethod(PopupMenu, enableItem, void, (S32 pos, bool enabled), , "(pos, enabled)")
+DefineEngineMethod(PopupMenu, enableItem, void, (S32 pos, bool enabled), , "(pos, enabled)")
 {
    object->enableItem(pos, enabled);
 }
 
-DefineConsoleMethod(PopupMenu, checkItem, void, (S32 pos, bool checked), , "(pos, checked)")
+DefineEngineMethod(PopupMenu, checkItem, void, (S32 pos, bool checked), , "(pos, checked)")
 {
    object->checkItem(pos, checked);
 }
 
-DefineConsoleMethod(PopupMenu, checkRadioItem, void, (S32 firstPos, S32 lastPos, S32 checkPos), , "(firstPos, lastPos, checkPos)")
+DefineEngineMethod(PopupMenu, checkRadioItem, void, (S32 firstPos, S32 lastPos, S32 checkPos), , "(firstPos, lastPos, checkPos)")
 {
    object->checkRadioItem(firstPos, lastPos, checkPos);
 }
 
-DefineConsoleMethod(PopupMenu, isItemChecked, bool, (S32 pos), , "(pos)")
+DefineEngineMethod(PopupMenu, isItemChecked, bool, (S32 pos), , "(pos)")
 {
    return object->isItemChecked(pos);
 }
 
-DefineConsoleMethod(PopupMenu, getItemCount, S32, (), , "()")
+DefineEngineMethod(PopupMenu, getItemCount, S32, (), , "()")
 {
    return object->getItemCount();
 }
 
+DefineEngineMethod(PopupMenu, clearItems, void, (), , "()")
+{
+	return object->clearItems();
+}
+
 //-----------------------------------------------------------------------------
-DefineConsoleMethod(PopupMenu, showPopup, void, (const char * canvasName, S32 x, S32 y), ( -1, -1), "(Canvas,[x, y])")
+DefineEngineMethod(PopupMenu, showPopup, void, (const char * canvasName, S32 x, S32 y), ( -1, -1), "(Canvas,[x, y])")
 {
    GuiCanvas *pCanvas = dynamic_cast<GuiCanvas*>(Sim::findObject(canvasName));
    object->showPopup(pCanvas, x, y);

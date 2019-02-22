@@ -217,6 +217,9 @@ mark_as_advanced(TORQUE_DEBUG_GFX_MODE)
 #option(DEBUG_SPEW "more debug" OFF)
 set(TORQUE_NO_DSO_GENERATION ON)
 
+option(TORQUE_USE_ZENITY "use the Zenity backend for NFD" OFF)
+mark_as_advanced(TORQUE_USE_ZENITY)
+
 if(WIN32)
     # warning C4800: 'XXX' : forcing value to bool 'true' or 'false' (performance warning)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4800")
@@ -540,7 +543,11 @@ if(TORQUE_SDL)
        # Add other flags to the compiler
        add_definitions(${GTK3_CFLAGS_OTHER})
 
-       set(BLACKLIST "nfd_win.cpp" "nfd_cocoa.m"  )
+       if(TORQUE_USE_ZENITY)
+          set(BLACKLIST "nfd_win.cpp" "nfd_cocoa.m" "nfd_gtk.c" )
+       else()
+          set(BLACKLIST "nfd_win.cpp" "nfd_cocoa.m" "simple_exec.h" "nfd_zenity.c")
+       endif()
        addLib(nativeFileDialogs)
 
        set(BLACKLIST ""  )
@@ -550,12 +557,9 @@ if(TORQUE_SDL)
       addLib(nativeFileDialogs)
       set(BLACKLIST ""  )
  	else()
-	   if(NOT TORQUE_MINIMALIST_BUILD)
-	 	   set(BLACKLIST "nfd_gtk.c" "nfd_cocoa.m" )
-	 	   addLib(nativeFileDialogs)
-       endif()
-       set(BLACKLIST ""  )
- 	   addLib(comctl32)
+     if(NOT TORQUE_MINIMALIST_BUILD)		set(BLACKLIST "nfd_gtk.c" "nfd_cocoa.m" "simple_exec.h" "nfd_zenity.c")
+ 		addLib(nativeFileDialogs)	 endif()
+       set(BLACKLIST ""  ) 	   addLib(comctl32)
   endif()
 
     #override and hide SDL2 cache variables

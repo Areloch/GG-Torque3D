@@ -490,7 +490,7 @@ void ParticleEmitterData::unpackData(BitStream* stream)
 #if defined(AFX_CAP_PARTICLE_POOLS) 
    if (stream->readFlag())
    {
-      pool_datablock = (afxParticlePoolData*)stream->readRangedU32(DataBlockObjectIdFirst, DataBlockObjectIdLast);
+      pool_datablock = (afxParticlePoolData*)(uintptr_t)stream->readRangedU32(DataBlockObjectIdFirst, DataBlockObjectIdLast);
       stream->read(&pool_index);
       pool_depth_fade = stream->readFlag();
       pool_radial_fade = stream->readFlag();
@@ -1390,7 +1390,7 @@ void ParticleEmitter::emitParticles(const Point3F& start,
 
                Point3F a = last_part->acc;
                a -= last_part->vel * last_part->dataBlock->dragCoefficient;
-               a -= mWindVelocity * last_part->dataBlock->windCoefficient;
+               a += mWindVelocity * last_part->dataBlock->windCoefficient;
                //a += Point3F(0.0f, 0.0f, -9.81f) * last_part->dataBlock->gravityCoefficient;
                a.z += -9.81f*last_part->dataBlock->gravityCoefficient; // as long as gravity is a constant, this is faster
 
@@ -1750,7 +1750,7 @@ void ParticleEmitter::update( U32 ms )
    {
       Point3F a = part->acc;
       a -= part->vel * part->dataBlock->dragCoefficient;
-      a -= mWindVelocity * part->dataBlock->windCoefficient;
+      a += mWindVelocity * part->dataBlock->windCoefficient;
       a.z += -9.81f*part->dataBlock->gravityCoefficient; // AFX -- as long as gravity is a constant, this is faster
 
       part->vel += a * t;

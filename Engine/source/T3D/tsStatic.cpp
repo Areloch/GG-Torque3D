@@ -1007,6 +1007,8 @@ bool TSStatic::castRayRendered(const Point3F &start, const Point3F &end, RayInfo
 
    // Cast the ray against the currently visible detail
    RayInfo localInfo;
+   if (info && info->generateTexCoord)
+      localInfo.generateTexCoord = true;
    bool res = mShapeInstance->castRayOpcode( mShapeInstance->getCurrentDetail(), start, end, &localInfo );
 
    if ( res )
@@ -1129,7 +1131,6 @@ bool TSStatic::buildExportPolyList(ColladaUtils::ExportData* exportData, const B
    if (isServerObject() && getClientObject())
    {
       TSStatic* clientShape = dynamic_cast<TSStatic*>(getClientObject());
-      U32 numDetails = clientShape->mShapeInstance->getNumDetails() - 1;
 
       exportData->meshData.increment();
 
