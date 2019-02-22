@@ -21,11 +21,12 @@
 //-----------------------------------------------------------------------------
 
 #include "app/net/httpObject.h"
-
+#ifndef MINIMALIST_BUILD
 #include "platform/platform.h"
 #include "core/stream/fileStream.h"
 #include "console/simBase.h"
 #include "console/consoleInternal.h"
+#endif
 #include "console/engineAPI.h"
 
 IMPLEMENT_CONOBJECT(HTTPObject);

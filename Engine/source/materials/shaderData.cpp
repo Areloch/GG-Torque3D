@@ -26,7 +26,9 @@
 #include "console/consoleTypes.h"
 #include "gfx/gfxDevice.h"
 #include "core/strings/stringUnit.h"
+#ifndef MINIMALIST_BUILD
 #include "lighting/lightManager.h"
+#endif
 #include "console/engineAPI.h"
 
 using namespace Torque;
@@ -129,7 +131,9 @@ void ShaderData::initPersistFields()
    Parent::initPersistFields();
 
    // Make sure we get activation signals.
+#ifndef MINIMALIST_BUILD
    LightManager::smActivateSignal.notify( &ShaderData::_onLMActivate );
+#endif
 }
 
 bool ShaderData::onAdd()

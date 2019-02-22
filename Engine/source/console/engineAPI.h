@@ -88,6 +88,8 @@
 #pragma warning( disable : 4510 ) // default constructor could not be generated; all the Args structures are never constructed by us
 #pragma warning( disable : 4610 ) // can never be instantiated; again Args is never constructed by us
 
+#define TickMs      32
+#define TickSec     (F32(TickMs) / 1000.0f)
 
 namespace engineAPI {
 

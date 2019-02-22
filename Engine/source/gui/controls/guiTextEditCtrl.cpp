@@ -26,7 +26,9 @@
 #include "console/consoleTypes.h"
 #include "console/console.h"
 #include "gui/core/guiCanvas.h"
+#ifndef MINIMALIST_BUILD
 #include "gui/controls/guiMLTextCtrl.h"
+#endif
 #include "gui/core/guiDefaultControlRender.h"
 #include "gfx/gfxDevice.h"
 #include "gfx/gfxDrawUtil.h"

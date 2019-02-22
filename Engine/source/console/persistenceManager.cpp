@@ -26,8 +26,10 @@
 #include "console/engineAPI.h"
 #include "core/stream/fileStream.h"
 #include "gui/core/guiTypes.h"
+#ifndef MINIMALIST_BUILD
 #include "materials/customMaterialDefinition.h"
 #include "ts/tsShapeConstruct.h"
+#endif
 #include "sim/netStringTable.h"
 
 
@@ -1247,11 +1249,14 @@ PersistenceManager::ParsedObject* PersistenceManager::writeNewObject(SimObject* 
 
    // Write out the beginning of the object declaration
    const char* dclToken = "new";
-
+#ifndef MINIMALIST_BUILD
    if (dynamic_cast<Material*>(object) ||
        dynamic_cast<CustomMaterial*>(object) ||
        dynamic_cast<GuiControlProfile*>(object) ||
        dynamic_cast<TSShapeConstructor*>(object))
+#else
+   if (dynamic_cast<GuiControlProfile*>(object))
+#endif
       dclToken = "singleton";
    else if( dynamic_cast< SimDataBlock* >( object ) )
    {

@@ -32,9 +32,9 @@
 #include "core/stream/fileStream.h"
 #include "gfx/bitmap/gBitmap.h"
 #include "console/engineAPI.h"
-
+#ifndef MINIMALIST_BUILD
 #include <squish.h>
-
+#endif
 S32 DDSFile::smActiveCopies = 0;
 U32 DDSFile::smDropMipCount = 0;
 

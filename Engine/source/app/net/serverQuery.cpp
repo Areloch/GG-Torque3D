@@ -95,19 +95,23 @@
 
 #include "app/net/serverQuery.h"
 
+#ifndef MINIMALIST_BUILD
 #include "platform/platform.h"
 #include "core/dnet.h"
 #include "core/util/tVector.h"
-#include "core/stream/bitStream.h"
 #include "console/console.h"
 #include "console/simBase.h"
 #include "app/banList.h"
+#include "T3D/gameBase/gameConnection.h"
+#endif
+#include "core/stream/bitStream.h"
+#include "console/engineAPI.h"
 #include "app/auth.h"
 #include "sim/netConnection.h"
 #include "sim/netInterface.h"
 
 // cafTODO: breaks T2D
-#include "T3D/gameBase/gameConnection.h"
+
 
 // This is basically the server query protocol version now:
 static const char* versionString = "VER1";
@@ -1805,8 +1809,10 @@ static void handleGamePingRequest( const NetAddress* address, U32 key, U8 flags 
          writeCString( out, versionString );
       else
          out->writeString( versionString );
+#ifndef MINIMALIST_BUILD
       out->write( GameConnection::CurrentProtocolVersion );
       out->write( GameConnection::MinRequiredProtocolVersion );
+#endif
       out->write( getVersionNumber() );
 
       // Enforce a 24-character limit on the server name:
@@ -1877,6 +1883,7 @@ static void handleGamePingResponse( const NetAddress* address, BitStream* stream
    // See if the server meets our minimum protocol:
    U32 temp32;
    stream->read( &temp32 );
+#ifndef MINIMALIST_BUILD
    if ( temp32 < GameConnection::MinRequiredProtocolVersion )
    {
       Con::printf( "Protocol for server %s does not meet minimum protocol.", addrString );
@@ -1891,9 +1898,11 @@ static void handleGamePingResponse( const NetAddress* address, BitStream* stream
          updatePingProgress();
       return;
    }
+#endif
 
    // See if we meet the server's minimum protocol:
    stream->read( &temp32 );
+#ifndef MINIMALIST_BUILD
    if ( GameConnection::CurrentProtocolVersion < temp32 )
    {
       Con::printf( "You do not meet the minimum protocol for server %s.", addrString );
@@ -1908,6 +1917,7 @@ static void handleGamePingResponse( const NetAddress* address, BitStream* stream
          updatePingProgress();
       return;
    }
+#endif
 
    // Calculate the ping:
    U32 time = Platform::getVirtualMilliseconds();

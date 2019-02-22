@@ -43,7 +43,7 @@
 #include "console/codeInterpreter.h"
 #include "console/returnBuffer.h"
 
-#ifndef TORQUE_TGB_ONLY
+#ifndef MINIMALIST_BUILD
 #include "materials/materialDefinition.h"
 #include "materials/materialManager.h"
 #endif

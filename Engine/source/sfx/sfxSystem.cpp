@@ -37,7 +37,9 @@
 
 #include "console/console.h"
 #include "console/engineAPI.h"
+#ifndef MINIMALIST_BUILD
 #include "T3D/gameBase/processList.h"
+#endif
 #include "platform/profiler.h"
 #include "platform/platformTimer.h"
 #include "core/util/autoPtr.h"

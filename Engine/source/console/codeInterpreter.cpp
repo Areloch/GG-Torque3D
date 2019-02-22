@@ -26,17 +26,22 @@
 //~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~~//
 
 #include "console/codeInterpreter.h"
+#ifndef MINIMALIST_BUILD
 #include "console/compiler.h"
 #include "console/simBase.h"
-#include "console/telnetDebugger.h"
 #include "sim/netStringTable.h"
+#include "core/strings/findMatch.h"
+#include "console/console.h"
+#include "console/consoleInternal.h"
+#endif
+#include "console/telnetDebugger.h"
+
 #include "console/ICallMethod.h"
 #include "console/stringStack.h"
 #include "util/messaging/message.h"
-#include "core/strings/findMatch.h"
+
 #include "core/strings/stringUnit.h"
-#include "console/console.h"
-#include "console/consoleInternal.h"
+
 
 //#define TORQUE_VALIDATE_STACK
 

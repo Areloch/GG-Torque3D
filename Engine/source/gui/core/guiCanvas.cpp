@@ -35,17 +35,20 @@
 #include "gfx/gfxDrawUtil.h"
 #include "gui/core/guiTypes.h"
 #include "gui/core/guiControl.h"
+#ifndef MINIMALIST_BUILD
 #include "gui/editor/guiMenuBar.h"
-#include "console/consoleTypes.h"
-#include "gfx/screenshot.h"
 #include "gfx/video/videoCapture.h"
 #include "lighting/lightManager.h"
-#include "core/strings/stringUnit.h"
 #include "gui/core/guiOffscreenCanvas.h"
 
 #ifndef TORQUE_TGB_ONLY
 #include "scene/sceneObject.h"
 #endif
+#endif
+
+#include "console/consoleTypes.h"
+#include "gfx/screenshot.h"
+#include "core/strings/stringUnit.h"
 
 #include "gfx/gfxInit.h"
 #include "core/util/journal/process.h"
@@ -330,6 +333,7 @@ void GuiCanvas::setMenuBar(SimObject *obj)
     }
 
     // update window accelerator keys
+#ifndef MINIMALIST_BUILD
     if( oldMenuBar != mMenuBarCtrl )
     {
         GuiMenuBar* oldMenu = dynamic_cast<GuiMenuBar*>(oldMenuBar);
@@ -341,6 +345,7 @@ void GuiCanvas::setMenuBar(SimObject *obj)
         if(newMenu)
            newMenu->buildWindowAcceleratorMap(*getPlatformWindow()->getInputGenerator());
     }
+#endif
 }
 
 void GuiCanvas::setWindowTitle(const char *newTitle)
@@ -375,13 +380,14 @@ void GuiCanvas::handlePaintEvent(WindowId did)
       gScreenShot->capture( this );
 
    // If the video capture is waiting for a canvas, start the capture
+#ifndef MINIMALIST_BUILD
    if ( VIDCAP->isWaitingForCanvas() && canRender )
       VIDCAP->begin( this );
 
    // Now capture the video   
    if ( VIDCAP->isRecording() && canRender )
       VIDCAP->capture();
-
+#endif
    renderFrame(false);
 }
 
@@ -1665,9 +1671,11 @@ void GuiCanvas::maintainSizing()
 
          AssertFatal( dynamic_cast<const GuiControl*>(menu), "");*/
 
+#ifndef MINIMALIST_BUILD
          const U32 yOffset = static_cast<const GuiMenuBar*>(mMenuBarCtrl)->mMenubarHeight;
          newPos.y += yOffset;
          newExt.y -= yOffset;
+#endif
       }
 
       if (pos != newPos || ext != newExt)
@@ -1756,6 +1764,8 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
    // changes at a later time.
 
    GFXVideoMode mode = mPlatformWindow->getVideoMode();
+
+#ifndef MINIMALIST_BUILD
    if ( dStricmp( LIGHTMGR->getId(), "ADVLM" ) == 0 && mode.antialiasLevel > 0 )   
    {
       const char *pref = Con::getVariable( "$pref::Video::mode" );
@@ -1778,6 +1788,7 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
          Con::printf( "AntiAliasing has been enabled while running BasicLighting." );
       }
    }
+#endif
 
    // for now, just always reset the update regions - this is a
    // fix for FSAA on ATI cards
@@ -1827,6 +1838,7 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
    PROFILE_END();
 
    // Render all offscreen canvas objects here since we may need them in the render loop
+#ifndef MINIMALIST_BUILD
    if (GuiOffscreenCanvas::sList.size() != 0)
    {
       // Reset the entire state since oculus shit will have barfed it.
@@ -1840,6 +1852,7 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
 
       GFX->setActiveRenderTarget(renderTarget);
    }
+#endif
 
    // Can't render if waiting for device to reset.   
    if ( !beginSceneRes )

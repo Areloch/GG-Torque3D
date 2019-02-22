@@ -22,8 +22,9 @@
 
 #include "platform/platform.h"
 #include "gui/containers/guiContainer.h"
-
+#ifndef MINIMALIST_BUILD
 #include "gui/containers/guiPanel.h"
+#endif
 #include "console/consoleTypes.h"
 #include "console/engineAPI.h"
 

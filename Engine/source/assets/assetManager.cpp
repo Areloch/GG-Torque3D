@@ -58,6 +58,7 @@
 #include "assets/autoloadAssets.h"
 #endif
 
+#ifndef MINIMALIST_BUILD
 #ifndef COMPONENTASSET_H
 #include "T3D/assets/ComponentAsset.h"
 #endif
@@ -69,6 +70,7 @@
 #endif
 #ifndef MATERIALASSET_H
 #include "T3D/assets/MaterialAsset.h"
+#endif
 #endif
 
 // Script bindings.
@@ -256,6 +258,7 @@ bool AssetManager::loadModuleAutoLoadAssets(ModuleDefinition* pModuleDefinition)
             //TODO: this is stupid and ugly, need to properly automagically parse the class for registration
             AssetBase* assetBase = nullptr;
 
+#ifndef MINIMALIST_BUILD
             if (assetDef->mAssetType == StringTable->insert("ComponentAsset"))
             {
                assetBase = mTaml.read<ComponentAsset>(assetDef->mAssetBaseFilePath);
@@ -272,6 +275,7 @@ bool AssetManager::loadModuleAutoLoadAssets(ModuleDefinition* pModuleDefinition)
             {
                assetBase = mTaml.read<MaterialAsset>(assetDef->mAssetBaseFilePath);
             }
+#endif
 
             //load the asset now if valid
             if (assetBase)

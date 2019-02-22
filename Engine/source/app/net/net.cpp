@@ -21,6 +21,7 @@
 //-----------------------------------------------------------------------------
 
 #include "platform/platform.h"
+#ifndef MINIMALIST_BUILD
 #include "core/dnet.h"
 #include "core/idGenerator.h"
 #include "core/stream/bitStream.h"
@@ -32,6 +33,7 @@
 #include "app/net/serverQuery.h"
 #include "console/engineAPI.h"
 #include <vector>
+#endif
 #include "net.h"
 //----------------------------------------------------------------
 // remote procedure call console functions

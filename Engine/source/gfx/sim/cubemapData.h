@@ -34,11 +34,11 @@
 #ifndef _GFXTARGET_H_
 #include "gfx/gfxTarget.h"
 #endif
-
+#ifndef MINIMALIST_BUILD
 #ifndef _SCENEMANAGER_H_
 #include "scene/sceneManager.h"
 #endif
-
+#endif
 
 /// A script interface for creating static or dynamic cubemaps.
 class CubemapData : public SimObject

@@ -26,7 +26,7 @@
 #include "sim/netConnection.h"
 #include "core/stream/bitStream.h"
 #include "core/stream/fileStream.h"
-#ifndef TORQUE_TGB_ONLY
+#ifndef MINIMALIST_BUILD
 #include "scene/pathManager.h"
 #endif
 #include "console/consoleTypes.h"
@@ -538,7 +538,9 @@ DefineEngineMethod( NetConnection, transmitPaths, void, (),,
    "@see clearPaths()\n"
    "@see Path\n")
 {
+#ifndef MINIMALIST_BUILD
    gServerPathManager->transmitPaths(object);
+#endif
    object->setMissionPathsSent(true);
 }
 
@@ -926,7 +928,7 @@ void NetConnection::writeDemoStartBlock(ResizeBitStream* stream)
 
    stream->write(mRoundTripTime);
    stream->write(mPacketLoss);
-#ifndef TORQUE_TGB_ONLY
+#ifndef MINIMALIST_BUILD
    // Write all the current paths to the stream...
    gClientPathManager->dumpState(stream);
 #endif
@@ -953,7 +955,7 @@ bool NetConnection::readDemoStartBlock(BitStream* stream)
    stream->read(&mRoundTripTime);
    stream->read(&mPacketLoss);
 
-#ifndef TORQUE_TGB_ONLY
+#ifndef MINIMALIST_BUILD
    // Read
    gClientPathManager->readState(stream);
 #endif

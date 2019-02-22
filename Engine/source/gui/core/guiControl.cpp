@@ -28,16 +28,19 @@
 #include "platform/platform.h"
 #include "gui/core/guiControl.h"
 
+#ifndef MINIMALIST_BUILD
 #include "console/consoleTypes.h"
 #include "console/console.h"
 #include "console/consoleInternal.h"
 #include "console/engineAPI.h"
 #include "console/codeBlock.h"
 #include "gfx/bitmap/gBitmap.h"
+#include "gui/editor/guiEditCtrl.h"
+#endif
 #include "sim/actionMap.h"
 #include "gui/core/guiCanvas.h"
 #include "gui/core/guiDefaultControlRender.h"
-#include "gui/editor/guiEditCtrl.h"
+
 #include "gfx/gfxDrawUtil.h"
 
 

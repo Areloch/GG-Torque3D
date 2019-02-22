@@ -26,9 +26,9 @@
 #include "gfx/gfxCardProfile.h"
 #include "core/util/safeDelete.h"
 #include "gfx/gl/gfxGLUtils.h"
-
+#ifndef MINIMALIST_BUILD
 #include <squish.h>
-
+#endif
 //-----------------------------------------------------------------------------
 // Constructor
 //-----------------------------------------------------------------------------

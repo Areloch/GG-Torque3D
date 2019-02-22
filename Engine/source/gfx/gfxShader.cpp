@@ -22,16 +22,17 @@
 
 #include "platform/platform.h"
 #include "gfx/gfxShader.h"
-
+#ifndef MINIMALIST_BUILD
 #include "shaderGen/conditionerFeature.h"
+#endif
 #include "core/volume.h"
 #include "console/engineAPI.h"
-
 
 Vector<GFXShaderMacro> GFXShader::smGlobalMacros;
 bool GFXShader::smLogErrors = true;
 bool GFXShader::smLogWarnings = true;
 
+String GFXShader::smCommonShaderPath("core/shaders");
 
 GFXShader::GFXShader()
    :  mPixVersion( 0.0f ),
@@ -82,8 +83,9 @@ bool GFXShader::init(   const Torque::Path &vertFile,
 
    // Before we compile the shader make sure the
    // conditioner features have been updated.
+#ifndef MINIMALIST_BUILD
    ConditionerFeature::updateConditioners();
-
+#endif
    // Now do the real initialization.
    if ( !_init() )
       return false;
@@ -101,8 +103,9 @@ bool GFXShader::reload()
 {
    // Before we compile the shader make sure the
    // conditioner features have been updated.
+#ifndef MINIMALIST_BUILD
    ConditionerFeature::updateConditioners();
-
+#endif
    mReloadKey++;
 
    // Init does the work.

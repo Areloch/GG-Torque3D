@@ -23,33 +23,33 @@
 #include "app/mainLoop.h"
 #include "app/game.h"
 
+#ifndef MINIMALIST_BUILD
 #include "platform/platformTimer.h"
-#include "platform/platformRedBook.h"
-#include "platform/platformVolume.h"
 #include "platform/platformMemory.h"
 #include "platform/platformTimer.h"
-#include "platform/platformNet.h"
 #include "platform/nativeDialogs/fileDialog.h"
-#include "platform/threads/thread.h"
-
 #include "core/module.h"
-#include "core/threadStatic.h"
 #include "core/iTickable.h"
 #include "core/stream/fileStream.h"
+#include "console/debugOutputConsumer.h"
+#include "console/consoleTypes.h"
+#include "console/engineAPI.h"
+#include "gfx/bitmap/gBitmap.h"
+#include "gfx/video/videoCapture.h"
+#endif
 
+#include "platform/platformRedBook.h"
+#include "platform/platformVolume.h"
+#include "platform/platformNet.h"
+#include "platform/threads/thread.h"
+#include "core/threadStatic.h"
 #include "windowManager/platformWindowMgr.h"
 
 #include "core/util/journal/process.h"
 #include "util/fpsTracker.h"
 
-#include "console/debugOutputConsumer.h"
-#include "console/consoleTypes.h"
-#include "console/engineAPI.h"
 #include "console/codeInterpreter.h"
-
-#include "gfx/bitmap/gBitmap.h"
 #include "gfx/gFont.h"
-#include "gfx/video/videoCapture.h"
 #include "gfx/gfxTextureManager.h"
 
 #include "sim/netStringTable.h"
@@ -59,8 +59,14 @@
 #include "util/sampler.h"
 #include "platform/threads/threadPool.h"
 
+#ifdef TORQUE_DEBUG_GUARD
+#include "platform/platformMemory.h"
+#endif
+
 // For the TickMs define... fix this for T2D...
+#ifndef MINIMALIST_BUILD
 #include "T3D/gameBase/processList.h"
+#endif
 
 #ifdef TORQUE_ENABLE_VFS
 #include "platform/platformVFS.h"
@@ -143,9 +149,10 @@ void processTimeEvent(S32 elapsedTime)
    PROFILE_START(ProcessTimeEvent);
 
    // If recording a video and not playinb back a journal, override the elapsedTime
+#ifndef MINIMALIST_BUILD
    if (VIDCAP->isRecording() && !Journal::IsPlaying())
       elapsedTime = VIDCAP->getMsPerFrame();   
-   
+#endif
    // cap the elapsed time to one second
    // if it's more than that we're probably in a bad catch-up situation
    if(elapsedTime > 1024)
@@ -482,6 +489,7 @@ bool StandardMainLoop::handleCommandLine( S32 argc, const char **argv )
 #if defined( TORQUE_DEBUG ) && defined (TORQUE_TOOLS) && !defined(TORQUE_DEDICATED) && !defined( _XBOX )
       if (!success)
       {
+#ifndef MINIMALIST_BUILD
          OpenFileDialog ofd;
          FileDialogData &fdd = ofd.getData();
          fdd.mFilters = StringTable->insert("Main Entry Script (main.cs)|main.cs|");
@@ -489,8 +497,9 @@ bool StandardMainLoop::handleCommandLine( S32 argc, const char **argv )
 
          // Get the user's selection
          if( !ofd.Execute() )
+#endif
             return false;
-
+#ifndef MINIMALIST_BUILD
          // Process and update CWD so we can run the selected main.cs
          S32 pathLen = dStrlen( fdd.mFile );
          FrameTemp<char> szPathCopy( pathLen + 1);
@@ -515,6 +524,7 @@ bool StandardMainLoop::handleCommandLine( S32 argc, const char **argv )
             if(success)
                defaultScriptName = fdd.mFile;
          }
+#endif
       }
 #endif
       if( !success )

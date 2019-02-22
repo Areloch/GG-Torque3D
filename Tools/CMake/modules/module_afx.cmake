@@ -20,7 +20,7 @@
 # IN THE SOFTWARE.
 # -----------------------------------------------------------------------------
 
-option(TORQUE_AFX_ENABLED "Enable AFX module" ON)
+option(TORQUE_AFX_ENABLED "Enable AFX module" OFF)
 if(TORQUE_AFX_ENABLED)
 	addPathRec( "${srcDir}/afx" )
 endif()

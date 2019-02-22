@@ -25,7 +25,9 @@
 #include "gfx/gl/gfxGLWindowTarget.h"
 #include "gfx/gl/gfxGLTextureObject.h"
 #include "gfx/gl/gfxGLUtils.h"
+#ifndef MINIMALIST_BUILD
 #include "postFx/postEffect.h"
+#endif
 
 GFX_ImplementTextureProfile( BackBufferDepthProfile,
                              GFXTextureProfile::DiffuseMap,

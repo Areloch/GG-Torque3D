@@ -30,7 +30,9 @@
 #include "math/mathUtils.h"
 #include "math/util/frustum.h"
 #include "console/console.h"
+#ifndef MINIMALIST_BUILD
 #include "scene/sceneManager.h"
+#endif
 #include "core/module.h"
 #include "console/engineAPI.h"
 
@@ -115,11 +117,13 @@ DebugDrawer* DebugDrawer::get()
 
 void DebugDrawer::init()
 {
-#ifdef ENABLE_DEBUGDRAW
+#ifdef ENABLE_DEBUGDRAW 
+#ifndef MINIMALIST_BUILD
    sgDebugDrawer = new DebugDrawer();
    sgDebugDrawer->registerObject("DebugDraw");
    Sim::getRootGroup()->addObject( sgDebugDrawer );
    Con::warnf( "DebugDrawer Enabled!" );
+#endif
 #endif
 }
 

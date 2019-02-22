@@ -30,9 +30,10 @@
 #include "console/console.h"
 #include "console/consoleInternal.h"
 #include "console/engineAPI.h"
+#ifndef MINIMALIST_BUILD
 #include "T3D/gameBase/gameConnectionEvents.h"
 #include "T3D/gameBase/gameConnection.h"
-
+#endif
 #include "core/stream/bitStream.h"
 #include "console/compiler.h"
 
@@ -433,6 +434,7 @@ DefineConsoleMethod( SimDataBlock, reloadOnLocalClient, void, (),,
 {
    // Make sure we're running a local client.
 
+#ifndef MINIMALIST_BUILD
    GameConnection* localClient = GameConnection::getLocalClientConnection();
    if( !localClient )
       return;
@@ -460,6 +462,7 @@ DefineConsoleMethod( SimDataBlock, reloadOnLocalClient, void, (),,
 
    // Trigger a post-apply so that change notifications respond.
    object->inspectPostApply();
+#endif
 }
 
 //-----------------------------------------------------------------------------

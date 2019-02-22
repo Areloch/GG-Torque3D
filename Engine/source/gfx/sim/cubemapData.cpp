@@ -31,7 +31,9 @@
 #include "gfx/gfxTransformSaver.h"
 #include "gfx/gfxDebugEvent.h"
 #include "gfx/gfxAPI.h"
+#ifndef MINIMALIST_BUILD
 #include "scene/sceneManager.h"
+#endif
 #include "console/engineAPI.h"
 #include "math/mathUtils.h"
 

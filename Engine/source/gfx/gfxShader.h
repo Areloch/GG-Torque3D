@@ -269,6 +269,8 @@ protected:
 
 public:  
 
+	static String smCommonShaderPath;
+
    /// Adds a global shader macro which will be merged with
    /// the script defined macros on every shader reload.
    ///

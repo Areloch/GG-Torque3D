@@ -22,10 +22,13 @@
 
 #include "app/net/tcpObject.h"
 
+#ifndef MINIMALIST_BUILD
 #include "platform/platform.h"
 #include "console/simBase.h"
-#include "console/consoleInternal.h"
 #include "core/strings/stringUnit.h"
+#endif
+#include "console/consoleInternal.h"
+
 #include "console/engineAPI.h"
 #include "core/stream/fileStream.h"
 

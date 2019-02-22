@@ -24,16 +24,18 @@
 #include "platformWin32/platformWin32.h"
 #include "platformWin32/winConsole.h"
 #include "platformWin32/winDirectInput.h"
+#ifndef MINIMALIST_BUILD
 #include "windowManager/win32/win32Window.h"
 #include "console/console.h"
 #include "console/engineAPI.h"
 #include "math/mRandom.h"
 #include "core/stream/fileStream.h"
 #include "T3D/resource.h"
-#include "gfx/gfxInit.h"
 #include "gfx/gfxDevice.h"
-#include "core/strings/unicode.h"
 #include "gui/core/guiCanvas.h"
+#endif
+#include "gfx/gfxInit.h"
+#include "core/strings/unicode.h"
 
 
 extern void createFontInit();

@@ -21,10 +21,13 @@
 //-----------------------------------------------------------------------------
 
 #include "platform/platform.h"
+#ifndef MINIMALIST_BUILD
 #include "console/simBase.h"
+#include "sim/netObject.h"
+#endif
 #include "sim/netConnection.h"
 #include "core/stream/bitStream.h"
-#include "sim/netObject.h"
+
 #include "console/engineAPI.h"
 
 class SimpleMessageEvent : public NetEvent

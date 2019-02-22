@@ -21,26 +21,32 @@
 //-----------------------------------------------------------------------------
 
 #include "platform/platform.h"
-#include "platform/platformTLS.h"
+
 #include "platform/threads/thread.h"
 #include "console/console.h"
 #include "console/consoleInternal.h"
-#include "console/consoleObject.h"
-#include "console/consoleParser.h"
+
 #include "core/stream/fileStream.h"
-#include "console/ast.h"
-#include "core/tAlgorithm.h"
-#include "console/consoleTypes.h"
+
 #include "console/telnetDebugger.h"
 #include "console/simBase.h"
 #include "console/compiler.h"
-#include "console/stringStack.h"
+
 #include "console/ICallMethod.h"
 #include "console/engineAPI.h"
+#ifndef MINIMALIST_BUILD
+
+#include "platform/platformTLS.h"
+#include "console/consoleObject.h"
+#include "console/consoleParser.h"
+#include "console/ast.h"
+#include "core/tAlgorithm.h"
+#include "console/consoleTypes.h"
+#include "console/stringStack.h"
 #include <stdarg.h>
 #include "platform/threads/mutex.h"
 #include "core/util/journal/journal.h"
-
+#endif
 extern StringStack STR;
 extern ConsoleValueStack CSTK;
 

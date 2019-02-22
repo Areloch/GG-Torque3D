@@ -21,6 +21,7 @@
 //-----------------------------------------------------------------------------
 
 #include "platform/platform.h"
+#ifndef MINIMALIST_BUILD
 #include "console/console.h"
 #include "console/telnetDebugger.h"
 
@@ -28,11 +29,12 @@
 #include "core/tAlgorithm.h"
 
 #include "core/strings/findMatch.h"
-#include "console/consoleInternal.h"
 #include "core/stream/fileStream.h"
-#include "console/compiler.h"
-
 #include "console/simBase.h"
+#endif
+#include "console/consoleInternal.h"
+
+#include "console/compiler.h"
 
 namespace Compiler
 {

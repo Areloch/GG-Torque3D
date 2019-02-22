@@ -68,7 +68,9 @@ void EnumerateVideoModes(Vector<GFXVideoMode>& outModes)
 
 void GFXGLDevice::enumerateAdapters( Vector<GFXAdapter*> &adapterList )
 {
+#ifndef MINIMALIST_BUILD
    AssertFatal( SDL_WasInit(SDL_INIT_VIDEO), "");
+#endif
 
    PlatformGL::init(); // for hints about context creation
 
