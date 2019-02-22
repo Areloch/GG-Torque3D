@@ -1,6 +1,7 @@
 
 function Core_Lighting::onCreate(%this)
 {
+   //return;
    exec("./scripts/lighting.cs");
    
    //Advanced/Deferred

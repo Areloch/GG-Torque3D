@@ -89,6 +89,7 @@ namespace ImageUtil
    // compress raw pixel data, expects rgba format
    bool rawCompress(const U8 *srcRGBA, U8 *dst, const S32 width, const S32 height, const GFXFormat compressFormat, const CompressQuality compressQuality)
    {
+#ifdef TORQUE_SQUISH
       if (!isCompressedFormat(compressFormat))
          return false;
 
@@ -100,6 +101,8 @@ namespace ImageUtil
       squish::CompressImage(srcRGBA, width,height,dst,squishFlags);
 
       return true;
+#endif
+	  return false;
    }
 
    // compress DDSFile
@@ -207,6 +210,7 @@ namespace ImageUtil
 
    bool decompress(const U8 *src, U8 *dstRGBA,const S32 width,const S32 height, const GFXFormat srcFormat)
    {
+#ifdef TORQUE_SQUISH
       if (!isCompressedFormat(srcFormat))
          return false;
 
@@ -214,6 +218,9 @@ namespace ImageUtil
       squish::DecompressImage(dstRGBA, width, height, src, squishFlag);  
 
       return true;
+#endif
+
+	  return false;
    }
 
    void swizzleDDS(DDSFile *srcDDS, const Swizzle<U8, 4> &swizzle)

@@ -34,8 +34,8 @@
 
 #include "console/ICallMethod.h"
 #include "console/engineAPI.h"
-#ifndef MINIMALIST_BUILD
 
+#ifndef MINIMALIST_BUILD
 #include "platform/platformTLS.h"
 #include "console/consoleObject.h"
 #include "console/consoleParser.h"
@@ -46,8 +46,10 @@
 #include <stdarg.h>
 #include "platform/threads/mutex.h"
 #include "core/util/journal/journal.h"
-endif
-#include "cinterface/cinterface.h"extern StringStack STR;
+#endif
+
+#include "cinterface/cinterface.h"
+extern StringStack STR;
 extern ConsoleValueStack CSTK;
 
 ConsoleDocFragment* ConsoleDocFragment::smFirst;

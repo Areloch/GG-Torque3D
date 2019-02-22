@@ -32,7 +32,7 @@ Vector<GFXShaderMacro> GFXShader::smGlobalMacros;
 bool GFXShader::smLogErrors = true;
 bool GFXShader::smLogWarnings = true;
 
-String GFXShader::smCommonShaderPath("core/shaders");
+String GFXShader::smCommonShaderPath("core/rendering/shaders");
 
 GFXShader::GFXShader()
    :  mPixVersion( 0.0f ),

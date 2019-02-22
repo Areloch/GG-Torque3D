@@ -45,7 +45,9 @@
 #include "platform/profiler.h"
 #include "gfx/gfxCubemap.h"
 #include "gfx/gfxTextureManager.h"
-
+#include "T3D/gameBase/gameConnection.h"
+#include "T3D/gameFunctions.h"
+#include "T3D/gameBase/gameProcess.h"
 #ifdef TORQUE_AFX_ENABLED
 #include "afx/arcaneFX.h"
 #endif

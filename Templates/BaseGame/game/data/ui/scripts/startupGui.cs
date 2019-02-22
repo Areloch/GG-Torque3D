@@ -144,7 +144,7 @@ function StartupGui::onDone(%this)
          //BlankGui.delete();
          //flushTextureCache();
          
-         Canvas.setContent(MainMenuGui);
+         //Canvas.setContent(MainMenuGui);
       }
       else
       {

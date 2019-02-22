@@ -253,7 +253,8 @@ endif()
 # Always enabled paths first
 ###############################################################################
 if(TORQUE_MINIMALIST_BUILD)
-	set(BLACKLIST "quadTreeTracer.cpp" "quadTreeTracer.h" "imposterCapture.cpp" "imposterCapture.h" "guiOffscreenCanvas.cpp" "guiOffscreenCanvas.h" )
+	set(BLACKLIST "quadTreeTracer.cpp" "quadTreeTracer.h" "imposterCapture.cpp" "imposterCapture.h" "guiOffscreenCanvas.cpp" "guiOffscreenCanvas.h"
+	"catmullRom.cpp" "catmullRom.h" "noise2d.cpp" "noise2d.h" "rectClipper.cpp" "rectClipper.h" "settings.cpp" "settings.h")
 endif()
 addPath("${srcDir}/") # must come first :)
 addPathRec("${srcDir}/app")
@@ -265,21 +266,38 @@ addPath("${srcDir}/core")
 addPath("${srcDir}/core/stream")
 addPath("${srcDir}/core/strings")
 addPath("${srcDir}/core/util")
+
+if(NOT TORQUE_MINIMALIST_BUILD)
 addPath("${srcDir}/core/util/test")
+endif()
+
 addPath("${srcDir}/core/util/journal")
+
+if(NOT TORQUE_MINIMALIST_BUILD)
 addPath("${srcDir}/core/util/journal/test")
+endif()
+
 addPath("${srcDir}/core/util/zip")
+
+if(NOT TORQUE_MINIMALIST_BUILD)
 addPath("${srcDir}/core/util/zip/test")
+endif()
+
 addPath("${srcDir}/core/util/zip/compressors")
 addPath("${srcDir}/i18n")
 addPath("${srcDir}/sim")
 addPath("${srcDir}/util")
 addPath("${srcDir}/windowManager")
 addPath("${srcDir}/windowManager/torque")
+if(NOT TORQUE_MINIMALIST_BUILD)
 addPath("${srcDir}/windowManager/test")
+endif()
 addPath("${srcDir}/math")
 addPath("${srcDir}/math/util")
+
+if(NOT TORQUE_MINIMALIST_BUILD)
 addPath("${srcDir}/math/test")
+endif()
 
 addPath("${srcDir}/platform")
 if(NOT TORQUE_MINIMALIST_BUILD)
@@ -302,20 +320,48 @@ if(TORQUE_MINIMALIST_BUILD)
 	set(BLACKLIST "" )
 endif()
 endif()
+
+if(NOT TORQUE_MINIMALIST_BUILD)
 addPath("${srcDir}/platform/test")
+endif()
+
 addPath("${srcDir}/platform/threads")
+
+if(NOT TORQUE_MINIMALIST_BUILD)
 addPath("${srcDir}/platform/threads/test")
+endif()
+
 addPath("${srcDir}/platform/async")
+
+if(NOT TORQUE_MINIMALIST_BUILD)
 addPath("${srcDir}/platform/async/test")
+endif()
+
 addPath("${srcDir}/platform/input")
 addPath("${srcDir}/platform/output")
+
+if(TORQUE_MINIMALIST_BUILD)
+	set(BLACKLIST "badWordFilter.cpp" "badWordFilter.h" "banList.cpp" "banList.h")
+endif()
 addPath("${srcDir}/app")
+if(TORQUE_MINIMALIST_BUILD)
+	set(BLACKLIST "")
+endif()
+
 addPath("${srcDir}/app/net")
 addPath("${srcDir}/util/messaging")
 addPath("${srcDir}/gfx/Null")
 addPath("${srcDir}/gfx/test")
 addPath("${srcDir}/gfx/bitmap")
+
+if(TORQUE_MINIMALIST_BUILD)
+	set(BLACKLIST "bitmapBmp.cpp" "bitmapJpeg.cpp")
+endif()
 addPath("${srcDir}/gfx/bitmap/loaders")
+if(TORQUE_MINIMALIST_BUILD)
+	set(BLACKLIST "")
+endif()
+
 addPath("${srcDir}/gfx/util")
 addPath("${srcDir}/gfx/video")
 addPath("${srcDir}/gfx")
@@ -524,43 +570,46 @@ if(TORQUE_SDL)
     endif()
 
     if(UNIX AND NOT APPLE)
-       #set(CMAKE_SIZEOF_VOID_P 4) #force 32 bit
-       set(ENV{CFLAGS} "${CXX_FLAG32} -g -O3")
-       if("${TORQUE_ADDITIONAL_LINKER_FLAGS}" STREQUAL "")
-         set(ENV{LDFLAGS} "${CXX_FLAG32}")
-       else()
-         set(ENV{LDFLAGS} "${CXX_FLAG32} ${TORQUE_ADDITIONAL_LINKER_FLAGS}")
-       endif()
+        #set(CMAKE_SIZEOF_VOID_P 4) #force 32 bit
+        set(ENV{CFLAGS} "${CXX_FLAG32} -g -O3")
+        if("${TORQUE_ADDITIONAL_LINKER_FLAGS}" STREQUAL "")
+            set(ENV{LDFLAGS} "${CXX_FLAG32}")
+        else()
+            set(ENV{LDFLAGS} "${CXX_FLAG32} ${TORQUE_ADDITIONAL_LINKER_FLAGS}")
+        endif()
 
-       find_package(PkgConfig REQUIRED)
-       pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+        find_package(PkgConfig REQUIRED)
+        pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 
-       # Setup CMake to use GTK+, tell the compiler where to look for headers
-       # and to the linker where to look for libraries
-       include_directories(${GTK3_INCLUDE_DIRS})
-       link_directories(${GTK3_LIBRARY_DIRS})
+        # Setup CMake to use GTK+, tell the compiler where to look for headers
+        # and to the linker where to look for libraries
+        include_directories(${GTK3_INCLUDE_DIRS})
+        link_directories(${GTK3_LIBRARY_DIRS})
 
-       # Add other flags to the compiler
-       add_definitions(${GTK3_CFLAGS_OTHER})
+        # Add other flags to the compiler
+        add_definitions(${GTK3_CFLAGS_OTHER})
 
-       if(TORQUE_USE_ZENITY)
-          set(BLACKLIST "nfd_win.cpp" "nfd_cocoa.m" "nfd_gtk.c" )
-       else()
-          set(BLACKLIST "nfd_win.cpp" "nfd_cocoa.m" "simple_exec.h" "nfd_zenity.c")
-       endif()
-       addLib(nativeFileDialogs)
+        if(TORQUE_USE_ZENITY)
+            set(BLACKLIST "nfd_win.cpp" "nfd_cocoa.m" "nfd_gtk.c" )
+        else()
+            set(BLACKLIST "nfd_win.cpp" "nfd_cocoa.m" "simple_exec.h" "nfd_zenity.c")
+        endif()
+        addLib(nativeFileDialogs)
 
-       set(BLACKLIST ""  )
-       target_link_libraries(nativeFileDialogs ${GTK3_LIBRARIES})
-  elseif(APPLE)
-      set(BLACKLIST "nfd_gtk.c" "nfd_win.cpp" )
-      addLib(nativeFileDialogs)
-      set(BLACKLIST ""  )
+        set(BLACKLIST ""  )
+        target_link_libraries(nativeFileDialogs ${GTK3_LIBRARIES})
+    elseif(APPLE)
+        set(BLACKLIST "nfd_gtk.c" "nfd_win.cpp" )
+        addLib(nativeFileDialogs)
+        set(BLACKLIST ""  )
  	else()
-     if(NOT TORQUE_MINIMALIST_BUILD)		set(BLACKLIST "nfd_gtk.c" "nfd_cocoa.m" "simple_exec.h" "nfd_zenity.c")
- 		addLib(nativeFileDialogs)	 endif()
-       set(BLACKLIST ""  ) 	   addLib(comctl32)
-  endif()
+        if(NOT TORQUE_MINIMALIST_BUILD)		
+            set(BLACKLIST "nfd_gtk.c" "nfd_cocoa.m" "simple_exec.h" "nfd_zenity.c")
+            addLib(nativeFileDialogs)
+            set(BLACKLIST ""  ) 	
+        endif()   
+        addLib(comctl32)
+    endif()
 
     #override and hide SDL2 cache variables
     #set apple to sue sdl static lib, other platforms use dynamic
