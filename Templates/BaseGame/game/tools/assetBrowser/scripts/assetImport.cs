@@ -403,7 +403,10 @@ function ImportAssetButton::onClick(%this)
    ImportAssetConfigWindow.selectWindow();
 }
 //
-
+function ImportLegacyAssetButton::onClick(%this)
+{
+   Canvas.pushDialog(LegacyImporter);
+}
 //
 function ImportAssetWindow::onWake(%this)
 {

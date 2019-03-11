@@ -255,14 +255,21 @@ bool FileDialog::Execute()
    rootDir.replace("/", "\\");
 #endif
 
-   if (mData.mStyle & FileDialogData::FDS_OPEN && !(mData.mStyle & FileDialogData::FDS_BROWSEFOLDER))
-      result = NFD_OpenDialog(strippedFilters.c_str(), defaultPath.c_str(), &outPath);
-   else if (mData.mStyle & FileDialogData::FDS_SAVE && !(mData.mStyle & FileDialogData::FDS_BROWSEFOLDER))
+   if (mData.mStyle & FileDialogData::FDS_SAVE && !(mData.mStyle & FileDialogData::FDS_BROWSEFOLDER))
+   {
       result = NFD_SaveDialog(strippedFilters.c_str(), defaultPath.c_str(), &outPath);
-   else if (mData.mStyle & FileDialogData::FDS_MULTIPLEFILES)
-      result = NFD_OpenDialogMultiple(strippedFilters.c_str(), defaultPath.c_str(), &pathSet);
+   }
    else if (mData.mStyle & FileDialogData::FDS_BROWSEFOLDER)
-	   result = NFD_PickFolder(defaultPath.c_str(), &outPath);
+   {
+      result = NFD_PickFolder(defaultPath.c_str(), &outPath);
+   }
+   else
+   {
+      if (mData.mStyle & FileDialogData::FDS_MULTIPLEFILES)
+         result = NFD_OpenDialogMultiple(strippedFilters.c_str(), defaultPath.c_str(), &pathSet);
+      else if (mData.mStyle & FileDialogData::FDS_OPEN && !(mData.mStyle & FileDialogData::FDS_BROWSEFOLDER))
+         result = NFD_OpenDialog(strippedFilters.c_str(), defaultPath.c_str(), &outPath);
+   }
 
    if (result == NFD_CANCEL)
    {
@@ -281,7 +288,7 @@ bool FileDialog::Execute()
       return false;
    }
    // Store the result on our object
-   if (mData.mStyle & FileDialogData::FDS_OPEN || mData.mStyle & FileDialogData::FDS_SAVE)
+   if ((mData.mStyle & FileDialogData::FDS_OPEN || mData.mStyle & FileDialogData::FDS_SAVE) && !(mData.mStyle & FileDialogData::FDS_MULTIPLEFILES))
    {
       // Single file selection, do it the easy way
       if(mForceRelativePath)

@@ -38,6 +38,7 @@ function initializeAssetBrowser()
    exec("./guis/assetImport.gui");
    exec("./guis/selectModule.gui");
    exec("./guis/editModule.gui");
+   exec("./guis/legacyContentImporter.gui");
 
    exec("./scripts/assetBrowser.cs");
    exec("./scripts/popupMenus.cs");
@@ -47,7 +48,8 @@ function initializeAssetBrowser()
    exec("./scripts/gameObjectCreator.cs");
    exec("./scripts/newAsset.cs");
    exec("./scripts/editAsset.cs");
-   exec("./scripts/editModule.cs");   
+   exec("./scripts/editModule.cs"); 
+   exec("./scripts/legacyContentImporter.cs");   
    
    exec("./scripts/fieldTypes.cs");
    
