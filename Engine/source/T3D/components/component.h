@@ -41,8 +41,143 @@
 #include "T3D/assets/ComponentAsset.h"
 #endif
 
+#include <unordered_map>
+#include <functional>
+
 class Entity;
 class Namespace;
+
+//#define ECS_TYPE_IMPLEMENTATION \
+//	TypeIndex TypeRegistry::nextIndex = 1;
+
+typedef uint32_t TypeIndex;
+
+class TypeRegistry
+{
+public:
+   TypeRegistry()
+   {
+      index = nextIndex;
+      ++nextIndex;
+   }
+
+   TypeIndex getIndex() const
+   {
+      return index;
+   }
+
+private:
+   static TypeIndex nextIndex;
+   TypeIndex index;
+};
+
+#define ECS_DECLARE_TYPE public: static TypeRegistry __ecs_type_reg
+#define ECS_DEFINE_TYPE(name) TypeRegistry name::__ecs_type_reg
+
+template<typename T>
+TypeIndex getTypeIndex()
+{
+   return T::__ecs_type_reg.getIndex();
+}
+
+struct Component
+{
+   bool mIsEnabled;
+   bool mNetworked;
+   bool mIsServerObject;
+
+   Entity* mOwner;
+   ComponentObject* mComponentObj;
+
+   ECS_DECLARE_TYPE;
+
+   static std::unordered_map<TypeIndex, Component> components;
+   typedef std::unordered_map<TypeIndex, Component>::const_iterator componentItr;
+
+   bool isEnabled() const { return mIsEnabled; }
+   void setEnabled(bool isEnabled) { mIsEnabled = isEnabled; }
+   bool isNetworked() const { return mNetworked; }
+   void setNetworked(bool isNetworked) { mNetworked = isNetworked; }
+   bool isServerObject() const { return mIsServerObject; }
+   void setServerObject(bool isServerObject) { mIsServerObject = isServerObject; }
+   Entity* getOwner() const { return mOwner; }
+   bool hasOwner() const { return mOwner != nullptr; }
+   void setOwner(Entity* entity) { mOwner = entity; }
+
+   template<typename T>
+   static ComponentHandle<T> createComponent()
+   {
+      T newComponent = T();
+
+      components.insert({ getTypeIndex<T>(), newComponent });
+
+      ComponentHandle<T> handle = ComponentHandle<T>(&newComponent);
+      return handle;
+   }
+
+   template<typename T>
+   static ComponentHandle<T> createComponent(ComponentObject* scriptComponentObj)
+   {
+      T newComponent = T();
+
+      Component& comp = static_cast<Component*>(newComponent);
+      comp.mComponentObj = scriptComponentObj;
+
+      components.insert({ getTypeIndex<T>(), newComponent });
+
+      ComponentHandle<T> handle = ComponentHandle<T>(&newComponent);
+      return handle;
+   }
+};
+
+ECS_DEFINE_TYPE(Component);
+
+/**
+* Think of this as a pointer to a component. Whenever you get a component from the world or an entity,
+* it'll be wrapped in a ComponentHandle.
+*/
+template<typename T>
+class ComponentHandle
+{
+public:
+   ComponentHandle()
+      : component(nullptr)
+   {
+   }
+
+   ComponentHandle(T* component)
+      : component(component)
+   {
+   }
+
+   T* operator->() const
+   {
+      return component;
+   }
+
+   operator bool() const
+   {
+      return isValid();
+   }
+
+   T& get()
+   {
+      return *component;
+   }
+
+   bool isValid() const
+   {
+      return component != nullptr;
+   }
+
+private:
+   T * component;
+};
+
+class ComponentSystem
+{
+   virtual void tick();
+};
 
 struct ComponentField
 {
@@ -67,7 +202,7 @@ struct ComponentField
 /// 
 /// 
 //////////////////////////////////////////////////////////////////////////
-class Component : public SimObject, public UpdateInterface
+class ComponentObject : public SimObject, public UpdateInterface
 {
    typedef SimObject Parent;
 
@@ -84,25 +219,21 @@ protected:
    Vector<StringTableEntry> mDependencies;
    Vector<ComponentField> mFields;
 
-   bool mNetworked;
+   ComponentHandle<Component> mComponent;
 
-   U32 componentIdx;
-
-   Entity*              mOwner;
    bool					   mHidden;
-   bool					   mEnabled;
 
    StringTableEntry		      mOriginatingAssetId;
-   AssetPtr<ComponentAsset>  mOriginatingAsset;
+   AssetPtr<ComponentAsset>   mOriginatingAsset;
 
    U32                        mDirtyMaskBits;
 
    bool                 mIsServerObject;
 
 public:
-   Component();
-   virtual ~Component();
-   DECLARE_CONOBJECT(Component);
+   ComponentObject();
+   virtual ~ComponentObject();
+   DECLARE_CONOBJECT(ComponentObject);
 
    virtual bool onAdd();
    virtual void onRemove();

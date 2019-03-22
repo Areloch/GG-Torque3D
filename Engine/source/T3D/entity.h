@@ -51,6 +51,7 @@ class Entity : public GameBase
 {
    typedef GameBase Parent;
    friend class Component;
+   friend class ComponentObject;
 
 private:
    Point3F             mPos;

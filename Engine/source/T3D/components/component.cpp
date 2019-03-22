@@ -33,15 +33,29 @@
 #include "console/consoleInternal.h"
 #include "T3D/assets/MaterialAsset.h"
 
-#define DECLARE_NATIVE_COMPONENT( ComponentType )                   \
-	 Component* staticComponentTemplate = new ComponentType; \
-     Sim::gNativeComponentSet->addObject(staticComponentTemplate);
+//SystemImplementation
+void ComponentSystem::tick()
+{
+   Component::componentItr itr = Component::components.find(getTypeIndex<Component>());
+   while (itr != Component::components.end())
+   {
+      const Component& comp = itr->second;
+
+      if (comp.isServerObject() && comp.isEnabled())
+      {
+         if (comp.hasOwner() && comp.mComponentObj != nullptr && comp.mComponentObj->isMethod("Update"))
+            Con::executef(comp.mComponentObj, "Update");
+      }
+
+      itr++;
+   }
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor/Destructor
 //////////////////////////////////////////////////////////////////////////
 
-Component::Component()
+ComponentObject::ComponentObject()
 {
    mFriendlyName = StringTable->EmptyString();
    mFromResource = StringTable->EmptyString();
@@ -76,7 +90,7 @@ Component::Component()
    mDirtyMaskBits = 0;
 }
 
-Component::~Component()
+ComponentObject::~ComponentObject()
 {
    for (S32 i = 0; i < mFields.size(); ++i)
    {
@@ -87,30 +101,30 @@ Component::~Component()
    SAFE_DELETE_ARRAY(mDescription);
 }
 
-IMPLEMENT_CO_NETOBJECT_V1(Component);
+IMPLEMENT_CO_NETOBJECT_V1(ComponentObject);
 
 //////////////////////////////////////////////////////////////////////////
 
-void Component::initPersistFields()
+void ComponentObject::initPersistFields()
 {
-   addGroup("Component");
-   addField("componentType", TypeCaseString, Offset(mComponentType, Component), "The type of behavior.", AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
-   addField("networkType", TypeCaseString, Offset(mNetworkType, Component), "The type of behavior.", AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
-   addField("friendlyName", TypeCaseString, Offset(mFriendlyName, Component), "Human friendly name of this behavior", AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
-      addProtectedField("description", TypeCaseString, Offset(mDescription, Component), &setDescription, &getDescription,
+   addGroup("ComponentObject");
+   addField("componentType", TypeCaseString, Offset(mComponentType, ComponentObject), "The type of behavior.", AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
+   addField("networkType", TypeCaseString, Offset(mNetworkType, ComponentObject), "The type of behavior.", AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
+   addField("friendlyName", TypeCaseString, Offset(mFriendlyName, ComponentObject), "Human friendly name of this behavior", AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
+      addProtectedField("description", TypeCaseString, Offset(mDescription, ComponentObject), &setDescription, &getDescription,
          "The description of this behavior which can be set to a \"string\" or a fileName\n", AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
 
-      addField("networked", TypeBool, Offset(mNetworked, Component), "Is this behavior ghosted to clients?", AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
+      addField("networked", TypeBool, Offset(mNetworked, ComponentObject), "Is this behavior ghosted to clients?", AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
 
-      addProtectedField("Owner", TypeSimObjectPtr, Offset(mOwner, Component), &setOwner, &defaultProtectedGetFn, "", AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
+      addProtectedField("Owner", TypeSimObjectPtr, Offset(mOwner, ComponentObject), &setOwner, &defaultProtectedGetFn, "", AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
 
-      //addField("hidden", TypeBool, Offset(mHidden, Component), "Flags if this behavior is shown in the editor or not", AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
-      addProtectedField("enabled", TypeBool, Offset(mEnabled, Component), &_setEnabled, &defaultProtectedGetFn, "");
+      //addField("hidden", TypeBool, Offset(mHidden, ComponentObject), "Flags if this behavior is shown in the editor or not", AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
+      addProtectedField("enabled", TypeBool, Offset(mEnabled, ComponentObject), &_setEnabled, &defaultProtectedGetFn, "");
 
-      addField("originatingAsset", TypeComponentAssetPtr, Offset(mOriginatingAsset, Component),
+      addField("originatingAsset", TypeComponentAssetPtr, Offset(mOriginatingAsset, ComponentObject),
          "Asset that spawned this component, used for tracking/housekeeping", AbstractClassRep::FieldFlags::FIELD_HideInInspectors);
 
-   endGroup("Component");
+   endGroup("ComponentObject");
 
    Parent::initPersistFields();
 
@@ -126,9 +140,9 @@ void Component::initPersistFields()
    removeField("persistentId");
 }
 
-bool Component::_setEnabled(void *object, const char *index, const char *data)
+bool ComponentObject::_setEnabled(void *object, const char *index, const char *data)
 {
-   Component *c = static_cast<Component*>(object);
+   ComponentObject *c = static_cast<ComponentObject*>(object);
 
    c->mEnabled = dAtob(data);
    c->setMaskBits(EnableMask);
@@ -138,9 +152,9 @@ bool Component::_setEnabled(void *object, const char *index, const char *data)
 
 //////////////////////////////////////////////////////////////////////////
 
-bool Component::setDescription(void *object, const char *index, const char *data)
+bool ComponentObject::setDescription(void *object, const char *index, const char *data)
 {
-   Component *bT = static_cast<Component *>(object);
+   ComponentObject *bT = static_cast<ComponentObject *>(object);
    SAFE_DELETE_ARRAY(bT->mDescription);
    bT->mDescription = bT->getDescriptionText(data);
 
@@ -148,18 +162,20 @@ bool Component::setDescription(void *object, const char *index, const char *data
    return false;
 }
 
-const char * Component::getDescription(void* obj, const char* data)
+const char * ComponentObject::getDescription(void* obj, const char* data)
 {
-   Component *object = static_cast<Component *>(obj);
+   ComponentObject *object = static_cast<ComponentObject *>(obj);
 
    return object->mDescription ? object->mDescription : "";
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool Component::onAdd()
+bool ComponentObject::onAdd()
 {
    if (!Parent::onAdd())
       return false;
+
+   mComponent = Component::createComponent<Component>();
 
    setMaskBits(UpdateMask);
    setMaskBits(NamespaceMask);
@@ -167,100 +183,114 @@ bool Component::onAdd()
    return true;
 }
 
-void Component::onRemove()
+void ComponentObject::onRemove()
 {
    onDataSet.removeAll();
 
-   if (mOwner)
+   if (mComponent.isValid() && mComponent->hasOwner())
    {
       //notify our removal to the owner, so we have no loose ends
-      mOwner->removeComponent(this, false);
+      mComponent->getOwner()->removeComponent(mComponent, false);
    }
 
    Parent::onRemove();
 }
 
-void Component::onComponentAdd()
+void ComponentObject::onComponentAdd()
 {
-   if (isServerObject())
+   if (!mComponent.isValid())
+      return;
+
+   if (mComponent->isServerObject())
    {
       if (isMethod("onAdd"))
          Con::executef(this, "onAdd");
    }
 
-   mEnabled = true;
+   mComponent->setEnabled(true);
 }
 
-void Component::onComponentRemove()
+void ComponentObject::onComponentRemove()
 {
-   mEnabled = false;
+   if (!mComponent.isValid())
+      return;
 
-   if (isServerObject())
+   mComponent->setEnabled(false);
+
+   if (mComponent->isServerObject())
    {
       if (isMethod("onRemove"))
          Con::executef(this, "onRemove");
    }
 
-   if (mOwner)
+   if (mComponent->hasOwner())
    {
-      mOwner->onComponentAdded.remove(this, &Component::componentAddedToOwner);
-      mOwner->onComponentRemoved.remove(this, &Component::componentRemovedFromOwner);
+      Entity* owner = mComponent->getOwner();
+      owner->onComponentAdded.remove(this, &ComponentObject::componentAddedToOwner);
+      owner->onComponentRemoved.remove(this, &ComponentObject::componentRemovedFromOwner);
    }
 
-   mOwner = NULL;
+   mComponent->setOwner(nullptr);
    setDataField("owner", NULL, "");
 }
 
-void Component::setOwner(Entity* owner)
+void ComponentObject::setOwner(Entity* owner)
 {
+   if (!mComponent.isValid())
+      return;
+
    //first, catch if we have an existing owner, and we're changing from it
-   if (mOwner && mOwner != owner)
+   if (mComponent->hasOwner() && mComponent->getOwner() != owner)
    {
-      mOwner->onComponentAdded.remove(this, &Component::componentAddedToOwner);
-      mOwner->onComponentRemoved.remove(this, &Component::componentRemovedFromOwner);
+      Entity* owner = mComponent->getOwner();
+      owner->onComponentAdded.remove(this, &ComponentObject::componentAddedToOwner);
+      owner->onComponentRemoved.remove(this, &ComponentObject::componentRemovedFromOwner);
 
-      mOwner->removeComponent(this, false);
+      owner->removeComponent(mComponent, false);
    }
 
-   mOwner = owner;
+   mComponent->setOwner(owner);
 
-   if (mOwner != NULL)
+   if (owner != nullptr)
    {
-      mOwner->onComponentAdded.notify(this, &Component::componentAddedToOwner);
-      mOwner->onComponentRemoved.notify(this, &Component::componentRemovedFromOwner);
+      owner->onComponentAdded.notify(mComponent, &ComponentObject::componentAddedToOwner);
+      owner->onComponentRemoved.notify(mComponent, &ComponentObject::componentRemovedFromOwner);
    }
 
-   if (isServerObject())
+   if (mComponent->isServerObject())
    {
       setMaskBits(OwnerMask);
 
       //if we have any outstanding maskbits, push them along to have the network update happen on the entity
-      if (mDirtyMaskBits != 0 && mOwner)
+      if (mDirtyMaskBits != 0 && owner)
       {
-         mOwner->setMaskBits(Entity::ComponentsUpdateMask);
+         owner->setMaskBits(Entity::ComponentsUpdateMask);
       }
    }
 }
 
-void Component::componentAddedToOwner(Component *comp)
+void ComponentObject::componentAddedToOwner(Component *comp)
 {
    return;
 }
 
-void Component::componentRemovedFromOwner(Component *comp)
+void ComponentObject::componentRemovedFromOwner(Component *comp)
 {
    return;
 }
 
-void Component::setMaskBits(U32 orMask)
+void ComponentObject::setMaskBits(U32 orMask)
 {
+   if (!mComponent.isValid())
+      return;
+
    AssertFatal(orMask != 0, "Invalid net mask bits set.");
    
-   if (mOwner)
-      mOwner->setComponentNetMask(this, orMask);
+   if (mComponent->hasOwner())
+      mComponent->getOwner()->setComponentNetMask(mComponent, orMask);
 }
 
-U32 Component::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
+U32 ComponentObject::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
 {
    U32 retMask = 0;
 
@@ -293,7 +323,7 @@ U32 Component::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
 
    if (stream->writeFlag(mask & EnableMask))
    {
-      stream->writeFlag(mEnabled);
+      stream->writeFlag(mComponent->isEnabled());
    }
 
    /*if (stream->writeFlag(mask & NamespaceMask))
@@ -312,7 +342,7 @@ U32 Component::packUpdate(NetConnection *con, U32 mask, BitStream *stream)
    return retMask;
 }
 
-void Component::unpackUpdate(NetConnection *con, BitStream *stream)
+void ComponentObject::unpackUpdate(NetConnection *con, BitStream *stream)
 {
    /*if (stream->readFlag())
    {
@@ -334,7 +364,7 @@ void Component::unpackUpdate(NetConnection *con, BitStream *stream)
 
    if (stream->readFlag())
    {
-      mEnabled = stream->readFlag();
+      mComponent->setEnabled(stream->readFlag());
    }
 
    /*if (stream->readFlag())
@@ -364,7 +394,7 @@ void Component::unpackUpdate(NetConnection *con, BitStream *stream)
    }*/
 }
 
-void Component::packToStream(Stream &stream, U32 tabStop, S32 behaviorID, U32 flags /* = 0  */)
+void ComponentObject::packToStream(Stream &stream, U32 tabStop, S32 behaviorID, U32 flags /* = 0  */)
 {
    char buffer[1024];
 
@@ -389,7 +419,7 @@ void Component::packToStream(Stream &stream, U32 tabStop, S32 behaviorID, U32 fl
    }
 }
 
-void Component::processTick()
+void ComponentObject::processTick()
 {
    if (isServerObject() && mEnabled)
    {
@@ -398,20 +428,20 @@ void Component::processTick()
    }
 }
 
-void Component::setDataField(StringTableEntry slotName, const char *array, const char *value)
+void ComponentObject::setDataField(StringTableEntry slotName, const char *array, const char *value)
 {
    Parent::setDataField(slotName, array, value);
 
    onDataSet.trigger(this, slotName, value);
 }
 
-StringTableEntry Component::getComponentName()
+StringTableEntry ComponentObject::getComponentName()
 {
    return getNamespace()->getName();
 }
 
 //catch any behavior field updates
-void Component::onStaticModified(const char* slotName, const char* newValue)
+void ComponentObject::onStaticModified(const char* slotName, const char* newValue)
 {
    Parent::onStaticModified(slotName, newValue);
 
@@ -424,7 +454,7 @@ void Component::onStaticModified(const char* slotName, const char* newValue)
    checkComponentFieldModified(slotName, newValue);
 }
 
-void Component::onDynamicModified(const char* slotName, const char* newValue)
+void ComponentObject::onDynamicModified(const char* slotName, const char* newValue)
 {
    Parent::onDynamicModified(slotName, newValue);
 
@@ -435,7 +465,7 @@ void Component::onDynamicModified(const char* slotName, const char* newValue)
    checkComponentFieldModified(slotName, newValue);
 }
 
-void Component::checkComponentFieldModified(const char* slotName, const char* newValue)
+void ComponentObject::checkComponentFieldModified(const char* slotName, const char* newValue)
 {
    StringTableEntry slotNameEntry = StringTable->insert(slotName);
 
@@ -456,7 +486,7 @@ void Component::checkComponentFieldModified(const char* slotName, const char* ne
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-void Component::addComponentField(const char *fieldName, const char *desc, const char *type, const char *defaultValue /* = NULL */, const char *userData /* = NULL */, /*const char* dependency /* = NULL *//*,*/ bool hidden /* = false */, const char* customLabel /* = ""*/)
+void ComponentObject::addComponentField(const char *fieldName, const char *desc, const char *type, const char *defaultValue /* = NULL */, const char *userData /* = NULL */, /*const char* dependency /* = NULL *//*,*/ bool hidden /* = false */, const char* customLabel /* = ""*/)
 {
    StringTableEntry stFieldName = StringTable->insert(fieldName);
 
@@ -528,7 +558,7 @@ void Component::addComponentField(const char *fieldName, const char *desc, const
       setDataField(field.mFieldName, NULL, field.mDefaultValue);
 }
 
-ComponentField* Component::getComponentField(const char *fieldName)
+ComponentField* ComponentObject::getComponentField(const char *fieldName)
 {
    StringTableEntry stFieldName = StringTable->insert(fieldName);
 
@@ -543,7 +573,7 @@ ComponentField* Component::getComponentField(const char *fieldName)
 
 //////////////////////////////////////////////////////////////////////////
 
-const char * Component::getDescriptionText(const char *desc)
+const char * ComponentObject::getDescriptionText(const char *desc)
 {
    if (desc == NULL)
       return NULL;
@@ -587,153 +617,23 @@ const char * Component::getDescriptionText(const char *desc)
    return newDesc;
 }
 //////////////////////////////////////////////////////////////////////////
-void Component::beginFieldGroup(const char* groupName)
+void ComponentObject::beginFieldGroup(const char* groupName)
 {
    if (dStrcmp(mComponentGroup, ""))
    {
-      Con::errorf("Component: attempting to begin new field group with a group already begun!");
+      Con::errorf("ComponentObject: attempting to begin new field group with a group already begun!");
       return;
    }
 
    mComponentGroup = StringTable->insert(groupName);
 }
 
-void Component::endFieldGroup()
+void ComponentObject::endFieldGroup()
 {
    mComponentGroup = StringTable->insert("");
 }
 
-void Component::addDependency(StringTableEntry name)
+void ComponentObject::addDependency(StringTableEntry name)
 {
    mDependencies.push_back_unique(name);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Console Methods
-//////////////////////////////////////////////////////////////////////////
-DefineEngineMethod(Component, beginGroup, void, (String groupName),,
-   "@brief Starts the grouping for following fields being added to be grouped into\n"
-   "@param groupName The name of this group\n"
-   "@param desc The Description of this field\n"
-   "@param type The DataType for this field (default, int, float, Point2F, bool, enum, Object, keybind, color)\n"
-   "@param defaultValue The Default value for this field\n"
-   "@param userData An extra data field that can be used for custom data on a per-field basis<br>Usage for default types<br>"
-   "-enum: a TAB separated list of possible values<br>"
-   "-object: the T2D object type that are valid choices for the field.  The object types observe inheritance, so if you have a t2dSceneObject field you will be able to choose t2dStaticSrpites, t2dAnimatedSprites, etc.\n"
-   "@return Nothing\n")
-{
-   object->beginFieldGroup(groupName);
-}
-
-DefineEngineMethod(Component, endGroup, void, (),,
-   "@brief Ends the grouping for prior fields being added to be grouped into\n"
-   "@param groupName The name of this group\n"
-   "@param desc The Description of this field\n"
-   "@param type The DataType for this field (default, int, float, Point2F, bool, enum, Object, keybind, color)\n"
-   "@param defaultValue The Default value for this field\n"
-   "@param userData An extra data field that can be used for custom data on a per-field basis<br>Usage for default types<br>"
-   "-enum: a TAB separated list of possible values<br>"
-   "-object: the T2D object type that are valid choices for the field.  The object types observe inheritance, so if you have a t2dSceneObject field you will be able to choose t2dStaticSrpites, t2dAnimatedSprites, etc.\n"
-   "@return Nothing\n")
-{
-   object->endFieldGroup();
-}
-
-DefineEngineMethod(Component, addComponentField, void, (String fieldName, String fieldDesc, String fieldType, String defValue, String userData, bool hidden),
-   ("", "", "", "", "", false),
-   "Get the number of static fields on the object.\n"
-   "@return The number of static fields defined on the object.")
-{
-   object->addComponentField(fieldName, fieldDesc, fieldType, defValue, userData, hidden);
-}
-
-DefineEngineMethod(Component, getComponentFieldCount, S32, (),, 
-   "@brief Get the number of ComponentField's on this object\n"
-   "@return Returns the number of BehaviorFields as a nonnegative integer\n")
-{
-   return object->getComponentFieldCount();
-}
-
-// [tom, 1/12/2007] Field accessors split into multiple methods to allow space
-// for long descriptions and type data.
-
-DefineEngineMethod(Component, getComponentField, const char *, (S32 index),, 
-   "@brief Gets a Tab-Delimited list of information about a ComponentField specified by Index\n"
-   "@param index The index of the behavior\n"
-   "@return FieldName, FieldType and FieldDefaultValue, each separated by a TAB character.\n")
-{
-   ComponentField *field = object->getComponentField(index);
-   if (field == NULL)
-      return "";
-
-   char *buf = Con::getReturnBuffer(1024);
-   dSprintf(buf, 1024, "%s\t%s\t%s\t%s", field->mFieldName, field->mFieldType, field->mDefaultValue, field->mGroup);
-
-   return buf;
-}
-
-DefineEngineMethod(Component, setComponentield, const char *, (S32 index),, 
-   "@brief Gets a Tab-Delimited list of information about a ComponentField specified by Index\n"
-   "@param index The index of the behavior\n"
-   "@return FieldName, FieldType and FieldDefaultValue, each separated by a TAB character.\n")
-{
-   ComponentField *field = object->getComponentField(index);
-   if (field == NULL)
-      return "";
-
-   char *buf = Con::getReturnBuffer(1024);
-   dSprintf(buf, 1024, "%s\t%s\t%s", field->mFieldName, field->mFieldType, field->mDefaultValue);
-
-   return buf;
-}
-
-DefineEngineMethod(Component, getComponentFieldType, const char *, (String fieldName), ,
-   "Get the number of static fields on the object.\n"
-   "@return The number of static fields defined on the object.")
-{
-   ComponentField *field = object->getComponentField(fieldName);
-   if (field == NULL)
-      return "";
-
-   return field->mFieldTypeName;;
-}
-
-DefineEngineMethod(Component, getBehaviorFieldUserData, const char *, (S32 index),, 
-   "@brief Gets the UserData associated with a field by index in the field list\n"
-   "@param index The index of the behavior\n"
-   "@return Returns a string representing the user data of this field\n")
-{
-   ComponentField *field = object->getComponentField(index);
-   if (field == NULL)
-      return "";
-
-   return field->mUserData;
-}
-
-DefineEngineMethod(Component, getComponentFieldDescription, const char *, (S32 index),, 
-   "@brief Gets a field description by index\n"
-   "@param index The index of the behavior\n"
-   "@return Returns a string representing the description of this field\n")
-{
-   ComponentField *field = object->getComponentField(index);
-   if (field == NULL)
-      return "";
-
-   return field->mFieldDescription ? field->mFieldDescription : "";
-}
-
-DefineEngineMethod(Component, addDependency, void, (String behaviorName),, 
-   "@brief Gets a field description by index\n"
-   "@param index The index of the behavior\n"
-   "@return Returns a string representing the description of this field\n")
-{
-   object->addDependency(behaviorName);
-}
-
-DefineEngineMethod(Component, setDirty, void, (),,
-   "@brief Gets a field description by index\n"
-   "@param index The index of the behavior\n"
-   "@return Returns a string representing the description of this field\n")
-{
-   object->setMaskBits(Component::OwnerMask);
 }
