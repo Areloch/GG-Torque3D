@@ -144,7 +144,7 @@ package Tools
       
       //Now that we're done loading, we can set the instant group back
       popInstantGroup();
-      $instantGroup = MissionCleanup;
+      $instantGroup = getRootScene().getDynamicObjectsGroup();
       pushInstantGroup();
       
    }
@@ -241,9 +241,9 @@ function EditorCreateFakeGameSession(%fileName)
    // This calls GameConnection::onConnect.
    ServerConnection.connectLocal();
 
-   $instantGroup = ServerGroup;
+   $instantGroup = getRootScene();
    
-   $Game::MissionGroup = "MissionGroup";
+   $Game::MissionGroup = getRootScene();
 
    exec(%file);
 }
@@ -275,8 +275,8 @@ function fastLoadWorldEdit(%val)
          if ( !isObject( Editor ) )
          {
             Editor::create();
-            MissionCleanup.add( Editor );
-            MissionCleanup.add( Editor.getUndoManager() );
+            getRootScene().addDynamicObject( Editor );
+            getRootScene().addDynamicObject( Editor.getUndoManager() );
          }
          
          if( EditorIsActive() )

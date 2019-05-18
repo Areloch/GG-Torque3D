@@ -32,6 +32,8 @@
 #include "platform/platform.h"
 #endif
 
+#include "T3D/Scene.h"
+
 #define AFX_VERSION_STRING "2.0"
 #define AFX_VERSION         2.0
 
@@ -198,9 +200,12 @@ inline S32 readDatablockID(BitStream* s)
 
 inline void registerForCleanup(SimObject* obj)
 {
-  SimGroup* cleanup_grp = dynamic_cast<SimGroup*>(Sim::findObject("MissionCleanup"));
-  if (cleanup_grp)
-    cleanup_grp->addObject(obj);
+   if (Scene::getRootScene())
+   {
+      SimGroup* cleanup_grp = Scene::getRootScene()->getDynamicObjectsGroup();
+      if (cleanup_grp)
+         cleanup_grp->addObject(obj);
+   }
 }
 
 //~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//~~~~~~~~~~~~~~~~~~~~//

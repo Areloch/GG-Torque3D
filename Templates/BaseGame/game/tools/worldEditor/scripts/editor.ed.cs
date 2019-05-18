@@ -119,8 +119,8 @@ function toggleEditor(%make)
          if ( !isObject( Editor ) )
          {
             Editor::create();
-            MissionCleanup.add( Editor );
-            MissionCleanup.add( Editor.getUndoManager() );
+            getRootScene().addDynamicObject( Editor );
+            getRootScene().addDynamicObject( Editor.getUndoManager() );
          }
          
          if( EditorIsActive() )

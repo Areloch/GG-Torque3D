@@ -262,8 +262,8 @@ function onServerDestroyed()
    }
    
    // Delete everything
-   getScene(0).delete();
-   MissionCleanup.delete();
+   getRootScene().delete();
+   getRootScene().clearDynamicObjects();
    
    clearServerPaths();
 }

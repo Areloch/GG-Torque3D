@@ -202,6 +202,7 @@ function ParticleEditor::resetEmitterNode( %this )
          };
       }
 
+      %parentGroup = getRootScene().getDynamicObjectsGroup();
       $ParticleEditor::emitterNode = new ParticleEmitterNode()
       {
          emitter = PEE_EmitterSelector.getText();
@@ -209,7 +210,7 @@ function ParticleEditor::resetEmitterNode( %this )
          position = getWords( %tform, 0, 2 );
          rotation = getWords( %tform, 3, 6 );
          datablock = TestEmitterNodeData;
-         parentGroup = MissionCleanup;
+         parentGroup = %parentGroup;
       };
    }
    else

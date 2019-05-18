@@ -461,7 +461,7 @@ function ForestEditorInspector::onInspectorFieldModified( %this, %object, %field
 {
    // The instant group will try to add our
    // UndoAction if we don't disable it.   
-   %instantGroup = $InstantGroup;
+   %instantGroup = getRootScene().getDynamicObjectsGroup();
    $InstantGroup = 0;
 
    %nameOrClass = %object.getName();

@@ -24,6 +24,7 @@
 #include "console/consoleTypes.h"
 #include "core/color.h"
 #include "console/engineAPI.h"
+#include "T3D/Scene.h"
 
 extern bool gEditingMission;
 IMPLEMENT_CO_DATABLOCK_V1(MissionMarkerData);
@@ -377,7 +378,7 @@ SimObject* SpawnSphere::spawnObject(String additionalProps)
    SimObject* spawnObject = Sim::spawnObject(mSpawnClass, mSpawnDataBlock, mSpawnName,
                                              mSpawnProperties + " " + additionalProps, mSpawnScript);
 
-   // If we have a spawnObject add it to the MissionCleanup group
+   // If we have a spawnObject add it to the Scene dynamic group
    if (spawnObject)
    {
       if (mSpawnTransform)
@@ -386,11 +387,9 @@ SimObject* SpawnSphere::spawnObject(String additionalProps)
             s->setTransform(getTransform());
       }
 
-      SimObject* cleanup = Sim::findObject("MissionCleanup");
-
-      if (cleanup)
+      if (Scene::getRootScene())
       {
-         SimGroup* missionCleanup = dynamic_cast<SimGroup*>(cleanup);
+         SimGroup* missionCleanup = Scene::getRootScene()->getDynamicObjectsGroup();
 
          missionCleanup->addObject(spawnObject);
       }

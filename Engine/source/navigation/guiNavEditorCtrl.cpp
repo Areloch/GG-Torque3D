@@ -36,6 +36,7 @@
 #include "gui/buttons/guiButtonCtrl.h"
 #include "gui/worldEditor/undoActions.h"
 #include "T3D/gameBase/gameConnection.h"
+#include "T3D/Scene.h"
 
 IMPLEMENT_CONOBJECT(GuiNavEditorCtrl);
 
@@ -217,11 +218,15 @@ void GuiNavEditorCtrl::spawnPlayer(const Point3F &pos)
       MatrixF mat(true);
       mat.setPosition(pos);
       obj->setTransform(mat);
-      SimObject* cleanup = Sim::findObject("MissionCleanup");
-      if(cleanup)
+
+      if (Scene::getRootScene())
       {
-         SimGroup* missionCleanup = dynamic_cast<SimGroup*>(cleanup);
-         missionCleanup->addObject(obj);
+         SimGroup* cleanup = Scene::getRootScene()->getDynamicObjectsGroup();
+         if (cleanup)
+         {
+            SimGroup* missionCleanup = dynamic_cast<SimGroup*>(cleanup);
+            missionCleanup->addObject(obj);
+         }
       }
       mPlayer = static_cast<AIPlayer*>(obj);
       Con::executef(this, "onPlayerSelected", Con::getIntArg(mPlayer->mLinkTypes.getFlags()));

@@ -80,7 +80,7 @@ function loadMissionStage2()
    echo("*** Stage 2 load");
 
    // Create the mission group off the ServerGroup
-   $instantGroup = ServerGroup;
+   $instantGroup = getRootScene();
 
    // Make sure the mission exists
    %file = $Server::MissionFile;
@@ -98,7 +98,7 @@ function loadMissionStage2()
       // Exec the mission.  The MissionGroup (loaded components) is added to the ServerGroup
       exec(%file);
 
-      if( !isObject(getScene(0)) )
+      if( !isObject(getRootScene()) )
       {
          $Server::LoadFailMsg = "No Scene found in level \"" @ %file @ "\".";
       }
@@ -116,12 +116,8 @@ function loadMissionStage2()
    if( isObject( theLevelInfo ) )
       $Server::MissionName = theLevelInfo.levelName;
 
-   // Mission cleanup group.  This is where run time components will reside.  The MissionCleanup
-   // group will be added to the ServerGroup.
-   new SimGroup( MissionCleanup );
-
    // Make the MissionCleanup group the place where all new objects will automatically be added.
-   $instantGroup = MissionCleanup;
+   $instantGroup = getRootScene().getDynamicObjectsGroup();
    
    // Construct MOD paths
    pathOnMissionLoadDone();
@@ -159,8 +155,8 @@ function endMission()
    }
    
    // Delete everything
-   getScene(0).delete();
-   MissionCleanup.delete();
+   getRootScene().delete();
+   getRootScene().clearDynamicObjects();
    
    clearServerPaths();
 }
@@ -170,10 +166,10 @@ function resetMission()
    echo("*** MISSION RESET");
 
    // Remove any temporary mission objects
-   MissionCleanup.delete();
-   $instantGroup = ServerGroup;
-   new SimGroup( MissionCleanup );
-   $instantGroup = MissionCleanup;
+   getRootScene().clearDynamicObjects();
+   $instantGroup = getRootScene();
+
+   $instantGroup = getRootScene().getDynamicObjectsGroup();
 
    clearServerPaths();
    //

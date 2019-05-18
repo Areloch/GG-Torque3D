@@ -474,8 +474,8 @@ function EditorOpenMission(%filename)
 
       // recreate and open the editor
       Editor::create();
-      MissionCleanup.add( Editor );
-      MissionCleanup.add( Editor.getUndoManager() );
+      getRootScene().addDynamicObject( Editor );
+      getRootScene().addDynamicObject( Editor.getUndoManager() );
       EditorGui.loadingMission = true;
       Editor.open();
    

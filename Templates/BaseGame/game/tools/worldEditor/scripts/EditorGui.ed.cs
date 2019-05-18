@@ -597,9 +597,10 @@ function EditorGui::onNewLevelLoaded( %this, %levelName )
    ECameraSettingsPage.init();
    EditorCameraSpeedOptions.setupDefaultState();
    
+   %parentGroup = getRootScene().getDynamicObjectsGroup();
    new ScriptObject( EditorMissionCleanup )
    {
-      parentGroup = "MissionCleanup";
+      parentGroup = %parentGroup;
    };
 }
 
@@ -846,14 +847,14 @@ function WorldEditorPlugin::onActivated( %this )
    if(!isObject(Scenes))
       $scenesRootGroup = new SimGroup(Scenes);
    
-   $scenesRootGroup.add(getScene(0));
+   $scenesRootGroup.add(getRootScene());
    
    EditorGui.bringToFront( EWorldEditor );
    EWorldEditor.setVisible(true);
    EditorGui.menuBar.insert( EditorGui.worldMenu, EditorGui.menuBar.dynamicItemInsertPos );
    EWorldEditor.makeFirstResponder(true);
    EditorTree.open($scenesRootGroup,true);
-   EWCreatorWindow.setNewObjectGroup(getScene(0));
+   EWCreatorWindow.setNewObjectGroup(getRootScene());
 
    EWorldEditor.syncGui();
 

@@ -50,7 +50,7 @@ function spawnGameObject(%name, %addToScene)
          if(%addToMissionGroup == true) //save instance when saving level
             getScene(0).add(%go);
          else // clear instance on level exit
-            MissionCleanup.add(%go);
+            getRootScene().addDynamicObject(%go);
             
          //remove from the object pool's list
          GameObjectPool.erase(%goIdx);
@@ -70,7 +70,7 @@ function spawnGameObject(%name, %addToScene)
       if(%addToScene == true) //save instance when saving level
          getScene(0).add(%newSGOObject);
       else // clear instance on level exit
-         MissionCleanup.add(%newSGOObject);
+         getRootScene().addDynamicObject(%newSGOObject);
          
       return %newSGOObject;
    }

@@ -150,7 +150,7 @@ ConsoleDocClass( Camera,
    "%cam = new Camera() {\n"
    "   datablock = \"Observer\";\n"
    "};\n"
-   "MissionCleanup.add( %cam );\n"
+   "getRootScene().addDynamicObject( %cam );\n"
    "%cam.setTransform( %spawnPoint.getTransform() );\n"
    "@endtsexample\n\n"
 
@@ -173,7 +173,7 @@ ConsoleDocClass( Camera,
    "   if (isObject(%this.camera))\n"
    "   {\n"
    "      // Make sure we're cleaned up when the mission ends\n"
-   "      MissionCleanup.add( %this.camera );\n"
+   "      getRootScene().addDynamicObject( %this.camera );\n"
    "\n"
    "      // Make sure the camera is always in scope for the connection\n"
    "      %this.camera.scopeToClient(%this);\n"

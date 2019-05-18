@@ -174,7 +174,7 @@ function serverCmdMissionStartPhase3Ack(%client, %seq)
       // If we have a camera then set up some properties
       if (isObject(%client.camera))
       {
-         MissionCleanup.add( %this.camera );
+         getRootScene().addDynamicObject( %this.camera );
          %client.camera.scopeToClient(%client);
 
          %client.setControlObject(%client.camera);

@@ -194,7 +194,7 @@ DefineEngineMethod( NetObject, scopeToClient, void, ( NetConnection* client),,
       "	if(isObject(%this.camera))\n"
       "	{\n"
       "		// Add it to the mission group to be cleaned up later\n"
-      "		MissionCleanup.add( %this.camera );\n\n"
+      "		getRootScene().addDynamicObject( %this.camera );\n\n"
       "		// Force it to scope to the client side\n"
       "		%this.camera.scopeToClient(%this);\n"
       "	}\n"

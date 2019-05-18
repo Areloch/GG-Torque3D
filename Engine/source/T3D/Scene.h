@@ -27,6 +27,7 @@ class Scene : public NetObject, public virtual ITickable
 
    Vector<SceneObject*> mPermanentObjects;
 
+   SimGroup* mDynamicObjectGroup;
    Vector<SceneObject*> mDynamicObjects;
 
    S32 mSceneId;
@@ -58,6 +59,8 @@ public:
 
    void addDynamicObject(SceneObject* object);
    void removeDynamicObject(SceneObject* object);
+   void clearDynamicObjects();
+   SimGroup* getDynamicObjectsGroup();
 
    //
    //Networking

@@ -10,7 +10,8 @@ Scene::Scene() :
    mParentScene(nullptr),
    mSceneId(-1),
    mIsEditing(false),
-   mIsDirty(false)
+   mIsDirty(false),
+   mDynamicObjectGroup(nullptr)
 {
 
 }
@@ -129,18 +130,59 @@ void Scene::removeObject(SimObject* object)
 
 void Scene::addDynamicObject(SceneObject* object)
 {
+   if (object == nullptr)
+   {
+      Con::errorf("Scene::addDynamicObject - must add real object");
+      return;
+   }
+
+   if (mDynamicObjectGroup == nullptr)
+   {
+      mDynamicObjectGroup = new SimGroup();
+      mDynamicObjectGroup->registerObject();
+   }
+
    mDynamicObjects.push_back(object);
 
    //Do it like regular, though we should probably bail if we're trying to add non-scene objects to the scene?
-   Parent::addObject(object);
+   mDynamicObjectGroup->addObject(object);
 }
 
 void Scene::removeDynamicObject(SceneObject* object)
 {
+   if (object == nullptr)
+   {
+      Con::errorf("Scene::addDynamicObject - must remove real object");
+      return;
+   }
+
+   if (mDynamicObjectGroup == nullptr)
+   {
+      mDynamicObjectGroup = new SimGroup();
+      mDynamicObjectGroup->registerObject();
+   }
+
    mDynamicObjects.remove(object);
 
    //Do it like regular, though we should probably bail if we're trying to add non-scene objects to the scene?
-   Parent::removeObject(object);
+   mDynamicObjectGroup->removeObject(object);
+}
+
+void Scene::clearDynamicObjects()
+{
+   mDynamicObjectGroup->clear();
+   mDynamicObjects.clear();
+}
+
+SimGroup* Scene::getDynamicObjectsGroup()
+{
+   if (mDynamicObjectGroup == nullptr)
+   {
+      mDynamicObjectGroup = new SimGroup();
+      mDynamicObjectGroup->registerObject();
+   }
+
+   return mDynamicObjectGroup;
 }
 
 void Scene::interpolateTick(F32 delta)
@@ -222,6 +264,20 @@ DefineEngineMethod(Scene, removeDynamicObject, void, (SceneObject* sceneObj), (n
    "@return The id of the Root Scene. Will be 0 if no root scene is loaded")
 {
    object->removeDynamicObject(sceneObj);
+}
+
+DefineEngineMethod(Scene, clearDynamicObjects, void, (),,
+   "Get the root Scene object that is loaded.\n"
+   "@return The id of the Root Scene. Will be 0 if no root scene is loaded")
+{
+   object->clearDynamicObjects();
+}
+
+DefineEngineMethod(Scene, getDynamicObjectsGroup, SimGroup*, (), ,
+   "Get the root Scene object that is loaded.\n"
+   "@return The id of the Root Scene. Will be 0 if no root scene is loaded")
+{
+   return object->getDynamicObjectsGroup();
 }
 
 DefineEngineMethod(Scene, getObjectsByClass, String, (String className), (""),
