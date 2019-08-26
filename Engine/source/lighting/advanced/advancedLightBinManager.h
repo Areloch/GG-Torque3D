@@ -99,9 +99,7 @@ public:
    /// Used to toggle the PSSM debug rendering mode.
    static bool smPSSMDebugRender;
 
-   /// Set by the SSAO post effect to tell the vector
-   /// light to compile in the SSAO mask.
-   static bool smUseSSAOMask;
+   static bool smDisableLights;
 
    // Used for console init
    AdvancedLightBinManager( AdvancedLightManager *lm = NULL, 
@@ -169,6 +167,8 @@ protected:
       MaterialParameterHandle *lightInvSqrRange;
       MaterialParameterHandle *lightAmbient;
       MaterialParameterHandle *lightSpotParams;
+
+      MaterialParameterHandle *exposureSC;
 
       LightMaterialInfo(   const String &matName, 
                            const GFXVertexFormat *vertexFormat,

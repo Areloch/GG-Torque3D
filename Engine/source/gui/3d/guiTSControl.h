@@ -61,6 +61,8 @@ struct CameraQuery
    GFXTextureTarget* stereoTargets[2];
    GuiCanvas* drawCanvas; // Canvas we are drawing to. Needed for VR
 
+   F32 exposure;
+
    IDisplayDevice* displayDevice;
 };
 

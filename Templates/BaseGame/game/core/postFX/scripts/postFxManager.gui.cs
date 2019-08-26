@@ -122,91 +122,27 @@ function ppOptionsSSAOQuality::onSelect( %this, %id, %text )
 }
 
 //SSAO Slider controls
-//General Tab
-function ppOptionsSSAOOverallStrength::onMouseDragged(%this)
+function ppOptionsSSAOIntensity::onMouseDragged(%this)
 {
-   $SSAOPostFx::overallStrength = %this.value;
+   $SSAOPostFx::intensity = %this.value;
    %this.ToolTip = "Value : " @ %this.value;
 }
 
-function ppOptionsSSAOBlurDepth::onMouseDragged(%this)
+function ppOptionsSSAORadius::onMouseDragged(%this)
 {
-   $SSAOPostFx::blurDepthTol = %this.value;
+   $SSAOPostFx::radius = %this.value;
    %this.ToolTip = "Value : " @ %this.value;
 }
 
-function ppOptionsSSAOBlurNormal::onMouseDragged(%this)
+function ppOptionsSSAOScale::onMouseDragged(%this)
 {
-   $SSAOPostFx::blurNormalTol = %this.value;
+   $SSAOPostFx::scale = %this.value;
    %this.ToolTip = "Value : " @ %this.value;
 }
 
-//Near Tab
-function ppOptionsSSAONearRadius::onMouseDragged(%this)
+function ppOptionsSSAOBias::onMouseDragged(%this)
 {
-   $SSAOPostFx::sRadius = %this.value;
-   %this.ToolTip = "Value : " @ %this.value;
-}
-
-function ppOptionsSSAONearStrength::onMouseDragged(%this)
-{
-   $SSAOPostFx::sStrength = %this.value;
-   %this.ToolTip = "Value : " @ %this.value;
-}
-
-function ppOptionsSSAONearDepthMin::onMouseDragged(%this)
-{
-   $SSAOPostFx::sDepthMin = %this.value;
-   %this.ToolTip = "Value : " @ %this.value;
-}
-
-function ppOptionsSSAONearDepthMax::onMouseDragged(%this)
-{
-   $SSAOPostFx::sDepthMax = %this.value;
-   %this.ToolTip = "Value : " @ %this.value;   
-}
-
-function ppOptionsSSAONearToleranceNormal::onMouseDragged(%this)
-{
-   $SSAOPostFx::sNormalTol = %this.value;
-   %this.ToolTip = "Value : " @ %this.value;
-}
-
-function ppOptionsSSAONearTolerancePower::onMouseDragged(%this)
-{
-   $SSAOPostFx::sNormalPow = %this.value;
-   %this.ToolTip = "Value : " @ %this.value;
-}
-
-//Far Tab
-function ppOptionsSSAOFarRadius::onMouseDragged(%this)
-{
-   $SSAOPostFx::lRadius = %this.value;
-   %this.ToolTip = "Value : " @ %this.value;
-}
-function ppOptionsSSAOFarStrength::onMouseDragged(%this)
-{
-   $SSAOPostFx::lStrength = %this.value;
-   %this.ToolTip = "Value : " @ %this.value;
-}
-function ppOptionsSSAOFarDepthMin::onMouseDragged(%this)
-{
-   $SSAOPostFx::lDepthMin = %this.value;
-   %this.ToolTip = "Value : " @ %this.value;
-}
-function ppOptionsSSAOFarDepthMax::onMouseDragged(%this)
-{
-   $SSAOPostFx::lDepthMax = %this.value;
-   %this.ToolTip = "Value : " @ %this.value;
-}
-function ppOptionsSSAOFarToleranceNormal::onMouseDragged(%this)
-{
-   $SSAOPostFx::lNormalTol = %this.value;
-   %this.ToolTip = "Value : " @ %this.value;
-}
-function ppOptionsSSAOFarTolerancePower::onMouseDragged(%this)
-{
-   $SSAOPostFx::lNormalPow = %this.value;
+   $SSAOPostFx::bias = %this.value;
    %this.ToolTip = "Value : " @ %this.value;
 }
 

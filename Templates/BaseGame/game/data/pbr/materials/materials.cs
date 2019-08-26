@@ -34,6 +34,7 @@ singleton Material(Mat_plastic_material_ball)
    translucentBlendOp = "None";
    invertSmoothness[0] = "1";
    materialTag0 = "pbr";
+   emissive[0] = "1";
 };
 
 singleton Material(Mat_iron_material_ball)

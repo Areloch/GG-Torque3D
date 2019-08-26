@@ -750,6 +750,10 @@ void RenderProbeMgr::render( SceneRenderState *state )
 
    if(mHasSkylight && mEffectiveProbeCount == 0)
       mProbeArrayEffect->setShaderMacro("SKYLIGHT_ONLY", "1");
+
+   bool useSSAO = Con::getBoolVariable("$AL::UseSSAOMask", "0");
+   if(useSSAO)
+      mProbeArrayEffect->setShaderMacro("USE_SSAO_MASK");
    
    mProbeArrayEffect->setTexture(3, mBRDFTexture);
    mProbeArrayEffect->setCubemapArrayTexture(4, mPrefilterArray);

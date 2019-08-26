@@ -24,7 +24,6 @@
 
 in vec4 hpos;
 in vec2 uv0;
-#line 27
 
 uniform samplerCube environmentMap;
 
@@ -124,7 +123,8 @@ vec4 prefilterEnvMap(vec3 R)
 out vec4 OUT_col;
 
 void main()
-{   
+{
+   
 	vec3 N = getCubeDir(face, uv0);
 	OUT_col = prefilterEnvMap(N);
 }

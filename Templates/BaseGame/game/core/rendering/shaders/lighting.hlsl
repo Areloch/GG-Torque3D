@@ -476,3 +476,10 @@ float4 computeForwardProbes(Surface surface,
    float4 finalColor = float4(diffuse* surface.ao + specular * surface.ao, 1.0);
    return finalColor;
 }
+
+float computeMicroShadowing(float NoL, float visibility) {
+    // Chan 2018, "Material Advances in Call of Duty: WWII"
+    float aperture = rsqrt(1.0 - visibility);
+    float microShadow = saturate(NoL * aperture);
+    return microShadow * microShadow;
+}

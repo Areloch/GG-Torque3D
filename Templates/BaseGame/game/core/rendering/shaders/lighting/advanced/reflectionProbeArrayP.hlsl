@@ -21,6 +21,11 @@ uniform int numProbes;
 TORQUE_UNIFORM_SAMPLERCUBEARRAY(specularCubemapAR, 4);
 TORQUE_UNIFORM_SAMPLERCUBEARRAY(irradianceCubemapAR, 5);
 
+#ifdef USE_SSAO_MASK
+TORQUE_UNIFORM_SAMPLER2D(ssaoMask, 6);
+uniform float4 rtParams3;
+#endif
+
 uniform float4    inProbePosArray[MAX_PROBES];
 uniform float4    inRefPosArray[MAX_PROBES];
 uniform float4x4  worldToObjArray[MAX_PROBES];
@@ -193,8 +198,14 @@ float4 main(PFXVertToPix IN) : SV_TARGET
    float2 brdf = TORQUE_TEX2DLOD(BRDFTexture, float4(surface.roughness, 1.0-surface.NdotV, 0.0, 0.0)).xy;
    specular *= brdf.x * F + brdf.y;
 
+#ifdef USE_SSAO_MASK
+      surface.ao *= 1.0 - TORQUE_TEX2D( ssaoMask, IN.uv0.xy ).r;
+#endif
+   //specular *= lerp(brdf.xxx, brdf.yyy, F);
+
    //final diffuse color
    float3 diffuse = kD * irradiance * surface.baseColor.rgb;
    float4 finalColor = float4(diffuse* surface.ao + specular * surface.ao, 1.0);
+
    return finalColor;
 }

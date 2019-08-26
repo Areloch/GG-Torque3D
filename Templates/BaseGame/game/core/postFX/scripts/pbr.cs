@@ -15,4 +15,5 @@ singleton PostEffect( reflectionProbeArrayPostFX )
    texture[0] = "#deferred";
    texture[1] = "#color";
    texture[2] = "#matinfo";
+   texture[6] = "#ssaoMask";
 };

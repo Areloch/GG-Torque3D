@@ -47,7 +47,7 @@ const String AdvancedLightBinManager::smBufferName( "specularLighting" );
 
 ShadowFilterMode AdvancedLightBinManager::smShadowFilterMode = ShadowFilterMode_SoftShadowHighQuality;
 bool AdvancedLightBinManager::smPSSMDebugRender = false;
-bool AdvancedLightBinManager::smUseSSAOMask = false;
+bool AdvancedLightBinManager::smDisableLights = false;
 
 ImplementEnumType( ShadowFilterMode,
    "The shadow filtering modes for Advanced Lighting shadows.\n"
@@ -126,7 +126,6 @@ AdvancedLightBinManager::AdvancedLightBinManager( AdvancedLightManager *lm /* = 
    Con::NotifyDelegate callback( this, &AdvancedLightBinManager::_deleteLightMaterials );
    Con::addVariableNotify( "$pref::Shadows::filterMode", callback );
    Con::addVariableNotify( "$AL::PSSMDebugRender", callback );
-   Con::addVariableNotify( "$AL::UseSSAOMask", callback );
 }
 
 
@@ -137,7 +136,6 @@ AdvancedLightBinManager::~AdvancedLightBinManager()
    Con::NotifyDelegate callback( this, &AdvancedLightBinManager::_deleteLightMaterials );
    Con::removeVariableNotify( "$pref::shadows::filterMode", callback );
    Con::removeVariableNotify( "$AL::PSSMDebugRender", callback );
-   Con::removeVariableNotify( "$AL::UseSSAOMask", callback );  
 }
 
 void AdvancedLightBinManager::consoleInit()
@@ -149,14 +147,11 @@ void AdvancedLightBinManager::consoleInit()
       "The filter mode to use for shadows.\n"
       "@ingroup AdvancedLighting\n" );
 
-   Con::addVariable( "$AL::UseSSAOMask", TypeBool, &smUseSSAOMask,
-      "Used by the SSAO PostEffect to toggle the sampling of ssaomask "
-      "texture by the light shaders.\n"
-      "@ingroup AdvancedLighting\n" );
-
    Con::addVariable( "$AL::PSSMDebugRender", TypeBool, &smPSSMDebugRender,
       "Enables debug rendering of the PSSM shadows.\n"
       "@ingroup AdvancedLighting\n" );
+
+   Con::addVariable("$Light::disableLights", TypeBool, &AdvancedLightBinManager::smDisableLights, "");
 }
 
 bool AdvancedLightBinManager::setTargetSize(const Point2I &newTargetSize)
@@ -253,6 +248,9 @@ void AdvancedLightBinManager::render( SceneRenderState *state )
    GFXTransformSaver saver;
 
    if( !mLightManager )
+      return;
+
+   if (smDisableLights)
       return;
 
    // Get the sunlight. If there's no sun, and no lights in the bins, no draw
@@ -448,8 +446,8 @@ AdvancedLightBinManager::LightMaterialInfo* AdvancedLightBinManager::_getLightMa
          shadowMacros.push_back( GFXShaderMacro( "PSSM_DEBUG_RENDER" ) );
 
       // If its a vector light see if we can enable SSAO.
-      if ( lightType == LightInfo::Vector && smUseSSAOMask )
-         shadowMacros.push_back( GFXShaderMacro( "USE_SSAO_MASK" ) );
+      //if ( lightType == LightInfo::Vector && smUseSSAOMask )
+      //   shadowMacros.push_back( GFXShaderMacro( "USE_SSAO_MASK" ) );
 
       // Now create the material info object.
       info = new LightMaterialInfo( lightMatName, smLightMatVertex[ lightType ], shadowMacros );
@@ -638,6 +636,7 @@ AdvancedLightBinManager::LightMaterialInfo::LightMaterialInfo( const String &mat
    zNearFarInvNearFar = matInstance->getMaterialParameterHandle("$zNearFarInvNearFar");
    lightColor = matInstance->getMaterialParameterHandle("$lightColor");
    lightBrightness = matInstance->getMaterialParameterHandle("$lightBrightness");
+   exposureSC = matInstance->getMaterialParameterHandle("$exposure");
 }
 
 AdvancedLightBinManager::LightMaterialInfo::~LightMaterialInfo()
@@ -671,8 +670,20 @@ void AdvancedLightBinManager::LightMaterialInfo::setLightParameters( const Light
 {
    MaterialParameters *matParams = matInstance->getMaterialParameters();
 
+   F32 aperture = 16.0f;
+   F32 shutterSpeed = 1 / 125.0f;
+   F32 sensitivity = 100.0f;
+
+   F32 ev100 = mLog2((aperture * aperture) / shutterSpeed * 100.0f / sensitivity);
+
+   F32 exposure = 1.0f / (1.2f * mPow(2.0f, ev100));
+
+   F32 bright = lightInfo->getBrightness();
+
+   F32 adjustedBright = bright * exposure;
+
    matParams->setSafe( lightColor, lightInfo->getColor() );
-   matParams->setSafe( lightBrightness, lightInfo->getBrightness() );
+   matParams->setSafe( lightBrightness, lightInfo->getBrightness() * exposure);
 
    switch( lightInfo->getType() )
    {

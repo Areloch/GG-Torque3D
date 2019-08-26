@@ -23,15 +23,10 @@
 #include "../postFx.hlsl"
 #include "../../torque.hlsl"
 
-
 TORQUE_UNIFORM_SAMPLER2D(inputTex, 0);
-TORQUE_UNIFORM_SAMPLER2D(luminanceTex, 1);
 uniform float2 oneOverTargetSize;
-uniform float brightPassThreshold;
-uniform float g_fMiddleGray;
 
 static const float3 LUMINANCE_VECTOR = float3(0.3125f, 0.6154f, 0.0721f);
-
 
 static float2 gTapOffsets[4] = 
 {
@@ -49,14 +44,8 @@ float4 main( PFXVertToPix IN ) : TORQUE_TARGET0
    average *= 0.25f;
 
    // Determine the brightness of this particular pixel.   
-   float adaptedLum = TORQUE_TEX2D( luminanceTex, float2( 0.5f, 0.5f ) ).r;
-   float lum = (g_fMiddleGray / (adaptedLum + 0.0001)) * hdrLuminance( average.rgb );
-   //float lum = hdrLuminance( average.rgb );
+   float lum = hdrLuminance( average.rgb );
    
-   // Determine whether this pixel passes the test...
-   if ( lum < brightPassThreshold )
-      average = float4( 0.0f, 0.0f, 0.0f, 1.0f );
-
    // Write the colour to the bright-pass render target
    return hdrEncode( average );
 }

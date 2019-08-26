@@ -20,6 +20,11 @@ function pbr::destroy( %this )
 {
 }
 
+function pbr::initServer(%this)
+{
+   
+}
+
 function pbr::onCreateServer(%this)
 {
 }
@@ -28,10 +33,15 @@ function pbr::onDestroyServer(%this)
 {
 }
 
-function pbr::onCreateClient(%this)
+function pbr::initClient(%this)
+{
+   
+}
+
+function pbr::onCreateClientConnection(%this)
 {
 }
 
-function pbr::onDestroyClient(%this)
+function pbr::onDestroyClientConnection(%this)
 {
 }

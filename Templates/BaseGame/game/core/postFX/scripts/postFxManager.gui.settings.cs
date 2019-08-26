@@ -125,38 +125,13 @@ function PostFXManager::settingsEffectSetEnabled(%this, %sName, %bEnable)
 
 function PostFXManager::settingsRefreshSSAO(%this)
 {
-   //Apply the enabled flag 
-   ppOptionsEnableSSAO.setValue($PostFXManager::PostFX::EnableSSAO);   
-   
-   //Add the items we need to display
-   ppOptionsSSAOQuality.clear();
-   ppOptionsSSAOQuality.add("Low", 0);
-   ppOptionsSSAOQuality.add("Medium", 1);
-   ppOptionsSSAOQuality.add("High", 2);
-   
-   //Set the selected, after adding the items!
-   ppOptionsSSAOQuality.setSelected($SSAOPostFx::quality);
-   
-   //SSAO - Set the values of the sliders, General Tab
-   ppOptionsSSAOOverallStrength.setValue($SSAOPostFx::overallStrength);
-   ppOptionsSSAOBlurDepth.setValue($SSAOPostFx::blurDepthTol);
-   ppOptionsSSAOBlurNormal.setValue($SSAOPostFx::blurNormalTol);
-      
-   //SSAO - Set the values for the near tab
-   ppOptionsSSAONearDepthMax.setValue($SSAOPostFx::sDepthMax);
-   ppOptionsSSAONearDepthMin.setValue($SSAOPostFx::sDepthMin);
-   ppOptionsSSAONearRadius.setValue($SSAOPostFx::sRadius);
-   ppOptionsSSAONearStrength.setValue($SSAOPostFx::sStrength);
-   ppOptionsSSAONearToleranceNormal.setValue($SSAOPostFx::sNormalTol);
-   ppOptionsSSAONearTolerancePower.setValue($SSAOPostFx::sNormalPow);
-   
-   //SSAO - Set the values for the far tab
-   ppOptionsSSAOFarDepthMax.setValue($SSAOPostFx::lDepthMax);
-   ppOptionsSSAOFarDepthMin.setValue($SSAOPostFx::lDepthMin);
-   ppOptionsSSAOFarRadius.setValue($SSAOPostFx::lRadius);
-   ppOptionsSSAOFarStrength.setValue($SSAOPostFx::lStrength);
-   ppOptionsSSAOFarToleranceNormal.setValue($SSAOPostFx::lNormalTol);
-   ppOptionsSSAOFarTolerancePower.setValue($SSAOPostFx::lNormalPow);
+   //Apply the enabled flag
+   ppOptionsEnableSSAO.setValue($PostFXManager::PostFX::EnableSSAO);
+
+   ppOptionsSSAOIntensity.setValue($SSAOPostFx::intensity);
+   ppOptionsSSAORadius.setValue($SSAOPostFx::radius );
+   ppOptionsSSAOScale.setValue($SSAOPostFx::scale);
+   ppOptionsSSAOBias.setValue($SSAPostFx::bias);
 }
 
 function PostFXManager::settingsRefreshHDR(%this)
@@ -250,24 +225,10 @@ function PostFXManager::settingsApplyFromPreset(%this)
    postVerbose("% - PostFX Manager - Applying from preset");
 
    //SSAO Settings
-   $SSAOPostFx::blurDepthTol           = $PostFXManager::Settings::SSAO::blurDepthTol;
-   $SSAOPostFx::blurNormalTol          = $PostFXManager::Settings::SSAO::blurNormalTol;
-   $SSAOPostFx::lDepthMax              = $PostFXManager::Settings::SSAO::lDepthMax;
-   $SSAOPostFx::lDepthMin              = $PostFXManager::Settings::SSAO::lDepthMin;
-   $SSAOPostFx::lDepthPow              = $PostFXManager::Settings::SSAO::lDepthPow;
-   $SSAOPostFx::lNormalPow             = $PostFXManager::Settings::SSAO::lNormalPow;
-   $SSAOPostFx::lNormalTol             = $PostFXManager::Settings::SSAO::lNormalTol;
-   $SSAOPostFx::lRadius                = $PostFXManager::Settings::SSAO::lRadius;
-   $SSAOPostFx::lStrength              = $PostFXManager::Settings::SSAO::lStrength;
-   $SSAOPostFx::overallStrength        = $PostFXManager::Settings::SSAO::overallStrength;
-   $SSAOPostFx::quality                = $PostFXManager::Settings::SSAO::quality;
-   $SSAOPostFx::sDepthMax              = $PostFXManager::Settings::SSAO::sDepthMax;
-   $SSAOPostFx::sDepthMin              = $PostFXManager::Settings::SSAO::sDepthMin;
-   $SSAOPostFx::sDepthPow              = $PostFXManager::Settings::SSAO::sDepthPow;
-   $SSAOPostFx::sNormalPow             = $PostFXManager::Settings::SSAO::sNormalPow;
-   $SSAOPostFx::sNormalTol             = $PostFXManager::Settings::SSAO::sNormalTol;
-   $SSAOPostFx::sRadius                = $PostFXManager::Settings::SSAO::sRadius;
-   $SSAOPostFx::sStrength              = $PostFXManager::Settings::SSAO::sStrength;
+   $SSAOPostFx::intensity             = $PostFXManager::Settings::SSAO::intensity;
+   $SSAOPostFx::radius                = $PostFXManager::Settings::SSAO::radius;
+   $SSAOPostFx::scale                 = $PostFXManager::Settings::SSAO::scale;
+   $SSAOPostFx::bias                  = $PostFXManager::Settings::SSAO::bias;
    
    //HDR settings
    $HDRPostFX::adaptRate               = $PostFXManager::Settings::HDR::adaptRate;
@@ -327,24 +288,10 @@ function PostFXManager::settingsApplyFromPreset(%this)
 
 function PostFXManager::settingsApplySSAO(%this)
 {   
-   $PostFXManager::Settings::SSAO::blurDepthTol             = $SSAOPostFx::blurDepthTol;
-   $PostFXManager::Settings::SSAO::blurNormalTol            = $SSAOPostFx::blurNormalTol;
-   $PostFXManager::Settings::SSAO::lDepthMax                = $SSAOPostFx::lDepthMax;
-   $PostFXManager::Settings::SSAO::lDepthMin                = $SSAOPostFx::lDepthMin;
-   $PostFXManager::Settings::SSAO::lDepthPow                = $SSAOPostFx::lDepthPow;
-   $PostFXManager::Settings::SSAO::lNormalPow               = $SSAOPostFx::lNormalPow;
-   $PostFXManager::Settings::SSAO::lNormalTol               = $SSAOPostFx::lNormalTol;
-   $PostFXManager::Settings::SSAO::lRadius                  = $SSAOPostFx::lRadius;
-   $PostFXManager::Settings::SSAO::lStrength                = $SSAOPostFx::lStrength;
-   $PostFXManager::Settings::SSAO::overallStrength          = $SSAOPostFx::overallStrength;
-   $PostFXManager::Settings::SSAO::quality                  = $SSAOPostFx::quality;
-   $PostFXManager::Settings::SSAO::sDepthMax                = $SSAOPostFx::sDepthMax;
-   $PostFXManager::Settings::SSAO::sDepthMin                = $SSAOPostFx::sDepthMin;
-   $PostFXManager::Settings::SSAO::sDepthPow                = $SSAOPostFx::sDepthPow;
-   $PostFXManager::Settings::SSAO::sNormalPow               = $SSAOPostFx::sNormalPow;
-   $PostFXManager::Settings::SSAO::sNormalTol               = $SSAOPostFx::sNormalTol;
-   $PostFXManager::Settings::SSAO::sRadius                  = $SSAOPostFx::sRadius;
-   $PostFXManager::Settings::SSAO::sStrength                = $SSAOPostFx::sStrength;
+   $PostFXManager::Settings::SSAO::intensity               = $SSAOPostFx::intensity;
+   $PostFXManager::Settings::SSAO::radius                  = $SSAOPostFx::radius;
+   $PostFXManager::Settings::SSAO::scale                   = $SSAOPostFx::scale;
+   $PostFXManager::Settings::SSAO::bias                    = $SSAOPostFx::bias;
 
    postVerbose("% - PostFX Manager - Settings Saved - SSAO");    
    

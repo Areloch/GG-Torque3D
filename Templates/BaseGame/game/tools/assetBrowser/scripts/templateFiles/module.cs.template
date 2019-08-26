@@ -27,11 +27,11 @@ function @@::initClient(%this)
 }
 
 //This is called when a client connects to a server
-function @@::onCreateClient(%this)
+function @@::onCreateClientConnection(%this)
 {
 }
 
 //This is called when a client disconnects from a server
-function @@::onDestroyClient(%this)
+function @@::onDestroyClientConnection(%this)
 {
 }

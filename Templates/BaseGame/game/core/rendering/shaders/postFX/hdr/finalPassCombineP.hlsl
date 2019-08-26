@@ -94,12 +94,12 @@ float4 main( PFXVertToPix IN ) : TORQUE_TARGET0
    }
 
    // Add the bloom effect.
-   sample += g_fBloomScale * bloom;
+   sample += bloom;
 
    // Apply the color correction.
-   sample.r = TORQUE_TEX1D( colorCorrectionTex, sample.r ).r;
-   sample.g = TORQUE_TEX1D( colorCorrectionTex, sample.g ).g;
-   sample.b = TORQUE_TEX1D( colorCorrectionTex, sample.b ).b;
+   //sample.r = TORQUE_TEX1D( colorCorrectionTex, sample.r ).r;
+   //sample.g = TORQUE_TEX1D( colorCorrectionTex, sample.g ).g;
+   //sample.b = TORQUE_TEX1D( colorCorrectionTex, sample.b ).b;
 
    // Apply contrast
    sample.rgb = ((sample.rgb - 0.5f) * Contrast) + 0.5f;

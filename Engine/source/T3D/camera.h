@@ -150,6 +150,10 @@ class Camera: public ShapeBase
 
       CameraMotionMode  mMode;
 
+      F32 mAperture;
+      F32 mShutterSpeed;
+      F32 mSensitivity;
+
       void _setPosition(const Point3F& pos,const Point3F& viewRot);
       void _setRenderPosition(const Point3F& pos,const Point3F& viewRot);
       void _validateEyePoint( F32 pos, MatrixF* mat );
@@ -253,6 +257,8 @@ class Camera: public ShapeBase
       DECLARE_DESCRIPTION( "Represents a position, direction and field of view to render a scene from." );
       static F32 getMovementSpeed() { return smMovementSpeed; }
       bool isCamera() const { return true; }
+
+      F32 getEV100() { return mLog2((mAperture * mAperture) / mShutterSpeed * 100.0f / mSensitivity); }
 };
 
 typedef Camera::CameraMotionMode CameraMotionMode;

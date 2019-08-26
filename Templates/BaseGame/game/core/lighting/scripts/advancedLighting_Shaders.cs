@@ -322,6 +322,7 @@ singleton ShaderData( PFX_ReflectionProbeArray )
    samplerNames[3] = "$BRDFTexture";
    samplerNames[4] = "$specularCubemapAR";
    samplerNames[5] = "$irradianceCubemapAR";
+   samplerNames[6] = "$ssaoMask";
 
    pixVersion = 2.0;
 };  
@@ -350,4 +351,5 @@ singleton GFXStateBlockData( PFX_ReflectionProbeArrayStateBlock )
    samplerStates[3] = SamplerClampPoint;
    samplerStates[4] = SamplerClampLinear;
    samplerStates[5] = SamplerClampLinear;
+   samplerStates[6] = SamplerWrapPoint;   // Random Direction Map
 };

@@ -115,7 +115,7 @@ function createAndConnectToLocalServer( %serverType, %level )
       %mainMenuGUI = ProjectSettings.value("UI/mainMenuName");
       if (isObject( %mainMenuGUI ))
          Canvas.setContent( %mainMenuGUI );
-      
+         
       return false;
    }
    
