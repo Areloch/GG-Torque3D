@@ -1,0 +1,26 @@
+<TorsionProjectOptions>
+<Address>127.0.0.1</Address>
+<Password>password</Password>
+<Port>6060</Port>
+<LastConfig>Release</LastConfig>
+<Breakpoints/>
+<Bookmarks/>
+<OpenFiles>
+<File ScrollX="0" ScrollY="191">data\ui\guis\mainMenu.gui</File>
+<File ScrollX="0" ScrollY="0">data\ui\guis\mainMenu.cs</File>
+<File ScrollX="0" ScrollY="24">data\ui\UI.cs</File>
+<File ScrollX="0" ScrollY="27">tools\assetBrowser\scripts\assetBrowser.cs</File>
+<File ScrollX="0" ScrollY="0">data\ui\scripts\profiles.cs</File>
+<File ScrollX="0" ScrollY="0">data\ui\scripts\assetLibrary.cs</File>
+<File ScrollX="0" ScrollY="24" Active="true">data\ui\scripts\projectLibrary.cs</File>
+<File ScrollX="0" ScrollY="141">tools\assetBrowser\scripts\assetImportConfig.cs</File>
+<File ScrollX="0" ScrollY="78">tools\assetBrowser\guis\assetImport.gui</File>
+<File ScrollX="0" ScrollY="207">tools\assetBrowser\guis\newAsset.gui</File>
+<File ScrollX="0" ScrollY="0">tools\assetBrowser\scripts\fieldTypes.cs</File>
+<File ScrollX="0" ScrollY="164">tools\gui\EditorSettingsWindow.ed.gui</File>
+<File ScrollX="0" ScrollY="723">tools\gui\profiles.ed.cs</File>
+<File ScrollX="0" ScrollY="41">data\ui\scripts\profiles2.cs</File>
+<File ScrollX="0" ScrollY="111">data\ui\scripts\fieldTypes.cs</File>
+<File ScrollX="0" ScrollY="0">data\ui\scripts\buildManagement.cs</File>
+</OpenFiles>
+</TorsionProjectOptions>

@@ -431,3 +431,21 @@ U32 KeyMapSDL::getSDLScanCodeFromTorque(U32 torque)
 
    return T3D_SDL[torque];
 }
+
+#ifdef TORQUE_TOOLS
+DefineEngineFunction(systemCommand, S32, (const char* commandLineAction, const char* callBackFunction), , "", "")
+{
+   if (commandLineAction != "")
+   {
+      S32 result = system(commandLineAction);
+
+      if (callBackFunction != "" && callBackFunction[0])
+      {
+         if (Con::isFunction(callBackFunction))
+            Con::executef(callBackFunction, result);
+      }
+   }
+
+   return -1;
+}
+#endif
