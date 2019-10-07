@@ -37,14 +37,32 @@
 	 Component* staticComponentTemplate = new ComponentType; \
      Sim::gNativeComponentSet->addObject(staticComponentTemplate);
 
-typedef class componentObj
+typedef class componentObjPrecursor
+{
+public:
+   int precursorId;
+
+   componentObjPrecursor() : precursorId(0)
+   {
+   }
+   
+   componentObjPrecursor(int _pcid)
+   {
+      precursorId =_pcid;
+   }
+   
+} componentObjPrecursor;
+
+typedef class componentObj : componentObjPrecursor
 {
 public:
    Vector<ComponentField> fields;
    int id;
 
    componentObj(int _id)
-   {}
+   {
+      id = _id;
+   }
    
 } componentObj;
 
@@ -53,11 +71,24 @@ void doAdo()
    ecs_world_t* world = ecs_init_w_args(0, nullptr);
 
    ECS_COMPONENT(world, componentObj);
+   ECS_COMPONENT(world, componentObjPrecursor);
 
    ecs_entity_t e = ecs_new(world, componentObj);
    ecs_set(world, e, componentObj, (0));
+   
+   componentObj comp = ecs_get(world, e, componentObj);
+   
+   bool has = ecs_has(world, e, componentObj);
+   bool hasPrecursor = ecs_has(world, e, componentObjPrecursor);
+   
+   componentObj* c_base = static_cast<componentObj*>(ecs_get_ptr(world, e, componentObj));
+   componentObjPrecursor* p_base = static_cast<componentObjPrecursor*>(ecs_get_ptr(world, e, componentObj));
+   
+   ecs_set(world, e, componentObj, (10));
+   
+   componentObj compB = ecs_get(world, e, componentObj);
 
-   ecs_run(world, EGravityComputeForce, 0, &param);
+   vool asdfasfh = true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -759,4 +790,12 @@ DefineEngineMethod(Component, setDirty, void, (),,
    "@return Returns a string representing the description of this field\n")
 {
    object->setMaskBits(Component::OwnerMask);
+}
+
+DefineEngineFunction(testFLECS, void, (),,
+   "@brief Gets a field description by index\n"
+   "@param index The index of the behavior\n"
+   "@return Returns a string representing the description of this field\n")
+{
+   doAdo();
 }
