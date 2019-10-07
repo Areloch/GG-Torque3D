@@ -41,6 +41,8 @@
 #include "T3D/assets/ComponentAsset.h"
 #endif
 
+#include "T3D/components/flecs/include/flecs.h"
+
 class Entity;
 class Namespace;
 

@@ -37,6 +37,29 @@
 	 Component* staticComponentTemplate = new ComponentType; \
      Sim::gNativeComponentSet->addObject(staticComponentTemplate);
 
+typedef class componentObj
+{
+public:
+   Vector<ComponentField> fields;
+   int id;
+
+   componentObj(int _id)
+   {}
+   
+} componentObj;
+
+void doAdo()
+{
+   ecs_world_t* world = ecs_init_w_args(0, nullptr);
+
+   ECS_COMPONENT(world, componentObj);
+
+   ecs_entity_t e = ecs_new(world, componentObj);
+   ecs_set(world, e, componentObj, (0));
+
+   ecs_run(world, EGravityComputeForce, 0, &param);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor/Destructor
 //////////////////////////////////////////////////////////////////////////
