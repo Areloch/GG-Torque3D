@@ -6,7 +6,6 @@
 //else.
 function ExampleModule::onCreate(%this)
 {
-
 }
 
 //Similar to the create function, this is defined in thye module file, and called 
@@ -51,7 +50,7 @@ function ExampleModule::onCreateGameServer(%this)
    //onServerCreated(), it loads the datablocks via this array, and when when the server goes
    //to pass data to the client, it iterates over this list and processes it, ensuring all datablocks
    //are the most up to date possible for transmission to the connecting client
-   %this.registerDatablock("./datablocks/ExampleDatablock.cs");
+   //%this.registerDatablock("./datablocks/ExampleDatablock.cs");
 }
 
 //This is called when a game session server is destroyed, when the game shuts down. It's called from
@@ -69,6 +68,10 @@ function ExampleModule::onDestroyGameServer(%this)
 //and the like
 function ExampleModule::initClient(%this)
 {
+   AssetDatabase.acquireAsset("ExampleModule:exampleDatablock");
+   AssetDatabase.acquireAsset("ExampleModule:examplePostEffect");
+   AssetDatabase.acquireAsset("ExampleModule:exampleGUI");
+   
    //client scripts
    //Here, we exec out keybind scripts so the player is able to move when they get into a game
    exec("./scripts/default.keybinds.cs");

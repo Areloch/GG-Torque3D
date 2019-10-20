@@ -9,7 +9,9 @@ function ImportAssetConfigList::onSelect( %this, %id, %text )
    ImportAssetWindow.activeImportConfigIndex = %id;
    ImportAssetWindow.activeImportConfig = ImportAssetWindow.importConfigsList.getKey(%id);
    
-   AssetBrowser.reloadImportingFiles();
+   //If we were trying to import anything, refresh it with the new config
+   if( AssetBrowser.importingFilesArray.count() != 0)
+      AssetBrowser.reloadImportingFiles();
 }
 
 function setupImportConfigSettingsList()
@@ -45,6 +47,8 @@ function setupImportConfigSettingsList()
       ImportAssetConfigSettingsList.addNewConfigSetting("Materials/UseDiffuseSuffixOnOriginImage", "Use Diffuse Suffix for Origin Image", "bool", "", "1", "");
       ImportAssetConfigSettingsList.addNewConfigSetting("Materials/UseExistingMaterials", "Use Existing Materials", "bool", "", "1", "");
       ImportAssetConfigSettingsList.addNewConfigSetting("Materials/IgnoreMaterials", "Ignore Materials", "command", "", "", "");
+      ImportAssetConfigSettingsList.addNewConfigSetting("Materials/AlwaysPresentImageMaps", "Always Present Image Maps", "bool", 
+                                                         "Wether to always display all normal material map fields, even if an image isn't detected.", "", "");
       
       //Animations
       ImportAssetConfigSettingsList.addNewConfigSetting("Animations/ImportAnimations", "Import Animations", "bool", "", "1", "");
@@ -289,6 +293,7 @@ function ImportAssetConfigEditorWindow::addNewConfig(%this)
    AssetImportSettings.setValue("Materials/CreateComposites", "1");
    AssetImportSettings.setValue("Materials/UseDiffuseSuffixOnOriginImage", "1");
    AssetImportSettings.setValue("Materials/UseExistingMaterials", "1");
+   AssetImportSettings.setValue("Materials/AlwaysPresentImageMaps", "0");
    
    //Animations
    AssetImportSettings.setValue("Animations/ImportAnimations", "1");
@@ -419,9 +424,16 @@ function ImportOptionsConfigList::changeEditorSetting(%this, %varName, %value)
    
    %configGroup = AssetImportConfigName.getText();
    
+   %oldValue = AssetImportSettings.value(%configGroup @ "/" @ %varName, %value);
+   
    AssetImportSettings.setValue(%configGroup @ "/" @ %varName, %value);
    
-   //%success = AssetImportSettings.write();
+   if(%oldValue !$= %value)
+   {
+      %scollPos = ImportAssetConfigEditorScroll.getScrollPosition();
+      ImportAssetConfigEditorWindow.populateConfigList(ImportAssetWindow.activeImportConfig); 
+      ImportAssetConfigEditorScroll.setScrollPosition(%scollPos.x, %scollPos.y);
+   }
 }
 
 function ImportOptionsConfigList::ToggleImportMesh(%this, %fieldName, %newValue, %ownerObject)

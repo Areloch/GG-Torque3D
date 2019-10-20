@@ -30,6 +30,32 @@ function initializeAssetBrowser()
 {
    echo(" % - Initializing Asset Browser");  
    
+   $AssetBrowser::importConfigsFile = "tools/assetBrowser/assetImportConfigs.xml";
+   $AssetBrowser::currentImportConfig = "";
+   
+   if(!isObject(AssetFilterTypeList))
+   {
+      new ArrayObject(AssetFilterTypeList);
+
+      AssetFilterTypeList.add("Component");
+      AssetFilterTypeList.add("Cpp");
+      AssetFilterTypeList.add("Cubemap");
+      AssetFilterTypeList.add("GameObjects");
+      AssetFilterTypeList.add("GUIs");
+      AssetFilterTypeList.add("Images");
+      AssetFilterTypeList.add("Levels");
+      AssetFilterTypeList.add("Materials");
+      AssetFilterTypeList.add("Particles");
+      AssetFilterTypeList.add("PostFXs");
+      AssetFilterTypeList.add("Scripts");
+      AssetFilterTypeList.add("Shapes");
+      AssetFilterTypeList.add("ShapeAnimations");
+      AssetFilterTypeList.add("Sounds");
+      AssetFilterTypeList.add("StateMachines");
+      AssetFilterTypeList.add("Terrains");
+      AssetFilterTypeList.add("TerrainMaterials");
+   }
+   
    exec("./guis/assetBrowser.gui");
    exec("./guis/addModuleWindow.gui");
    exec("./guis/gameObjectCreator.gui");
@@ -66,8 +92,13 @@ function initializeAssetBrowser()
    exec("./scripts/assetTypes/shapeAnimation.cs"); 
    exec("./scripts/assetTypes/sound.cs"); 
    exec("./scripts/assetTypes/stateMachine.cs");   
+   exec("./scripts/assetTypes/cubemap.cs");  
+   exec("./scripts/assetTypes/folder.cs");  
      
-   exec("./scripts/fieldTypes.cs");
+   exec("./scripts/fieldTypes/fieldTypes.cs");
+   exec("./scripts/fieldTypes/listField.cs");
+   exec("./scripts/fieldTypes/moduleDependencies.cs");
+   exec("./scripts/fieldTypes/assetDependencies.cs");
    
    new ScriptObject( AssetBrowserPlugin )
    {

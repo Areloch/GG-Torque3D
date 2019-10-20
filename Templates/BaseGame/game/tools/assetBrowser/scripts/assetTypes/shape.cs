@@ -5,8 +5,10 @@ function AssetBrowser::createShapeAsset(%this)
       
    %assetName = AssetBrowser.newAssetSettings.assetName;
    
-   %tamlpath = %modulePath @ "/shapes/" @ %assetName @ ".asset.taml";
-   %shapeFilePath = %modulePath @ "/shapes/" @ %assetName @ ".dae";
+   %assetPath = AssetBrowser.currentAddress @ "/";
+   
+   %tamlpath = %assetPath @ %assetName @ ".asset.taml";
+   %shapeFilePath = %assetPath @ %assetName @ ".dae";
    
    %asset = new ShapeAsset()
    {
@@ -114,12 +116,20 @@ function AssetBrowser::prepareImportShapeAsset(%this, %assetItem)
       }
       else
       {
-         //we need to try and find our material, since the shapeInfo wasn't able to find it automatically
-         %filePath = findImageFile(filePath(%assetItem.filePath), %matName);
-         if(%filePath !$= "" && isFile(%filePath))
-            AssetBrowser.addImportingAsset("Material", %filePath, %assetItem);
+         //check to see if it's actually just a flat color
+         if(getWordCount(%filePath) == 4 && getWord(%filePath, 0) $= "Color:")
+         {
+            AssetBrowser.addImportingAsset("Material", %matName, %assetItem);
+         }
          else
-            AssetBrowser.addImportingAsset("Material", filePath(%assetItem.filePath) @ "/" @ %matName, %assetItem);
+         {
+            //we need to try and find our material, since the shapeInfo wasn't able to find it automatically
+            %filePath = findImageFile(filePath(%assetItem.filePath), %matName);
+            if(%filePath !$= "" && isFile(%filePath))
+               AssetBrowser.addImportingAsset("Material", %filePath, %assetItem);
+            else
+               AssetBrowser.addImportingAsset("Material", filePath(%assetItem.filePath) @ "/" @ %matName, %assetItem);
+         }
       }
       
       %materialItem = %assetItem.shapeInfo.getNextSibling(%materialItem);
@@ -133,12 +143,20 @@ function AssetBrowser::prepareImportShapeAsset(%this, %assetItem)
          }
          else
          {
-            //we need to try and find our material, since the shapeInfo wasn't able to find it automatically
-            %filePath = findImageFile(filePath(%assetItem.filePath), %matName);
-            if(%filePath !$= "" && isFile(%filePath))
-               AssetBrowser.addImportingAsset("Material", %filePath, %assetItem);
+            //check to see if it's actually just a flat color
+            if(getWordCount(%filePath) == 4 && getWord(%filePath, 0) $= "Color:")
+            {
+               AssetBrowser.addImportingAsset("Material", %matName, %assetItem);
+            }
             else
-               AssetBrowser.addImportingAsset("Material", filePath(%assetItem.filePath) @ "/" @ %matName, %assetItem);
+            {
+               //we need to try and find our material, since the shapeInfo wasn't able to find it automatically
+               %filePath = findImageFile(filePath(%assetItem.filePath), %matName);
+               if(%filePath !$= "" && isFile(%filePath))
+                  AssetBrowser.addImportingAsset("Material", %filePath, %assetItem);
+               else
+                  AssetBrowser.addImportingAsset("Material", filePath(%assetItem.filePath) @ "/" @ %matName, %assetItem);
+            }
          }
             
          %materialItem = %assetItem.shapeInfo.getNextSibling(%materialItem);

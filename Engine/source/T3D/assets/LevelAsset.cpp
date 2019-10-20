@@ -87,7 +87,12 @@ LevelAsset::LevelAsset() : AssetBase(), mIsSubLevel(false)
    mLevelName = StringTable->EmptyString();
    mLevelFile = StringTable->EmptyString();
    mPreviewImage = StringTable->EmptyString();
+   mPostFXPresetFile = StringTable->EmptyString();
+   mDecalsFile = StringTable->EmptyString();
+   mForestFile = StringTable->EmptyString();
+   mNavmeshFile = StringTable->EmptyString();
 
+   mGamemodeName = StringTable->EmptyString();
    mMainLevelAsset = StringTable->EmptyString();
 }
 
@@ -114,7 +119,16 @@ void LevelAsset::initPersistFields()
    addProtectedField("PreviewImage", TypeAssetLooseFilePath, Offset(mPreviewImage, LevelAsset),
       &setPreviewImageFile, &getPreviewImageFile, "Path to the image used for selection preview.");
 
-   addField("isSubScene", TypeString, Offset(mIsSubLevel, LevelAsset), "Is this a sublevel to another Scene");
+   addProtectedField("PostFXPresetFile", TypeAssetLooseFilePath, Offset(mPostFXPresetFile, LevelAsset),
+      &setLevelFile, &getLevelFile, "Path to the level's postFXPreset.");
+   addProtectedField("DecalsFile", TypeAssetLooseFilePath, Offset(mDecalsFile, LevelAsset),
+      &setLevelFile, &getLevelFile, "Path to the decals cache file.");
+   addProtectedField("ForestFile", TypeAssetLooseFilePath, Offset(mForestFile, LevelAsset),
+      &setLevelFile, &getLevelFile, "Path to the Forest cache file.");
+   addProtectedField("NavmeshFile", TypeAssetLooseFilePath, Offset(mNavmeshFile, LevelAsset),
+      &setLevelFile, &getLevelFile, "Path to the navmesh file.");
+
+   addField("isSubScene", TypeBool, Offset(mIsSubLevel, LevelAsset), "Is this a sublevel to another Scene");
    addField("gameModeName", TypeString, Offset(mGamemodeName, LevelAsset), "Name of the Game Mode to be used with this level");
 }
 

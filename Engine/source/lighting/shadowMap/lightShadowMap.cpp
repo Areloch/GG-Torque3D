@@ -316,11 +316,10 @@ void LightShadowMap::render(RenderPassManager* renderPass,
    }
     mStaticRefreshTimer->reset();
 
-    /* TODO: find out why this is causing issue with translucent objects
+    
     if (_dynamic && (mDynamicRefreshTimer->getElapsedMs() < getLightInfo()->getDynamicRefreshFreq()))
         return;
     mDynamicRefreshTimer->reset();
-    */
 
    mDebugTarget.setTexture( NULL );
    _render( renderPass, diffuseState );
@@ -595,7 +594,7 @@ ShadowMapParams::ShadowMapParams( LightInfo *light )
    overDarkFactor.set(2000.0f, 1000.0f, 500.0f, 100.0f);
    numSplits = 4;
    logWeight = 0.91f;
-   texSize = 512;
+   texSize = 1024;
    shadowDistance = 400.0f;
    shadowSoftness = 0.15f;
    fadeStartDist = 0.0f;
@@ -655,9 +654,9 @@ void ShadowMapParams::_validate()
       // based on the split count to keep the total
       // shadow texture size within 4096.
       if ( numSplits == 2 || numSplits == 4 )
-         maxTexSize = 2048;
+         maxTexSize = 4096;
       if ( numSplits == 3 )
-         maxTexSize = 1024;
+         maxTexSize = 2048;
    }
    else
       numSplits = 1;

@@ -114,8 +114,9 @@ function AssetBrowser::setupCreateNewAsset(%this, %assetType, %moduleName, %call
    else if(%assetType $= "LevelAsset")
    {
       NewAssetPropertiesInspector.startGroup("Level");
-      NewAssetPropertiesInspector.addField("levelName", "Level Name", "String",  "Human-readable name of new level", "", "", %this.newAssetSettings);
+      NewAssetPropertiesInspector.addField("LevelName", "Level Name", "String",  "Human-readable name of new level", "", "", %this.newAssetSettings);
       NewAssetPropertiesInspector.addField("levelPreviewImage", "Level Preview Image", "Image",  "Preview Image for the level", "", "", %this.newAssetSettings);
+      
       NewAssetPropertiesInspector.endGroup();
    }
    else if(%assetType $= "ScriptAsset")
@@ -190,6 +191,18 @@ function CreateNewAsset()
       %callbackCommand = "" @ AssetBrowser_newAsset.callbackFunc @ "(\"" @ %moduleName @ ":" @ %assetName @ "\");";
       eval(%callbackCommand);
 	}
+	
+	//Update the selection to immediately jump to the new asset
+   AssetBrowser-->filterTree.clearSelection();
+   %ModuleItem = AssetBrowser-->filterTree.findItemByName(%moduleName);
+   %assetTypeId = AssetBrowser-->filterTree.findChildItemByName(%ModuleItem, %assetType);
+   
+   AssetBrowser-->filterTree.selectItem(%assetTypeId);
+   
+   %selectedItem = AssetBrowser-->filterTree.getSelectedItem();
+   AssetBrowser-->filterTree.scrollVisibleByObjectId(%selectedItem);
+   
+   AssetBrowser-->filterTree.buildVisibleTree(); 
 }
 
 function ParentComponentList::onWake(%this)
