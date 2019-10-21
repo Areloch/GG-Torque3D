@@ -1,41 +1,23 @@
 function MainMenuGui::onWake(%this)
 {
-   if (isFunction("getWebDeployment") &&
-       getWebDeployment() &&
-       isObject(%this-->ExitButton))
-      %this-->ExitButton.setVisible(false);
-      
-   MainMenuButtonContainer.hidden = false;
+   ActionsMenu.visible = false;
 }
 
-function MainMenuGui::openSinglePlayerMenu(%this)
+function openConfigMenu()
 {
-   $pref::HostMultiPlayer=false;
-   Canvas.pushDialog(ChooseLevelDlg);
-   ChooseLevelDlg.returnGui = %this; 
-   MainMenuButtonContainer.hidden = true; 
-   MainMenuAppLogo.setBitmap("data/ui/images/Torque-3D-logo");
+   ActionsMenu.visible = !ActionsMenu.visible;
 }
 
-function MainMenuGui::openMultiPlayerMenu(%this)
+function openEngineVersionsPage()
 {
-   $pref::HostMultiPlayer=true;
-   Canvas.pushDialog(ChooseLevelDlg);
-   ChooseLevelDlg.returnGui = %this; 
-   MainMenuButtonContainer.hidden = true; 
-   MainMenuAppLogo.setBitmap("data/ui/images/Torque-3D-logo");
+   ProjectsActionBar.visible = false;
+   EngineVerActionBar.visible = true;
+   loadEnginesData();
 }
 
-function MainMenuGui::openOptionsMenu(%this)
+function openProjectsPage()
 {
-   Canvas.pushDialog(OptionsMenu);
-   OptionsMenu.returnGui = %this; 
-   MainMenuButtonContainer.hidden = true; 
-   MainMenuAppLogo.setBitmap("data/ui/images/Torque-3D-logo");
-}
-
-function MainMenuGui::onReturnTo(%this)
-{
-   MainMenuButtonContainer.hidden = false;
-   MainMenuAppLogo.setBitmap("data/ui/images/Torque-3D-logo-shortcut");
+   ProjectsActionBar.visible = true;
+   EngineVerActionBar.visible = false;
+   loadProjectsData();
 }

@@ -1,9 +1,0 @@
-<ImageAsset
-    canSave="true"
-    canSaveDynamicFields="true"
-    AssetName="Uboxpil_ALBEDO"
-    imageFile="@assetFile=Uboxpil"
-    useMips="true"
-    isHDRImage="false"
-    originalFilePath="E:/Gamedev/TTR/TTRClassic/levels/Exported/Uboxpil"
-    VersionId="1" />

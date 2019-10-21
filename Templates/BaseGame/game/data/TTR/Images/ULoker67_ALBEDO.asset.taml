@@ -1,9 +1,0 @@
-<ImageAsset
-    canSave="true"
-    canSaveDynamicFields="true"
-    AssetName="ULoker67_ALBEDO"
-    imageFile="@assetFile=ULoker67"
-    useMips="true"
-    isHDRImage="false"
-    originalFilePath="E:/Gamedev/TTR/TTRClassic/levels/Exported/ULoker67"
-    VersionId="1" />

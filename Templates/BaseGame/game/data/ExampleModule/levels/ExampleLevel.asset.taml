@@ -1,8 +1,0 @@
-<LevelAsset
-    canSave="true"
-    canSaveDynamicFields="true"
-    AssetName="ExampleLevel"
-    LevelFile="ExampleLevel.mis"
-    LevelName="Example Level"
-    Description="An example level asset"
-    VersionId="1" />

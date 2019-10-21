@@ -1,9 +1,0 @@
-<ImageAsset
-    canSave="true"
-    canSaveDynamicFields="true"
-    AssetName="Grass_ALBEDO"
-    imageFile="@assetFile=Grass"
-    useMips="true"
-    isHDRImage="false"
-    originalFilePath="E:/Gamedev/TTR/TTRClassic/levels/Exported/Grass"
-    VersionId="1" />
