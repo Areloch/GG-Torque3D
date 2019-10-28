@@ -73,8 +73,8 @@ ConsoleDocClass(ReflectionProbe,
 ImplementEnumType(ReflectProbeType,
    "Type of mesh data available in a shape.\n"
    "@ingroup gameObjects")
-{ ProbeRenderInst::Sphere, "Sphere", "Sphere shaped" },
-{ ProbeRenderInst::Box, "Box", "Box shape" }
+{ ReflectionProbe::Sphere, "Sphere", "Sphere shaped" },
+{ ReflectionProbe::Box, "Box", "Box shape" }
 EndImplementEnumType;
 
 ImplementEnumType(ReflectionModeEnum,
@@ -89,11 +89,7 @@ ImplementEnumType(ReflectionModeEnum,
 //-----------------------------------------------------------------------------
 // Object setup and teardown
 //-----------------------------------------------------------------------------
-ReflectionProbe::ReflectionProbe() :
-   cubeDescId(0),
-   reflectorDesc(nullptr),
-   mSphereVertCount(0),
-   mSpherePrimitiveCount(0)
+ReflectionProbe::ReflectionProbe()
 {
    // Flag this object so that it will always
    // be sent across the network to clients
@@ -101,7 +97,7 @@ ReflectionProbe::ReflectionProbe() :
 
    mTypeMask = LightObjectType | MarkerObjectType;
 
-   mProbeShapeType = ProbeRenderInst::Box;
+   mProbeShapeType = Box;
 
    mReflectionModeType = BakedCubemap;
 
@@ -116,7 +112,6 @@ ReflectionProbe::ReflectionProbe() :
 
    mUseHDRCaptures = true;
 
-   mStaticCubemap = NULL;
    mProbeUniqueID = "";
 
    mEditorShapeInst = NULL;
@@ -129,12 +124,10 @@ ReflectionProbe::ReflectionProbe() :
 
    mResourcesCreated = false;
 
-   mProbeInfo = nullptr;
-
    mPrefilterSize = 64;
    mPrefilterMipLevels = mLog2(F32(mPrefilterSize));
-   mPrefilterMap = nullptr;
-   mIrridianceMap = nullptr;
+  //mPrefilterMap = nullptr;
+   //mIrridianceMap = nullptr;
 
    mProbeRefOffset = Point3F::Zero;
    mEditPosOffset = false;
@@ -146,9 +139,6 @@ ReflectionProbe::~ReflectionProbe()
 {
    if (mEditorShapeInst)
       SAFE_DELETE(mEditorShapeInst);
-
-   if (mReflectionModeType == StaticCubemap && mStaticCubemap)
-      mStaticCubemap->deleteObject();
 }
 
 //-----------------------------------------------------------------------------
@@ -238,7 +228,7 @@ bool ReflectionProbe::_setRadius(void *object, const char *index, const char *da
 {
    ReflectionProbe* probe = reinterpret_cast<ReflectionProbe*>(object);
 
-   if (probe->mProbeShapeType != ProbeRenderInst::Sphere)
+   if (probe->mProbeShapeType != ReflectionProbe::Sphere)
       return false;
 
    probe->mObjScale = Point3F(probe->mRadius, probe->mRadius, probe->mRadius);
@@ -296,10 +286,7 @@ bool ReflectionProbe::onAdd()
    // Refresh this object's material (if any)
    if (isClientObject())
    {
-      if (!createClientResources())
-         return false;
-
-      updateProbeParams();
+      PROBEMGR->registerProbe(this);
    }
   
    setMaskBits(-1);
@@ -311,8 +298,8 @@ void ReflectionProbe::onRemove()
 {
    if (isClientObject())
    {
-      PROBEMGR->unregisterProbe(mProbeInfo->mProbeIdx);
-      mProbeInfo = nullptr;
+      PROBEMGR->unregisterProbe(mProbeIdx);
+      //mProbeInfo = nullptr;
    }
 
    // Remove this object from the scene
@@ -461,10 +448,10 @@ void ReflectionProbe::unpackUpdate(NetConnection *conn, BitStream *stream)
 
    if (stream->readFlag())  // StaticDataMask
    {
-      U32 shapeType = ProbeRenderInst::Sphere;
+      U32 shapeType = Sphere;
       stream->read(&shapeType);
 
-      mProbeShapeType = (ProbeRenderInst::ProbeShapeType)shapeType;
+      mProbeShapeType = (ProbeShapeType)shapeType;
 
       stream->read(&mRadius);
 
@@ -478,7 +465,7 @@ void ReflectionProbe::unpackUpdate(NetConnection *conn, BitStream *stream)
       String oldCubemapName = mCubemapName;
       stream->read(&mCubemapName);
 
-      if(oldReflectModeType != mReflectionModeType || oldCubemapName != mCubemapName)
+      //if(oldReflectModeType != mReflectionModeType || oldCubemapName != mCubemapName)
          mCubemapDirty = true;
 
       mDirty = true;
@@ -502,49 +489,44 @@ void ReflectionProbe::unpackUpdate(NetConnection *conn, BitStream *stream)
 //-----------------------------------------------------------------------------
 void ReflectionProbe::updateProbeParams()
 {
-   if (!mProbeInfo)
-      return;
+   //mProbeInfo->mProbeShapeType = mProbeShapeType;
 
-   mProbeInfo->mIsEnabled = mEnabled;
-
-   mProbeInfo->mProbeShapeType = mProbeShapeType;
-
-   if (mProbeShapeType == ProbeRenderInst::Sphere)
+   if (mProbeShapeType == Sphere)
       mObjScale.set(mRadius, mRadius, mRadius);
 
    Box3F bounds;
 
-   if (mProbeShapeType == ProbeRenderInst::Skylight)
+   if (mProbeShapeType == Skylight)
    {
-      mProbeInfo->mPosition = Point3F::Zero;
-      mProbeInfo->mTransform = MatrixF::Identity;
+      //mProbeInfo->mPosition = Point3F::Zero;
+      //mProbeInfo->mTransform = MatrixF::Identity;
 
-      mProbeInfo->mIsSkylight = true;
+      //mProbeInfo->mIsSkylight = true;
 
-      F32 visDist = gClientSceneGraph->getVisibleDistance();
+      /*F32 visDist = gClientSceneGraph->getVisibleDistance();
       Box3F skylightBounds = Box3F(visDist * 2);
 
       skylightBounds.setCenter(Point3F::Zero);
 
-      bounds = skylightBounds;
+      bounds = skylightBounds;*/
 
-      setGlobalBounds();
+      //setGlobalBounds();
 
-      mProbeInfo->mScore = -1.0f;
+      //mProbeInfo->mScore = -1.0f;
    }
    else
    {
       MatrixF transform = getTransform();
-      mProbeInfo->mPosition = getPosition();
+      //mProbeInfo->mPosition = getPosition();
 
       transform.scale(getScale());
-      mProbeInfo->mTransform = transform.inverse();
+      //mProbeInfo->mTransform = transform.inverse();
 
-      mProbeInfo->mIsSkylight = false;
+      //mProbeInfo->mIsSkylight = false;
 
       bounds = mWorldBox;
 
-      mProbeInfo->mScore = mMaxDrawDistance;
+      //mProbeInfo->mScore = mMaxDrawDistance;
    }
 
    // Skip our transform... it just dirties mask bits.
@@ -552,16 +534,16 @@ void ReflectionProbe::updateProbeParams()
 
    resetWorldBox();
 
-   mProbeInfo->mBounds = bounds;
+   /*mProbeInfo->mBounds = bounds;
    mProbeInfo->mExtents = getScale();
    mProbeInfo->mRadius = mRadius;
 
    mProbeInfo->mProbeRefOffset = mProbeRefOffset;
-   mProbeInfo->mProbeRefScale = mProbeRefScale;
+   mProbeInfo->mProbeRefScale = mProbeRefScale;*/
 
-   mProbeInfo->mDirty = true;
+   //mProbeInfo->mDirty = true;
 
-   if (mCubemapDirty)
+   /*if (mCubemapDirty)
    {
       if (mReflectionModeType == StaticCubemap)
          processStaticCubemap();
@@ -569,88 +551,12 @@ void ReflectionProbe::updateProbeParams()
          processBakedCubemap();
       else
          processDynamicCubemap();
-   }
+   }*/
 
    PROBEMGR->updateProbes();
 }
 
-void ReflectionProbe::processDynamicCubemap()
-{
-   //if (!mProbeInfo)
-      return;
-
-   mEnabled = false;
-
-   if (mReflectionModeType == DynamicCubemap && !mDynamicCubemap.isNull())
-   {
-      mProbeInfo->mPrefilterCubemap = mDynamicCubemap;
-
-      //mCubeReflector.registerReflector(this, reflectorDesc); //need to decide how we wanna do the reflectorDesc. static name or a field
-   }
-
-   if (mEnabled)
-      mProbeInfo->mIsEnabled = true;
-   else
-      mProbeInfo->mIsEnabled = false;
-
-   mCubemapDirty = false;
-
-   //Update the probe manager with our new texture!
-   //if (!mProbeInfo->mIsSkylight && mProbeInfo->mPrefilterCubemap->isInitialized() && mProbeInfo->mIrradianceCubemap->isInitialized())
-   //   PROBEMGR->updateProbeTexture(mProbeInfo->mProbeIdx);
-}
-
-void ReflectionProbe::processBakedCubemap()
-{
-   if (!mProbeInfo)
-      return;
-
-   mProbeInfo->mIsEnabled = false;
-
-   if ((mReflectionModeType != BakedCubemap) || mProbeUniqueID.isEmpty())
-      return;
-
-   String irrPath = getIrradianceMapPath();
-   if (Platform::isFile(irrPath))
-   {
-      mIrridianceMap->setCubemapFile(FileName(irrPath));
-      mIrridianceMap->updateFaces();
-   }
-
-   if (mIrridianceMap == nullptr || mIrridianceMap->mCubemap.isNull())
-   {
-      Con::errorf("ReflectionProbe::processDynamicCubemap() - Unable to load baked irradiance map at %s", getIrradianceMapPath().c_str());
-      return;
-   }
-
-   String prefilPath = getPrefilterMapPath();
-   if (Platform::isFile(prefilPath))
-   {
-      mPrefilterMap->setCubemapFile(FileName(prefilPath));
-      mPrefilterMap->updateFaces();
-   }
-
-   if (mPrefilterMap == nullptr || mPrefilterMap->mCubemap.isNull())
-   {
-      Con::errorf("ReflectionProbe::processDynamicCubemap() - Unable to load baked prefilter map at %s", getPrefilterMapPath().c_str());
-      return;
-   }
-
-   mProbeInfo->mPrefilterCubemap = mPrefilterMap->mCubemap;
-   mProbeInfo->mIrradianceCubemap = mIrridianceMap->mCubemap;
-
-   if (mEnabled && mProbeInfo->mPrefilterCubemap->isInitialized() && mProbeInfo->mIrradianceCubemap->isInitialized())
-   {
-      mProbeInfo->mIsEnabled = true;
-
-      mCubemapDirty = false;
-
-      //Update the probe manager with our new texture!
-      PROBEMGR->updateProbeTexture(mProbeInfo);
-   }
-}
-
-void ReflectionProbe::processStaticCubemap()
+/*void ReflectionProbe::processStaticCubemap()
 {
    if (!mProbeInfo)
       return;
@@ -741,42 +647,7 @@ void ReflectionProbe::processStaticCubemap()
       //Update the probe manager with our new texture!
       PROBEMGR->updateProbeTexture(mProbeInfo);
    }
-}
-
-bool ReflectionProbe::createClientResources()
-{
-   if (mProbeInfo == nullptr)
-   {
-      mProbeInfo = PROBEMGR->registerProbe();
-      if (!mProbeInfo)
-         return false;
-
-      mProbeInfo->mIsEnabled = false;
-   }
-
-   //irridiance resources
-   if (!mIrridianceMap)
-   {
-      mIrridianceMap = new CubemapData();
-      mIrridianceMap->registerObject();
-
-      mIrridianceMap->createMap();
-   }
-
-   //
-   if (!mPrefilterMap)
-   {
-      mPrefilterMap = new CubemapData();
-      mPrefilterMap->registerObject();
-
-      mPrefilterMap->createMap();
-   }
-
-   mResourcesCreated = true;
-   mCubemapDirty = true;
-
-   return true;
-}
+}*/
 
 String ReflectionProbe::getPrefilterMapPath()
 {
@@ -850,11 +721,11 @@ void ReflectionProbe::prepRenderImage(SceneRenderState *state)
    F32 dist = distVec.len();
 
    //Culling distance. Can be adjusted for performance options considerations via the scalar
-   if (dist > mMaxDrawDistance * Con::getFloatVariable("$pref::GI::ProbeDrawDistScale", 1.0))
+   /*if (dist > mMaxDrawDistance * Con::getFloatVariable("$pref::GI::ProbeDrawDistScale", 1.0))
    {
       mProbeInfo->mScore = mMaxDrawDistance;
       return;
-   }
+   }*/
 
    if (mReflectionModeType == DynamicCubemap && mRefreshRateMS < (Platform::getRealMilliseconds() - mDynamicLastBakeMS))
    {
@@ -867,17 +738,17 @@ void ReflectionProbe::prepRenderImage(SceneRenderState *state)
    //RenderPassManager *renderPass = state->getRenderPass();
 
    //Update our score based on our radius, distance
-   mProbeInfo->mScore = mProbeInfo->mRadius/mMax(dist,1.0f);
+   /*mProbeInfo->mScore = mProbeInfo->mRadius/mMax(dist,1.0f);
 
    Point3F vect = distVec;
    vect.normalizeSafe();
 
-   mProbeInfo->mScore *= mMax(mAbs(mDot(vect, state->getCameraTransform().getForwardVector())),0.001f);
+   mProbeInfo->mScore *= mMax(mAbs(mDot(vect, state->getCameraTransform().getForwardVector())),0.001f);*/
 
    //Register
    //PROBEMGR->registerProbe(mProbeInfoIdx);
 
-   if (ReflectionProbe::smRenderPreviewProbes && gEditingMission && mPrefilterMap != nullptr)
+   if (ReflectionProbe::smRenderPreviewProbes && gEditingMission/* && mPrefilterMap != nullptr*/)
    {
       if(!mEditorShapeInst)
          createGeometry();
@@ -914,10 +785,10 @@ void ReflectionProbe::prepRenderImage(SceneRenderState *state)
       rdata.setSceneState(state);
       rdata.setFadeOverride(1.0f);
 
-      if(mReflectionModeType != DynamicCubemap)
+      /*if(mReflectionModeType != DynamicCubemap)
          rdata.setCubemap(mPrefilterMap->mCubemap);
       else
-         rdata.setCubemap(mDynamicCubemap);
+         rdata.setCubemap(mDynamicCubemap);*/
 
       // We might have some forward lit materials
       // so pass down a query to gather lights.
@@ -969,7 +840,7 @@ void ReflectionProbe::_onRenderViz(ObjectRenderInst *ri,
    ColorI color = ColorI(255, 0, 255, 63);
 
    const MatrixF worldToObjectXfm = mObjToWorld;
-   if (mProbeShapeType == ProbeRenderInst::Sphere)
+   if (mProbeShapeType == Sphere)
    {
       draw->drawSphere(desc, mRadius, getPosition(), color);
    }
@@ -1008,7 +879,7 @@ void ReflectionProbe::setPreviewMatParameters(SceneRenderState* renderState, Bas
    GFX->setTexture(0, deferredTexObject);
 
    //Set the cubemap
-   GFX->setCubeTexture(1, mPrefilterMap->mCubemap);
+   //GFX->setCubeTexture(1, mPrefilterMap->mCubemap);
 
    //Set the invViewMat
    MatrixSet &matrixSet = renderState->getRenderPass()->getMatrixSet();

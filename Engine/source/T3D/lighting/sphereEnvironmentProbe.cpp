@@ -77,7 +77,7 @@ ConsoleDocClass(SphereEnvironmentProbe,
 SphereEnvironmentProbe::SphereEnvironmentProbe() : ReflectionProbe()
 {
    mCaptureMask = REFLECTION_PROBE_CAPTURE_TYPEMASK;
-   mProbeShapeType = ProbeRenderInst::Sphere;
+   mProbeShapeType = Sphere;
 }
 
 SphereEnvironmentProbe::~SphereEnvironmentProbe()
@@ -139,10 +139,7 @@ void SphereEnvironmentProbe::unpackUpdate(NetConnection *conn, BitStream *stream
 
 void SphereEnvironmentProbe::updateProbeParams()
 {
-   if (!mProbeInfo)
-      return;
-
-   mProbeShapeType = ProbeRenderInst::Sphere;
+   mProbeShapeType = Sphere;
    Parent::updateProbeParams();
 }
 
@@ -151,7 +148,7 @@ void SphereEnvironmentProbe::prepRenderImage(SceneRenderState *state)
    if (!mEnabled || !ReflectionProbe::smRenderPreviewProbes)
       return;
 
-   if (ReflectionProbe::smRenderPreviewProbes && gEditingMission && mEditorShapeInst && mPrefilterMap != nullptr)
+   if (ReflectionProbe::smRenderPreviewProbes && gEditingMission && mEditorShapeInst/* && mPrefilterMap != nullptr*/)
    {
       GFXTransformSaver saver;
 

@@ -143,10 +143,7 @@ void Skylight::unpackUpdate(NetConnection *conn, BitStream *stream)
 
 void Skylight::updateProbeParams()
 {
-   if (!mProbeInfo)
-      return;
-
-   mProbeShapeType = ProbeRenderInst::Skylight;
+   mProbeShapeType = ProbeShapeType::Skylight;
    Parent::updateProbeParams();
 }
 
@@ -157,9 +154,9 @@ void Skylight::prepRenderImage(SceneRenderState *state)
 
    //special hook-in for skylights
    Point3F camPos = state->getCameraPosition();
-   mProbeInfo->mBounds.setCenter(camPos);
+   //mProbeInfo->mBounds.setCenter(camPos);
 
-   mProbeInfo->setPosition(camPos);
+   //mProbeInfo->setPosition(camPos);
 
    //Submit our probe to actually do the probe action
    // Get a handy pointer to our RenderPassmanager
@@ -167,7 +164,7 @@ void Skylight::prepRenderImage(SceneRenderState *state)
 
    //PROBEMGR->registerSkylight(mProbeInfo, this);
 
-   if (Skylight::smRenderPreviewProbes && gEditingMission && mEditorShapeInst && mPrefilterMap != nullptr)
+   if (Skylight::smRenderPreviewProbes && gEditingMission && mEditorShapeInst/* && mPrefilterMap != nullptr*/)
    {
       GFXTransformSaver saver;
 

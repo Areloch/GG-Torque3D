@@ -71,6 +71,13 @@ public:
       DynamicCubemap = 5,
    };
 
+   enum ProbeShapeType
+   {
+      Box = 0,            ///< Sphere shaped
+      Sphere = 1,         ///< Box-based shape
+      Skylight = 2
+   };
+
 protected:
 
    // Networking masks
@@ -98,25 +105,23 @@ protected:
    //--------------------------------------------------------------------------
    // Rendering variables
    //--------------------------------------------------------------------------
-   ProbeRenderInst::ProbeShapeType mProbeShapeType;
-
-   ProbeRenderInst* mProbeInfo;
+   ProbeShapeType mProbeShapeType;
 
    //Reflection Contribution stuff
    ReflectionModeType mReflectionModeType;
 
+   U32 mProbeIdx;
+   U32 mCubemapIndex;
+
+   F32 mScore;
+
    F32 mRadius;
+   F32 mAtten;
    Point3F mProbeRefOffset;
    Point3F mProbeRefScale;
    bool mEditPosOffset;
 
    String mCubemapName;
-   CubemapData *mStaticCubemap;
-   GFXCubemapHandle  mDynamicCubemap;
-
-   String cubeDescName;
-   U32 cubeDescId;
-   ReflectorDesc *reflectorDesc;
 
    //Utilized in dynamic reflections
    //CubeReflector mCubeReflector;
@@ -124,26 +129,10 @@ protected:
    ///Prevents us from saving out the cubemaps(for now) but allows us the full HDR range on the in-memory cubemap captures
    bool mUseHDRCaptures;
 
-   //irridiance resources
-   CubemapData *mIrridianceMap;
-
-   //prefilter resources
-   CubemapData *mPrefilterMap;
    U32 mPrefilterMipLevels;
    U32 mPrefilterSize;
 
    String mProbeUniqueID;
-
-   // Define our vertex format here so we don't have to
-   // change it in multiple spots later
-   typedef GFXVertexPNTTB VertexType;
-
-   // The GFX vertex and primitive buffers
-   GFXVertexBufferHandle< VertexType > mVertexBuffer;
-   GFXPrimitiveBufferHandle            mPrimitiveBuffer;
-
-   U32 mSphereVertCount;
-   U32 mSpherePrimitiveCount;
 
    //Debug rendering
    static bool smRenderPreviewProbes;
@@ -195,6 +184,8 @@ public:
    virtual void setScale(const VectorF &scale);
    virtual const VectorF& getScale() const;
 
+   F32 getScore() { return mScore; }
+
    virtual bool writeField(StringTableEntry fieldname, const char *value);
 
    // This function handles sending the relevant data from the server
@@ -218,12 +209,6 @@ public:
 
    virtual void updateProbeParams();
 
-   bool createClientResources();
-
-   void processDynamicCubemap();
-   void processBakedCubemap();
-   void processStaticCubemap();
-
    // This is the function that allows this object to submit itself for rendering
    void prepRenderImage(SceneRenderState *state);
 
@@ -239,7 +224,7 @@ public:
    void bake();
 };
 
-typedef ProbeRenderInst::ProbeShapeType ReflectProbeType;
+typedef ReflectionProbe::ProbeShapeType ReflectProbeType;
 DefineEnumType(ReflectProbeType);
 
 typedef ReflectionProbe::ReflectionModeType ReflectionModeEnum;

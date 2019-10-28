@@ -25,13 +25,13 @@
 
 #include "shaderGen/HLSL/shaderFeatureHLSL.h"
 #include "shaderGen/HLSL/bumpHLSL.h"
-#include "shaderGen/HLSL/pixSpecularHLSL.h"
 
-// Specular Outputs
-class DeferredSpecMapHLSL : public ShaderFeatureHLSL
+class PBRConfigMapHLSL : public ShaderFeatureHLSL
 {
 public:
-   virtual String getName() { return "Deferred Shading: Specular Map"; }
+   virtual String getName() { return "Deferred Shading: PBR Config Map"; }
+
+   virtual U32 getOutputTargets(const MaterialFeatureData& fd) const;
 
    virtual void processPix( Vector<ShaderComponent*> &componentList, 
       const MaterialFeatureData &fd );
@@ -48,26 +48,26 @@ public:
                              const MaterialFeatureData &fd );
 };
 
-class DeferredMatInfoFlagsHLSL : public ShaderFeatureHLSL
+class MatInfoFlagsHLSL : public ShaderFeatureHLSL
 {
 public:
    virtual String getName() { return "Deferred Shading: Mat Info Flags"; }
 
    virtual void processPix( Vector<ShaderComponent*> &componentList, 
       const MaterialFeatureData &fd );
-   
-   virtual U32 getOutputTargets( const MaterialFeatureData &fd ) const { return ShaderFeature::RenderTarget2; }
+
+   virtual U32 getOutputTargets(const MaterialFeatureData& fd) const;
 };
 
-class DeferredSpecVarsHLSL : public ShaderFeatureHLSL
+class PBRConfigVarsHLSL : public ShaderFeatureHLSL
 {
 public:
-   virtual String getName() { return "Deferred Shading: Specular Explicit Numbers"; }
+   virtual String getName() { return "Deferred Shading: PBR Config Explicit Numbers"; }
+
+   virtual U32 getOutputTargets(const MaterialFeatureData& fd) const;
 
    virtual void processPix( Vector<ShaderComponent*> &componentList, 
       const MaterialFeatureData &fd );
-   
-   virtual U32 getOutputTargets( const MaterialFeatureData &fd ) const { return ShaderFeature::RenderTarget2; }
 };
 
 class DeferredEmissiveHLSL : public ShaderFeatureHLSL
@@ -82,3 +82,4 @@ public:
 };
 
 #endif
+

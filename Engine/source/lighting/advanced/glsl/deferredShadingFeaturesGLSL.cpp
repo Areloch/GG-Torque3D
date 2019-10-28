@@ -36,9 +36,7 @@
 // Deferred Shading Features
 //****************************************************************************
 
-// Specular Map -> Blue of Material Buffer ( greyscaled )
-// Gloss Map (Alpha Channel of Specular Map) -> Alpha ( Spec Power ) of Material Info Buffer.
-void DeferredSpecMapGLSL::processPix( Vector<ShaderComponent*> &componentList, const MaterialFeatureData &fd )
+void PBRConfigMapGLSL::processPix( Vector<ShaderComponent*> &componentList, const MaterialFeatureData &fd )
 {
    // Get the texture coord.
    Var *texCoord = getInTexCoord( "texCoord", "vec2", componentList );
@@ -56,13 +54,13 @@ void DeferredSpecMapGLSL::processPix( Vector<ShaderComponent*> &componentList, c
    }
 
    // create texture var
-   Var *specularMap = new Var;
-   specularMap->setType( "sampler2D" );
-   specularMap->setName( "specularMap" );
-   specularMap->uniform = true;
-   specularMap->sampler = true;
-   specularMap->constNum = Var::getTexUnitNum();
-   LangElement *texOp = new GenOp( "tex2D(@, @)", specularMap, texCoord );
+   Var *pbrConfigMap = new Var;
+   pbrConfigMap->setType( "sampler2D" );
+   pbrConfigMap->setName( "pbrConfigMap" );
+   pbrConfigMap->uniform = true;
+   pbrConfigMap->sampler = true;
+   pbrConfigMap->constNum = Var::getTexUnitNum();
+   LangElement *texOp = new GenOp( "tex2D(@, @)", pbrConfigMap, texCoord );
 
    Var *pbrConfig = (Var*)LangElement::find("PBRConfig");
    if (!pbrConfig) pbrConfig = new Var("PBRConfig", "vec4");
@@ -83,7 +81,7 @@ void DeferredSpecMapGLSL::processPix( Vector<ShaderComponent*> &componentList, c
    output = meta;
 }
 
-ShaderFeature::Resources DeferredSpecMapGLSL::getResources( const MaterialFeatureData &fd )
+ShaderFeature::Resources PBRConfigMapGLSL::getResources( const MaterialFeatureData &fd )
 {
    Resources res; 
    res.numTex = 1;
@@ -92,21 +90,21 @@ ShaderFeature::Resources DeferredSpecMapGLSL::getResources( const MaterialFeatur
    return res;
 }
 
-void DeferredSpecMapGLSL::setTexData(   Material::StageData &stageDat,
+void PBRConfigMapGLSL::setTexData(   Material::StageData &stageDat,
                                        const MaterialFeatureData &fd,
                                        RenderPassData &passData,
                                        U32 &texIndex )
 {
-   GFXTextureObject *tex = stageDat.getTex( MFT_SpecularMap );
+   GFXTextureObject *tex = stageDat.getTex(MFT_PBRConfigMap);
    if ( tex )
    {
       passData.mTexType[ texIndex ] = Material::Standard;
-      passData.mSamplerNames[ texIndex ] = "specularMap";
+      passData.mSamplerNames[ texIndex ] = "pbrConfigMap";
       passData.mTexSlot[ texIndex++ ].texObject = tex;
    }
 }
 
-void DeferredSpecMapGLSL::processVert( Vector<ShaderComponent*> &componentList, 
+void PBRConfigMapGLSL::processVert( Vector<ShaderComponent*> &componentList,
                                        const MaterialFeatureData &fd )
 {
    MultiLine *meta = new MultiLine;
@@ -119,7 +117,7 @@ void DeferredSpecMapGLSL::processVert( Vector<ShaderComponent*> &componentList,
 }
 
 // Material Info Flags -> Red ( Flags ) of Material Info Buffer.
-void DeferredMatInfoFlagsGLSL::processPix( Vector<ShaderComponent*> &componentList, const MaterialFeatureData &fd )
+void MatInfoFlagsGLSL::processPix( Vector<ShaderComponent*> &componentList, const MaterialFeatureData &fd )
 {
 	MultiLine *meta = new MultiLine;
 
@@ -146,7 +144,7 @@ void DeferredMatInfoFlagsGLSL::processPix( Vector<ShaderComponent*> &componentLi
 
 // Spec Strength -> Blue Channel of Material Info Buffer.
 // Spec Power -> Alpha Channel ( of Material Info Buffer.
-void DeferredSpecVarsGLSL::processPix( Vector<ShaderComponent*> &componentList, const MaterialFeatureData &fd )
+void PBRConfigVarsGLSL::processPix( Vector<ShaderComponent*> &componentList, const MaterialFeatureData &fd )
 {
 
    // search for material var
