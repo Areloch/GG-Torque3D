@@ -63,7 +63,7 @@ ConsoleDocClass( LightBase,
 LightBase::LightBase()
    :  mIsEnabled( true ),
       mColor( LinearColorF::WHITE ),
-      mBrightness( 1.0f ),
+      mBrightness( 5000.0f ),
       mCastShadows( false ),
       mStaticRefreshFreq( 250 ),
       mDynamicRefreshFreq( 8 ),
@@ -96,7 +96,7 @@ void LightBase::initPersistFields()
       
       addField( "isEnabled", TypeBool, Offset( mIsEnabled, LightBase ), "Enables/Disables the object rendering and functionality in the scene." );
       addField( "color", TypeColorF, Offset( mColor, LightBase ), "Changes the base color hue of the light." );
-      addField( "brightness", TypeF32, Offset( mBrightness, LightBase ), "Adjusts the lights power, 0 being off completely." );      
+      addField( "brightness", TypeF32, Offset( mBrightness, LightBase ), "Adjusts the lights power, 0 being off completely. Local lights are in lumens" );      
       addField( "castShadows", TypeBool, Offset( mCastShadows, LightBase ), "Enables/disabled shadow casts by this light." );
       addField( "staticRefreshFreq", TypeS32, Offset( mStaticRefreshFreq, LightBase ), "static shadow refresh rate (milliseconds)" );
       addField( "dynamicRefreshFreq", TypeS32, Offset( mDynamicRefreshFreq, LightBase ), "dynamic shadow refresh rate (milliseconds)");

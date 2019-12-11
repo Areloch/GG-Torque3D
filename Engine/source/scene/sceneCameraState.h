@@ -63,6 +63,19 @@ class SceneCameraState
       /// Internal constructor.
       SceneCameraState() {}
 
+      //'pure' data
+      MatrixF mView;
+      MatrixF mProj;
+      MatrixF mViewInv;
+      MatrixF mProjInv;
+
+      F32 mFOV;
+
+      F32 mAperture;
+      F32 mShutterSpeed;
+      F32 mSensitivity;
+
+      F32 mExposure;
    public:
 
       /// Freeze the given viewing state.
@@ -102,6 +115,47 @@ class SceneCameraState
 
       /// Return the projection transform.
       const MatrixF& getProjectionMatrix() const { return mProjectionMatrix; }
+
+      inline void setPhysicalProperties(F32 aperture, F32 shutterSpeed, F32 sensitivity)
+      {
+         mAperture = aperture;
+         mShutterSpeed = shutterSpeed;
+         mSensitivity = sensitivity;
+
+         F32 ev100 = mLog2((aperture * aperture) / shutterSpeed * 100.0 / sensitivity);
+         mExposure = 1.0 / (mPow(2.0f, ev100) * 1.2);
+      }
+
+      inline void setRawCameraMatrix(const MatrixF& mat)
+      {
+         mView = mat;
+
+         MatrixF temp = mat;
+         mViewInv = temp.inverse();
+      }
+
+      inline void setRawProjectionMatrix(const MatrixF& mat)
+      {
+         mProj = mat;
+
+         MatrixF temp = mat;
+         mProjInv = temp.inverse();
+      }
+
+      inline void setCameraFOV(const F32& fov) { mFOV = fov; }
+
+      const MatrixF& getRawCameraMatrix() const { return mView; }
+      const MatrixF& getRawCameraInvMatrix() const { return mViewInv; }
+
+      const MatrixF& getRawProjectionMatrix() const { return mProj; }
+      const MatrixF& getRawProjectionInvMatrix() const { return mProjInv; }
+
+      const F32& getCameraFOV() const { return mFOV; }
+
+      const F32& getCameraExposure() const { return mExposure; }
+      const F32& getCameraAperture() const { return mAperture; }
+      const F32& getCameraShutterSpeed() const { return mShutterSpeed; }
+      const F32& getCameraSensitivity() const { return mSensitivity; }
 };
 
 #endif // !_SCENECAMERASTATE_H_

@@ -62,7 +62,7 @@ Sun::Sun()
 
    mLightColor.set(0.7f, 0.7f, 0.7f);
    mLightAmbient.set(0.3f, 0.3f, 0.3f);
-   mBrightness = 1.0f;
+   mBrightness = 12000.0f;
    mSunAzimuth = 0.0f;
    mSunElevation = 35.0f;
    mCastShadows = true;
@@ -162,7 +162,7 @@ void Sun::initPersistFields()
          "in direct contact with light source, such as in the shadows or interiors.");       
 
       addField( "brightness", TypeF32, Offset( mBrightness, Sun ), 
-         "Adjust the Sun's global contrast/intensity");      
+         "Adjust the Sun's global contrast/intensity in lux");      
 
       addField( "castShadows", TypeBool, Offset( mCastShadows, Sun ), 
          "Enables/disables shadows cast by objects due to Sun light");    

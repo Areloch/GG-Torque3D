@@ -695,8 +695,10 @@ void AdvancedLightBinManager::LightMaterialInfo::setLightParameters( const Light
 {
    MaterialParameters *matParams = matInstance->getMaterialParameters();
 
+   F32 exposure = renderState->getActiveCameraState().getCameraExposure();
+
    matParams->setSafe( lightColor, lightInfo->getColor() );
-   matParams->setSafe( lightBrightness, lightInfo->getBrightness() );
+   matParams->setSafe( lightBrightness, lightInfo->getBrightness() * exposure);
 
    switch( lightInfo->getType() )
    {

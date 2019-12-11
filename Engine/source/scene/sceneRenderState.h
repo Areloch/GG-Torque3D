@@ -109,6 +109,8 @@ class SceneRenderState
       /// If true (default) non-lightmapped meshes should be rendered.
       bool mRenderNonLightmappedMeshes;
 
+      SceneCameraState mActiveCameraState;
+
    public:
 
       /// Construct a new SceneRenderState.
@@ -329,6 +331,8 @@ class SceneRenderState
       const MatDelegate& getMaterialDelegate() const { return mMatDelegate; }
 
       /// @}
+
+      const SceneCameraState& getActiveCameraState() const { return mActiveCameraState; }
 };
 
 #endif // _SCENERENDERSTATE_H_

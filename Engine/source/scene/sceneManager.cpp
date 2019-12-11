@@ -152,6 +152,17 @@ SceneManager::~SceneManager()
 void SceneManager::renderScene( ScenePassType passType, U32 objectMask )
 {
    SceneCameraState cameraState = SceneCameraState::fromGFX();
+
+   //Peel our active camera data
+   GameConnection* connection = GameConnection::getConnectionToServer();
+
+   cameraState.setCameraFOV(connection->getControlObject()->getCameraFov());
+
+   F32 aperture = 16;
+   F32 shutterSpeed = 1 / 125.f;
+   F32 sensitivity = 100;
+
+   cameraState.setPhysicalProperties(aperture, shutterSpeed, sensitivity);
    
    // Handle frustum locking.
 
