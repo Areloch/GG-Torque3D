@@ -463,6 +463,25 @@ private:
      void clearMouseButtonDown(void) { mMouseButtonDown = false; }
      void setConsumeLastInputEvent(bool flag) { mConsumeLastInputEvent = flag; }
      bool getLastCursorPoint(Point2I& pt) const { pt = mLastCursorPt; return mLastCursorEnabled; }
+
+
+     void updateFences()
+     {
+        if (mNumFences > 0)
+        {
+           // Issue next fence
+           mFences[mNextFenceIdx]->issue();
+
+           mNextFenceIdx++;
+
+           // Wrap the next fence around to first if we're maxxed
+           if (mNextFenceIdx >= mNumFences)
+              mNextFenceIdx = 0;
+
+           // Block on previous fence
+           mFences[mNextFenceIdx]->block();
+        }
+     }
 };
 
 #endif

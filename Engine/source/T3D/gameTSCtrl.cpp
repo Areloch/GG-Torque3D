@@ -27,6 +27,7 @@
 #include "T3D/shapeBase.h"
 #include "T3D/gameFunctions.h"
 #include "console/engineAPI.h"
+#include "gfx/gfxDrawUtil.h"
 
 //---------------------------------------------------------------------------
 // Debug stuff:
@@ -68,7 +69,25 @@ bool GameTSCtrl::processCameraQuery(CameraQuery *camq)
 //---------------------------------------------------------------------------
 void GameTSCtrl::renderWorld(const RectI &updateRect)
 {
+   Point2I resolution = getExtent();
+
+   if (resolution.x == 0 || resolution.y == 0)
+      return;
+
+   resolution = Point2I(resolution.x * 0.5, resolution.y * 0.5);
+
+   if (mRenderTarget.isNull())
+   {
+      mRenderTarget = GFX->allocRenderToTextureTarget();
+   }
+
+   mRenderTex.set(resolution.x, resolution.y, GFXFormatR8G8B8A8, &GFXRenderTargetProfile, "");
+
+   mRenderTarget->attachTexture(GFXTextureTarget::Color0, mRenderTex);
+
    GameRenderWorld();
+
+   //renderFrame(&mRenderTarget);
 }
 
 //---------------------------------------------------------------------------
@@ -168,6 +187,19 @@ void GameTSCtrl::onRender(Point2I offset, const RectI &updateRect)
 
    if(!skipRender || true)
       Parent::onRender(offset, updateRect);
+
+   GFXDrawUtil* drawer = GFX->getDrawUtil();
+
+   RectI boundsRect(offset, getExtent());
+
+   //Draw backdrop
+   GFX->getDrawUtil()->drawRectFill(boundsRect, ColorI::BLACK);
+
+   if (mRenderTex.isValid())
+   {
+      RectI srcRect = RectI(Point2I::Zero, mRenderTex.getWidthHeight());
+      drawer->drawBitmapStretchSR(mRenderTex, boundsRect, srcRect);
+   }
 }
 
 //--------------------------------------------------------------------------

@@ -1820,7 +1820,7 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
    mLastCursorPt = cursorPos;
 
    // Begin GFX
-   PROFILE_START(GFXBeginScene);
+   /*PROFILE_START(GFXBeginScene);
 
    bool beginSceneRes = GFX->beginScene();
 
@@ -1868,7 +1868,7 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
    // If we're taking a screenshot then let it have
    // a chance at altering the view matrix.
    if ( gScreenShot && gScreenShot->isPending() )
-      gScreenShot->tileGui( size );
+      gScreenShot->tileGui( size );*/
 
    RectI updateUnion;
    buildUpdateUnion(&updateUnion);
@@ -1973,9 +1973,9 @@ void GuiCanvas::renderFrame(bool preRenderOnly, bool bufferSwap /* = true */)
       mFences[mNextFenceIdx]->block();
    }
 
-   PROFILE_START(GFXEndScene);
-   GFX->endScene();
-   PROFILE_END();
+   //PROFILE_START(GFXEndScene);
+   //GFX->endScene();
+   //PROFILE_END();
    
    GFX->getDeviceEventSignal().trigger( GFXDevice::dePostFrame );
    swapBuffers();

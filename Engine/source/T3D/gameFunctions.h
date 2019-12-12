@@ -48,6 +48,8 @@ void GameRenderWorld();
 
 /// Does a full, top-to-bottom call to render a frame. This does all the setup to make a render happen
 /// Allowing setting of a intended render target, a view transform, the view frustum, resolution, objects-to-render typemask, and the clear color
+void renderFrame(GFXTextureTargetRef* target);
+
 void renderFrame(GFXTextureTargetRef* target, MatrixF transform, Frustum frustum, U32 typeMask, ColorI canvasClearColor);
 
 /// Renders overlays such as damage flashes, white outs, and water masks.  

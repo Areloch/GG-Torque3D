@@ -96,7 +96,7 @@ RenderGlowMgr::RenderGlowMgr()
    mParticleRenderMgr = NULL;
 
    mNamedTarget.registerWithName( "glowbuffer" );
-   mTargetSizeType = WindowSize;
+   mTargetSizeType = WindowSizeScaled;
 }
 
 RenderGlowMgr::~RenderGlowMgr()

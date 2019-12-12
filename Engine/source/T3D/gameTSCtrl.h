@@ -41,6 +41,9 @@ private:
 
    void makeScriptCall(const char *func, const GuiEvent &evt) const;
 
+   GFXTextureTargetRef mRenderTarget;
+   GFXTexHandle mRenderTex;
+
 public:
    GameTSCtrl();
 

@@ -437,6 +437,16 @@ void GameRenderWorld()
 //================================================================================================
 //Render a full frame from a given transform and frustum, and render out to a target
 //================================================================================================
+void renderFrame(GFXTextureTargetRef* target)
+{
+   //CameraQuery camera;
+   //GameProcessCameraQuery(&camera);
+
+   Frustum mSaveFrustum = GFX->getFrustum();
+
+   renderFrame(target, GFX->getWorldMatrix(), mSaveFrustum, -1, ColorI::BLACK);
+}
+
 void renderFrame(GFXTextureTargetRef* target, MatrixF transform, Frustum frustum, U32 typeMask, ColorI canvasClearColor)
 {
    if (!GFX->allowRender() || GFX->canCurrentlyRender())
@@ -444,9 +454,12 @@ void renderFrame(GFXTextureTargetRef* target, MatrixF transform, Frustum frustum
 
    PROFILE_START(GameFunctions_RenderFrame);
 
-   GFX->setActiveRenderTarget(*target);
-   if (!GFX->getActiveRenderTarget())
-      return;
+   if (target != nullptr)
+   {
+      GFX->setActiveRenderTarget(*target);
+      if (!GFX->getActiveRenderTarget())
+         return;
+   }
 
    GFXTarget* renderTarget = GFX->getActiveRenderTarget();
    if (renderTarget == NULL)
@@ -570,14 +583,10 @@ void renderFrame(GFXTextureTargetRef* target, MatrixF transform, Frustum frustum
       // mLastCameraQuery.cameraMatrix is supposed to contain the camera-to-world
       // transform. In-place invert would save a copy but mess up any GUIs that
       // depend on that value.
-      CameraQuery camera;
-      GameProcessCameraQuery(&camera);
+      //CameraQuery camera;
+      //GameProcessCameraQuery(&camera);
 
       MatrixF worldToCamera = transform;
-
-      RotationF tranRot = RotationF(transform);
-      EulerF trf = tranRot.asEulerF(RotationF::Degrees);
-      Point3F pos = transform.getPosition();
 
       GFX->setWorldMatrix(worldToCamera);
 
@@ -599,7 +608,7 @@ void renderFrame(GFXTextureTargetRef* target, MatrixF transform, Frustum frustum
       PROFILE_START(GameFunctions_RenderFrame_RenderWorld);
       FrameAllocator::setWaterMark(0);
 
-      gClientSceneGraph->renderScene(SPT_Reflect, typeMask);
+      gClientSceneGraph->renderScene(SPT_Diffuse, typeMask);
 
       // renderScene leaves some states dirty, which causes problems if GameTSCtrl is the last Gui object rendered
       GFX->updateStates();
