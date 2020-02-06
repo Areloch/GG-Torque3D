@@ -36,7 +36,31 @@
 #include "collision/convex.h"
 #endif
 
+#include "math/util/CSG.h"
+
 class ConvexShape;
+
+class CSGManager
+{
+private:
+   Vector<ConvexShape*> brushes;
+
+   static CSGManager* smCSGManager;
+
+public:
+   static CSGManager* get()
+   {
+      if (!smCSGManager)
+         smCSGManager = new CSGManager();
+
+      return smCSGManager;
+   }
+
+   void registerConvex(ConvexShape* convex);
+   void unregisterConvex(ConvexShape* convex);
+
+   void updateBrushes();
+};
 
 // Crap name, but whatcha gonna do.
 class ConvexShapeCollisionConvex : public Convex
@@ -85,6 +109,7 @@ class ConvexShape : public SceneObject
    friend class GuiConvexEditorCtrl;
    friend class GuiConvexEditorUndoAction;
 	friend class ConvexShapeCollisionConvex;
+   friend class CSGManager;
 
 public:
 
@@ -171,12 +196,26 @@ public:
 	struct Geometry
 	{  
       void generate(const Vector< PlaneF > &planes, const Vector< Point3F > &tangents, const Vector< surfaceMaterial > surfaceTextures, const Vector< Point2F > texOffset, const Vector< Point2F > texScale, const Vector< bool > horzFlip, const Vector< bool > vertFlip);
+      void Geometry::getSurfaceVerts(U32 faceId, Vector< Point3F >* outPoints, Vector< Point2F >* outCoords, bool worldSpace, const MatrixF& worldTransform = MatrixF::Identity);
+      S32 Geometry::getFaceId(U32 surfId);
 
 		Vector< Point3F > points;      
 		Vector< Face > faces;
 	};
 
-   static bool smRenderEdges;   
+   std::vector<CSGUtils::CSGPolygon> mCSG;
+   CSGUtils::CSGModel mCSGModel;
+
+   enum BrushType
+   {
+      Add = 0,            ///< Adds geometry
+      Subtract = 1,          ///< Cuts out from add brushes
+      Detail = 2,   ///< Unaffected by CSG operations
+   };
+
+   U32 mBrushType;
+
+   static bool smRenderEdges;
 
    // To prevent bitpack overflows.
    // This is only indirectly enforced by trucation when serializing.
@@ -244,6 +283,8 @@ protected:
 
    void _updateMaterial();
    void _updateGeometry( bool updateCollision = false );
+   void _compileGeometry();
+   void _processCSG();
    void _updateCollision();
    void _export( OptimizedPolyList *plist, const Box3F &box, const SphereF &sphere );
 
@@ -296,5 +337,8 @@ protected:
    /// @}
 
 };
+
+typedef ConvexShape::BrushType ConvexBrushType;
+DefineEnumType(ConvexBrushType);
 
 #endif // _CONVEXSHAPE_H_

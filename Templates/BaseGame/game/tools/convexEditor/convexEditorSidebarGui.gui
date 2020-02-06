@@ -1,9 +1,19 @@
 //--- OBJECT WRITE BEGIN ---
-%guiContnt = new GuiControl(ConvexEditorOptions)
-{
+%guiContent = new GuiControl(ConvexEditorOptions) {
    position = "0 0";
-   extent = "800 600";
-   
+   extent = "1024 768";
+   minExtent = "8 2";
+   horizSizing = "right";
+   vertSizing = "bottom";
+   profile = "GuiDefaultProfile";
+   visible = "1";
+   active = "1";
+   tooltipProfile = "GuiToolTipProfile";
+   hovertime = "1000";
+   isContainer = "1";
+   canSave = "1";
+   canSaveDynamicFields = "1";
+
    new GuiWindowCollapseCtrl(ConvexEditorOptionsWindow) {
       text = "Properties";
       resizeWidth = "1";
@@ -21,9 +31,8 @@
       anchorBottom = "0";
       anchorLeft = "1";
       anchorRight = "0";
-      Position = Canvas.extent.x - 209
-            SPC getWord(EditorGuiToolbar.extent, 1) - 2;
-      Extent = "210 485";
+      position = "804 35";
+      extent = "210 518";
       minExtent = "210 298";
       horizSizing = "windowRelative";
       vertSizing = "windowRelative";
@@ -36,8 +45,8 @@
       internalName = "window";
       canSave = "1";
       canSaveDynamicFields = "1";
-         enabled = "1";
-         minSize = "50 50";
+         Enabled = "1";
+         MinSize = "50 50";
 
       new GuiContainer() {
          docking = "Top";
@@ -48,7 +57,7 @@
          anchorLeft = "1";
          anchorRight = "0";
          position = "4 24";
-         extent = "1432 301";
+         extent = "202 301";
          minExtent = "8 2";
          horizSizing = "width";
          vertSizing = "bottom";
@@ -84,7 +93,7 @@
             canSave = "1";
             canSaveDynamicFields = "0";
          };
-        new GuiTextCtrl() {
+         new GuiTextCtrl() {
             text = "Active Material(Click image to change)";
             maxLength = "1024";
             margin = "0 0 0 0";
@@ -112,11 +121,12 @@
             autoFitExtents = "0";
             useModifiers = "0";
             useStates = "0";
+            masked = "0";
             text = "No Surface Selected";
             groupNum = "-1";
             buttonType = "PushButton";
             useMouseEvents = "0";
-            position = "18 36";
+            position = "47 36";
             extent = "107 106";
             minExtent = "8 2";
             horizSizing = "center";
@@ -128,26 +138,26 @@
             tooltip = "Change material";
             hovertime = "1000";
             isContainer = "0";
+            internalName = "matPreviewBtn";
+            class = "ConvexEditorMaterialBtn";
             canSave = "1";
             canSaveDynamicFields = "0";
-          internalName = "matPreviewBtn";
-          class = "ConvexEditorMaterialBtn";
          };
-        new GuiControl() {
-                  position = "24 149";
-                  extent = "153 25";
-                  minExtent = "8 2";
-                  horizSizing = "center";
-                  vertSizing = "bottom";
-                  profile = "GuiDefaultProfile";
-                  visible = "1";
-                  active = "1";
-                  tooltipProfile = "GuiToolTipProfile";
-                  hovertime = "1000";
-                  isContainer = "1";
-                  canSave = "1";
-                  canSaveDynamicFields = "0";
-            
+         new GuiControl() {
+            position = "24 149";
+            extent = "153 25";
+            minExtent = "8 2";
+            horizSizing = "center";
+            vertSizing = "bottom";
+            profile = "GuiDefaultProfile";
+            visible = "1";
+            active = "1";
+            tooltipProfile = "GuiToolTipProfile";
+            hovertime = "1000";
+            isContainer = "1";
+            canSave = "1";
+            canSaveDynamicFields = "0";
+
             new GuiButtonCtrl() {
                text = "Lift";
                groupNum = "-1";
@@ -164,9 +174,9 @@
                tooltipProfile = "GuiToolTipProfile";
                hovertime = "1000";
                isContainer = "0";
+               class = "ConvexEditorMaterialLiftBtn";
                canSave = "1";
                canSaveDynamicFields = "0";
-               class = "ConvexEditorMaterialLiftBtn";
             };
             new GuiButtonCtrl() {
                text = "Apply";
@@ -184,9 +194,9 @@
                tooltipProfile = "GuiToolTipProfile";
                hovertime = "1000";
                isContainer = "0";
+               class = "ConvexEditorMaterialApplyBtn";
                canSave = "1";
                canSaveDynamicFields = "0";
-               class = "ConvexEditorMaterialApplyBtn";
             };
             new GuiButtonCtrl() {
                text = "Reset";
@@ -204,9 +214,9 @@
                tooltipProfile = "GuiToolTipProfile";
                hovertime = "1000";
                isContainer = "0";
+               class = "ConvexEditorMaterialResetBtn";
                canSave = "1";
                canSaveDynamicFields = "0";
-               class = "ConvexEditorMaterialResetBtn";
             };
          };
          new GuiTextCtrl() {
@@ -237,6 +247,7 @@
             autoFitExtents = "0";
             useModifiers = "0";
             useStates = "0";
+            masked = "0";
             text = "No Brush Selected";
             groupNum = "-1";
             buttonType = "PushButton";
@@ -253,10 +264,10 @@
             tooltip = "Change material";
             hovertime = "1000";
             isContainer = "0";
-            canSave = "1";
-            canSaveDynamicFields = "0";
             internalName = "defMatPreviewBtn";
             class = "ConvexEditorDefaultMaterialBtn";
+            canSave = "1";
+            canSaveDynamicFields = "0";
          };
       };
       new GuiContainer() {
@@ -267,8 +278,8 @@
          anchorBottom = "0";
          anchorLeft = "1";
          anchorRight = "0";
-         position = "4 199";
-         extent = "1432 303";
+         position = "4 328";
+         extent = "202 169";
          minExtent = "8 2";
          horizSizing = "width";
          vertSizing = "bottom";
@@ -305,8 +316,8 @@
             canSaveDynamicFields = "0";
          };
          new GuiControl() {
-            position = "0 26";
-            extent = "1428 282";
+            position = "0 13";
+            extent = "201 170";
             minExtent = "8 2";
             horizSizing = "relative";
             vertSizing = "relative";
@@ -425,12 +436,17 @@
                      canSave = "1";
                      canSaveDynamicFields = "0";
                   };
-                  new GuiTextEditCtrl() {
+                  new GuiTextEditSliderCtrl() {
+                     Format = "%3.2f";
+                     range = "-256 256";
+                     increment = "0.1";
+                     focusOnMouseWheel = "0";
                      historySize = "0";
                      tabComplete = "0";
                      sinkAllKeyEvents = "0";
                      password = "0";
                      passwordMask = "*";
+                     text = "0.00";
                      maxLength = "1024";
                      margin = "0 0 0 0";
                      padding = "0 0 0 0";
@@ -443,16 +459,16 @@
                      minExtent = "8 2";
                      horizSizing = "right";
                      vertSizing = "bottom";
-                     profile = "ToolsGuiTextEditProfile";
+                     profile = "ToolsGuiScrollProfile";
                      visible = "1";
                      active = "1";
                      tooltipProfile = "GuiToolTipProfile";
                      hovertime = "1000";
                      isContainer = "1";
+                     internalName = "UScale";
                      canSave = "1";
                      canSaveDynamicFields = "0";
-                 internalName = "UScale";
-                 class = "ConvexEditorUVFld";
+                     class = "ConvexEditorUVFld";
                   };
                   new GuiTextCtrl() {
                      text = "Y:";
@@ -477,12 +493,17 @@
                      canSave = "1";
                      canSaveDynamicFields = "0";
                   };
-                  new GuiTextEditCtrl() {
+                  new GuiTextEditSliderCtrl() {
+                     Format = "%3.2f";
+                     range = "-256 256";
+                     increment = "0.1";
+                     focusOnMouseWheel = "0";
                      historySize = "0";
                      tabComplete = "0";
                      sinkAllKeyEvents = "0";
                      password = "0";
                      passwordMask = "*";
+                     text = "0.00";
                      maxLength = "1024";
                      margin = "0 0 0 0";
                      padding = "0 0 0 0";
@@ -495,16 +516,16 @@
                      minExtent = "8 2";
                      horizSizing = "right";
                      vertSizing = "bottom";
-                     profile = "ToolsGuiTextEditProfile";
+                     profile = "ToolsGuiScrollProfile";
                      visible = "1";
                      active = "1";
                      tooltipProfile = "GuiToolTipProfile";
                      hovertime = "1000";
                      isContainer = "1";
+                     internalName = "VScale";
                      canSave = "1";
                      canSaveDynamicFields = "0";
-                 internalName = "VScale";
-                 class = "ConvexEditorUVFld";
+                     class = "ConvexEditorUVFld";
                   };
                };
                new GuiControl() {
@@ -568,12 +589,17 @@
                      canSave = "1";
                      canSaveDynamicFields = "0";
                   };
-                  new GuiTextEditCtrl() {
+                  new GuiTextEditSliderCtrl() {
+                     Format = "%3.2f";
+                     range = "-256 256";
+                     increment = "0.1";
+                     focusOnMouseWheel = "0";
                      historySize = "0";
                      tabComplete = "0";
                      sinkAllKeyEvents = "0";
                      password = "0";
                      passwordMask = "*";
+                     text = "0.00";
                      maxLength = "1024";
                      margin = "0 0 0 0";
                      padding = "0 0 0 0";
@@ -586,16 +612,16 @@
                      minExtent = "8 2";
                      horizSizing = "right";
                      vertSizing = "bottom";
-                     profile = "ToolsGuiTextEditProfile";
+                     profile = "ToolsGuiScrollProfile";
                      visible = "1";
                      active = "1";
                      tooltipProfile = "GuiToolTipProfile";
                      hovertime = "1000";
                      isContainer = "1";
+                     internalName = "UOffset";
                      canSave = "1";
                      canSaveDynamicFields = "0";
-                 internalName = "UOffset";
-                 class = "ConvexEditorUVFld";
+                     class = "ConvexEditorUVFld";
                   };
                   new GuiTextCtrl() {
                      text = "Y:";
@@ -620,12 +646,17 @@
                      canSave = "1";
                      canSaveDynamicFields = "0";
                   };
-                  new GuiTextEditCtrl() {
+                  new GuiTextEditSliderCtrl() {
+                     Format = "%3.2f";
+                     range = "-256 256";
+                     increment = "0.1";
+                     focusOnMouseWheel = "0";
                      historySize = "0";
                      tabComplete = "0";
                      sinkAllKeyEvents = "0";
                      password = "0";
                      passwordMask = "*";
+                     text = "0.00";
                      maxLength = "1024";
                      margin = "0 0 0 0";
                      padding = "0 0 0 0";
@@ -638,16 +669,16 @@
                      minExtent = "8 2";
                      horizSizing = "right";
                      vertSizing = "bottom";
-                     profile = "ToolsGuiTextEditProfile";
+                     profile = "ToolsGuiScrollProfile";
                      visible = "1";
                      active = "1";
                      tooltipProfile = "GuiToolTipProfile";
                      hovertime = "1000";
                      isContainer = "1";
+                     internalName = "VOffset";
                      canSave = "1";
                      canSaveDynamicFields = "0";
-                 internalName = "VOffset";
-                 class = "ConvexEditorUVFld";
+                     class = "ConvexEditorUVFld";
                   };
                };
                new GuiTextCtrl() {
@@ -673,12 +704,17 @@
                   canSave = "1";
                   canSaveDynamicFields = "0";
                };
-               new GuiTextEditCtrl() {
+               new GuiTextEditSliderCtrl() {
+                  Format = "%3.2f";
+                  range = "-256 256";
+                  increment = "0.1";
+                  focusOnMouseWheel = "0";
                   historySize = "0";
                   tabComplete = "0";
                   sinkAllKeyEvents = "0";
                   password = "0";
                   passwordMask = "*";
+                  text = "0.00";
                   maxLength = "1024";
                   margin = "0 0 0 0";
                   padding = "0 0 0 0";
@@ -691,22 +727,22 @@
                   minExtent = "8 2";
                   horizSizing = "right";
                   vertSizing = "bottom";
-                  profile = "ToolsGuiTextEditProfile";
+                  profile = "ToolsGuiScrollProfile";
                   visible = "1";
                   active = "1";
                   tooltipProfile = "GuiToolTipProfile";
                   hovertime = "1000";
                   isContainer = "1";
+                  internalName = "ZRotation";
                   canSave = "1";
                   canSaveDynamicFields = "0";
-               internalName = "ZRotation";
-               class = "ConvexEditorUVFld";
+                  class = "ConvexEditorUVFld";
                };
-            
                new GuiButtonCtrl() {
                   text = "Flip H";
                   groupNum = "-1";
                   buttonType = "PushButton";
+                  useMouseEvents = "0";
                   position = "110 97";
                   extent = "40 21";
                   minExtent = "8 2";
@@ -718,15 +754,15 @@
                   tooltipProfile = "GuiToolTipProfile";
                   hovertime = "1000";
                   isContainer = "0";
+                  class = "ConvexEditorUVHorzFlipBtn";
                   canSave = "1";
                   canSaveDynamicFields = "0";
-                  class = "ConvexEditorUVHorzFlipBtn";
                };
-               
                new GuiButtonCtrl() {
                   text = "Flip V";
                   groupNum = "-1";
                   buttonType = "PushButton";
+                  useMouseEvents = "0";
                   position = "154 97";
                   extent = "40 21";
                   minExtent = "8 2";
@@ -738,9 +774,81 @@
                   tooltipProfile = "GuiToolTipProfile";
                   hovertime = "1000";
                   isContainer = "0";
+                  class = "ConvexEditorUVVertFlipBtn";
                   canSave = "1";
                   canSaveDynamicFields = "0";
-                  class = "ConvexEditorUVVertFlipBtn";
+               };
+            };
+            new GuiContainer() {
+               margin = "0 0 0 0";
+               padding = "0 0 0 0";
+               anchorTop = "1";
+               anchorBottom = "0";
+               anchorLeft = "1";
+               anchorRight = "0";
+               position = "0 127";
+               extent = "205 36";
+               minExtent = "8 2";
+               horizSizing = "width";
+               vertSizing = "bottom";
+               profile = "GuiDefaultProfile";
+               visible = "1";
+               active = "1";
+               tooltipProfile = "GuiToolTipProfile";
+               hovertime = "1000";
+               isContainer = "1";
+               canSave = "1";
+               canSaveDynamicFields = "0";
+
+               new GuiTextCtrl() {
+                  text = "Brush Type";
+                  maxLength = "1024";
+                  margin = "0 0 0 0";
+                  padding = "0 0 0 0";
+                  anchorTop = "1";
+                  anchorBottom = "0";
+                  anchorLeft = "1";
+                  anchorRight = "0";
+                  position = "4 9";
+                  extent = "97 23";
+                  minExtent = "8 2";
+                  horizSizing = "right";
+                  vertSizing = "top";
+                  profile = "ToolsGuiTextProfile";
+                  visible = "1";
+                  active = "1";
+                  tooltipProfile = "GuiToolTipProfile";
+                  hovertime = "1000";
+                  isContainer = "1";
+                  canSave = "1";
+                  canSaveDynamicFields = "0";
+               };
+               new GuiPopUpMenuCtrlEx(ConvexBrushTypeList) {
+                  maxPopupHeight = "200";
+                  sbUsesNAColor = "0";
+                  reverseTextList = "0";
+                  bitmapBounds = "16 16";
+                  hotTrackCallback = "0";
+                  maxLength = "1024";
+                  margin = "0 0 0 0";
+                  padding = "0 0 0 0";
+                  anchorTop = "1";
+                  anchorBottom = "0";
+                  anchorLeft = "1";
+                  anchorRight = "0";
+                  position = "105 7";
+                  extent = "100 23";
+                  minExtent = "8 2";
+                  horizSizing = "right";
+                  vertSizing = "top";
+                  profile = "GuiDefaultProfile";
+                  visible = "1";
+                  active = "1";
+                  tooltipProfile = "GuiToolTipProfile";
+                  hovertime = "1000";
+                  isContainer = "1";
+                  canSave = "1";
+                  canSaveDynamicFields = "0";
                };
             };
          };

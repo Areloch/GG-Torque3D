@@ -53,6 +53,7 @@
 
 #include "T3D/Scene.h"
 
+#include "T3D/Scene.h"
 IMPLEMENT_CONOBJECT( GuiConvexEditorCtrl );
 
 ConsoleDocClass( GuiConvexEditorCtrl,
@@ -424,6 +425,8 @@ void GuiConvexEditorCtrl::on3DMouseUp(const Gui3DMouseEvent & event)
       }
    }
 
+   CSGManager::get()->updateBrushes();
+
    updateGizmoPos();   
 }
 
@@ -718,8 +721,7 @@ void GuiConvexEditorCtrl::on3DMouseDragged(const Gui3DMouseEvent & event)
          else
          {
             // Translating a face in x/y/z
-
-            translateFace( mConvexSEL, mFaceSEL, mGizmo->getTotalOffset() );
+            translateFace( mConvexSEL, mFaceSEL, mGizmo->getTotalOffset());
          }
       }
 
@@ -1057,6 +1059,17 @@ void GuiConvexEditorCtrl::renderScene(const RectI & updateRect)
 
    GFXDrawUtil *drawer = GFX->getDrawUtil();
 
+   //draw lines for subtract shapes
+   Vector<ConvexShape*> shapesList = Scene::getRootScene()->getObjectsByClass<ConvexShape>(true);
+
+   for (U32 i = 0; i < shapesList.size(); i++)
+   {
+      if (shapesList[i]->mBrushType == ConvexShape::BrushType::Subtract)
+      {
+         shapesList[i]->renderFaceEdges(-1, ColorI(212,175,55));
+      }
+   }
+
    if ( mConvexSEL && !mDragging )
    {
       if ( mFaceSEL == -1 )
@@ -1282,6 +1295,36 @@ void GuiConvexEditorCtrl::translateFace( ConvexShape *shape, S32 faceId, const P
 
       for (S32 i = 0; i < face.points.size(); i++)
       {
+         Point3F& pnt = pointList[face.points[i]];
+         faceCenter += pnt;
+      }
+
+      faceCenter /= face.points.size();
+
+      // Transform displacement into object space.    
+      MatrixF objToWorld(shape->getWorldTransform());
+      objToWorld.scale(shape->getScale());
+      objToWorld.inverse();
+
+      objToWorld.mulP(faceCenter);
+
+      modDisplace = faceCenter + displace;
+
+      if (!mIsZero(displace.x))
+         modDisplace.x = mFmod(modDisplace.x, displace.x > 0 ? mGridPlaneSize : -mGridPlaneSize);
+
+      if (!mIsZero(displace.y))
+         modDisplace.y = mFmod(modDisplace.y, displace.y > 0 ? mGridPlaneSize : -mGridPlaneSize);
+
+      if (!mIsZero(displace.z))
+         modDisplace.z = mFmod(modDisplace.z, displace.z > 0 ? mGridPlaneSize : -mGridPlaneSize);
+
+      modDisplace -= faceCenter;
+
+      /*Point3F faceCenter = Point3F::Zero;
+
+      for (S32 i = 0; i < face.points.size(); i++)
+      {
          Point3F &pnt = pointList[face.points[i]];
          faceCenter += pnt;
       }
@@ -1298,17 +1341,10 @@ void GuiConvexEditorCtrl::translateFace( ConvexShape *shape, S32 faceId, const P
       modDisplace = faceCenter + displace;
       Point3F fMod = Point3F::Zero;
 
-      if (!mIsZero(displace.x))
-         fMod.x = mFmod(modDisplace.x - (displace.x > 0 ? mGridPlaneSize : -mGridPlaneSize), mGridPlaneSize);
-
-      if (!mIsZero(displace.y))
-         fMod.y = mFmod(modDisplace.y - (displace.y > 0 ? mGridPlaneSize : -mGridPlaneSize), mGridPlaneSize);
-
-      if (!mIsZero(displace.z))
-         fMod.z = mFmod(modDisplace.z - (displace.z > 0 ? mGridPlaneSize : -mGridPlaneSize), mGridPlaneSize);
+      
 
       modDisplace -= fMod;
-      modDisplace -= faceCenter;
+      modDisplace -= faceCenter;*/
    }
 
    // Transform displacement into object space.    
@@ -2344,6 +2380,8 @@ ConvexEditorTool::EventResult ConvexEditorCreateTool::on3DMouseUp( const Gui3DMo
       mNewConvex = NULL;
 
       mEditor->mouseUnlock();
+
+      CSGManager::get()->updateBrushes();
 
       return Done;
    }
