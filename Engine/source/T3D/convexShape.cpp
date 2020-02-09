@@ -1576,6 +1576,7 @@ void ConvexShape::_compileGeometry()
    mSurfaceBuffers[0].mVertCount = 0;
    mSurfaceBuffers[0].mPrimCount = 0;
 
+   //For computing normals, we refer to: https://computergraphics.stackexchange.com/questions/4031/programmatically-generating-vertex-normals
    if (mCSGModel.vertices.size() != 0)
    {
       mSurfaceBuffers[0].mPrimCount = mCSGModel.indices.size() / 3;
@@ -1591,16 +1592,13 @@ void ConvexShape::_compileGeometry()
       {
          Point3F faceNorm;
 
-         for (int j = 0; j < 3; j++)
-         {
-            CSGUtils::CSGVertex v = mCSGModel.vertices[mCSGModel.indices[ind + j]];
+         CSGUtils::CSGVertex& a = mCSGModel.vertices[mCSGModel.indices[ind + 0]];
+         CSGUtils::CSGVertex& b = mCSGModel.vertices[mCSGModel.indices[ind + 1]];
+         CSGUtils::CSGVertex& c = mCSGModel.vertices[mCSGModel.indices[ind + 2]];
 
-            Point3F normal = Point3F(v.normal.x, v.normal.y, v.normal.z);
+         faceNorm = mCross(Point3F(b.pos.x, b.pos.y, b.pos.z) - Point3F(a.pos.x, a.pos.y, a.pos.z),
+            Point3F(c.pos.x, c.pos.y, c.pos.z) - Point3F(a.pos.x, a.pos.y, a.pos.z));
 
-            faceNorm += normal;
-         }
-
-         faceNorm /= 3;
          faceNorm.normalize();
 
          for (int j = 0; j < 3; j++)

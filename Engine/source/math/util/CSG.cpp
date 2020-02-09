@@ -282,6 +282,9 @@ namespace CSGUtils
 
       std::list<std::pair<CSGNode *, std::vector<CSGPolygon> > > builds;
       builds.push_back(std::make_pair(this, list));
+
+      U32 maxIterCount = 1000;
+      U32 iterCount = 0;
       while (builds.size())
       {
          CSGNode              *me = builds.front().first;
@@ -305,6 +308,13 @@ namespace CSGUtils
                me->back = new CSGNode;
             builds.push_back(std::make_pair(me->back, list_back));
          }
+
+         iterCount++;
+
+         //sanity check, as some ops cause it to infinite loop
+         //TODO: figure out what causes the infinite loop and fix the root issue
+         if (iterCount > maxIterCount)
+            return;
       }
    }
 
