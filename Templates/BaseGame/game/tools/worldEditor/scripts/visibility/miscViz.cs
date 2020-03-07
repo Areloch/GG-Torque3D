@@ -90,9 +90,10 @@ singleton shaderData( Viz_SurfaceProperties )
    samplerNames[0] = "deferredTex";
    samplerNames[1] = "colorBufferTex";
    samplerNames[2] = "matinfoTex";
-   samplerNames[3] = "ssaoMaskTex";
-   samplerNames[4] = "$backBuffer";
-   samplerNames[5] = "glowBuffer";
+   samplerNames[3] = "depthTex";
+   samplerNames[4] = "ssaoMaskTex";
+   samplerNames[5] = "$backBuffer";
+   samplerNames[6] = "glowBuffer";
 
    pixVersion = 2.0;
 };
@@ -104,9 +105,10 @@ singleton PostEffect( Viz_SurfacePropertiesPFX )
    texture[0] = "#deferred";
    texture[1] = "#color";
    texture[2] = "#matinfo";
-   texture[3] = "#ssaoMask";
-   texture[4] = "$backBuffer";
-   texture[5] = "#glowbuffer";
+   texture[3] = "#depth";
+   texture[4] = "#ssaoMask";
+   texture[5] = "$backBuffer";
+   texture[6] = "#glowbuffer";
    
    target = "$backBuffer";
    renderPriority = 9999;

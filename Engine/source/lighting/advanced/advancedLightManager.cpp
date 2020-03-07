@@ -121,7 +121,7 @@ void AdvancedLightManager::activate( SceneManager *sceneManager )
    // If we didn't find the deferred bin then add one.
    if (!deferredBin)
    {
-      deferredBin = new RenderDeferredMgr(true, blendTargetFormat);
+      deferredBin = new RenderDeferredMgr(true, GFXFormatR10G10B10A2);
       deferredBin->assignName("AL_DeferredBin");
       deferredBin->registerObject();
       getSceneManager()->getDefaultRenderPass()->addManager(deferredBin);

@@ -65,6 +65,10 @@ const char* ShaderFeature::getOutputTargetVarName( OutputTarget target ) const
       case RenderTarget3:
          targName = "col3";
          break;
+
+      case RenderTarget4:
+         targName = "col4";
+         break;
    }
 
    return targName;

@@ -19,47 +19,19 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
-#ifndef _ADVANCED_LIGHTBUFFER_CONDITIONER_H_
-#define _ADVANCED_LIGHTBUFFER_CONDITIONER_H_
 
-#ifndef _CONDITIONER_BASE_H_
-#include "shaderGen/conditionerFeature.h"
-#endif
+#include "../../shaderModel.hlsl"
 
-
-class AdvancedLightBufferConditioner : public ConditionerFeature
+struct ConnectData
 {
-   typedef ConditionerFeature Parent;
-
-public:
-   enum ColorFormat
-   {
-      RGB,
-      LUV
-   };
-
-public:
-
-   AdvancedLightBufferConditioner(const GFXFormat bufferFormat, const ColorFormat colorFormat) 
-      : Parent(bufferFormat), mColorFormat(colorFormat)
-   {
-
-   }
-
-   virtual ~AdvancedLightBufferConditioner();
-
-   virtual String getName()
-   {
-      return String("Light Buffer Conditioner ") + String( mColorFormat == RGB ? "[RGB]" : "[LUV]" );
-   }
-
-protected:
-   ColorFormat mColorFormat;
-
-   virtual Var *_conditionOutput( Var *unconditionedOutput, MultiLine *meta );
-   virtual Var *_unconditionInput( Var *conditionedInput, MultiLine *meta );
-   virtual Var *printMethodHeader( MethodType methodType, const String &methodName, Stream &stream, MultiLine *meta );
-   virtual void printMethodFooter( MethodType methodType, Var *retVar, Stream &stream, MultiLine *meta );
+    float4 hpos    : TORQUE_POSITION;
+    float2 uv      : TEXCOORD;
 };
 
-#endif // _ADVANCED_LIGHTBUFFER_CONDITIONER_H_
+ConnectData main( uint vertexID : SV_VertexID )
+{
+    ConnectData result;
+    result.uv = float2((vertexID << 1) & 2, vertexID & 2);
+    result.hpos = float4(result.uv * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
+    return result;
+}

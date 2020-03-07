@@ -34,13 +34,17 @@ GBufferConditionerGLSL::GBufferConditionerGLSL( const GFXFormat bufferFormat, co
       Parent( bufferFormat )
 {
    // Figure out how we should store the normal data. These are the defaults.
-   mCanWriteNegativeValues = false;
-   mNormalStorageType = CartesianXYZ;
+   //mCanWriteNegativeValues = false;
+   //mNormalStorageType = CartesianXYZ;
+
+   //GFXFormatRGB10A2
+   mCanWriteNegativeValues = true;
+   mBitsPerChannel = 10;
 
    // Note:  We clear to a depth 1 (the w component) so
    // that the unrendered parts of the scene end up 
    // farthest to the camera.
-   const NormalStorage &twoCmpNrmStorageType = ( nrmSpace == WorldSpace ? Spherical : LambertAzimuthal );
+   /*const NormalStorage &twoCmpNrmStorageType = ( nrmSpace == WorldSpace ? Spherical : LambertAzimuthal );
    switch(bufferFormat)
    {
       case GFXFormatR8G8B8A8:
@@ -70,9 +74,13 @@ GBufferConditionerGLSL::GBufferConditionerGLSL( const GFXFormat bufferFormat, co
          mBitsPerChannel = 32;
          break;
 
+      case GFXFormatR10G10B10A2:
+         
+         break;
+
       default:
          AssertFatal(false, "Unsupported G-Buffer format");
-   }
+   }*/
 }
 
 GBufferConditionerGLSL::~GBufferConditionerGLSL()

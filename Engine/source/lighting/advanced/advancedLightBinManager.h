@@ -46,7 +46,6 @@
 class AdvancedLightManager;
 class ShadowMapManager;
 class LightShadowMap;
-class AdvancedLightBufferConditioner;
 class LightMapParams;
 
 

@@ -87,6 +87,7 @@ public:
       RenderTarget1 =   1 << 1,
       RenderTarget2 =   1 << 2,
       RenderTarget3 =   1 << 3,
+      RenderTarget4 =   1 << 4,
    };
 
 protected:

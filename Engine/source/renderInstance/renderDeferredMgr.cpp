@@ -58,6 +58,7 @@ const String RenderDeferredMgr::BufferName("deferred");
 const RenderInstType RenderDeferredMgr::RIT_Deferred("Deferred");
 const String RenderDeferredMgr::ColorBufferName("color");
 const String RenderDeferredMgr::MatInfoBufferName("matinfo");
+const String RenderDeferredMgr::DepthBufferName("depth");
 
 IMPLEMENT_CONOBJECT(RenderDeferredMgr);
 
@@ -104,6 +105,7 @@ RenderDeferredMgr::RenderDeferredMgr( bool gatherDepth,
    mNamedTarget.registerWithName( BufferName );
    mColorTarget.registerWithName( ColorBufferName );
    mMatInfoTarget.registerWithName( MatInfoBufferName );
+   mDepthNamedTarget.registerWithName(DepthBufferName);
 
    _registerFeatures();
 }
@@ -114,6 +116,7 @@ RenderDeferredMgr::~RenderDeferredMgr()
 
    mColorTarget.release();
    mMatInfoTarget.release();
+   mDepthNamedTarget.release();
    _unregisterFeatures();
    SAFE_DELETE( mDeferredMatInstance );
 }
@@ -137,6 +140,7 @@ bool RenderDeferredMgr::setTargetSize(const Point2I &newTargetSize)
    mNamedTarget.setViewport( GFX->getViewport() );
    mColorTarget.setViewport( GFX->getViewport() );
    mMatInfoTarget.setViewport( GFX->getViewport() );
+   mDepthNamedTarget.setViewport(GFX->getViewport());
    return ret;
 }
 
@@ -194,6 +198,18 @@ bool RenderDeferredMgr::_updateTargets()
    {
       Con::errorf("RenderDeferredMgr: Could not find AL_FormatToken");
       return false;
+   }
+
+   if (mDepthTex.getFormat() != matInfoFormat || mDepthTex.getWidthHeight() != mTargetSize || GFX->recentlyReset())
+   {
+      mDepthNamedTarget.release();
+      mDepthTex.set(mTargetSize.x, mTargetSize.y, matInfoFormat,
+         &GFXRenderTargetProfile, avar("%s() - (line %d)", __FUNCTION__, __LINE__),
+         1, GFXTextureManager::AA_MATCH_BACKBUFFER);
+      mDepthNamedTarget.setTexture(mDepthTex);
+
+      for (U32 i = 0; i < mTargetChainLength; i++)
+         mTargetChain[i]->attachTexture(GFXTextureTarget::Color4, mDepthNamedTarget.getTexture());
    }
 
    GFX->finalizeReset();
@@ -325,6 +341,7 @@ void RenderDeferredMgr::render( SceneRenderState *state )
    GFX->clearColorAttachment(0, LinearColorF::ONE);//normdepth
    GFX->clearColorAttachment(1, LinearColorF::ZERO);//albedo
    GFX->clearColorAttachment(2, LinearColorF::ZERO);//matinfo
+   GFX->clearColorAttachment(4, LinearColorF::ZERO);//depth
    //AL_FormatToken is cleared by it's own class
 
    // Restore transforms
@@ -525,6 +542,88 @@ void RenderDeferredMgr::render( SceneRenderState *state )
 
    if(isRenderingToTarget)
       _onPostRender();
+
+   updateLinearDepth(state);
+}
+
+void RenderDeferredMgr::updateLinearDepth(SceneRenderState* state)
+{
+   GFXDEBUGEVENT_SCOPE(RenderDeferredMgr_updateLinearDepth, ColorI::RED);
+
+   ShaderData* irrShaderData;
+   if(!mDeferredShader)
+      mDeferredShader = Sim::findObject("LinearDepthShader", irrShaderData) ? irrShaderData->getShader() : NULL;
+   if (!mDeferredShader)
+   {
+      Con::errorf("IBLUtilities::GenerateIrradianceMap() - could not find IrradianceShader");
+      return;
+   }
+
+   mDepthSC = mDeferredShader->allocConstBuffer();
+
+   mDepthSCH = mDeferredShader->getShaderConstHandle("$nearFar");
+
+   GFX->pushActiveRenderTarget();
+
+   mDepthTarget = GFX->allocRenderToTextureTarget();
+
+   GFXTextureObject* mDepthBuffer = mDepthNamedTarget.getTexture(0);
+
+   GFX->setViewport(mDepthNamedTarget.getViewport());
+   GFX->clearColorAttachment(0, LinearColorF::ONE);
+
+   mDepthTarget->attachTexture(GFXTextureTarget::Color0, mDepthBuffer);
+
+   //set znear and zfar
+   const Frustum& frustum = state->getCameraFrustum();
+   F32 znear = frustum.getNearDist();
+   F32 zfar = frustum.getFarDist();
+   //set P2F znear/zfar
+   mDepthSC->setSafe(mDepthSCH, Point2F(znear, zfar));
+
+   GFXStateBlockDesc descD;
+   descD.samplers[1].addressModeU = GFXAddressClamp;
+   descD.samplers[1].addressModeV = GFXAddressClamp;
+   descD.samplers[1].addressModeW = GFXAddressClamp;
+   descD.samplers[1].magFilter = GFXTextureFilterLinear;
+   descD.samplers[1].minFilter = GFXTextureFilterLinear;
+   descD.samplers[1].mipFilter = GFXTextureFilterLinear;
+   descD.samplers[1].textureColorOp = GFXTOPModulate;
+
+   GFXStateBlock* depthSB = GFX->createStateBlock(descD);
+
+   GFX->setTexture(0, getRenderPass()->getDepthTargetTexture());
+
+   GFX->setShader(mDeferredShader);
+   GFX->setShaderConstBuffer(mDepthSC);
+   GFX->setStateBlock(depthSB);
+
+   GFX->setActiveRenderTarget(mDepthTarget);
+   //GFX->clear(GFXClearStencil | GFXClearTarget, ColorI(0, 0, 0, 0), 1.0f, 0);
+
+   GFX->setVertexBuffer(NULL);
+   GFX->drawPrimitive(GFXTriangleList, 0, 3);
+
+   mDepthTarget->resolve();
+
+   GFX->popActiveRenderTarget();
+}
+
+void RenderDeferredMgr::createLinearDepthResources()
+{
+   /*mDepthBuffer = GFXTexHandle(mWidth, mHeight, GFXFormatR16F,
+      &GFXRenderTargetProfile, avar("%s() - mDepthBuffer (line %d)", __FUNCTION__, __LINE__));
+   if (!mDepthBuffer.isValid())
+   {
+      Con::errorf("VolumetricFogRTManager Fatal Error: Unable to create Depthbuffer");
+      return false;
+   }
+   if (!mDepthTarget.registerWithName("volfogdepth"))
+   {
+      Con::errorf("VolumetricFogRTManager Fatal Error : Unable to register Depthbuffer");
+      return false;
+   }
+   mDepthTarget.setTexture(mDepthBuffer);*/
 }
 
 const GFXStateBlockDesc & RenderDeferredMgr::getOpaqueStenciWriteDesc( bool lightmappedGeometry /*= true*/ )

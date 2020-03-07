@@ -150,3 +150,14 @@ singleton ShaderData( CubemapSaveShader )
 	
    pixVersion = 3.0;
 };
+
+singleton ShaderData( LinearDepthShader )
+{
+   DXVertexShaderFile = $Core::CommonShaderPath @ "/lighting/advanced/linearDepthV.hlsl";
+   DXPixelShaderFile = $Core::CommonShaderPath @ "/lighting/advanced/linearDepthP.hlsl";
+	
+   //OGLVertexShaderFile  = $Core::CommonShaderPath @ "/VolumetricFog/gl/VFogPreV.glsl";
+   //OGLPixelShaderFile   = $Core::CommonShaderPath @ "/VolumetricFog/gl/VFogPreP.glsl";
+   
+   pixVersion = 3.0;
+};

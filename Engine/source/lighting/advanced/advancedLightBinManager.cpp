@@ -24,7 +24,6 @@
 #include "lighting/advanced/advancedLightBinManager.h"
 
 #include "lighting/advanced/advancedLightManager.h"
-#include "lighting/advanced/advancedLightBufferConditioner.h"
 #include "lighting/shadowMap/shadowMapManager.h"
 #include "lighting/shadowMap/shadowMapPass.h"
 #include "lighting/shadowMap/lightShadowMap.h"

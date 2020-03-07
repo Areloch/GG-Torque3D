@@ -28,9 +28,10 @@
 TORQUE_UNIFORM_SAMPLER2D(deferredBuffer, 0);
 TORQUE_UNIFORM_SAMPLER2D(colorBuffer, 1);
 TORQUE_UNIFORM_SAMPLER2D(matInfoBuffer, 2);
-TORQUE_UNIFORM_SAMPLER2D(ssaoMaskTex, 3);
-TORQUE_UNIFORM_SAMPLER2D(backbufferTex, 4);
-TORQUE_UNIFORM_SAMPLER2D(glowBuffer, 5);
+TORQUE_UNIFORM_SAMPLER2D(depthBuffer, 3);
+TORQUE_UNIFORM_SAMPLER2D(ssaoMaskTex, 4);
+TORQUE_UNIFORM_SAMPLER2D(backbufferTex, 5);
+TORQUE_UNIFORM_SAMPLER2D(glowBuffer, 6);
 
 uniform float mode;
 uniform float3 eyePosWorld;
@@ -40,6 +41,9 @@ float4 main( PFXVertToPix IN ) : TORQUE_TARGET0
 {     
     //unpack normal and linear depth 
     float4 normDepth = TORQUE_DEFERRED_UNCONDITION(deferredBuffer, IN.uv0.xy);
+    normDepth.a = TORQUE_TEX2D(depthBuffer, IN.uv0.xy).r;
+
+    return float4(normDepth.a, 0,0,1);
 
     //create surface
     Surface surface = createSurface(normDepth, TORQUE_SAMPLER2D_MAKEARG(colorBuffer),TORQUE_SAMPLER2D_MAKEARG(matInfoBuffer),

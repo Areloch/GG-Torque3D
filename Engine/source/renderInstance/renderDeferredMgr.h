@@ -46,6 +46,7 @@ public:
    // andremwac: Deferred Rendering
    static const String ColorBufferName;
    static const String MatInfoBufferName;
+   static const String DepthBufferName;
 
    // Generic Deferred Render Instance Type
    static const RenderInstType RIT_Deferred;
@@ -59,6 +60,8 @@ public:
 
    // RenderBinManager interface
    virtual void render(SceneRenderState * state);
+   void updateLinearDepth(SceneRenderState* state);
+   void createLinearDepthResources();
    virtual void sort();
    virtual void clear();
    virtual void addElement( RenderInst *inst );
@@ -106,9 +109,15 @@ protected:
    NamedTexTarget                      mMatInfoTarget;
    GFXTexHandle                        mColorTex;
    GFXTexHandle                        mMatInfoTex;
-   GFXTexHandle                        mDiffuseLightTex;
-   GFXTexHandle                        mSpecularLightTex;
-   GFXShaderConstBufferRef             mShaderConsts; 
+   GFXTexHandle                        mDepthTex;
+   GFXShaderConstBufferRef             mShaderConsts;
+
+   //Linear Depth
+   NamedTexTarget                      mDepthNamedTarget;
+   GFXTextureTargetRef                 mDepthTarget;
+   GFXShaderConstBufferRef             mDepthSC;
+   GFXShaderConstHandle*               mDepthSCH;
+   GFXShaderRef                        mDeferredShader;
 };
 
 //------------------------------------------------------------------------------
