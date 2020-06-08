@@ -20,14 +20,14 @@ namespace CSGUtils
       CSGVector pos;
       CSGVector normal;
       CSGVector uv;
+      int faceId;
+      int shapeId;
    };
 
    struct CSGModel
    {
       std::vector<CSGVertex> vertices;
       std::vector<int> indices;
-
-      std::vector<int> faceMaterialIds;
 
       void setTransform(const MatrixF& mat)
       {
@@ -79,7 +79,6 @@ namespace CSGUtils
    struct CSGPolygon
    {
       std::vector<CSGVertex> vertices;
-      int materialId;
       CSGPlane plane;
       void flip();
 
@@ -223,7 +222,6 @@ namespace CSGUtils
             triangle.push_back(v);
          }
          list.push_back(CSGPolygon(triangle));
-         list[list.size()-1].materialId = model.faceMaterialIds[materialIndex];
          materialIndex++;
       }
       return list;
@@ -241,7 +239,6 @@ namespace CSGUtils
             model.vertices.push_back(poly.vertices[0]);		model.indices.push_back(p++);
             model.vertices.push_back(poly.vertices[j - 1]);	model.indices.push_back(p++);
             model.vertices.push_back(poly.vertices[j]);		model.indices.push_back(p++);
-            model.faceMaterialIds.push_back(poly.materialId);
          }
       }
       return model;

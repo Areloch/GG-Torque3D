@@ -45,7 +45,9 @@ class GuiConvexEditorCtrl : public EditTSCtrl
 {
    typedef EditTSCtrl Parent;
 
-   friend class GuiConvexEditorUndoAction;   
+   friend class GuiConvexEditorUndoAction;
+
+   Point3F hoverPoint;
 
 public:   
 
@@ -132,7 +134,12 @@ public:
    void toggleGridSnapping();
    void setGridSnapSize(float gridSize);
 
+   void setBrushType(const char* brushType);
+   void setCSGLayer(U32 layer);
+
    void updateShape();
+
+   bool testFaceRay(Point3F start, Point3F end, RayInfo* info);
 
    float getGridSnapSize() { return mGridPlaneSize; }
    /// Interface with Tools.

@@ -112,13 +112,21 @@ namespace CSGUtils
             if (f.size() >= 3)
             {
                CSGPolygon newPoly = CSGPolygon(f);
-               newPoly.materialId = polygon.materialId;
+               for (U32 nV = 0; nV < newPoly.vertices.size(); nV++)
+               {
+                  newPoly.vertices[nV].faceId = polygon.vertices[0].faceId;
+                  newPoly.vertices[nV].shapeId = polygon.vertices[0].shapeId;
+               }
                front.push_back(newPoly);
             }
             if (b.size() >= 3)
             {
                CSGPolygon newPoly = CSGPolygon(b);
-               newPoly.materialId = polygon.materialId;
+               for (U32 nV = 0; nV < newPoly.vertices.size(); nV++)
+               {
+                  newPoly.vertices[nV].faceId = polygon.vertices[0].faceId;
+                  newPoly.vertices[nV].shapeId = polygon.vertices[0].shapeId;
+               }
                back.push_back(newPoly);
             }
             break;

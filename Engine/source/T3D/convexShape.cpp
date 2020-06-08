@@ -64,8 +64,9 @@ ImplementEnumType( ConvexBrushType,
    "Type of mesh data available in a shape.\n"
    "@ingroup gameObjects")
    { ConvexShape::Add, "Add", "No mesh data." },
-   { ConvexShape::Subtract,        "Subtract",         "Bounding box of the shape." },
-   { ConvexShape::Detail, "Detail", "Specifically desingated \"collision\" meshes." },
+   { ConvexShape::Subtract,        "Subtract",         "Applies subtraction actions" },
+   { ConvexShape::CollisionOnly, "Collision Only", "Specifically desingated \"collision\" shapes that do not render." },
+   { ConvexShape::Detail, "Detail", "Additive brushes that have no collision" },
 EndImplementEnumType;
 
 void CSGManager::registerConvex(ConvexShape* convex)
@@ -94,14 +95,18 @@ void CSGManager::updateBrushes()
       {
          for (U32 s = 0; s < brushes.size(); s++)
          {
+            brushes[s]->mWasCSGOpd = false;
+
             if (brushes[i]->getId() == brushes[s]->getId() || brushes[s]->mBrushType == ConvexShape::BrushType::Subtract
-               || brushes[s]->mBrushType == ConvexShape::BrushType::Detail)
+               || brushes[s]->mCSGLayer > brushes[i]->mCSGLayer)
                continue;
 
             if (!brushes[i]->getWorldBox().isOverlapped(brushes[s]->getWorldBox()))
                continue;
 
             brushes[s]->mCSGModel = CSGUtils::Subtract(brushes[i]->mCSGModel, brushes[s]->mCSGModel);
+
+            brushes[s]->mWasCSGOpd = true;
          }
       }
    }
@@ -349,6 +354,10 @@ ConvexShape::ConvexShape()
    mSurfaceTextures.clear();
 
    mBrushType = BrushType::Add;
+
+   mCSGLayer = 0;
+
+   mWasCSGOpd = false;
 }
 
 ConvexShape::~ConvexShape()
@@ -375,7 +384,8 @@ void ConvexShape::initPersistFields()
    endGroup( "Rendering" );
 
    addGroup("CSG");
-      addField("BrustType", TypeConvexBrushType, Offset(mBrushType, ConvexShape), "Does this convexShape act as a subtractor brush");
+      addField("BrushType", TypeConvexBrushType, Offset(mBrushType, ConvexShape), "Does this convexShape act as a subtractor brush");
+      addField("CSGLayer", TypeS32, Offset(mCSGLayer, ConvexShape), "What layer does the brush exist on for csg operations");
    endGroup("CSG"); 
 
    addGroup( "Internal" );
@@ -599,6 +609,7 @@ U32 ConvexShape::packUpdate( NetConnection *conn, U32 mask, BitStream *stream )
       stream->write( mMaterialName );
 
       stream->writeInt(mBrushType, 4);
+      stream->writeInt(mCSGLayer, 16);
       
       U32 surfCount = mSurfaces.size();
       stream->writeInt( surfCount, 32 );
@@ -652,6 +663,7 @@ void ConvexShape::unpackUpdate( NetConnection *conn, BitStream *stream )
       stream->read( &mMaterialName );
 
       mBrushType = stream->readInt(4);
+      mCSGLayer = stream->readInt(16);
 
       mSurfaces.clear();
       mSurfaceUVs.clear();
@@ -705,7 +717,6 @@ void ConvexShape::unpackUpdate( NetConnection *conn, BitStream *stream )
 
 void ConvexShape::prepRenderImage( SceneRenderState *state )
 {   
-   
    if ( state->isDiffusePass() )
    {
       ObjectRenderInst *ri2 = state->getRenderPass()->allocInst<ObjectRenderInst>();
@@ -713,9 +724,8 @@ void ConvexShape::prepRenderImage( SceneRenderState *state )
       ri2->type = RenderPassManager::RIT_Editor;
       state->getRenderPass()->addInst( ri2 );
    }
-   
 
-   if (mBrushType == BrushType::Subtract)
+   if (mBrushType == BrushType::Subtract || mBrushType == ConvexShape::BrushType::CollisionOnly)
       return;
 
    for (U32 i = 0; i < mSurfaceBuffers.size(); i++)
@@ -809,7 +819,7 @@ void ConvexShape::prepRenderImage( SceneRenderState *state )
 
 void ConvexShape::buildConvex( const Box3F &box, Convex *convex )
 {
-   if ( mGeometry.faces.empty() )
+   if ( mGeometry.faces.empty() || mBrushType == BrushType::Subtract || mBrushType == BrushType::Detail)
       return;
 
    mConvexList->collectGarbage();
@@ -1018,7 +1028,7 @@ bool ConvexShape::castRay( const Point3F &start, const Point3F &end, RayInfo *in
    const Vector< PlaneF > &planeList = mPlanes;
    const U32 planeCount = planeList.size();  
 
-   F32 t;
+   F32 t = -1;
    F32 tmin = F32_MAX;
    S32 hitFace = -1;
    Point3F hitPnt, pnt;
@@ -1034,6 +1044,51 @@ bool ConvexShape::castRay( const Point3F &start, const Point3F &end, RayInfo *in
       F32 t = plane.intersect( sp, ep );
       Point3F hitPnt;
       hitPnt.interpolate( sp, ep, t );
+   }
+
+   Point3F faceNorm;
+   for (size_t ind = 0; ind < mCSGModel.indices.size(); ind += 3)
+   {
+      CSGUtils::CSGVertex& a = mCSGModel.vertices[mCSGModel.indices[ind + 0]];
+      CSGUtils::CSGVertex& b = mCSGModel.vertices[mCSGModel.indices[ind + 1]];
+      CSGUtils::CSGVertex& c = mCSGModel.vertices[mCSGModel.indices[ind + 2]];
+
+      Point3F n = mCross(Point3F(b.pos.x, b.pos.y, b.pos.z) - Point3F(a.pos.x, a.pos.y, a.pos.z),
+         Point3F(c.pos.x, c.pos.y, c.pos.z) - Point3F(a.pos.x, a.pos.y, a.pos.z));
+
+      n.normalize();
+
+      Point3F v[3];
+
+      for (int j = 0; j < 3; j++)
+      {
+         CSGUtils::CSGVertex vert = mCSGModel.vertices[mCSGModel.indices[ind + j]];
+
+         v[j] = Point3F(vert.pos.x, vert.pos.y, vert.pos.z);
+      }
+
+      Point3F UVW;
+      t;
+      if (MathUtils::mLineTriangleCollide(start, end, v[0], v[1], v[2], &UVW, &t))
+      {
+         if (t < tmin)
+         {
+            tmin = t;
+            hitFace = a.faceId;
+            pnt.interpolate(start, end, t);
+            faceNorm = n;
+         }
+      }
+   }
+
+   if (tmin != F32_MAX)
+   {
+      info->face = hitFace;
+      info->material = mMaterialInst;
+      info->normal = faceNorm;
+      info->object = this;
+      info->t = tmin;
+      return true;
    }
 
    for ( S32 i = 0; i < planeCount; i++ )
@@ -1514,14 +1569,15 @@ void ConvexShape::_processCSG()
          vert.uv.x = faceCoords[v].x;
          vert.uv.y = faceCoords[v].y;
 
+         vert.faceId = faceId;
+         vert.shapeId = getId();
+
          facePoly.insert(facePoly.end(), vert);
 
          points.push_back(facePoints[v]);
       }
 
       mCSG.insert(mCSG.end(), facePoly);
-
-      mCSG[mCSG.size()-1].materialId = matID;
    }
 
    //transform our brush before processing
@@ -1570,15 +1626,67 @@ void ConvexShape::_compileGeometry()
 {
    mSurfaceBuffers.clear();
 
-   //set up buffers based on how many materials we have, but we always have at least one for our default mat
-   mSurfaceBuffers.increment();
-   mSurfaceBuffers[0].mVertexBuffer = NULL;
-   mSurfaceBuffers[0].mVertCount = 0;
-   mSurfaceBuffers[0].mPrimCount = 0;
-
    //For computing normals, we refer to: https://computergraphics.stackexchange.com/questions/4031/programmatically-generating-vertex-normals
    if (mCSGModel.vertices.size() != 0)
    {
+      /*Vector<surfaceMaterial> foundMaterials;
+      //set up buffers based on how many materials we have, but we always have at least one for our default mat
+      for (size_t v = 0; v < mCSGModel.vertices.size(); v++)
+      {
+         if (mCSGModel.vertices[v].shapeId == getId())
+         {
+            bool found = false;
+            for (U32 m = 0; m < foundMaterials.size(); m++)
+            {
+               if (foundMaterials[m].materialName == mSurfaceTextures[mCSGModel.vertices[v].faceId].materialName)
+               {
+                  found = true;
+                  break;
+               }
+            }
+
+            if (!found)
+            {
+               foundMaterials.push_back(mSurfaceTextures[mCSGModel.vertices[v].faceId]);
+            }
+         }
+         else
+         {
+            ConvexShape* refShape;
+            if (Sim::findObject(mCSGModel.vertices[v].shapeId, refShape))
+            {
+               bool found = false;
+               for (U32 m = 0; m < foundMaterials.size(); m++)
+               {
+                  if (foundMaterials[m].materialName == refShape->mSurfaceTextures[mCSGModel.vertices[v].faceId].materialName)
+                  {
+                     found = true;
+                     break;
+                  }
+               }
+
+               if (!found)
+               {
+                  foundMaterials.push_back(refShape->mSurfaceTextures[mCSGModel.vertices[v].faceId]);
+               }
+            }
+         }
+      }
+
+      //set up buffers based on how many materials we have, but we always have at least one for our default mat
+      for (U32 m = 0; m < foundMaterials.size(); m++)
+      {
+         mSurfaceBuffers.increment();
+         mSurfaceBuffers[m + 1].mVertexBuffer = NULL;
+         mSurfaceBuffers[m + 1].mVertCount = 0;
+         mSurfaceBuffers[m + 1].mPrimCount = 0;
+      }*/
+
+      mSurfaceBuffers.increment();
+      mSurfaceBuffers[0].mVertexBuffer = NULL;
+      mSurfaceBuffers[0].mVertCount = 0;
+      mSurfaceBuffers[0].mPrimCount = 0;
+
       mSurfaceBuffers[0].mPrimCount = mCSGModel.indices.size() / 3;
       mSurfaceBuffers[0].mVertCount = mCSGModel.vertices.size();
 
@@ -1734,7 +1842,7 @@ void ConvexShape::_updateCollision()
 {
    SAFE_DELETE( mPhysicsRep );
 
-   if ( !PHYSICSMGR )
+   if ( !PHYSICSMGR || mBrushType == BrushType::Subtract || mBrushType == BrushType::Detail)
       return;
 
    PhysicsCollision *colShape = PHYSICSMGR->createCollision();

@@ -35,6 +35,12 @@ function ConvexEditorGui::onWake( %this )
 		
 		ConvexEditorOptionsWindow.activeMaterial = %mat;
 	}
+	
+	ConvexBrushTypeList.add("Add");
+	ConvexBrushTypeList.add("Subtract");
+	ConvexBrushTypeList.add("Collision Only");
+	ConvexBrushTypeList.add("Detail");
+	ConvexBrushTypeList.setSelected(0);
 }
 
 function ConvexEditorGui::onSleep( %this )
@@ -103,6 +109,38 @@ function ConvexEditorGui::onSelectionChanged( %this, %shape, %face )
 	
 	  ConvexEditorOptionsWindow-->ZRotation.setText(ConvexEditorGui.getSelectedFaceZRot());
    }
+   
+   if(%shape.brushType $= "Add")
+      ConvexBrushTypeList.setSelected(0);
+   else if(%shape.brushType $= "Subtract")
+      ConvexBrushTypeList.setSelected(1);
+   else if(%shape.brushType $= "Collision Only")
+      ConvexBrushTypeList.setSelected(2);
+   else if(%shape.brushType $= "Detail")
+      ConvexBrushTypeList.setSelected(3);
+      
+   CSGLayerField.text = %shape.csgLayer;
+}
+
+function CSGLayerField::onAdd(%this)
+{
+   %this.altCommand = %this @ ".onReturn();";
+   %this.validate = %this @ ".onReturn();"; 
+}
+
+function CSGLayerField::onReturn(%this)
+{
+   EWorldEditor.isDirty = true;
+
+   %layer = CSGLayerField.getText();
+
+   ConvexEditorGui.setCSGLayer(%layer);
+}
+
+function ConvexEditorUVFld::onAdd(%this)
+{
+   %this.altCommand = %this @ ".onReturn();";
+   %this.validate = %this @ ".onReturn();";
 }
 
 function ConvexEditorUVFld::onReturn(%this)
@@ -237,4 +275,11 @@ function ConvexEditorDefaultMaterialBtn::gotMaterialName(%this, %name)
    ConvexEditorOptionsWindow.activeShape.material = %materialAsset.materialDefinitionName;
 
    ConvexEditorGui.updateShape();
+}
+
+function ConvexBrushTypeList::onSelect( %this, %id, %text )
+{
+   EWorldEditor.isDirty = true;
+   
+   ConvexEditorGui.setBrushType(%text);
 }

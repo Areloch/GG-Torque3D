@@ -1,3 +1,7 @@
+// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 //-----------------------------------------------------------------------------
 // Copyright (c) 2012 GarageGames, LLC
 //
@@ -210,12 +214,17 @@ public:
    {
       Add = 0,            ///< Adds geometry
       Subtract = 1,          ///< Cuts out from add brushes
-      Detail = 2,   ///< Unaffected by CSG operations
+      CollisionOnly = 2,   ///< Unaffected by CSG operations
+      Detail = 3,
    };
 
    U32 mBrushType;
 
+   U32 mCSGLayer;
+
    static bool smRenderEdges;
+
+   bool mWasCSGOpd;
 
    // To prevent bitpack overflows.
    // This is only indirectly enforced by trucation when serializing.

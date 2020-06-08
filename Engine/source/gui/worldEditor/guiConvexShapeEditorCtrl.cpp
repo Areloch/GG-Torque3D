@@ -445,6 +445,11 @@ void GuiConvexEditorCtrl::on3DMouseMove(const Gui3DMouseEvent & event)
    
    _cursorCast( event, &hitShape, &hitFace );
 
+   //RayInfo ri;
+   //testFaceRay(event.pos, event.pos + event.vec * 10000.0f, &ri);
+
+   //ri.point;
+
    if ( !mConvexSEL )
    {
       mConvexHL = hitShape;
@@ -532,6 +537,9 @@ void GuiConvexEditorCtrl::on3DMouseDragged(const Gui3DMouseEvent & event)
          setupShape( newShape );
 
          newShape->setField("material", mConvexSEL->getMaterialName());
+
+         newShape->mBrushType = mConvexSEL->mBrushType;
+         newShape->mCSGLayer = mConvexSEL->mCSGLayer;
 
          submitUndo( CreateShape, newShape );
 
@@ -1068,6 +1076,10 @@ void GuiConvexEditorCtrl::renderScene(const RectI & updateRect)
       {
          shapesList[i]->renderFaceEdges(-1, ColorI(212,175,55));
       }
+      else if (shapesList[i]->mBrushType == ConvexShape::BrushType::CollisionOnly)
+      {
+         shapesList[i]->renderFaceEdges(-1, ColorI(135, 206, 235));
+      }
    }
 
    if ( mConvexSEL && !mDragging )
@@ -1086,7 +1098,7 @@ void GuiConvexEditorCtrl::renderScene(const RectI & updateRect)
          Point3F boxPos = objBox.getCenter();
          objMat.mulP( boxPos );
          
-         drawer->drawObjectBox( desc, objBox.getExtents(), boxPos, objMat, ColorI::WHITE );
+         drawer->drawObjectBox( desc, objBox.getExtents()/2, boxPos, objMat, ColorI::WHITE );
       }
       else
       {
@@ -2197,6 +2209,169 @@ void GuiConvexEditorCtrl::setGridSnapSize(float gridSize)
    mGridPlaneSize = gridSize;
 }
 
+//
+bool GuiConvexEditorCtrl::testFaceRay(Point3F start, Point3F end, RayInfo* info)
+{
+   /*F32 t;
+   F32 tmin = F32_MAX;
+   S32 hitFace = -1;
+   S32 hitBrush = -1;
+   Point3F hitPnt, pnt;
+   VectorF rayDir(end - start);
+   rayDir.normalizeSafe();
+
+   F32 currentT = 2.0;
+
+   for (U32 i = 0; i < mBrushes.size(); ++i)
+   {
+      //See if we even pretend to make a collision
+      if (mBrushes[i].getBounds().collideLine(start, end))
+      {
+         Point3F xformedStart, xformedEnd;
+         mBrushes[i].mTransform.mulP(start, &xformedStart);
+         mBrushes[i].mTransform.mulP(end, &xformedEnd);
+         xformedStart.convolveInverse(mBrushes[i].mScale);
+         xformedEnd.convolveInverse(mBrushes[i].mScale);
+
+         RayInfo ri;
+         bool result = false;
+
+         //
+         result = mBrushes[i].castRay(start, end, &ri);
+
+         if (result)
+         {
+            if (ri.t < currentT)
+            {
+               *info = ri;
+               info->point.interpolate(start, end, info->t);
+               currentT = ri.t;
+               info->distance = (start - info->point).len();
+
+               info->userData = (void*)i;
+            }
+         }
+      }
+
+      /*
+      {
+      Vector<PlaneF> planes = mBrushes[i].mPlanes;//getBrushFacePlanes(i);
+
+      U32 planeCount = planes.size();
+      for (U32 f = 0; f < planeCount; ++f)
+      {
+      // Don't hit the back-side of planes.
+      if (mDot(rayDir, planes[f]) >= 0.0f)
+      continue;
+
+      t = planes[f].intersect(start, end);
+
+      if (t >= 0.0f && t <= 1.0f && t < tmin)
+      {
+      pnt.interpolate(start, end, t);
+
+      S32 j = 0;
+      for (; j < planeCount; j++)
+      {
+      if (f == j)
+      continue;
+
+      F32 dist = planes[f].distToPlane(pnt);
+      if (dist > 1.0e-004f)
+      break;
+      }
+
+      if (j == planeCount)
+      {
+      tmin = t;
+      hitFace = f;
+      hitBrush = i;
+      }
+      }
+      }
+      }
+      //
+
+      if (result)
+      {
+      if (ri.t < currentT && (!callback || callback(&ri)))
+      {
+      *info = ri;
+      info->point.interpolate(start, end, info->t);
+      currentT = ri.t;
+      info->distance = (start - info->point).len();
+      }
+      }
+      */
+
+      /*if (mBrushes[i].mCSGModel.vertices.size() != 0)
+      {
+         mBrushes[i].mPrimCount = mBrushes[i].mCSGModel.indices.size() / 3;
+         mBrushes[i].mVertCount = mBrushes[i].mCSGModel.vertices.size();
+
+         // Allocate VB and copy in data.
+         mBrushes[i].mVertexBuffer.set(GFX, mBrushes[i].mVertCount, GFXBufferTypeStatic);
+         VertexType *pVert = mBrushes[i].mVertexBuffer.lock();
+
+         for (size_t ind = 0; ind < mBrushes[i].mCSGModel.indices.size(); ind += 3)
+         {
+            for (int j = 0; j < 3; j++)
+            {
+               CSGUtils::CSGVertex v = mBrushes[i].mCSGModel.vertices[mBrushes[i].mCSGModel.indices[ind + j]];
+
+               Point3F normal = Point3F(v.normal.x, v.normal.y, v.normal.z);
+               Point3F position = Point3F(v.pos.x, v.pos.y, v.pos.z);
+
+               pVert->normal = normal;
+               pVert->tangent = Point3F(0, 0, 1);
+               pVert->color = ColorI::BLACK;
+               pVert->point = position;
+               pVert->texCoord = Point2F(v.uv.x, v.uv.y);
+
+               pVert++;
+            }
+         }
+      }*/
+   //}
+
+   // Bump the normal into worldspace if appropriate.
+   /*if (currentT != 2)
+   {
+      PlaneF fakePlane;
+      fakePlane.x = info->normal.x;
+      fakePlane.y = info->normal.y;
+      fakePlane.z = info->normal.z;
+      fakePlane.d = 0;
+
+      PlaneF result;
+
+      U32 brushId = (U32)info->userData;
+      mTransformPlane(mBrushes[brushId].mTransform, mBrushes[brushId].mScale, fakePlane, &result);
+      info->normal = result;
+
+      return true;
+   }
+
+   /*if (hitFace != -1)
+   {
+      Con::printf("-----------------------------------------------------");
+      Con::printf("We hit the brush: %i on face %i", hitBrush, hitFace);
+
+      clickPoint = pnt;
+
+      clickPoint.interpolate(start, end, tmin);
+      //currentT = ri.t;
+      //info->distance = (start - info->point).len();
+
+      brush = hitBrush;
+      face = hitFace;
+      return true;
+   }
+
+   clickPoint = Point3F::Zero;*/
+   return false;
+}
+//
 void GuiConvexEditorUndoAction::undo()
 {
    ConvexShape *object = NULL;
@@ -2897,6 +3072,42 @@ ConvexShape* GuiConvexEditorCtrl::createConvexShapeFrom(SceneObject* polyObject)
    return shape;
 }
 
+void GuiConvexEditorCtrl::setBrushType(const char* brushType)
+{
+   if (mConvexSEL == NULL)
+      return;
+
+   StringTableEntry type = StringTable->insert(brushType);
+   if (type == StringTable->insert("Add"))
+      mConvexSEL->mBrushType = ConvexShape::BrushType::Add;
+   else if (type == StringTable->insert("Subtract"))
+      mConvexSEL->mBrushType = ConvexShape::BrushType::Subtract;
+   else if (type == StringTable->insert("Collision Only"))
+      mConvexSEL->mBrushType = ConvexShape::BrushType::CollisionOnly;
+   else if (type == StringTable->insert("Detail"))
+      mConvexSEL->mBrushType = ConvexShape::BrushType::Detail;
+
+   updateShape(mConvexSEL, mFaceSEL);
+
+   CSGManager::get()->updateBrushes();
+
+   mConvexSEL->setMaskBits(ConvexShape::UpdateMask);
+}
+
+void GuiConvexEditorCtrl::setCSGLayer(U32 layer)
+{
+   if (mConvexSEL == NULL)
+      return;
+
+   mConvexSEL->mCSGLayer = layer;
+
+   updateShape(mConvexSEL, mFaceSEL);
+
+   CSGManager::get()->updateBrushes();
+
+   mConvexSEL->setMaskBits(ConvexShape::UpdateMask);
+}
+
 DefineEngineMethod( GuiConvexEditorCtrl, hollowSelection, void, (), , "" )
 {
    object->hollowSelection();
@@ -3121,4 +3332,27 @@ DefineEngineMethod(GuiConvexEditorCtrl, updateShape, void, (),,
 {
    //return Point2F(0, 0);
    return object->updateShape();
+}
+
+DefineEngineMethod(GuiConvexEditorCtrl, setBrushType, void, (const char* brushType), ("Add"),
+   "@brief Mount objB to this object at the desired slot with optional transform.\n\n"
+
+   "@param objB  Object to mount onto us\n"
+   "@param slot  Mount slot ID\n"
+   "@param txfm (optional) mount offset transform\n"
+   "@return true if successful, false if failed (objB is not valid)")
+{
+   //return Point2F(0, 0);
+   return object->setBrushType(brushType);
+}
+
+DefineEngineMethod(GuiConvexEditorCtrl, setCSGLayer, void, (U32 layer), (0),
+   "@brief Mount objB to this object at the desired slot with optional transform.\n\n"
+
+   "@param objB  Object to mount onto us\n"
+   "@param slot  Mount slot ID\n"
+   "@param txfm (optional) mount offset transform\n"
+   "@return true if successful, false if failed (objB is not valid)")
+{
+   return object->setCSGLayer(layer);
 }
